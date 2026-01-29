@@ -1,0 +1,303 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+//////////////////////////////////////////////////////
+// USER
+//////////////////////////////////////////////////////
+
+model User {
+  id    String @id @default(uuid())
+  name  String
+  email String @unique
+
+  image         String?
+  emailVerified Boolean @default(false)
+
+  role       String?
+  banned     Boolean   @default(false)
+  banReason  String?
+  banExpires DateTime?
+  theme String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Auth
+  sessions Session[]
+  accounts Account[]
+
+  // Relations
+  cardsOwned    Card[]      @relation("CardOwner")
+  cardsAssigned Card[]      @relation("CardAssignedTo")
+  createdCards  Card[]      @relation("CardCreatedBy")
+  updatedCards  Card[]      @relation("CardUpdatedBy")
+  events        CardEvent[]
+
+  createdAddresses Address[] @relation("AddressCreatedBy")
+  updatedAddresses Address[] @relation("AddressUpdatedBy")
+  invitedAddresses Address[] @relation("InvitedAddresses")
+
+  members     Member[]
+  invitations Invitation[]
+
+  @@map("user")
+}
+
+//////////////////////////////////////////////////////
+// ADDRESS
+//////////////////////////////////////////////////////
+
+model Address {
+  id String @id @default(uuid())
+
+  type         String
+  street       String
+  number       String
+  neighborhood String
+
+
+  //  Coordenadas GPS
+
+  latitude  Float?
+  longitude Float?
+
+  image        String?
+  info         String?
+  businessName String?
+
+  active    Boolean @default(true)
+  confirmed Boolean @default(false)
+
+  organizationId String
+
+  // Convite
+
+  invited     Boolean @default(false)
+  invitedById String?
+  invitedBy   User?   @relation("InvitedAddresses", fields: [invitedById], references: [id])
+
+
+  //  Auditoria
+  
+  createdUserId String
+  createdBy     User   @relation("AddressCreatedBy", fields: [createdUserId], references: [id])
+
+  updatedUserId String?
+  updatedBy     User?   @relation("AddressUpdatedBy", fields: [updatedUserId], references: [id])
+
+  
+  //  Relação com Card
+  
+  cardId String? @unique
+  card   Card?   @relation(fields: [cardId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([latitude, longitude])
+  @@index([createdUserId])
+  @@map("address")
+}
+
+//////////////////////////////////////////////////////
+// CARD
+//////////////////////////////////////////////////////
+
+model Card {
+  id String @id @default(uuid())
+
+  
+    // Dono do Card
+   
+  ownerId String?
+  owner   User?   @relation("CardOwner", fields: [ownerId], references: [id])
+
+  
+  //  Auditoria
+   
+  createdById String
+  createdBy   User   @relation("CardCreatedBy", fields: [createdById], references: [id])
+
+  updatedById String?
+  updatedBy   User?   @relation("CardUpdatedBy", fields: [updatedById], references: [id])
+
+  
+  //  Atribuição
+   
+  assignedUserId String?
+  assignedUser   User?   @relation("CardAssignedTo", fields: [assignedUserId], references: [id])
+
+  
+    // Relações
+  
+  addresses Address[]
+  events    CardEvent[]
+
+  startDate DateTime
+  endDate   DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([assignedUserId])
+  @@index([ownerId])
+  @@map("card")
+}
+
+//////////////////////////////////////////////////////
+// AUTH
+//////////////////////////////////////////////////////
+
+model Session {
+  id     String @id
+  token  String @unique
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+
+  impersonatedBy       String?
+  activeOrganizationId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id         String @id
+  providerId String
+  accountId  String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+//////////////////////////////////////////////////////
+// ORGANIZATION
+//////////////////////////////////////////////////////
+
+model Organization {
+  id   String  @id
+  name String
+  slug String  @unique
+  logo String?
+
+  metadata  String?
+  createdAt DateTime @default(now())
+
+  members     Member[]
+  invitations Invitation[]
+
+  @@map("organization")
+}
+
+model Member {
+  id String @id
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role      String   @default("member")
+  createdAt DateTime @default(now())
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("member")
+}
+
+model Invitation {
+  id String @id
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  email  String
+  role   String?
+  status String  @default("pending")
+
+  inviterId String
+  inviter   User   @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([email])
+  @@map("invitation")
+}
+
+//////////////////////////////////////////////////////
+// EVENTS
+//////////////////////////////////////////////////////
+
+model CardEvent {
+  id String @id @default(uuid())
+
+  cardId String
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  action CardEventAction
+  date   DateTime        @default(now())
+
+  @@index([cardId])
+  @@index([userId])
+  @@map("card_event")
+}
+
+enum CardEventAction {
+  ASSIGNED
+  RETURNED
+}
