@@ -32,7 +32,7 @@ export default function RootLayout({
       <body
         className={`${outfit.variable} ${inconsolata.variable} font-sans antialiased`}
       >
-        <Toaster />
+        <Toaster position="top-center" />
         {children}
       </body>
     </html>

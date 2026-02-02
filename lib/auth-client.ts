@@ -4,7 +4,6 @@ import {
   organizationClient,
 } from "better-auth/client/plugins";
 import { adminClient } from "better-auth/client/plugins";
-import { redirect } from "next/navigation";
 
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_URL,
@@ -31,14 +30,4 @@ export const signIn = async () => {
   if (error) return error;
 
   return data;
-};
-
-export const signOut = async () => {
-  await authClient.signOut({
-    fetchOptions: {
-      onSuccess: () => {
-        redirect("/login");
-      },
-    },
-  });
 };
