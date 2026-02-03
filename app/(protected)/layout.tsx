@@ -1,6 +1,5 @@
 import Header from "@/components/header/Header";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getCurrentUser } from "@/server/users";
 import { redirect } from "next/navigation";
 
 export default async function ProtectedLayout({
@@ -8,13 +7,10 @@ export default async function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const data = await getCurrentUser();
 
-  if (!session) {
-    redirect("/login");
-  }
+  if (!data) redirect("/login");
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />

@@ -6,42 +6,81 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const getCurrentUser = async () => {
+  const reqHeaders = await headers();
+
   const session = await auth.api.getSession({
-    headers: await headers(),
+    headers: reqHeaders,
   });
 
-  console.log("Session in getCurrentUser:", session);
-
-  if (!session) return redirect("/login");
-
-  const activeMember = await auth.api.getActiveMember({
-    headers: await headers(),
-  });
-
-  if (!activeMember) {
-    const memberRole = null;
-    return { ...session, memberRole };
+  if (!session) {
+    return null;
   }
 
-  const memberRole = await auth.api.getActiveMemberRole({
-    headers: await headers(),
+  const activeMember = await auth.api.getActiveMember({
+    headers: reqHeaders,
   });
 
-  const sessionUserId = session.user.id;
+  const memberRole = activeMember
+    ? await auth.api.getActiveMemberRole({ headers: reqHeaders })
+    : null;
 
   const currentUser = await prisma.user.findUnique({
-    where: { id: sessionUserId },
+    where: { id: session.user.id },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      createdAt: true,
+    },
   });
 
-  if (!currentUser) return redirect("/login");
+  if (!currentUser) {
+    return null;
+  }
 
   return {
-    ...session,
-    currentUser,
-    memberRole,
+    session,
+    user: currentUser,
     activeMember,
+    memberRole,
   };
 };
+
+// export const getCurrentUser = async () => {
+//   const session = await auth.api.getSession({
+//     headers: await headers(),
+//   });
+
+//   if (!session) return redirect("/login");
+
+//   const activeMember = await auth.api.getActiveMember({
+//     headers: await headers(),
+//   });
+
+//   if (!activeMember) {
+//     const memberRole = null;
+//     return { ...session, memberRole };
+//   }
+
+//   const memberRole = await auth.api.getActiveMemberRole({
+//     headers: await headers(),
+//   });
+
+//   const sessionUserId = session.user.id;
+
+//   const currentUser = await prisma.user.findUnique({
+//     where: { id: sessionUserId },
+//   });
+
+//   if (!currentUser) return redirect("/login");
+
+//   return {
+//     ...session,
+//     currentUser,
+//     memberRole,
+//     activeMember,
+//   };
+// };
 
 export const getUsers = async (organizationId: string) => {
   try {

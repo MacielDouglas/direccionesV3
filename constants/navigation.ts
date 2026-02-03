@@ -12,7 +12,7 @@ import {
   Pencil,
 } from "lucide-react";
 
-export type UserRole = "member" | "admin" | "owner";
+export type UserRole = "null" | "member" | "admin" | "owner";
 
 export type NavigationItem = {
   id: string;
