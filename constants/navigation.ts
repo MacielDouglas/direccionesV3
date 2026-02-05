@@ -76,7 +76,7 @@ export const navigationMenu: NavigationItem[] = [
   {
     id: "users",
     name: "Usuarios",
-    href: "/admin/users",
+    href: `/admin/users/`,
     icon: Users,
     roles: ["admin", "owner"],
   },
@@ -112,8 +112,8 @@ export const navigationMenu: NavigationItem[] = [
   // 👑 OWNER
   {
     id: "admin",
-    name: "Admin",
-    href: "/owner/admin",
+    name: "Admin - Organizations",
+    href: "/security/organizations",
     icon: Shield,
     roles: ["owner"],
   },

@@ -22,6 +22,29 @@ export const addMember = async (
   }
 };
 
+export const memberUpdateRole = async (
+  organizationId: string,
+  memberId: string,
+  role: string,
+) => {
+  try {
+    if (role === "owner") throw new Error("Não é possivel designar como Owner");
+
+    await auth.api.updateMemberRole({
+      body: {
+        role: role, // required
+        memberId: memberId, // required
+        organizationId: organizationId,
+      },
+      // This endpoint requires session cookies.
+      headers: await headers(),
+    });
+  } catch (error) {
+    // console.error(error);
+    throw new Error(`${error}`);
+  }
+};
+
 export const removeMemberManually = async (
   organizationId: string,
   memberIdOrEmail: string,

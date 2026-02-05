@@ -1,46 +1,75 @@
 "use client";
 
 import { getNavigationByRole, navigationMenu } from "@/constants/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MobileMenuItem from "./MobileMenuItem";
 import LogoutButton from "../LogoutButton";
 import AnimatedMenuIcon from "./AnimatedMenuIcon";
 
 interface MenuMobileProps {
   role?: "member" | "admin" | "owner" | null;
+  orgSlug: string;
 }
 
-export default function MobileHeader({ role }: MenuMobileProps) {
+export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navigation = role ? getNavigationByRole(navigationMenu, role) : [];
 
-  function closeMenu() {
-    setIsMenuOpen(false);
-  }
+  const closeMenu = () => setIsMenuOpen(false);
+
+  useEffect(() => {
+    document.body.style.overflow = isMenuOpen ? "hidden" : "";
+  }, [isMenuOpen]);
 
   return (
-    <div className="relative">
+    <>
       <AnimatedMenuIcon
         isOpen={isMenuOpen}
-        onToggle={() => setIsMenuOpen((prev) => !prev)}
+        onToggle={() => setIsMenuOpen((p) => !p)}
       />
 
-      {isMenuOpen && (
-        <div className="z-50 bg-[#0c232a] text-slate-100 absolute top-19  w-96 -right-5">
-          <header className="h-20 flex items-center justify-center border-b border-white/10">
-            <h2 className="text-2xl">Menu</h2>
-          </header>
+      {/* Overlay */}
+      <div
+        onClick={closeMenu}
+        className={`fixed inset-0 z-40 transition-opacity duration-200 ${
+          isMenuOpen
+            ? "bg-[#0c232a]/50 opacity-100"
+            : "opacity-0 pointer-events-none"
+        }`}
+      />
 
-          <nav className="flex flex-col gap-6 p-6">
-            {navigation.map((item) => (
-              <MobileMenuItem key={item.id} item={item} onSelect={closeMenu} />
-            ))}
-
-            <LogoutButton />
-          </nav>
+      {/* Menu */}
+      <aside
+        className={`fixed inset-y-0 right-0 z-50 w-full max-w-sm
+        bg-[#0c232a] text-slate-200 font-extralight
+        shadow-xl
+        transform transition-transform duration-300 ease-out
+        ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}
+      >
+        {/* Top spacing (One UI feeling) */}
+        <div className="pt-10 pb-4 px-6">
+          <p className="text-sm text-neutral-500">Menu</p>
+          <h2 className="text-2xl font-semibold mt-1">Navegação</h2>
         </div>
-      )}
-    </div>
+
+        {/* Navigation */}
+        <nav className="flex flex-col gap-1 px-3">
+          {navigation.map((item) => (
+            <MobileMenuItem
+              key={item.id}
+              item={item}
+              orgSlug={orgSlug}
+              onSelect={closeMenu}
+            />
+          ))}
+        </nav>
+
+        {/* Footer */}
+        <div className="mt-auto px-6 pb-8 pt-6">
+          <LogoutButton />
+        </div>
+      </aside>
+    </>
   );
 }

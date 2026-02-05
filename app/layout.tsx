@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit, Inconsolata } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import NextTopLoader from "nextjs-toploader";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -32,6 +33,7 @@ export default function RootLayout({
       <body
         className={`${outfit.variable} ${inconsolata.variable} font-sans antialiased`}
       >
+        <NextTopLoader showSpinner={false} />
         <Toaster position="top-center" />
         {children}
       </body>
