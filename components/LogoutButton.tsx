@@ -30,7 +30,7 @@ export default function LogoutButton() {
       disabled={loading}
     >
       <LogOut className="mr-2 h-4 w-4" />
-      Logout
+      Salir
     </Button>
   );
 }

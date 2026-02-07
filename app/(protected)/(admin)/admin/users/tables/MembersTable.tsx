@@ -18,7 +18,7 @@ interface MembersTableProps {
 
 export default function MembersTable({ members }: MembersTableProps) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 border-t mt-5 pt-5">
       {/* Header */}
       <div>
         <h2 className="text-lg font-semibold">Membros</h2>
@@ -32,7 +32,7 @@ export default function MembersTable({ members }: MembersTableProps) {
         {members.map((member) => (
           <li
             key={member.id}
-            className="flex items-center gap-3 rounded-xl border p-3"
+            className="flex items-center gap-3 rounded-xl border p-3 bg-white"
           >
             {/* Avatar */}
             <Avatar className="size-10 shrink-0">
@@ -122,63 +122,3 @@ export default function MembersTable({ members }: MembersTableProps) {
     </div>
   );
 }
-
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-// import MembersTableAction from "./MemberTableAction";
-
-// interface MembersTableProps {
-//   members: Array<{
-//     id: string;
-//     role: string | null;
-//     organizationId: string;
-//     user: { id: string; name: string; email: string; image: string | null };
-//   }>;
-// }
-
-// export default function MembersTable({ members }: MembersTableProps) {
-//   return (
-//     <div className="overflow-x-auto">
-//       <table className="table">
-//         {/* head */}
-//         <thead>
-//           <tr>
-//             <th></th>
-//             <th className="w-25">Image</th>
-//             <th>Username</th>
-//             <th>Email</th>
-//             <th>Tipo</th>
-//             <th>Ação</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {members.map((member, index) => (
-//             <tr key={member.id}>
-//               <th>{index + 1}</th>
-//               <td className="avatar">
-//                 {member.user.image ? (
-//                   <Avatar>
-//                     <AvatarImage src={member.user.image} className="w-8" />
-//                     <AvatarFallback>
-//                       Imagem de: {member.user.name}
-//                     </AvatarFallback>
-//                   </Avatar>
-//                 ) : (
-//                   <div className="bg-gray-200 border-2 border-dashed rounded-xl w-10 h-10" />
-//                 )}
-//               </td>
-//               <td className="truncate">{member.user.name}</td>
-//               <td className="truncate">{member.user.email}</td>
-//               <td>{member.role}</td>
-//               <td>
-//                 <MembersTableAction
-//                   organizationId={member.organizationId}
-//                   memberIdOrEmail={member.user.id}
-//                 />
-//               </td>
-//             </tr>
-//           ))}
-//         </tbody>
-//       </table>
-//     </div>
-//   );
-// }

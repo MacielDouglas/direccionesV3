@@ -21,7 +21,7 @@ export default function AnimatedMenuIcon({
       onClick={onToggle}
       aria-label={isOpen ? "Fechar menu" : "Abrir menu"}
       className={cn(
-        "relative h-12 w-10 rounded-lg hover:bg-[#0c232a]",
+        "relative h-8 w-8 rounded-lg hover:bg-[#0c232a]",
         className,
       )}
     >
