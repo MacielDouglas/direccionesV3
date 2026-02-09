@@ -21,30 +21,22 @@ export default function AnimatedMenuIcon({
       onClick={onToggle}
       aria-label={isOpen ? "Fechar menu" : "Abrir menu"}
       className={cn(
-        "relative h-8 w-8 rounded-lg hover:bg-[#0c232a]",
+        `
+        relative h-11 w-11 rounded-xl
+        active:scale-95
+        hover:bg-black/5
+        text-slate-200
+        `,
         className,
       )}
     >
-      <div className="relative h-6 w-full">
-        <span
-          className={cn(
-            "absolute left-0 top-0 h-px w-full bg-slate-50 transition-all",
-            isOpen && "top-2.5 rotate-45",
-          )}
-        />
-        <span
-          className={cn(
-            "absolute left-0 top-2.5 h-px w-full bg-slate-50 transition-all",
-            isOpen && "opacity-0",
-          )}
-        />
-        <span
-          className={cn(
-            "absolute left-0 top-5 h-px w-full bg-slate-50 transition-all",
-            isOpen && "top-2.5 -rotate-45",
-          )}
-        />
-      </div>
+      <span className="relative block h-5 w-5">
+        {/* barra superior */}
+        <span className="absolute top-0.5 left-0 h-0.5 w-full bg-current rounded-full" />
+
+        {/* barra inferior */}
+        <span className="absolute bottom-1 left-0 h-0.5 w-full bg-current rounded-full" />
+      </span>
     </Button>
   );
 }

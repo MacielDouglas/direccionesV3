@@ -13,7 +13,7 @@ export default async function ProtectedLayout({
   if (!data) redirect("/login");
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col bg-primary-lgt dark:bg-primary-drk text-primary-drk dark:text-primary-lgt">
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />

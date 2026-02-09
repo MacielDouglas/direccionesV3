@@ -47,19 +47,19 @@ export const navigationMenu: NavigationItem[] = [
       {
         id: "addresses-new",
         name: "Nueva Dirección",
-        href: "/addresses/new",
+        href: "/addresses/new-address",
         icon: Plus,
       },
       {
         id: "addresses-locate",
         name: "Buscar Dirección",
-        href: "/addresses/locate",
+        href: "/addresses/search",
         icon: Search,
       },
       {
         id: "addresses-edit",
         name: "Editar Dirección",
-        href: "/addresses/edit",
+        href: "/addresses/update",
         icon: Pencil,
       },
     ],

@@ -3,6 +3,8 @@ import { Compass } from "lucide-react";
 import MobileHeader from "./MobileHeader";
 import { getCurrentUser } from "@/server/users";
 import { getActiveOrganization } from "@/server/organizations";
+import DarkModeButton from "./DarkModeButton";
+import SessionTimer from "./SessionTimer";
 
 export default async function Header() {
   const data = await getCurrentUser();
@@ -46,12 +48,18 @@ export default async function Header() {
 
           <span className="text-lg md:text-xl font-light uppercase">nes</span>
         </Link>
+        <div className="flex flex-col items-end">
+          <div className="flex items-center gap-2">
+            <SessionTimer expiresAt={session.expiresAt} />
+            <DarkModeButton />
 
-        {/* Mobile menu */}
-        <MobileHeader
-          role={memberRole ?? null}
-          orgSlug={organization?.slug ?? ""}
-        />
+            {/* Mobile menu */}
+            <MobileHeader
+              role={memberRole ?? null}
+              orgSlug={organization?.slug ?? ""}
+            />
+          </div>
+        </div>
       </div>
     </header>
   );

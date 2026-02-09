@@ -2,9 +2,9 @@
 
 import { getNavigationByRole, navigationMenu } from "@/constants/navigation";
 import { useEffect, useState } from "react";
-import MobileMenuItem from "./MobileMenuItem";
 import LogoutButton from "../LogoutButton";
 import AnimatedMenuIcon from "./AnimatedMenuIcon";
+import MenuItem from "../menu/MenuItem";
 
 interface MenuMobileProps {
   role?: "member" | "admin" | "owner" | null;
@@ -56,11 +56,12 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
         {/* Navigation */}
         <nav className="flex flex-col gap-1 px-3">
           {navigation.map((item) => (
-            <MobileMenuItem
+            <MenuItem
               key={item.id}
               item={item}
               orgSlug={orgSlug}
               onSelect={closeMenu}
+              className={"gap-5 border-b p-5 text-2xl"}
             />
           ))}
         </nav>

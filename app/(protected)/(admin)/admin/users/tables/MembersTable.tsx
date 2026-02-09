@@ -32,7 +32,7 @@ export default function MembersTable({ members }: MembersTableProps) {
         {members.map((member) => (
           <li
             key={member.id}
-            className="flex items-center gap-3 rounded-xl border p-3 bg-white"
+            className="flex items-center gap-3 rounded-xl border p-3 bg-white dark:bg-zinc-800"
           >
             {/* Avatar */}
             <Avatar className="size-10 shrink-0">

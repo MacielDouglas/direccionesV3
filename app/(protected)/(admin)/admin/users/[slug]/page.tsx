@@ -11,7 +11,7 @@ export default async function Organization({ params }: { params: Params }) {
   const users = await getUsers(organization?.id || "");
 
   return (
-    <main className="w-full max-w-3xl mx-auto px-4 py-6 space-y-8 bg-slate-50">
+    <main className="w-full max-w-3xl mx-auto px-4 py-6 space-y-8">
       <div className="">
         {/* Header */}
         <header>

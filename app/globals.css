@@ -3,6 +3,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --color-primary-lgt: #e8e8e8;
+  --color-primary-drk: #101010;
+  --color-second-lgt: #d4d4d4;
+  --color-second-drk: #252525;
+  --color-destaque-primary: #ff6828;
+  --color-destaque-second: #666666;
+  --color-tertiary-drk: #1a1a1a;
+  --color-tertiary-lgt: #cccccc;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
