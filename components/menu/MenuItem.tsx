@@ -1,4 +1,4 @@
-import { NavigationItem as Item } from "@/constants/navigation";
+import { NavigationItem as Item } from "@/features/navigation/constants/navigation";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 

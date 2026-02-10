@@ -1,6 +1,9 @@
 "use client";
 
-import { getNavigationByRole, navigationMenu } from "@/constants/navigation";
+import {
+  getNavigationByRole,
+  navigationMenu,
+} from "@/features/navigation/constants/navigation";
 import { useEffect, useState } from "react";
 import LogoutButton from "../LogoutButton";
 import AnimatedMenuIcon from "./AnimatedMenuIcon";

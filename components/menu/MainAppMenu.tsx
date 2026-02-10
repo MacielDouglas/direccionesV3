@@ -1,6 +1,9 @@
 "use client";
 
-import { getNavigationByRole, navigationMenu } from "@/constants/navigation";
+import {
+  getNavigationByRole,
+  navigationMenu,
+} from "@/features/navigation/constants/navigation";
 import LogoutButton from "../LogoutButton";
 import MenuItem from "./MenuItem";
 
@@ -39,7 +42,7 @@ export default function MainAppMenu({ role, orgSlug }: MainAppMenuProps) {
 
               const bgStyle = item.roles
                 ? "bg-orange-500 text-white"
-                : "bg-[#ccc] dark:bg-second-drk";
+                : "bg-white dark:bg-second-drk";
 
               if (item.children) {
                 return (
@@ -68,7 +71,7 @@ export default function MainAppMenu({ role, orgSlug }: MainAppMenuProps) {
                       </svg>
                     </summary>
 
-                    <div className="m-2  rounded-xl bg-stone-300 dark:bg-stone-700/80 p-2 space-y-4">
+                    <div className="m-2  rounded-xl bg-stone-100 dark:bg-stone-700/80 p-2 space-y-4">
                       {item.children.map((cld) => (
                         <MenuItem
                           key={cld.id}
@@ -76,7 +79,7 @@ export default function MainAppMenu({ role, orgSlug }: MainAppMenuProps) {
                           onSelect={handleHaptic}
                           orgSlug={orgSlug}
                           className={`${baseItemStyle}
-                           bg-stone-400 dark:bg-tertiary-drk dark:text-tertiary-lgt
+                           bg-stone-50 dark:bg-tertiary-drk dark:text-tertiary-lgt
                             hover:scale-[1.01]
                           `}
                         />
