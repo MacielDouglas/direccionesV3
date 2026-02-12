@@ -8,7 +8,7 @@ export default async function NewAddress() {
   console.log(data);
 
   return (
-    <div className="w-full h-full space-y-4 bg-white max-w-5xl mx-auto">
+    <div className="w-full h-full space-y-4  max-w-5xl mx-auto">
       <div className="space-y-6 border-b p-5 md:p-10">
         <div className="flex items-center gap-4">
           <MapPinPlus className="w-10 h-10 text-orange-500 " />

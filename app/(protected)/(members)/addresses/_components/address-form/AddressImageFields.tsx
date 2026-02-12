@@ -63,9 +63,13 @@ export default function AddressImageField() {
 
   return (
     <section className="space-y-4 border-b p-5 pb-5">
-      <header className="inline-flex gap-1 items-center">
-        <Camera className="w-8 h-8 text-orange-500" />
-        <h2 className="text-lg font-semibold">- Imagen del lugar</h2>
+      <header>
+        <h2 className="text-xl font-semibold inline-flex gap-1 items-center">
+          <Camera className="text-orange-500 w-7 h-7" /> Imagen del lugar
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Puedes tomar una foto o subir una desde tu galería.
+        </p>
       </header>
 
       <FormField
@@ -96,7 +100,7 @@ export default function AddressImageField() {
               </div>
             )}
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 justify-center">
               <Button type="button" onClick={() => cameraRef.current?.click()}>
                 📷 Foto
               </Button>

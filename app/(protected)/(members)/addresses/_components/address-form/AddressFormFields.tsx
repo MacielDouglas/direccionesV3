@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { ADDRESS_FORMS_OPTIONS } from "@/features/addresses/constants/address.constants";
 import { AddressFormData } from "@/features/addresses/schemas/address.schema";
 import { MapPinPen } from "lucide-react";
@@ -19,15 +20,19 @@ export default function AddressFormFields() {
   const addressType = watch("addressType");
 
   const inputStyle =
-    "bg-muted/40 border-0 border-b-2 border-transparent rounded-none px-0 shadow-none focus-visible:ring-0 focus-visible:outline-none transition-colors duration-150 border-b-muted !focus:border-orange-500";
+    "bg-muted/40 border-0 border-b-2 border-transparent rounded-none px-0 shadow-none focus-visible:ring-0 focus-visible:outline-none transition-colors duration-150 border-b-muted !focus:border-orange-500 bg-white p-2";
 
   return (
     <section className="space-y-4  py-5">
-      <header className="inline-flex gap-1">
-        <MapPinPen className="text-orange-500 w-8 h-8" />
-        <h2 className="text-lg font-semibold">
-          - Información principal del lugar
+      <header>
+        <h2 className="text-xl font-semibold inline-flex gap-1 items-baseline">
+          <MapPinPen className="text-orange-500 w-7 h-7" /> Información de la
+          dirección
         </h2>
+        <p className="text-sm text-muted-foreground">
+          Por favor enviar información como: calle, número de casa, ciudad,
+          barrio, información adicional, etc.
+        </p>
       </header>
 
       <div className="space-y-6">
@@ -69,6 +74,7 @@ export default function AddressFormFields() {
                             <Switch
                               checked={Boolean(field.value)}
                               onCheckedChange={field.onChange}
+                              className="checked:text-orange-500!"
                             />
                           </FormControl>
                         </FormItem>
@@ -88,7 +94,7 @@ export default function AddressFormFields() {
                     control={control}
                     name={sub.name as keyof AddressFormData}
                     render={({ field }) => (
-                      <FormItem className="flex-1">
+                      <FormItem className="flex-1 ">
                         <FormLabel>{sub.label}</FormLabel>
                         <FormControl>
                           <Input
@@ -125,12 +131,13 @@ export default function AddressFormFields() {
                       <FormLabel>{item.label}</FormLabel>
 
                       <FormControl>
-                        <textarea
+                        <Textarea
                           {...field}
                           placeholder={item.placeholder}
                           maxLength={max}
-                          rows={3}
-                          className={`${inputStyle} w-full min-h-21 resize-y focus:border-orange-500`}
+                          // dir={dir}
+                          rows={4}
+                          className={`${inputStyle} `}
                         />
                       </FormControl>
 

@@ -48,7 +48,7 @@ export default function AddressForm({
           <AddressTypeSelector />
           <AddressFormFields />
         </div>
-        <div className="bg-orange-50 w-full border-t">
+        <div className="bg-stone-50 w-full border-t">
           <AddressGpsFields />
         </div>
         <AddressImageField />

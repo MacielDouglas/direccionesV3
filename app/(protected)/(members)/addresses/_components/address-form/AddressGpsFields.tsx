@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { BrushCleaning, Paperclip, Pin, SatelliteDish } from "lucide-react";
+import { MapboxMap } from "@/features/map/components/MapboxMap";
 
 const extractCoords = (value: string) => {
   const cleaned = value.replace(/[()]/g, "").trim();
@@ -30,7 +31,10 @@ const extractCoords = (value: string) => {
 };
 
 export default function AddressGpsFields() {
-  const { control, setValue } = useFormContext<AddressFormData>();
+  const { control, setValue, watch } = useFormContext<AddressFormData>();
+
+  const latitude = watch("latitude");
+  const longitude = watch("longitude");
 
   const [error, setError] = useState("");
   const [isFetchingGps, setIsFetchingGps] = useState(false);
@@ -96,30 +100,44 @@ export default function AddressGpsFields() {
   };
 
   const inputStyle =
-    "bg-muted/50 border-0 border-b-2 border-transparent rounded-none px-0 shadow-none focus-visible:ring-0 transition-colors border-b-muted focus:border-orange-500";
+    "bg-muted/50 border-0 border-b-2 border-transparent rounded-none px-0 shadow-none focus-visible:ring-0 transition-colors border-b-muted focus:border-orange-500 disabled:text-blue-500";
 
   return (
-    <section className="space-y-4 border-b p-5">
-      <header className="inline-flex gap-1 items-center">
-        <SatelliteDish className="text-orange-500 w-8 h-8" />
-        <h2 className="text-lg font-semibold">
-          - Ubicación GPS de la dirección
+    <section className="space-y-4 border-b p-5 dark:bg-tertiary-drk">
+      <header>
+        <h2 className="text-xl font-semibold inline-flex gap-1 items-baseline">
+          <SatelliteDish className="text-orange-500 w-7 h-7" /> Ubicación GPS de
+          la dirección
         </h2>
+        <p className="text-sm text-muted-foreground">
+          Envía información GPS con datos longitudinales.
+        </p>
       </header>
 
-      <div className="flex items-center justify-between gap-10">
+      <div className="bg-second-lgt dark:bg-second-drk p-3 text-sm dark:text-slate-400">
+        <p>
+          Esta información se puede enviar seleccionando la ubicación en el
+          mapa, enviando su ubicación o pegando las coordenadas GPS.
+        </p>
+      </div>
+
+      <div className="flex items-center justify-around gap-10">
         <FormField
           control={control}
           name="latitude"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Latitude</FormLabel>
-              <FormControl>
+              <FormLabel>
+                Latitude:{" "}
+                <span className="text-blue-500">{field.value ?? 0}</span>
+              </FormLabel>
+              <FormControl className="hidden">
                 <Input
                   {...field}
                   value={field.value ?? ""}
                   placeholder="-8.12345"
                   className={inputStyle}
+                  disabled
                 />
               </FormControl>
               <FormMessage />
@@ -132,13 +150,17 @@ export default function AddressGpsFields() {
           name="longitude"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Longitude</FormLabel>
-              <FormControl>
+              <FormLabel>
+                Longitude:{" "}
+                <span className="text-blue-500">{field.value ?? 0}</span>
+              </FormLabel>
+              <FormControl className="hidden">
                 <Input
                   {...field}
                   value={field.value ?? ""}
                   placeholder="-34.92345"
                   className={inputStyle}
+                  disabled
                 />
               </FormControl>
               <FormMessage />
@@ -149,21 +171,41 @@ export default function AddressGpsFields() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <div className="flex flex-wrap gap-2 pt-2">
+      <div className="space-y-4">
+        <MapboxMap
+          value={latitude && longitude ? { latitude, longitude } : null}
+          onChange={(coords) => {
+            setValue("latitude", coords.latitude);
+            setValue("longitude", coords.longitude);
+          }}
+        />
+      </div>
+
+      <div className="flex flex-wrap gap-2 pt-2 mx-auto justify-center">
         <Button
           type="button"
-          variant="secondary"
+          variant="default"
           onClick={handleGetUserLocation}
           disabled={isFetchingGps}
         >
-          <Pin /> Mi ubicación
+          <Pin /> {isFetchingGps ? "Carregando..." : "Mi ubicación "}
         </Button>
 
-        <Button type="button" variant="outline" onClick={handlePaste}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handlePaste}
+          disabled={isFetchingGps}
+        >
           <Paperclip /> Pegar coordenadas
         </Button>
 
-        <Button type="button" variant="ghost" onClick={handleClear}>
+        <Button
+          type="button"
+          variant="destructive"
+          onClick={handleClear}
+          disabled={isFetchingGps}
+        >
           <BrushCleaning /> Limpiar
         </Button>
       </div>

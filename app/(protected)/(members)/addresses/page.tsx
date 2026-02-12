@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function AddressesPage() {
   return (
     <div className="w-full h-full p-5 space-y-4">
-      <div className="bg-second-lgt dark:bg-tertiary-drk p-6 rounded-2xl shadow-md space-y-6 max-w-2xl mx-auto">
+      <div className="p-6 rounded-2xl shadow-md space-y-6 max-w-2xl mx-auto">
         <h1 className="text-4xl font-semibold">Dirección</h1>
         <div className="mt-2 text-lg text-neutral-600 dark:text-neutral-400">
           <p>En esta página puede ver las direcciones registradas.</p>

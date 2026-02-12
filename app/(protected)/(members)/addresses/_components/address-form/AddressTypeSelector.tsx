@@ -20,9 +20,8 @@ export default function AddressTypeSelector() {
   return (
     <section className="space-y-3 border-b pb-5">
       <header>
-        <h2 className="text-lg font-semibold inline-flex items-center">
-          <MapPinHouse className="text-orange-500 w-8 h-8" /> - Tipo de
-          dirección
+        <h2 className="text-xl font-semibold inline-flex gap-1 items-baseline">
+          <MapPinHouse className="text-orange-500 w-7 h-7" /> Tipo de dirección
         </h2>
         <p className="text-sm text-muted-foreground">
           Selecciona el tipo de lugar
