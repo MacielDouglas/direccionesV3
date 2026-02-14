@@ -20,7 +20,6 @@ interface AddressFormProps {
 }
 
 export default function AddressForm({
-  userId,
   defaultValues,
   mode = "create",
 }: AddressFormProps) {
@@ -29,7 +28,6 @@ export default function AddressForm({
     defaultValues: {
       addressType: "House",
       active: true,
-      createdUserId: userId,
       ...defaultValues,
     },
   });

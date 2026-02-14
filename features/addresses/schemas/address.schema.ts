@@ -41,7 +41,7 @@ export const addressSchema = z.object({
   active: z.boolean().default(true),
   confirmed: z.boolean().default(false),
 
-  createdUserId: z.string(),
+  // createdUserId: z.string(),
 });
 
 export type AddressFormInput = z.input<typeof addressSchema>;

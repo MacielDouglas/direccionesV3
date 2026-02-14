@@ -1,12 +1,7 @@
 import { MapPinPlus } from "lucide-react";
 import AddressForm from "../_components/address-form/AddressForm";
-import { getCurrentUser } from "@/server/users";
 
 export default async function NewAddress() {
-  const data = await getCurrentUser();
-
-  console.log(data);
-
   return (
     <div className="w-full h-full space-y-4  max-w-5xl mx-auto">
       <div className="space-y-6 border-b p-5 md:p-10">
@@ -22,7 +17,7 @@ export default async function NewAddress() {
           </p>
         </div>
       </div>
-      <AddressForm userId={data?.user.id} />
+      <AddressForm />
     </div>
   );
 }
