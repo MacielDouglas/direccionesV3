@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useMemo } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import {
   Form,
@@ -16,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { createOrganizationAction } from "@/server/organization/organization.actions";
 
 const formSchema = z.object({
   name: z.string().min(2).max(50),
@@ -33,8 +33,6 @@ function createSlug(text: string) {
 }
 
 export default function OrganizationForm() {
-  const [isLoading, setIsLoading] = useState(false);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,27 +41,27 @@ export default function OrganizationForm() {
     },
   });
 
-  const nameValue = form.watch("name");
+  const nameValue = useWatch({
+    control: form.control,
+    name: "name",
+  });
+
+  const slug = useMemo(() => createSlug(nameValue), [nameValue]);
 
   useEffect(() => {
-    const generated = createSlug(nameValue);
-    form.setValue("slug", generated, { shouldValidate: true });
-  }, [nameValue, form]);
+    form.setValue("slug", slug);
+  }, [slug, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      setIsLoading(true);
-
-      await authClient.organization.create({
-        name: values.name,
-        slug: values.slug,
-      });
+      await createOrganizationAction(values);
 
       toast.success("Organização Criada!");
+      form.reset();
     } catch (error) {
-      toast.error(`Erro ao criar Organização: , ${error}`);
-    } finally {
-      setIsLoading(false);
+      toast.error(
+        error instanceof Error ? error.message : "Erro ao criar organização",
+      );
     }
   }
 
@@ -99,8 +97,8 @@ export default function OrganizationForm() {
           )}
         />
 
-        <Button disabled={isLoading} type="submit">
-          {isLoading ? (
+        <Button disabled={form.formState.isSubmitting} type="submit">
+          {form.formState.isSubmitting ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
             "Criar organização"

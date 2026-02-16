@@ -1,6 +1,6 @@
 import LogoutButton from "@/components/LogoutButton";
 import MainAppMenu from "@/components/menu/MainAppMenu";
-import { getActiveOrganization } from "@/server/organizations";
+import { getActiveOrganization } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
 
 export default async function Home() {
@@ -10,12 +10,7 @@ export default async function Home() {
   const organization = await getActiveOrganization(data?.user.id ?? "");
 
   return (
-    <main
-      className="
-        h-full w-full
-
-      "
-    >
+    <main className="h-full w-full">
       <div className="mx-auto max-w-md px-4 py-10 text-center">
         <h1 className="text-3xl font-light">
           Bienvenido,{" "}

@@ -76,7 +76,7 @@ export const navigationMenu: NavigationItem[] = [
   {
     id: "users",
     name: "Usuarios",
-    href: `/admin/users/`,
+    href: `/admin/organizations/`,
     icon: Users,
     roles: ["admin", "owner"],
   },

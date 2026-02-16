@@ -1,9 +1,7 @@
-import { getOrganizations } from "@/server/organizations";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import OrganizationForm from "./components/OrganizationForm";
-
-// type Params = Promise<{ slug: string }>;
+import { getOrganizations } from "@/server/organization/organization.queries";
+import OrganizationForm from "@/domains/organization/components/OrganizationForm";
 
 export default async function Organization() {
   const organizations = await getOrganizations();

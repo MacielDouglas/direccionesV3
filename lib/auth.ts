@@ -3,8 +3,8 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { organization } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { prisma } from "./prisma";
-import { getActiveOrganization } from "@/server/organizations";
 import { ac, admin, member, owner } from "./auth/permissions";
+import { getActiveOrganization } from "@/server/organization/organization.queries";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {

@@ -223,7 +223,7 @@ model Verification {
 //////////////////////////////////////////////////////
 
 model Organization {
-  id   String  @id
+ id String @id @default(uuid())
   name String
   slug String  @unique
   logo String?

@@ -2,9 +2,10 @@ import Link from "next/link";
 import { Compass } from "lucide-react";
 import MobileHeader from "./MobileHeader";
 import { getCurrentUser } from "@/server/users";
-import { getActiveOrganization } from "@/server/organizations";
+
 import DarkModeButton from "./DarkModeButton";
 import SessionTimer from "./SessionTimer";
+import { getActiveOrganization } from "@/server/organization/organization.queries";
 
 export default async function Header() {
   const data = await getCurrentUser();

@@ -5,25 +5,30 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { addMember } from "@/server/member";
 import { Loader2, UserPlus } from "lucide-react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 interface AllUsersProps {
   users: User[];
   organizationId: string;
+  slug: string;
 }
 
-export default function AllUsers({ users, organizationId }: AllUsersProps) {
+export default function AllUsers({
+  users,
+  organizationId,
+  slug,
+}: AllUsersProps) {
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
-  const router = useRouter();
+  // const router = useRouter();
 
   const handleAddMember = async (userId: string) => {
     try {
       setLoadingUserId(userId);
-      await addMember(organizationId, userId, "member");
+      await addMember(organizationId, userId, slug, "member");
       toast.success("Membro adicionado com sucesso!");
-      router.refresh();
+      // router.refresh();
     } catch (error) {
       toast.error(`Erro ao adicionar membro:, ${error}`);
     } finally {

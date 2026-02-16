@@ -2,11 +2,13 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 export const addMember = async (
   organizationId: string,
   userId: string,
+  slug: string,
   role: "owner" | "admin" | "member",
 ) => {
   try {
@@ -17,6 +19,8 @@ export const addMember = async (
         role,
       },
     });
+
+    revalidatePath(`/admin/organizations/${slug}`);
   } catch (error) {
     console.error(error);
   }
