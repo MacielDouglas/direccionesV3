@@ -11,10 +11,11 @@ export default async function ProtectedLayout({
   const data = await getCurrentUser();
 
   if (!data) redirect("/login");
+  const memberRole = data?.activeMember?.role ?? null;
 
   return (
     <div className="flex flex-col bg-primary-lgt dark:bg-primary-drk text-primary-drk dark:text-primary-lgt">
-      <Header />
+      <Header session={data.session.session} role={memberRole} />
       <main className="flex-1">{children}</main>
       <Footer />
     </div>

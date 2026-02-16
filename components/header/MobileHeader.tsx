@@ -8,9 +8,10 @@ import { useEffect, useState } from "react";
 import LogoutButton from "../LogoutButton";
 import AnimatedMenuIcon from "./AnimatedMenuIcon";
 import MenuItem from "../menu/MenuItem";
+import { Role } from "@/domains/member/types/role.types";
 
 interface MenuMobileProps {
-  role?: "member" | "admin" | "owner" | null;
+  role?: Role | null;
   orgSlug: string;
 }
 

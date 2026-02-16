@@ -1,19 +1,21 @@
 import Link from "next/link";
 import { Compass } from "lucide-react";
 import MobileHeader from "./MobileHeader";
-import { getCurrentUser } from "@/server/users";
-
-import DarkModeButton from "./DarkModeButton";
-import SessionTimer from "./SessionTimer";
+import SessionTimer from "@/domains/auth/components/SessionTimer";
 import { getActiveOrganization } from "@/server/organization/organization.queries";
+import { Session } from "better-auth";
+import { Role } from "@/domains/member/types/role.types";
+import DarkModeButton from "../ui/DarkModeButton";
 
-export default async function Header() {
-  const data = await getCurrentUser();
+interface HeaderProps {
+  role?: Role | null;
+  session: Session;
+}
 
-  const memberRole = data?.activeMember?.role ?? null;
-  const session = data?.session.session;
+export default async function Header({ session, role }: HeaderProps) {
+  const organization = await getActiveOrganization(session.userId ?? "");
 
-  if (!session?.activeOrganizationId) {
+  if (!organization?.slug) {
     return (
       <header className="w-full bg-[#0c232a] border-b border-white/10">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:h-20 md:px-8">
@@ -31,7 +33,6 @@ export default async function Header() {
       </header>
     );
   }
-  const organization = await getActiveOrganization(data?.user.id ?? "");
 
   return (
     <header className="w-full bg-[#0c232a] border-b border-white/10">
@@ -56,7 +57,7 @@ export default async function Header() {
 
             {/* Mobile menu */}
             <MobileHeader
-              role={memberRole ?? null}
+              role={role ?? null}
               orgSlug={organization?.slug ?? ""}
             />
           </div>
