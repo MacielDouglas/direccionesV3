@@ -24,6 +24,19 @@ export const getCurrentUser = async () => {
     ? await auth.api.getActiveMemberRole({ headers: reqHeaders })
     : null;
 
+  const organization = activeMember
+    ? await prisma.organization.findUnique({
+        where: { id: activeMember.organizationId },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          createdAt: true,
+          logo: true,
+        },
+      })
+    : null;
+
   const currentUser = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
@@ -43,6 +56,7 @@ export const getCurrentUser = async () => {
     user: currentUser,
     activeMember,
     memberRole,
+    activeOrganization: organization,
   };
 };
 

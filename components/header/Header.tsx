@@ -2,18 +2,24 @@ import Link from "next/link";
 import { Compass } from "lucide-react";
 import MobileHeader from "./MobileHeader";
 import SessionTimer from "@/domains/auth/components/SessionTimer";
-import { getActiveOrganization } from "@/server/organization/organization.queries";
 import { Session } from "better-auth";
 import { Role } from "@/domains/member/types/role.types";
 import DarkModeButton from "../ui/DarkModeButton";
 
+import { Organization } from "better-auth/plugins";
+
 interface HeaderProps {
   role?: Role | null;
   session: Session;
+  organization: Organization | null;
 }
 
-export default async function Header({ session, role }: HeaderProps) {
-  const organization = await getActiveOrganization(session.userId ?? "");
+export default async function Header({
+  session,
+  role,
+  organization,
+}: HeaderProps) {
+  // const organization = await getActiveOrganization(session.userId ?? "");
 
   if (!organization?.slug) {
     return (

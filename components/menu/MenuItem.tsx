@@ -19,7 +19,11 @@ export default function MenuItem({
 
   return (
     <Link
-      href={item.name === "Usuarios" ? `${item.href}${orgSlug}` : item.href}
+      href={
+        item.name === "Usuarios"
+          ? `${item.href}${orgSlug}`
+          : `/org/${orgSlug}${item.href}`
+      }
       onClick={onSelect}
       className={cn(
         "flex items-center gap-3 justify-start! text-lg",
