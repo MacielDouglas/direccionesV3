@@ -41,7 +41,6 @@ export default async function TenantLayout({ children, params }: Props) {
         },
       }}
     >
-      <p className="bg-amber-700">Bom dde mais</p>
       {children}
     </TenantProvider>
   );

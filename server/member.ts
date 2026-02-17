@@ -31,22 +31,31 @@ export const memberUpdateRole = async (
   memberId: string,
   role: string,
 ) => {
-  try {
-    if (role === "owner") throw new Error("Não é possivel designar como Owner");
-
-    await auth.api.updateMemberRole({
-      body: {
-        role: role, // required
-        memberId: memberId, // required
-        organizationId: organizationId,
-      },
-      // This endpoint requires session cookies.
-      headers: await headers(),
-    });
-  } catch (error) {
-    // console.error(error);
-    throw new Error(`${error}`);
+  if (role === "owner") {
+    throw new Error("Não é possível designar como Owner");
   }
+
+  const reqHeaders = await headers();
+
+  const activeMember = await auth.api.getActiveMember({
+    headers: reqHeaders,
+  });
+
+  if (!activeMember) {
+    throw new Error("Usuário não pertence à organização ativa");
+  }
+
+  if (!["owner", "admin"].includes(activeMember.role)) {
+    throw new Error("Sem permissão para alterar roles");
+  }
+  await auth.api.updateMemberRole({
+    body: {
+      role,
+      memberId,
+      organizationId,
+    },
+    headers: reqHeaders,
+  });
 };
 
 export const removeMemberManually = async (

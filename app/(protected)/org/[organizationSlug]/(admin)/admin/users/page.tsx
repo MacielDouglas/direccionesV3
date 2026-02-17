@@ -1,16 +1,19 @@
 import { getUsers } from "@/server/users";
-import MembersTable from "../../users/tables/MembersTable";
-import AllUsers from "../../users/tables/AllUsers";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { notFound } from "next/navigation";
+import MembersTable from "./tables/MembersTable";
+import AllUsers from "./tables/AllUsers";
 
-export default async function Organization({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const { slug } = await params;
-  const organization = await getOrganizationBySlug(slug);
+type Props = {
+  params: {
+    organizationSlug: string;
+  };
+};
+
+export default async function Organization({ params }: Props) {
+  const { organizationSlug } = await params;
+
+  const organization = await getOrganizationBySlug(organizationSlug);
 
   if (!organization) notFound();
 
@@ -35,7 +38,7 @@ export default async function Organization({
         <section>
           <AllUsers
             users={users}
-            slug={slug}
+            slug={organizationSlug}
             organizationId={organization?.id || ""}
           />
         </section>

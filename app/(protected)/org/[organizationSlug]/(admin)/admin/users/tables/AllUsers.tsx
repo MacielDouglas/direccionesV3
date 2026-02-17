@@ -21,7 +21,6 @@ export default function AllUsers({
   slug,
 }: AllUsersProps) {
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
-  // const router = useRouter();
 
   const handleAddMember = async (userId: string) => {
     try {

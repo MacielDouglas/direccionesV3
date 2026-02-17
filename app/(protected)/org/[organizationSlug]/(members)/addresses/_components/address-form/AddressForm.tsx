@@ -16,7 +16,7 @@ import AddressImageField from "./AddressImageFields";
 interface AddressFormProps {
   defaultValues?: Partial<AddressFormData>;
   mode?: "create" | "update";
-  userId: string;
+  // userId: string;
 }
 
 export default function AddressForm({

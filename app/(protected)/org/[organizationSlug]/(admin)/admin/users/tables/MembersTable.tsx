@@ -55,7 +55,7 @@ export default function MembersTable({ members }: MembersTableProps) {
             {member.role !== "owner" && (
               <MemberTableAdmin
                 organizationId={member.organizationId}
-                userId={member.user.id}
+                userId={member.id}
                 memberRole={member.role!}
               />
             )}
@@ -105,7 +105,7 @@ export default function MembersTable({ members }: MembersTableProps) {
                   {member.role !== "owner" && (
                     <MemberTableAdmin
                       organizationId={member.organizationId}
-                      userId={member.id}
+                      userId={member.user.id}
                       memberRole={member.role!}
                     />
                   )}

@@ -28,7 +28,8 @@ export default function MemberTableAdmin({
   const handleAddMember = async (userId: string) => {
     try {
       setIsLoading(true);
-      setLoadingUserId(userId);
+      console.log(userId);
+
       await memberUpdateRole(organizationId, userId, userRole);
       toast.success(`Membro alterado para: ${userRole}!`);
       router.refresh();
