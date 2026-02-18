@@ -2,8 +2,6 @@
 
 import { useCallback, useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { AddressFormData } from "@/features/addresses/schemas/address.schema";
-
 import {
   FormControl,
   FormField,
@@ -16,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { BrushCleaning, Paperclip, Pin, SatelliteDish } from "lucide-react";
 import { MapboxMap } from "@/features/map/components/MapboxMap";
+import { AddressFormData } from "../../domain/address.schema";
 
 const extractCoords = (value: string) => {
   const cleaned = value.replace(/[()]/g, "").trim();

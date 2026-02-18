@@ -2,15 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import { useFormContext } from "react-hook-form";
-
-import { AddressFormData } from "@/features/addresses/schemas/address.schema";
-import { getDefaultAddressImage } from "@/features/addresses/utils/getDefaultAddressImage";
-
 import { FormField, FormItem } from "@/components/ui/form";
-
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Camera } from "lucide-react";
+import { AddressFormData } from "../../domain/address.schema";
+import { getDefaultAddressImage } from "../../utils/getDefaultAddressImage";
 
 export default function AddressImageField() {
   const { control, watch, setValue } = useFormContext<AddressFormData>();

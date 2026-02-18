@@ -1,7 +1,7 @@
 import { MapPinPlus } from "lucide-react";
-import AddressForm from "../_components/address-form/AddressForm";
+import AddressForm from "../components/AddressForm";
 
-export default async function NewAddress() {
+export default function AddressCreateScreen() {
   return (
     <div className="w-full h-full space-y-4  max-w-5xl mx-auto">
       <div className="space-y-6 border-b p-5 md:p-10">

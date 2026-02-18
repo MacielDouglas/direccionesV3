@@ -1,4 +1,4 @@
-import { AddressFormData } from "../schemas/address.schema";
+import { AddressFormData } from "../domain/address.schema";
 
 export const ADDRESS_TYPES = [
   "House",

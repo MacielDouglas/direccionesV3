@@ -47,7 +47,7 @@ export const navigationMenu: NavigationItem[] = [
       {
         id: "addresses-new",
         name: "Nueva Dirección",
-        href: "/addresses/new-address",
+        href: "/addresses/new",
         icon: Plus,
       },
       {

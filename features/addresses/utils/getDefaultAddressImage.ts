@@ -1,4 +1,4 @@
-import { DEFAULT_ADDRESS_IMAGES } from "../constants/address.constants";
+import { DEFAULT_ADDRESS_IMAGES } from "../domain/constants/address.constants";
 import { AddressType } from "../types/address.types";
 
 export function getDefaultAddressImage(type?: AddressType) {

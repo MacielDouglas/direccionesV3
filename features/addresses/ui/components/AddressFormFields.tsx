@@ -9,10 +9,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { ADDRESS_FORMS_OPTIONS } from "@/features/addresses/constants/address.constants";
-import { AddressFormData } from "@/features/addresses/schemas/address.schema";
+
 import { MapPinPen } from "lucide-react";
 import { useFormContext } from "react-hook-form";
+import { AddressFormData } from "../../domain/address.schema";
+import { ADDRESS_FORMS_OPTIONS } from "../config/address-form.config";
 
 export default function AddressFormFields() {
   const { control, watch } = useFormContext<AddressFormData>();

@@ -1,14 +1,18 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ADDRESS_TYPE_OPTIONS } from "@/features/addresses/constants/address.constants";
-import { AddressFormData } from "@/features/addresses/schemas/address.schema";
 import { cn } from "@/lib/utils";
 import { MapPinHouse } from "lucide-react";
-import { useController, useFormContext } from "react-hook-form";
+import { Control, useController } from "react-hook-form";
+import { AddressFormData } from "../../domain/address.schema";
+import { ADDRESS_TYPE_OPTIONS } from "../../domain/constants/address.constants";
 
-export default function AddressTypeSelector() {
-  const { control } = useFormContext<AddressFormData>();
+type Props = {
+  control: Control<AddressFormData>;
+};
+
+export default function AddressTypeSelector({ control }: Props) {
+  // const { control } = useFormContext<AddressFormData>();
 
   const {
     field: { value, onChange },
