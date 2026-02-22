@@ -1,6 +1,7 @@
 "use client";
 
-import { User } from "@/app/generated/prisma/client";
+// import { User } from "@/app/generated/prisma/client";
+import { User } from "@prisma/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { addMember } from "@/server/member";
