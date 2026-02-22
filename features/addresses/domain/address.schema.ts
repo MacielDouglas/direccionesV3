@@ -2,9 +2,10 @@ import { z } from "zod";
 import { ADDRESS_TYPES } from "../types/address.types";
 
 export const addressImageSchema = z.object({
-  imageUrl: z.url().optional(),
-  imageFile: z.instanceof(File).optional(),
-  isCustomImage: z.boolean(),
+  imageUrl: z.string().nullable().optional(),
+  imageFile: z.any().optional(), // ← importante
+  imageKey: z.string().nullable().optional(),
+  isCustomImage: z.boolean().optional(),
 });
 
 /**
@@ -50,3 +51,30 @@ export const addressPersistenceSchema = addressFormSchema.extend({
 });
 
 export type AddressPersistenceInput = z.infer<typeof addressPersistenceSchema>;
+
+export const createAddressSchema = z.object({
+  // ...,
+  addressType: z.enum(ADDRESS_TYPES),
+
+  street: z.string(),
+  number: z.string(),
+  neighborhood: z.string(),
+
+  latitude: z.number().nullable().optional(),
+  longitude: z.number().nullable().optional(),
+
+  image: z.object({
+    imageUrl: z.string().nullable().optional(),
+    imageKey: z.string().nullable().optional(),
+    isCustomImage: z.boolean().optional(),
+  }),
+
+  info: z.string().nullable().optional(),
+  businessName: z.string().nullable().optional(),
+
+  active: z.boolean(),
+  confirmed: z.boolean(),
+  invited: z.boolean(),
+});
+
+export type CreateAddressInput = z.infer<typeof createAddressSchema>;
