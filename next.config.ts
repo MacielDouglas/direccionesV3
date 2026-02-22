@@ -1,8 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  allowedDevOrigins: ["http://10.0.2.2:3000"],
   images: {
     remotePatterns: [
       {
@@ -11,13 +9,14 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "*.tiles.mapbox.com",
+        hostname: "api.mapbox.com",
       },
       {
         protocol: "https",
-        hostname: "api.mapbox.com",
+        hostname: "*.tiles.mapbox.com",
       },
     ],
   },
 };
+
 export default nextConfig;

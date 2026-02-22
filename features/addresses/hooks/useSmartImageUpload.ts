@@ -1,13 +1,27 @@
 "use client";
 
 import { useRef, useState } from "react";
-import imageCompression from "browser-image-compression";
-import heic2any from "heic2any";
-import * as exifr from "exifr";
+// import imageCompression from "browser-image-compression";
+// import heic2any from "heic2any";
+// import * as exifr from "exifr";
 
 const MAX_SIZE_MB = 5;
 const MAX_DIMENSION = 1920;
 // const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB por parte
+
+async function getImageCompression() {
+  const mod = await import("browser-image-compression");
+  return mod.default;
+}
+
+async function getHeic2Any() {
+  const mod = await import("heic2any");
+  return mod.default;
+}
+
+async function getExif() {
+  return await import("exifr");
+}
 
 export function useSmartImageUpload() {
   const [processingProgress, setProcessingProgress] = useState(0);
@@ -28,6 +42,8 @@ export function useSmartImageUpload() {
       /\.(heic|heif)$/i.test(file.name);
 
     if (!isHeic) return file;
+
+    const heic2any = await getHeic2Any();
 
     const converted = await heic2any({
       blob: file,
@@ -51,6 +67,9 @@ export function useSmartImageUpload() {
   // EXIF Orientation
 
   async function fixOrientation(file: File): Promise<File> {
+    const imageCompression = await getImageCompression();
+    const exifr = await getExif();
+
     try {
       const orientation = await exifr.orientation(file);
 
@@ -79,6 +98,7 @@ export function useSmartImageUpload() {
 
     let quality = 0.9;
     let compressed: File = originalFile;
+    const imageCompression = await getImageCompression();
 
     while (true) {
       compressed = await imageCompression(compressed, {
