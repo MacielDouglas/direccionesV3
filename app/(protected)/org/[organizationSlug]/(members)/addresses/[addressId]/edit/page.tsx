@@ -1,5 +1,17 @@
 import AddressEditScreen from "@/features/addresses/ui/screens/AddressEditScreen";
 
-export default function UpdateAddressPage({ params }) {
-  return <AddressEditScreen addressId={params.addressId} />;
+type PageProps = {
+  params: {
+    organizationSlug: string;
+    addressId: string;
+  };
+};
+
+export default function UpdateAddressPage({ params }: PageProps) {
+  return (
+    <AddressEditScreen
+      organizationSlug={params.organizationSlug}
+      addressId={params.addressId}
+    />
+  );
 }
