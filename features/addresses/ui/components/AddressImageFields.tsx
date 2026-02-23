@@ -9,13 +9,11 @@ import { FormField, FormItem } from "@/components/ui/form";
 import { AddressFormData } from "../../domain/address.schema";
 import { getDefaultAddressImage } from "../../utils/getDefaultAddressImage";
 import { useSmartImageUpload } from "../../hooks/useSmartImageUpload";
+import { useTenant } from "@/providers/TenantProvider";
 
-interface Props {
-  organizationId: string;
-}
-
-export default function AddressImageField({ organizationId }: Props) {
+export default function AddressImageField() {
   const { watch, setValue, control } = useFormContext<AddressFormData>();
+  const { organization } = useTenant();
 
   const addressType = watch("addressType");
   const preview = watch("image.imageUrl");
@@ -55,7 +53,7 @@ export default function AddressImageField({ organizationId }: Props) {
       setValue("image.imageUrl", localUrl);
       setValue("image.isCustomImage", true);
 
-      const uploadedUrl = await processAndUpload(file, organizationId);
+      const uploadedUrl = await processAndUpload(file, organization.id);
 
       if (uploadedUrl) {
         URL.revokeObjectURL(localUrl);
