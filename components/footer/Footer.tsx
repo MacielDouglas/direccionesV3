@@ -1,11 +1,17 @@
 "use client";
 
+import { Organization } from "better-auth/plugins";
 import { ChevronUp, Compass } from "lucide-react";
 import Link from "next/link";
 import { useCallback } from "react";
 
-export default function Footer() {
+interface FooterProps {
+  organization: Organization | null;
+}
+
+export default function Footer({ organization }: FooterProps) {
   const currentYear = new Date().getFullYear();
+  // const { organization } = useTenant();
 
   const handleBackToTop = useCallback(() => {
     window.scrollTo({
@@ -75,7 +81,7 @@ export default function Footer() {
 
               <li>
                 <Link
-                  href="/user"
+                  href={`/org/${organization?.slug}/user`}
                   className="text-white/80 transition hover:text-white"
                 >
                   Perfil usuário
@@ -84,7 +90,7 @@ export default function Footer() {
 
               <li>
                 <Link
-                  href="/about"
+                  href="/condition"
                   className="text-white/80 transition hover:text-white"
                 >
                   Condiciones de uso

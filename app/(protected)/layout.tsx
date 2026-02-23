@@ -21,7 +21,7 @@ export default async function ProtectedLayout({
         organization={data.activeOrganization}
       />
       <main className="flex-1">{children}</main>
-      <Footer />
+      <Footer organization={data.activeOrganization} />
     </div>
   );
 }
