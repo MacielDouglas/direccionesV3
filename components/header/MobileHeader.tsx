@@ -9,6 +9,8 @@ import LogoutButton from "../LogoutButton";
 import AnimatedMenuIcon from "./AnimatedMenuIcon";
 import MenuItem from "../menu/MenuItem";
 import { Role } from "@/domains/member/types/role.types";
+import Link from "next/link";
+import { Home } from "lucide-react";
 
 interface MenuMobileProps {
   role?: Role | null;
@@ -59,6 +61,16 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
 
         {/* Navigation */}
         <nav className="flex flex-col gap-1 px-3">
+          <Link
+            href="/"
+            onClick={closeMenu}
+            className={
+              "flex items-center gap-3 justify-start!  border-b p-5 text-2xl"
+            }
+          >
+            <Home className="h-7 w-7" />
+            <span className="font-medium">Home</span>
+          </Link>
           {navigation.map((item) => (
             <MenuItem
               key={item.id}

@@ -15,6 +15,7 @@ export async function createAddressService(params: {
       street: data.street,
       number: data.number,
       neighborhood: data.neighborhood,
+      city: data.city,
 
       latitude: data.latitude ?? null,
       longitude: data.longitude ?? null,
@@ -80,6 +81,7 @@ export async function searchAddressesService(params: {
             OR: [
               { street: { contains: query, mode: "insensitive" } },
               { neighborhood: { contains: query, mode: "insensitive" } },
+              { city: { contains: query, mode: "insensitive" } },
               { businessName: { contains: query, mode: "insensitive" } },
             ],
           }
@@ -95,16 +97,10 @@ export async function getAddressByIdService(params: {
   addressId: string;
   organizationId: string;
 }) {
-  const address = await prisma.address.findFirst({
+  return prisma.address.findFirst({
     where: {
       id: params.addressId,
       organizationId: params.organizationId,
     },
   });
-
-  if (!address) {
-    throw new Error("Endereço não encontrado.");
-  }
-
-  return address;
 }

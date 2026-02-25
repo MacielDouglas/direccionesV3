@@ -71,6 +71,7 @@ model Address {
   street       String
   number       String
   neighborhood String
+  city         String
 
 
   //  Coordenadas GPS

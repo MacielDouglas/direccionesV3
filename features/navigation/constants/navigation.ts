@@ -1,6 +1,5 @@
 // src/constants/navigation.ts
 import {
-  Home,
   CreditCard,
   MapPin,
   User,
@@ -25,13 +24,6 @@ export type NavigationItem = {
 
 export const navigationMenu: NavigationItem[] = [
   {
-    id: "home",
-    name: "Home",
-    href: "/",
-    icon: Home,
-  },
-
-  {
     id: "cards",
     name: "Tarjetas",
     href: "/cards",
@@ -52,8 +44,8 @@ export const navigationMenu: NavigationItem[] = [
       },
       {
         id: "addresses-locate",
-        name: "Buscar Dirección",
-        href: "/addresses/search",
+        name: "Todas las Direcciones",
+        href: "/addresses",
         icon: Search,
       },
       {

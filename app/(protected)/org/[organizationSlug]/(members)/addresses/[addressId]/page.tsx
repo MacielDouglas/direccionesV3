@@ -1,6 +1,51 @@
-import React from "react";
+import { getAddressByIdService } from "@/features/addresses/application/address.service";
+import AddressDetailsScreen from "@/features/addresses/ui/screens/AddressDetailsScreen ";
 
-// Página de visualização de endereços
-export default function AddressPage() {
-  return <div>page</div>;
+import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+type AddressPageProps = {
+  params: {
+    organizationSlug: string;
+    addressId: string;
+  };
+};
+
+export default async function AddressPage({ params }: AddressPageProps) {
+  const { organizationSlug, addressId } = await params;
+
+  if (!organizationSlug || !addressId) {
+    notFound();
+  }
+
+  const organization = await prisma.organization.findUnique({
+    where: { slug: organizationSlug },
+  });
+
+  if (!organization) {
+    notFound();
+  }
+
+  const address = await getAddressByIdService({
+    addressId,
+    organizationId: organization.id,
+  });
+
+  if (!address) {
+    notFound();
+  }
+
+  return (
+    <>
+      <h1>Página</h1>
+      <Link
+        href={`/org/${organizationSlug}/addresses`}
+        className="p-2 bg-slate-300  rounded-xl"
+      >
+        Voltar
+      </Link>
+      <AddressDetailsScreen address={address} />
+    </>
+  );
 }
