@@ -9,7 +9,7 @@ export const ADDRESS_TYPE_OPTIONS = [
     color: "text-blue-500",
   },
   { value: "Store", label: "Negócio", icon: Store, color: "text-yellow-300" },
-  { value: "Hotel", label: "Hotel", icon: Bed, color: "text-purple-500" },
+  { value: "Hotel", label: "Hotel", icon: Bed, color: "text-white" },
   {
     value: "Restaurant",
     label: "Restaurante",

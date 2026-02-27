@@ -2,7 +2,6 @@ import { getAddressByIdService } from "@/features/addresses/application/address.
 import AddressDetailsScreen from "@/features/addresses/ui/screens/AddressDetailsScreen ";
 
 import { prisma } from "@/lib/prisma";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 type AddressPageProps = {
@@ -37,15 +36,16 @@ export default async function AddressPage({ params }: AddressPageProps) {
   }
 
   return (
-    <>
+    <div>
       <h1>Página</h1>
-      <Link
+      {/* <div className="w-full bg-orange-500 h-4" /> */}
+      {/* <Link
         href={`/org/${organizationSlug}/addresses`}
         className="p-2 bg-slate-300  rounded-xl"
       >
         Voltar
-      </Link>
+      </Link> */}
       <AddressDetailsScreen address={address} />
-    </>
+    </div>
   );
 }
