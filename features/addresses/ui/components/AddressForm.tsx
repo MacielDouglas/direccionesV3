@@ -9,10 +9,13 @@ import AddressFields from "./AddressFields";
 import { AddressFormData } from "../../domain/address.schema";
 import { uploadAddressImage } from "../../application/address-image.service";
 import { useTenant } from "@/providers/TenantProvider";
+import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navi";
 
 export default function AddressForm() {
   const form = useAddressForm();
   const { organization } = useTenant();
+  const router = useRouter();
 
   async function onSubmit(values: AddressFormData) {
     let imageUrl = values.image.imageUrl ?? null;
@@ -35,7 +38,7 @@ export default function AddressForm() {
 
     // console.log("VAlues a enviar...", values);
 
-    await createAddressAction({
+    const newAddress = await createAddressAction({
       ...values,
       image: {
         imageUrl,
@@ -44,13 +47,10 @@ export default function AddressForm() {
       },
     });
 
-    form.reset();
-  }
+    await router.push(`/org/${organization.slug}/addresses/${newAddress.id}`);
 
-  // async function onSubmit(values: AddressFormData) {
-  //   await createAddressAction(values);
-  //   form.reset();
-  // }
+    // form.reset();
+  }
 
   return (
     <Form {...form}>
@@ -60,7 +60,7 @@ export default function AddressForm() {
       >
         <div className="px-1 pt-1">
           <AddressFields control={form.control} />
-          <Button type="submit">Salvar</Button>
+          <Button type="submit">Crear dirección</Button>
         </div>
       </form>
     </Form>

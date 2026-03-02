@@ -36,16 +36,12 @@ export default async function AddressPage({ params }: AddressPageProps) {
   }
 
   return (
-    <div>
-      <h1>Página</h1>
-      {/* <div className="w-full bg-orange-500 h-4" /> */}
-      {/* <Link
-        href={`/org/${organizationSlug}/addresses`}
-        className="p-2 bg-slate-300  rounded-xl"
-      >
-        Voltar
-      </Link> */}
+    <>
+      <div className="p-2">
+        <h1 className="text-2xl font-bold">Detalle de la dirección</h1>
+      </div>
+
       <AddressDetailsScreen address={address} />
-    </div>
+    </>
   );
 }

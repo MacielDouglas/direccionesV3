@@ -15,32 +15,32 @@ import { Button } from "@/components/ui/button";
 type Props = {
   src: string;
   alt: string;
-  children?: React.ReactNode;
+  // children?: React.ReactNode;
 };
 
-export function AddressImageViewer({ src, alt, children }: Props) {
+export function AddressImageViewer({ src, alt }: Props) {
   return (
     <Dialog>
-      <figure className="relative w-full h-64 sm:h-80 md:h-96">
+      <figure className="relative w-full h-40 sm:h-80 md:h-96">
         <DialogTrigger asChild>
           <Image
             src={src}
             alt={alt}
             fill
             priority
-            className="object-cover cursor-pointer"
+            className="object-cover cursor-pointer rounded-xl"
             sizes="100vw"
           />
         </DialogTrigger>
-        {children}
+        {/* {children} */}
 
         <DialogTrigger asChild>
-          <Button
+          {/* <Button
             size="sm"
             className="absolute top-4 right-4 bg-black/80 hover:bg-black text-white"
           >
             Ver imagen
-          </Button>
+          </Button> */}
         </DialogTrigger>
       </figure>
 
@@ -76,7 +76,7 @@ export function AddressImageViewer({ src, alt, children }: Props) {
             <Button
               size="sm"
               variant="secondary"
-              className="absolute top-6 right-6"
+              className="absolute top-40 right-6 border-2"
             >
               Cerrar
             </Button>
