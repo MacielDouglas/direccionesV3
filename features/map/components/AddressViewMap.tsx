@@ -32,7 +32,7 @@ export function AddressViewMap({ latitude, longitude }: Coordinates) {
       </div>
 
       {/* Botões de modo */}
-      <div className="py-3 space-y-3 bg-white z-20 -mt-14 rounded-2xl m-2">
+      <div className="py-3 space-y-3 bg-white z-20 -mt-14 rounded-2xl m-2 dark:bg-tertiary-drk">
         <div className="flex gap-2 px-3">
           <button
             onClick={() => setProfile("walking")}

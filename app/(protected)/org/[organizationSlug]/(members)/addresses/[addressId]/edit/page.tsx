@@ -7,11 +7,12 @@ type PageProps = {
   };
 };
 
-export default function UpdateAddressPage({ params }: PageProps) {
+export default async function UpdateAddressPage({ params }: PageProps) {
+  const address = await params;
   return (
     <AddressEditScreen
-      organizationSlug={params.organizationSlug}
-      addressId={params.addressId}
+      organizationSlug={address.organizationSlug}
+      addressId={address.addressId}
     />
   );
 }

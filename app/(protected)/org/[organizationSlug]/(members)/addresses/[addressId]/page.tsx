@@ -41,7 +41,10 @@ export default async function AddressPage({ params }: AddressPageProps) {
         <h1 className="text-2xl font-bold">Detalle de la dirección</h1>
       </div>
 
-      <AddressDetailsScreen address={address} />
+      <AddressDetailsScreen
+        address={address}
+        organizationSlug={organizationSlug}
+      />
     </>
   );
 }

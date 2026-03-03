@@ -60,6 +60,16 @@ export const getCurrentUser = async () => {
   };
 };
 
+export const getUniqueUser = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+
+  return user;
+};
+
 export const getUsers = async (organizationId: string) => {
   try {
     const members = await prisma.member.findMany({

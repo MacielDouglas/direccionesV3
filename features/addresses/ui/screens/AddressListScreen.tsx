@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { Search, MapPin } from "lucide-react";
 import { ADDRESS_TYPE_OPTIONS } from "../../domain/constants/address.constants";
 
 type AddressListScreenProps = {
@@ -14,6 +15,55 @@ type AddressListScreenProps = {
   organizationSlug: string;
   query?: string;
 };
+
+const ADDRESS_PLACEHOLDER = "/images/address-placeholder.jpg"; // ajuste para seu placeholder
+
+function AddressTypeIcon({ type }: { type: string }) {
+  const config = ADDRESS_TYPE_OPTIONS.find((t) => t.value === type);
+  if (!config) return null;
+  const Icon = config.icon;
+  return (
+    <span
+      aria-label={`Tipo: ${config.label}`}
+      // className="bg-black rounded-bl-xl "
+    >
+      <Icon className={config.color} size={28} aria-hidden="true" />
+    </span>
+  );
+}
+
+function StatusBadge({
+  active,
+  confirmed,
+}: {
+  active: boolean;
+  confirmed: boolean;
+}) {
+  return (
+    <div
+      role="group"
+      aria-label="Status do endereço"
+      className="flex flex-wrap gap-2"
+    >
+      <span
+        className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+          confirmed
+            ? "bg-blue-100/20 text-blue-300"
+            : "bg-red-100/20 text-red-400"
+        }`}
+      >
+        {confirmed ? "✓ Confirmado" : "✗ No confirmado"}
+      </span>
+      <span
+        className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+          active ? "bg-blue-100/20 text-blue-300" : "bg-red-100/20 text-red-400"
+        }`}
+      >
+        {active ? "✓ Tarjeta activa" : "✗ Tarjeta desactivada"}
+      </span>
+    </div>
+  );
+}
 
 export default function AddressListScreen({
   addresses,
@@ -26,121 +76,163 @@ export default function AddressListScreen({
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-
     const params = new URLSearchParams(searchParams);
-
-    if (value) {
-      params.set("q", value);
+    if (value.trim()) {
+      params.set("q", value.trim());
     } else {
       params.delete("q");
     }
-
     router.push(`/org/${organizationSlug}/addresses?${params.toString()}`);
   }
 
-  const inputStyle =
-    "bg-muted/40 border-0 border-b-2 border-transparent rounded-none px-0 shadow-none focus-visible:ring-0 focus-visible:outline-none transition-colors duration-150 border-b-muted !focus:border-orange-500 bg-white p-2";
+  const hasResults = addresses.length > 0;
 
   return (
-    <div className="p-3 flex flex-col gap-4">
-      {/* Search */}
-      <form onSubmit={handleSearch} className="flex flex-col gap-2">
-        <Input
-          className={inputStyle}
-          placeholder="Buscar dirección..."
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-        />
-        <Button type="submit">Buscar</Button>
-      </form>
+    <div className="w-full max-w-2xl mx-auto px-3 py-4 sm:px-4 sm:py-6 flex flex-col gap-5">
+      {/* ── Search ── */}
+      <section aria-label="Buscar endereços">
+        <form
+          onSubmit={handleSearch}
+          role="search"
+          className="flex items-center gap-2"
+        >
+          <label htmlFor="address-search" className="sr-only">
+            Buscar dirección
+          </label>
+          <div className="relative flex-1">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none"
+              aria-hidden="true"
+            />
+            <Input
+              id="address-search"
+              type="search"
+              autoComplete="off"
+              className="pl-9 rounded-xl border border-border bg-muted/40 focus-visible:ring-1 focus-visible:ring-orange-500"
+              placeholder="Buscar dirección..."
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+            />
+          </div>
+          <Button type="submit" className="shrink-0">
+            Buscar
+          </Button>
+        </form>
+      </section>
 
-      <p className="text-sm text-muted-foreground">
-        Direcciones encontradas: {addresses.length}
+      {/* ── Count ── */}
+      <p
+        className="text-sm text-muted-foreground"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {hasResults
+          ? `${addresses.length} dirección${addresses.length !== 1 ? "es" : ""} encontrada${addresses.length !== 1 ? "s" : ""}`
+          : "Nenhum endereço encontrado"}
       </p>
 
-      {/* List */}
-      <ul className="flex flex-col gap-4">
-        {addresses.map((address) => (
-          <li key={address.id}>
-            <Link
-              href={`/org/${organizationSlug}/addresses/${address.id}`}
-              className="block"
-            >
-              <div className="relative w-full aspect-video rounded-xl overflow-hidden flex flex-col">
-                {/* Background Image */}
-                {address.image && (
-                  <Image
-                    src={address.image}
-                    alt={address.businessName ?? address.street}
-                    fill
-                    sizes="100vw"
-                    className="object-cover"
-                    priority={false}
-                  />
-                )}
-                <div className=" bg-black/70 rounded-bl-xl p-2 absolute self-end ">
-                  {ADDRESS_TYPE_OPTIONS.map((type) => {
-                    const Icon = type.icon;
+      {/* ── List ── */}
+      {hasResults ? (
+        <ul
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+          aria-label="Lista de endereços"
+        >
+          {addresses.map((address) => {
+            const label = `${address.businessName ?? address.street}, ${address.number} — ${address.neighborhood}, ${address.city}`;
 
-                    return (
-                      address.type === type.value && (
-                        <Icon
-                          key={type.value}
-                          className={type.color}
-                          size={40}
+            return (
+              <li key={address.id}>
+                <Link
+                  href={`/org/${organizationSlug}/addresses/${address.id}`}
+                  aria-label={`Ver detalhes: ${label}`}
+                  className="group block rounded-2xl overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                >
+                  <article className="relative w-full aspect-video bg-muted">
+                    {/* Background Image */}
+                    <Image
+                      src={address.image ?? ADDRESS_PLACEHOLDER}
+                      alt=""
+                      aria-hidden="true"
+                      fill
+                      sizes="(max-width: 640px) 100vw, 50vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      priority={false}
+                    />
+
+                    {/* Dark overlay */}
+                    <div
+                      className="absolute inset-0 bg-black/40 group-hover:bg-black/55 transition-colors duration-300"
+                      aria-hidden="true"
+                    />
+
+                    {/* Type icon — top right */}
+                    <div className="absolute top-[3%] right-[3%] z-10">
+                      <AddressTypeIcon type={address.type} />
+                    </div>
+
+                    {/* Content — bottom */}
+                    <div className="absolute bottom-0 inset-x-0 z-10 bg-linear-to-t from-black/80 via-black/50 to-transparent px-3 pt-8 pb-3 flex flex-col gap-1.5">
+                      {/* Name */}
+                      {address.businessName && (
+                        <p className="text-sm sm:text-base font-semibold text-white leading-tight tracking-wide truncate">
+                          {address.businessName}
+                        </p>
+                      )}
+
+                      {/* Street */}
+                      <p className="text-xs sm:text-sm text-primary-lgt font-light flex items-center gap-1 truncate">
+                        <MapPin
+                          className="shrink-0 w-3.5 h-3.5"
+                          aria-hidden="true"
                         />
-                      )
-                    );
-                  })}
-                </div>
-
-                {/* Black Overlay */}
-                <div className="absolute inset-0 bg-black/30" />
-
-                {/* Content */}
-                <div className="relative z-10 h-full flex flex-col justify-end text-white">
-                  <div className="bg-black/70 w-full px-4 py-2">
-                    <p className="text-lg font-semibold leading-tight tracking-wider">
-                      {address.businessName}
-                    </p>
-
-                    <p className="text-lg font-light  truncate ">
-                      {address.street}, {address.number} |{" "}
-                      {address.neighborhood} | {address.city}
-                    </p>
-
-                    {address.info && (
-                      <p className="text-xs opacity-75 truncate mt-1">
-                        {address.info}
+                        {address.street}, {address.number} —{" "}
+                        {address.neighborhood}, {address.city}
                       </p>
-                    )}
-                    <p className="text-xs text-center tracking-wider lowercase">
-                      <span
-                        className={
-                          address.active ? "text-blue-400" : "text-red-400"
-                        }
-                      >
-                        {address.active ? "Activo" : "Inactivo"}
-                      </span>{" "}
-                      |{" "}
-                      <span
-                        className={
-                          address.confirmed ? "text-blue-400" : "text-red-400"
-                        }
-                      >
-                        {address.confirmed ? "Confirmado" : "No confirmado"}
-                      </span>
-                    </p>
-                  </div>
-                </div>
 
-                {/* Hover enhancement (desktop only) */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 transition-opacity duration-300 hidden md:block" />
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
+                      {/* Extra info */}
+                      {address.info && (
+                        <p className="text-xs text-white/60 truncate">
+                          {address.info}
+                        </p>
+                      )}
+
+                      {/* Status badges */}
+                      <StatusBadge
+                        active={address.active}
+                        confirmed={address.confirmed}
+                      />
+                    </div>
+                  </article>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        /* ── Empty state ── */
+        <section
+          aria-label="Nenhum resultado"
+          className="flex flex-col items-center justify-center gap-3 py-16 text-center text-muted-foreground"
+        >
+          <MapPin className="w-10 h-10 opacity-30" aria-hidden="true" />
+          <p className="text-sm font-medium">
+            Nenhum endereço encontrado
+            {query ? ` para "${query}"` : ""}
+          </p>
+          {query && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setValue("");
+                router.push(`/org/${organizationSlug}/addresses`);
+              }}
+            >
+              Limpar busca
+            </Button>
+          )}
+        </section>
+      )}
     </div>
   );
 }

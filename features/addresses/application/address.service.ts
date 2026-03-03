@@ -37,35 +37,90 @@ export async function createAddressService(params: {
   });
 }
 
-export async function updateAddressService(params: {
+export async function updateAddressService({
+  addressId,
+  input,
+  organizationId,
+  userId,
+}: {
   addressId: string;
-  input: Partial<AddressFormData>;
+  input: AddressFormData;
   organizationId: string;
   userId: string;
 }) {
-  const data = addressFormSchema.partial().parse(params.input);
-
   const address = await prisma.address.findFirst({
-    where: {
-      id: params.addressId,
-      organizationId: params.organizationId,
-    },
+    where: { id: addressId, organizationId },
   });
 
   if (!address) throw new Error("Endereço não encontrado.");
 
-  const { image, ...rest } = data;
+  // ✅ Desestrutura separando campos do form dos campos do Prisma
+  const {
+    image,
+    addressType, // ← campo do form
+    businessName,
+    street,
+    number,
+    neighborhood,
+    city,
+    latitude,
+    longitude,
+    info,
+    confirmed,
+    active,
+    invited,
+  } = input;
 
   return prisma.address.update({
     where: { id: address.id },
     data: {
-      ...rest,
-      image: image ? image.imageUrl : null,
-
-      updatedUserId: params.userId,
+      type: addressType, // ✅ mapeado corretamente
+      businessName,
+      street,
+      number,
+      neighborhood,
+      city,
+      latitude,
+      longitude,
+      info,
+      confirmed,
+      active,
+      invited,
+      image: image.imageUrl ?? null,
+      updatedUserId: userId,
+      updatedAt: new Date(),
     },
   });
 }
+// export async function updateAddressService(params: {
+//   addressId: string;
+//   input: Partial<AddressFormData>;
+//   organizationId: string;
+//   userId: string;
+// }) {
+//   const data = addressFormSchema.partial().parse(params.input);
+
+//   const address = await prisma.address.findFirst({
+//     where: {
+//       id: params.addressId,
+//       organizationId: params.organizationId,
+//     },
+//   });
+
+//   if (!address) throw new Error("Endereço não encontrado.");
+
+//   const { image, ...rest } = data;
+
+//   return prisma.address.update({
+//     where: { id: address.id },
+//     data: {
+//       ...rest,
+//       image: image ? image.imageUrl : null,
+
+//       updatedUserId: params.userId,
+//     },
+//   });
+// }
 
 export async function searchAddressesService(params: {
   organizationId: string;
