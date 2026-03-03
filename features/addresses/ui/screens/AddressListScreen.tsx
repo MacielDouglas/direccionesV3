@@ -108,7 +108,7 @@ export default function AddressListScreen({
               id="address-search"
               type="search"
               autoComplete="off"
-              className="pl-9 rounded-xl border border-border bg-muted/40 focus-visible:ring-1 focus-visible:ring-orange-500"
+              className="bg-white pl-9 rounded-xl border border-border focus-visible:ring-1 focus-visible:ring-orange-500"
               placeholder="Buscar dirección..."
               value={value}
               onChange={(e) => setValue(e.target.value)}
@@ -161,26 +161,26 @@ export default function AddressListScreen({
 
                     {/* Dark overlay */}
                     <div
-                      className="absolute inset-0 bg-black/40 group-hover:bg-black/55 transition-colors duration-300"
+                      className="absolute inset-0 bg-black/20 group-hover:bg-black/55 transition-colors duration-300"
                       aria-hidden="true"
                     />
 
                     {/* Type icon — top right */}
-                    <div className="absolute top-[3%] right-[3%] z-10">
+                    <div className="absolute top-[0%] right-[0%] z-10 bg-black/70 p-2 rounded-bl-xl">
                       <AddressTypeIcon type={address.type} />
                     </div>
 
                     {/* Content — bottom */}
-                    <div className="absolute bottom-0 inset-x-0 z-10 bg-linear-to-t from-black/80 via-black/50 to-transparent px-3 pt-8 pb-3 flex flex-col gap-1.5">
+                    <div className="absolute bottom-0 inset-x-0 z-10 bg-linear-to-t from-black/80 via-black/50 to-black/30 px-3 pt-1 pb-3 flex flex-col gap-1.5">
                       {/* Name */}
                       {address.businessName && (
-                        <p className="text-sm sm:text-base font-semibold text-white leading-tight tracking-wide truncate">
+                        <p className="text-lg sm:text-base font-semibold text-white leading-tight tracking-wide truncate">
                           {address.businessName}
                         </p>
                       )}
 
                       {/* Street */}
-                      <p className="text-xs sm:text-sm text-primary-lgt font-light flex items-center gap-1 truncate">
+                      <p className="text-base sm:text-sm text-primary-lgt font-light flex items-center gap-1 truncate">
                         <MapPin
                           className="shrink-0 w-3.5 h-3.5"
                           aria-hidden="true"

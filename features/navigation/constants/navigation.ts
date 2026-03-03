@@ -48,12 +48,6 @@ export const navigationMenu: NavigationItem[] = [
         href: "/addresses",
         icon: Search,
       },
-      {
-        id: "addresses-edit",
-        name: "Editar Dirección",
-        href: "/addresses/update",
-        icon: Pencil,
-      },
     ],
   },
 
