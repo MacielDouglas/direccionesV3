@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import MembersTableAction from "./MemberTableAction";
 import MemberTableAdmin from "./MemberTableAdmin";
+import type { Role } from "@/domains/member/types/role.types";
 
 interface MembersTableProps {
   members: Array<{
@@ -18,72 +19,74 @@ interface MembersTableProps {
 
 export default function MembersTable({ members }: MembersTableProps) {
   return (
-    <div className="space-y-3 border-t mt-5 pt-5">
-      {/* Header */}
+    <div className="mt-5 space-y-3 border-t pt-5">
       <div>
-        <h2 className="text-lg font-semibold">Membros</h2>
+        <h2 className="text-lg font-semibold">Miembros</h2>
         <p className="text-sm text-muted-foreground">
-          {members.length} membro{members.length !== 1 && "s"}
+          {members.length} miembro{members.length !== 1 && "s"}
         </p>
       </div>
 
-      {/* MOBILE – Card list */}
+      {/* MOBILE */}
       <ul className="flex flex-col gap-3 lg:hidden">
         {members.map((member) => (
           <li
             key={member.id}
-            className="flex items-center gap-3 rounded-xl border p-3 bg-white dark:bg-zinc-800"
+            className="flex items-center gap-3 rounded-xl border bg-card p-3"
           >
-            {/* Avatar */}
             <Avatar className="size-10 shrink-0">
               <AvatarImage src={member.user.image ?? undefined} />
               <AvatarFallback>
                 {member.user.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            {/* Info */}
+
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium truncate">{member.user.name}</p>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="truncate text-sm font-medium">{member.user.name}</p>
+              <p className="truncate text-xs text-muted-foreground">
                 {member.user.email}
               </p>
-
               <span className="mt-1 inline-block rounded-full bg-muted px-2 py-0.5 text-[10px] uppercase">
                 {member.role ?? "member"}
               </span>
             </div>
-            {member.role !== "owner" && (
-              <MemberTableAdmin
-                organizationId={member.organizationId}
-                userId={member.id}
-                memberRole={member.role!}
-              />
-            )}
-            {/* Action */}
-            <MembersTableAction
-              organizationId={member.organizationId}
-              memberIdOrEmail={member.user.id}
-            />
+
+            <div className="flex gap-1">
+              {member.role !== "owner" && (
+                <MemberTableAdmin
+                  organizationId={member.organizationId}
+                  memberId={member.id}
+                  memberRole={
+                    (member.role ?? "member") as Exclude<Role, "owner">
+                  }
+                />
+              )}
+              {member.role !== "owner" && (
+                <MembersTableAction
+                  organizationId={member.organizationId}
+                  memberIdOrEmail={member.user.id}
+                />
+              )}
+            </div>
           </li>
         ))}
       </ul>
 
-      {/* DESKTOP – Table */}
-      <div className="hidden lg:block overflow-x-auto">
+      {/* DESKTOP */}
+      <div className="hidden overflow-x-auto lg:block">
         <table className="w-full border-collapse">
           <thead>
             <tr className="text-left text-sm text-muted-foreground">
-              <th className="py-2">Usuário</th>
+              <th className="py-2">Usuario</th>
               <th>Email</th>
-              <th>Tipo</th>
-              <th className="text-right">Ação</th>
+              <th>Rol</th>
+              <th className="text-right">Acción</th>
             </tr>
           </thead>
-
           <tbody>
             {members.map((member) => (
               <tr key={member.id} className="border-t">
-                <td className="py-3 flex items-center gap-3">
+                <td className="flex items-center gap-3 py-3">
                   <Avatar className="size-8">
                     <AvatarImage src={member.user.image ?? undefined} />
                     <AvatarFallback>
@@ -94,25 +97,26 @@ export default function MembersTable({ members }: MembersTableProps) {
                     {member.user.name}
                   </span>
                 </td>
-
-                <td className="text-sm truncate max-w-60]">
+                <td className="max-w-60 truncate text-sm">
                   {member.user.email}
                 </td>
-
                 <td className="text-sm">{member.role ?? "member"}</td>
-
-                <td className="text-right space-x-2">
+                <td className="space-x-2 text-right">
                   {member.role !== "owner" && (
                     <MemberTableAdmin
                       organizationId={member.organizationId}
-                      userId={member.user.id}
-                      memberRole={member.role!}
+                      memberId={member.user.id}
+                      memberRole={
+                        (member.role ?? "member") as Exclude<Role, "owner">
+                      }
                     />
                   )}
-                  <MembersTableAction
-                    organizationId={member.organizationId}
-                    memberIdOrEmail={member.user.id}
-                  />
+                  {member.role !== "owner" && (
+                    <MembersTableAction
+                      organizationId={member.organizationId}
+                      memberIdOrEmail={member.user.id}
+                    />
+                  )}
                 </td>
               </tr>
             ))}

@@ -1,4 +1,4 @@
-import { Address } from "@prisma/client";
+import type { Address } from "@prisma/client";
 import { ADDRESS_TYPE_OPTIONS } from "../../domain/constants/address.constants";
 import { getUniqueUser } from "@/server/users";
 import { AddressImageViewer } from "../components/AddressImageViewer";
@@ -16,16 +16,16 @@ const ADDRESS_COLOR_MAP: Record<string, string> = {
   Apartment: "bg-pink-500",
   Hotel: "bg-blue-500",
   Store: "bg-yellow-300",
-  Restaurant: "bg-orange-500",
+  Restaurant: "bg-brand",
 };
 
 function getAddressColor(type: string): string {
-  return ADDRESS_COLOR_MAP[type] ?? "bg-orange-500";
+  return ADDRESS_COLOR_MAP[type] ?? "bg-brand";
 }
 
 function formatDate(date: Date | string): string {
-  return new Intl.DateTimeFormat("pt-BR", {
-    timeZone: "America/Sao_Paulo",
+  return new Intl.DateTimeFormat("es-419", {
+    timeZone: "America/Bogota",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -38,23 +38,19 @@ export default async function AddressDetailsScreen({
 }: AddressDetailsScreenProps) {
   const [createdUser, updatedUser] = await Promise.all([
     getUniqueUser(address.createdUserId),
-    getUniqueUser(address.updatedUserId!),
+    address.updatedUserId ? getUniqueUser(address.updatedUserId) : null,
   ]);
 
-  const typeConfig = ADDRESS_TYPE_OPTIONS.find(
-    (type) => type.value === address.type,
-  );
-
+  const typeConfig = ADDRESS_TYPE_OPTIONS.find((t) => t.value === address.type);
   const Icon = typeConfig?.icon;
   const colorClass = getAddressColor(address.type);
 
   return (
-    <article className="w-full max-w-5xl mx-auto flex flex-col gap-2 px-3 py-4 sm:px-4 sm:py-6 ">
-      {/* MAP SECTION */}
+    <article className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-3 py-4 sm:px-4 sm:py-6">
       {address.latitude && address.longitude && (
         <section
-          aria-label="Mapa do endereço"
-          className="w-full rounded-2xl overflow-hidden"
+          aria-label="Mapa de la dirección"
+          className="w-full overflow-hidden rounded-2xl"
         >
           <AddressViewMap
             latitude={Number(address.latitude)}
@@ -63,148 +59,146 @@ export default async function AddressDetailsScreen({
         </section>
       )}
 
-      {/* MAIN CARD */}
       <section
-        aria-label="Detalhes do endereço"
-        className="bg-white rounded-2xl p-4 sm:p-6 flex flex-col gap-4 dark:bg-second-drk"
+        aria-label="Detalles de la dirección"
+        className="flex flex-col gap-4 rounded-2xl bg-white p-4 dark:bg-surface-subtle-dark sm:p-6"
       >
-        {/* HEADER: Nome + Ícone */}
         <header className="flex items-center justify-between gap-3">
-          <div className="flex items-center  gap-3 min-w-0">
+          <div className="flex min-w-0 items-center gap-3">
             <span
-              className={`shrink-0 w-8 h-8 rounded-sm border ${colorClass}`}
+              className={`h-8 w-8 shrink-0 rounded-sm border ${colorClass}`}
               aria-hidden="true"
             />
-            <h1 className="-ml-8 text-lg  sm:text-2xl font-semibold tracking-wide uppercase truncate">
-              {address.businessName ?? "Casa"}
+            <h1 className="-ml-8 truncate text-lg font-semibold uppercase tracking-wide sm:text-2xl">
+              {address.businessName ?? "Residencial"}
             </h1>
           </div>
 
           {Icon && (
             <div
-              className="shrink-0 bg-black/80 p-2 rounded"
-              aria-label={`Tipo: ${typeConfig?.value}`}
+              className="shrink-0 rounded bg-black/80 p-2"
+              aria-label={`Tipo: ${typeConfig?.label}`}
             >
-              <Icon className={typeConfig?.color} size={28} />
+              <Icon
+                className={typeConfig?.color}
+                size={28}
+                aria-hidden="true"
+              />
             </div>
           )}
         </header>
 
-        {/* STATUS BADGES */}
         <div
           className="flex flex-wrap gap-3"
-          role="status"
-          aria-label="Status do endereço"
+          role="group"
+          aria-label="Estado de la dirección"
         >
           <span
-            className={`text-xs sm:text-sm font-semibold px-2 py-1 rounded-full ${
+            className={`rounded-full px-2 py-1 text-xs font-semibold sm:text-sm ${
               address.confirmed
-                ? "text-blue-700 bg-blue-100"
-                : "text-red-600 bg-red-100"
+                ? "bg-blue-100 text-blue-700"
+                : "bg-red-100 text-red-600"
             }`}
           >
-            {address.confirmed ? "✓ Confirmado" : "✗ Não confirmado"}
+            {address.confirmed ? "✓ Confirmada" : "✗ No confirmada"}
           </span>
           <span
-            className={`text-xs sm:text-sm font-semibold px-2 py-1 rounded-full ${
+            className={`rounded-full px-2 py-1 text-xs font-semibold sm:text-sm ${
               address.active
-                ? "text-blue-700 bg-blue-100"
-                : "text-red-600 bg-red-100"
+                ? "bg-blue-100 text-blue-700"
+                : "bg-red-100 text-red-600"
             }`}
           >
-            {address.active ? "✓ Cartão ativo" : "✗ Cartão desativado"}
+            {address.active ? "✓ Activa" : "✗ Inactiva"}
           </span>
         </div>
 
-        {/* IMAGE */}
         {address.image && (
-          <figure className="w-full rounded-xl overflow-hidden">
+          <figure className="w-full overflow-hidden rounded-xl">
             <AddressImageViewer
               src={address.image}
-              alt={`Imagem do endereço ${address.businessName ?? "Residencial"}`}
+              alt={`Imagen de ${address.businessName ?? "la dirección"}`}
             />
           </figure>
         )}
 
-        {/* ADDRESS INFO */}
         <section aria-labelledby="address-info-title">
           <h2 id="address-info-title" className="sr-only">
-            Informações de localização
+            Información de ubicación
           </h2>
-          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             <div>
               <dt className="text-xs uppercase tracking-wide text-gray-400">
-                Rua
+                Calle
               </dt>
-              <dd className="text-sm sm:text-base font-medium text-gray-800 mt-0.5 dark:text-second-lgt">
+              <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200 sm:text-base">
                 {address.street}, {address.number}
               </dd>
             </div>
             <div>
               <dt className="text-xs uppercase tracking-wide text-gray-400">
-                Bairro
+                Barrio
               </dt>
-              <dd className="text-sm sm:text-base font-medium text-gray-800 mt-0.5  dark:text-second-lgt">
+              <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200 sm:text-base">
                 {address.neighborhood}
               </dd>
             </div>
             <div>
               <dt className="text-xs uppercase tracking-wide text-gray-400">
-                Cidade
+                Ciudad
               </dt>
-              <dd className="text-sm sm:text-base font-medium text-gray-800 mt-0.5  dark:text-second-lgt">
+              <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200 sm:text-base">
                 {address.city}
               </dd>
             </div>
           </dl>
         </section>
 
-        {/* EXTRA INFO */}
         {address.info && (
           <section
             aria-labelledby="extra-info-title"
-            className="bg-gray-100 rounded-xl p-3 sm:p-4"
+            className="rounded-xl bg-gray-100 p-3 dark:bg-surface-elevated-dark sm:p-4"
           >
             <h2
               id="extra-info-title"
-              className="text-xs sm:text-sm font-semibold text-gray-700 mb-1.5"
+              className="mb-1.5 text-xs font-semibold text-gray-700 dark:text-slate-300 sm:text-sm"
             >
-              Informações adicionais
+              Información adicional
             </h2>
-            <p className="text-sm leading-relaxed text-gray-600">
+            <p className="text-sm leading-relaxed text-gray-600 dark:text-slate-400">
               {address.info}
             </p>
           </section>
         )}
 
-        {/* FOOTER: Auditoria */}
-        <footer className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 pt-2 border-t border-gray-100">
-          <p className="text-xs text-gray-400">
-            Enviado por:{" "}
-            <span className="font-medium text-gray-600  dark:text-second-lgt">
-              {createdUser?.name ?? "Usuário desconhecido"}
-            </span>
-          </p>
-          <div className="text-xs text-gray-400 sm:text-end flex gap-1">
-            <p>Atualizado en: </p>
-            <time dateTime={new Date(address.updatedAt).toISOString()}>
-              {formatDate(address.updatedAt)},
-            </time>
-            <p>
-              por:{" "}
-              <span className="font-medium text-gray-600  dark:text-second-lgt">
-                {updatedUser?.name ?? "Usuário desconhecido"}
+        <footer className="flex flex-col gap-3 border-t border-gray-100 pt-3">
+          <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-gray-400">
+              Enviado por:{" "}
+              <span className="font-medium text-gray-600 dark:text-slate-300">
+                {createdUser?.name ?? "Usuario desconocido"}
               </span>
             </p>
+            <p className="flex gap-1 text-xs text-gray-400 sm:text-end">
+              Actualizado:{" "}
+              <time dateTime={new Date(address.updatedAt).toISOString()}>
+                {formatDate(address.updatedAt)}
+              </time>
+              {updatedUser && (
+                <>
+                  {" "}
+                  por{" "}
+                  <span className="font-medium text-gray-600 dark:text-slate-300">
+                    {updatedUser.name}
+                  </span>
+                </>
+              )}
+            </p>
           </div>
-          <div className="flex gap-3 border-t border-gray-100 py-3">
-            <Link
-              href={`/org/${organizationSlug}/addresses/${address.id}/edit`}
-              className="block"
-            >
-              <Button> Editar Dirección</Button>
-            </Link>
-          </div>
+
+          <Link href={`/org/${organizationSlug}/addresses/${address.id}/edit`}>
+            <Button className="w-full sm:w-auto">Editar dirección</Button>
+          </Link>
         </footer>
       </section>
     </article>

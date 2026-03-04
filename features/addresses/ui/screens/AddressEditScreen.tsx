@@ -14,29 +14,26 @@ export default async function AddressEditScreen({
   addressId,
 }: Props) {
   const address = await getAddressByIdAction(addressId);
-
   if (!address) notFound();
 
   return (
-    <article className="w-full max-w-2xl mx-auto flex flex-col gap-2">
-      {/* Header */}
-      <header className="flex items-center gap-3 px-4 pt-4 pb-2">
+    <article className="mx-auto flex w-full max-w-2xl flex-col gap-2">
+      <header className="flex items-center gap-3 px-4 pb-2 pt-4">
         <Link
           href={`/org/${organizationSlug}/addresses/${addressId}`}
-          className="text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Voltar"
+          className="rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          aria-label="Volver a los detalles de la dirección"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="h-5 w-5" aria-hidden="true" />
         </Link>
         <div>
-          <h1 className="text-lg font-semibold">Editar endereço</h1>
+          <h1 className="text-lg font-semibold">Editar dirección</h1>
           <p className="text-xs text-muted-foreground">
             {address.businessName ?? address.street}
           </p>
         </div>
       </header>
 
-      {/* Formulário client */}
       <AddressEditForm address={address} />
     </article>
   );

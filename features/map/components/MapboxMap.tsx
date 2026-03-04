@@ -3,7 +3,7 @@
 import { MapboxProvider } from "../core/MapboxProvider";
 import { SelectLocationLayer } from "../layers/SelectLocationLayer";
 import { UserLocationLayer } from "../layers/UserLocationLayer";
-import { Coordinates } from "../types/map.types";
+import type { Coordinates } from "../types/map.types";
 
 type Props = {
   value?: Coordinates | null;
@@ -12,7 +12,7 @@ type Props = {
 
 export function MapboxMap({ value, onChange }: Props) {
   return (
-    <div className="w-full h-80 rounded-xl overflow-hidden">
+    <div className="h-80 w-full overflow-hidden rounded-xl">
       <MapboxProvider>
         <UserLocationLayer />
         <SelectLocationLayer value={value} onChange={onChange} />

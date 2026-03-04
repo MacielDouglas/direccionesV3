@@ -4,9 +4,8 @@ export const roleRank = {
   owner: 3,
 } as const;
 
-export function canAccess(
-  userRole: keyof typeof roleRank,
-  required: keyof typeof roleRank,
-) {
+export type AppRole = keyof typeof roleRank;
+
+export function canAccess(userRole: AppRole, required: AppRole): boolean {
   return roleRank[userRole] >= roleRank[required];
 }

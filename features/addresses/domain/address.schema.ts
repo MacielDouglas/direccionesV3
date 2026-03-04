@@ -3,36 +3,35 @@ import { ADDRESS_TYPES } from "../types/address.types";
 
 export const addressImageSchema = z.object({
   imageUrl: z.string().nullable().optional(),
-  imageFile: z.any().optional(), // ← importante
+  imageFile: z.any().optional(),
   imageKey: z.string().nullable().optional(),
   isCustomImage: z.boolean().optional(),
 });
 
-/**
- * Schema usado no FORM (client side)
- */
 export const addressFormSchema = z.object({
   addressType: z.enum(ADDRESS_TYPES),
 
-  street: z.string().min(2, "Rua muito curta"),
-  number: z.string().min(1, "Obrigatório"),
-  neighborhood: z.string().min(2, "Bairro obrigatório"),
-  city: z.string().min(3, "Cidade obrigatória"),
+  street: z.string().min(2, "La calle es demasiado corta."),
+  number: z.string().min(1, "El número es obligatorio."),
+  neighborhood: z.string().min(2, "El barrio es obligatorio."),
+  city: z.string().min(3, "La ciudad es obligatoria."),
 
   latitude: z
     .number()
-    .min(-90, "Latitude inválida")
-    .max(90, "Latitude inválida"),
-
+    .min(-90, "Latitud inválida.")
+    .max(90, "Latitud inválida.")
+    .nullable()
+    .optional(),
   longitude: z
     .number()
-    .min(-180, "Longitude inválida")
-    .max(180, "Longitude inválida"),
+    .min(-180, "Longitud inválida.")
+    .max(180, "Longitud inválida.")
+    .nullable()
+    .optional(),
 
   image: addressImageSchema,
 
-  info: z.string().max(300).optional(),
-
+  info: z.string().max(300, "Máximo 300 caracteres.").optional(),
   businessName: z.string().nullable().optional(),
 
   active: z.boolean(),
@@ -42,39 +41,14 @@ export const addressFormSchema = z.object({
 
 export type AddressFormData = z.infer<typeof addressFormSchema>;
 
-// schema para prisma (server side)
 export const addressPersistenceSchema = addressFormSchema.extend({
-  organizationId: z.uuid(),
-
-  createdUserId: z.uuid(),
-  updatedUserId: z.uuid().optional().nullable(),
+  organizationId: z.string().uuid(),
+  createdUserId: z.string().uuid(),
+  updatedUserId: z.string().uuid().optional().nullable(),
 });
 
 export type AddressPersistenceInput = z.infer<typeof addressPersistenceSchema>;
 
-export const createAddressSchema = z.object({
-  // ...,
-  addressType: z.enum(ADDRESS_TYPES),
-
-  street: z.string(),
-  number: z.string(),
-  neighborhood: z.string(),
-
-  latitude: z.number().nullable().optional(),
-  longitude: z.number().nullable().optional(),
-
-  image: z.object({
-    imageUrl: z.string().nullable().optional(),
-    imageKey: z.string().nullable().optional(),
-    isCustomImage: z.boolean().optional(),
-  }),
-
-  info: z.string().nullable().optional(),
-  businessName: z.string().nullable().optional(),
-
-  active: z.boolean(),
-  confirmed: z.boolean(),
-  invited: z.boolean(),
-});
-
-export type CreateAddressInput = z.infer<typeof createAddressSchema>;
+// Schema server-side derivado — sem duplicação
+export const createAddressSchema = addressFormSchema;
+export type CreateAddressInput = AddressFormData;

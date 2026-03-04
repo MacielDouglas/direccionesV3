@@ -2,7 +2,7 @@
 
 import mapboxgl from "mapbox-gl";
 import { useMapInstance } from "../core/MapboxProvider";
-import { Coordinates, RouteProfile } from "../types/map.types";
+import type { Coordinates, RouteProfile } from "../types/map.types";
 import { useEffect, useRef } from "react";
 
 type Props = {
@@ -19,7 +19,7 @@ export default function RouteLayer({ destination, profile }: Props) {
   const destMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
-  // Pin do destino
+  // Marcador do destino
   useEffect(() => {
     if (!map || !isLoaded) return;
 
@@ -47,13 +47,11 @@ export default function RouteLayer({ destination, profile }: Props) {
       const { longitude: uLng, latitude: uLat } = userCoords;
       const { longitude: dLng, latitude: dLat } = destination;
 
-      // Atualiza marcador do usuário
       userMarkerRef.current?.remove();
       userMarkerRef.current = new mapboxgl.Marker({ color: "#3b82f6" })
         .setLngLat([uLng, uLat])
         .addTo(map);
 
-      // Chama Directions API
       const url = `https://api.mapbox.com/directions/v5/mapbox/${profile}/${uLng},${uLat};${dLng},${dLat}?geometries=geojson&access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`;
 
       const res = await fetch(url);
@@ -61,7 +59,6 @@ export default function RouteLayer({ destination, profile }: Props) {
       const routeGeometry = data.routes?.[0]?.geometry;
       if (!routeGeometry) return;
 
-      // Remove layer/source anterior
       if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID);
       if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
 
@@ -82,7 +79,6 @@ export default function RouteLayer({ destination, profile }: Props) {
         },
       });
 
-      // Fit bounds para mostrar toda a rota
       const coords = routeGeometry.coordinates as [number, number][];
       const bounds = coords.reduce(
         (b, c) => b.extend(c),
@@ -93,24 +89,25 @@ export default function RouteLayer({ destination, profile }: Props) {
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => drawRoute(pos.coords),
-      (err) => console.warn("Geolocation error:", err),
+      (err) =>
+        console.warn("[RouteLayer] Error de geolocalización:", err.message),
       { enableHighAccuracy: true },
     );
 
     return () => {
-      if (watchIdRef.current !== null)
+      if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
+      }
 
       userMarkerRef.current?.remove();
 
-      // ✅ Guard: verifica se o mapa ainda está com o estilo carregado
       try {
         if (map.getStyle()) {
           if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID);
           if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
         }
       } catch {
-        // mapa já foi destruído, ignorar silenciosamente
+        // mapa já destruído — ignorar
       }
     };
   }, [map, isLoaded, destination, profile]);

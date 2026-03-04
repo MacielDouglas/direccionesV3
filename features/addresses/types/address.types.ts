@@ -1,4 +1,4 @@
-import { AddressFormData } from "../domain/address.schema";
+import type { AddressFormData } from "../domain/address.schema";
 
 export const ADDRESS_TYPES = [
   "House",
@@ -6,14 +6,14 @@ export const ADDRESS_TYPES = [
   "Store",
   "Hotel",
   "Restaurant",
-];
+] as const;
 
 export type AddressType = (typeof ADDRESS_TYPES)[number];
 
 export const ADDRESS_TYPE_LABEL: Record<AddressType, string> = {
   House: "Casa",
   Apartment: "Apartamento",
-  Store: "Tienda",
+  Store: "Negocio",
   Hotel: "Hotel",
   Restaurant: "Restaurante",
 };

@@ -2,20 +2,14 @@ import { createAuthClient } from "better-auth/react";
 import {
   inferAdditionalFields,
   organizationClient,
+  adminClient,
 } from "better-auth/client/plugins";
-import { adminClient } from "better-auth/client/plugins";
+import type { auth } from "@/lib/auth";
 
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_URL,
+  baseURL: process.env.NEXT_PUBLIC_APP_URL,
   plugins: [
-    inferAdditionalFields({
-      user: {
-        group: {
-          type: "string",
-          required: false,
-        },
-      },
-    }),
+    inferAdditionalFields<typeof auth>(), // infere os campos reais do servidor
     organizationClient(),
     adminClient(),
   ],
@@ -27,7 +21,8 @@ export const signIn = async () => {
     callbackURL: "/",
   });
 
-  if (error) return error;
+  if (error)
+    throw new Error(error.message ?? "Error al iniciar sesión con Google.");
 
   return data;
 };

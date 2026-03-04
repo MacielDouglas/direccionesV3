@@ -6,15 +6,24 @@ import {
 } from "@/features/navigation/constants/navigation";
 import LogoutButton from "../LogoutButton";
 import MenuItem from "./MenuItem";
+import { ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface MainAppMenuProps {
   role?: "member" | "admin" | "owner" | null;
   orgSlug: string;
 }
 
+const baseItemStyle = cn(
+  "group flex items-center justify-between gap-5",
+  "rounded-xl p-4 pl-8",
+  "shadow-md shadow-black/10 dark:shadow-black/30",
+  "transition-all duration-150 ease-out",
+  "active:scale-95 active:shadow-sm select-none",
+);
+
 export default function MainAppMenu({ role, orgSlug }: MainAppMenuProps) {
   const navigation = role ? getNavigationByRole(navigationMenu, role) : [];
-
   const menu = navigation.filter((item) => item.id !== "home");
 
   const handleHaptic = () => {
@@ -23,83 +32,74 @@ export default function MainAppMenu({ role, orgSlug }: MainAppMenuProps) {
     }
   };
 
-  const baseItemStyle = `
-    group flex items-center gap-5
-    rounded-xl p-4 pl-8
-    shadow-md shadow-black/10 dark:shadow-black/30
-    transition-all duration-150 ease-out
-    active:scale-95 active:shadow-sm
-    select-none justify-between
-  `;
-
   return (
     <div className="flex h-full w-full flex-col">
       <div className="border-b border-black/10 pb-8 dark:border-white/10">
-        <nav className="flex-1 overflow-y-auto">
-          <div className="space-y-4 p-3">
+        <nav aria-label="Menú principal">
+          <ul className="space-y-4 p-3">
             {menu.map((item) => {
               const Icon = item.icon;
-
-              const bgStyle = item.roles
-                ? "bg-orange-500 text-white"
-                : "bg-white dark:bg-second-drk";
+              const isAdmin = !!item.roles;
+              const bgStyle = isAdmin
+                ? "bg-brand text-white"
+                : "bg-white dark:bg-surface-subtle-dark";
 
               if (item.children) {
                 return (
-                  <details key={item.id} className="group">
-                    <summary
-                      className={`${baseItemStyle} ${bgStyle} cursor-pointer list-none`}
-                    >
-                      <span className="flex items-center gap-3">
-                        <Icon className="h-7 w-7" />
-                        <span className="text-lg font-medium">{item.name}</span>
-                      </span>
-
-                      <svg
-                        className="size-5 shrink-0 transition-transform duration-200 group-open:rotate-180"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                  <li key={item.id}>
+                    <details className="group">
+                      <summary
+                        className={cn(
+                          baseItemStyle,
+                          bgStyle,
+                          "cursor-pointer list-none",
+                        )}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
+                        <span className="flex items-center gap-3">
+                          <Icon className="h-7 w-7" aria-hidden="true" />
+                          <span className="text-lg font-medium">
+                            {item.name}
+                          </span>
+                        </span>
+                        <ChevronDown
+                          className="size-5 shrink-0 transition-transform duration-200 group-open:rotate-180"
+                          aria-hidden="true"
                         />
-                      </svg>
-                    </summary>
+                      </summary>
 
-                    <div className="m-2  rounded-xl bg-stone-100 dark:bg-stone-700/80 p-2 space-y-4">
-                      {item.children.map((cld) => (
-                        <MenuItem
-                          key={cld.id}
-                          item={cld}
-                          onSelect={handleHaptic}
-                          orgSlug={orgSlug}
-                          className={`${baseItemStyle}
-                           bg-stone-50 dark:bg-tertiary-drk dark:text-tertiary-lgt
-                            hover:scale-[1.01]
-                          `}
-                        />
-                      ))}
-                    </div>
-                  </details>
+                      <ul className="m-2 space-y-4 rounded-xl bg-stone-100 p-2 dark:bg-stone-700/80">
+                        {item.children.map((child) => (
+                          <li key={child.id}>
+                            <MenuItem
+                              item={child}
+                              onSelect={handleHaptic}
+                              orgSlug={orgSlug}
+                              className={cn(
+                                baseItemStyle,
+                                "bg-stone-50 hover:scale-[1.01]",
+                                "dark:bg-surface-elevated-dark dark:text-surface-elevated-light",
+                              )}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  </li>
                 );
               }
 
               return (
-                <MenuItem
-                  key={item.id}
-                  item={item}
-                  onSelect={handleHaptic}
-                  orgSlug={orgSlug}
-                  className={`${baseItemStyle} ${bgStyle}`}
-                />
+                <li key={item.id}>
+                  <MenuItem
+                    item={item}
+                    onSelect={handleHaptic}
+                    orgSlug={orgSlug}
+                    className={cn(baseItemStyle, bgStyle)}
+                  />
+                </li>
               );
             })}
-          </div>
+          </ul>
         </nav>
       </div>
 

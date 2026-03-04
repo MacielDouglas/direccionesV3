@@ -10,12 +10,11 @@ export default async function ProtectedLayout({
 }) {
   const data = await getCurrentUser();
 
-  if (!data?.session.session) redirect("/login");
+  if (!data) redirect("/login");
 
   return (
-    <div className="flex flex-col bg-primary-lgt dark:bg-primary-drk text-primary-drk dark:text-primary-lgt">
+    <div className="flex min-h-svh flex-col bg-surface-light text-surface-dark dark:bg-surface-dark dark:text-surface-light">
       <Header
-        // user={user}
         session={data.session.session}
         role={data.activeMember?.role ?? null}
         organization={data.activeOrganization}

@@ -6,8 +6,7 @@ export function mapAuthRole(role: string): DomainRole {
     case "admin":
     case "member":
       return role;
-
     default:
-      throw new Error("Invalid role");
+      throw new Error(`[mapAuthRole] Rol inválido recibido: "${role}"`);
   }
 }

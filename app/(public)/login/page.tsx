@@ -1,34 +1,55 @@
 import Image from "next/image";
 import LoginButton from "./LoginButton";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Iniciar sesión",
+};
 
 export default function LoginPage() {
   return (
     <main
-      aria-label="Página de login"
-      className="w-full h-screen bg-center bg-cover bg-no-repeat flex flex-col justify-center items-center px-4"
-      style={{ backgroundImage: "url('/street.webp')" }}
+      aria-label="Página de inicio de sesión"
+      className="relative flex min-h-svh w-full flex-col items-center justify-center px-4"
     >
-      <div className="w-full max-w-sm rounded-2xl bg-black/20 backdrop-blur-md shadow-xl shadow-black/40 p-10 sm:p-8">
-        <header className=" space-y-10 flex flex-col items-center">
-          <h1 className="text-4xl sm:text-3xl font-bold text-white leading-relaxed self-start">
+      {/* Background image via Next.js Image para otimização */}
+      <Image
+        src="/street.webp"
+        alt=""
+        fill
+        priority
+        quality={80}
+        className="object-cover object-center"
+        aria-hidden="true"
+      />
+
+      {/* Overlay escuro sobre o background */}
+      <div aria-hidden="true" className="absolute inset-0 bg-black/30" />
+
+      {/* Card */}
+      <div className="relative z-10 w-full max-w-sm rounded-2xl bg-black/20 p-8 shadow-xl shadow-black/40 backdrop-blur-md sm:p-10">
+        <header className="flex flex-col items-center space-y-8">
+          <h1 className="self-start text-4xl font-bold leading-snug text-white sm:text-3xl">
             Bienvenido a{" "}
-            <span className="text-bold text-5xl text-orange-500 tracking-wide ">
+            <span className="text-5xl font-bold tracking-wide text-brand">
               Direcciones
             </span>
           </h1>
+
           <Image
-            src={"logo_white.svg"}
-            alt="Logo"
+            src="/logo_white.svg"
+            alt="Logotipo de Direcciones"
             width={180}
             height={180}
-            loading="eager"
+            priority
           />
 
-          <p className="text-lg text-stone-200 bg-black/40 rounded-lg px-3 py-2 text-center">
+          <p className="rounded-lg bg-black/40 px-3 py-2 text-center text-lg text-stone-200">
             Para comenzar, inicie sesión con su cuenta{" "}
-            <span className="text-red-500 font-semibold">Google</span>.
+            <span className="font-semibold text-red-400">Google</span>.
           </p>
         </header>
+
         <div className="mt-6">
           <LoginButton />
         </div>

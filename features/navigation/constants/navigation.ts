@@ -1,4 +1,3 @@
-// src/constants/navigation.ts
 import {
   CreditCard,
   MapPin,
@@ -10,15 +9,15 @@ import {
   Search,
   Pencil,
 } from "lucide-react";
-
-export type UserRole = "null" | "member" | "admin" | "owner";
+import type { ElementType } from "react";
+import type { Role } from "@/domains/member/types/role.types";
 
 export type NavigationItem = {
   id: string;
   name: string;
   href: string;
-  icon: React.ElementType;
-  roles?: UserRole[]; // se não existir, todos podem ver
+  icon: ElementType;
+  roles?: Role[];
   children?: NavigationItem[];
 };
 
@@ -29,7 +28,6 @@ export const navigationMenu: NavigationItem[] = [
     href: "/cards",
     icon: CreditCard,
   },
-
   {
     id: "addresses",
     name: "Direcciones",
@@ -50,23 +48,19 @@ export const navigationMenu: NavigationItem[] = [
       },
     ],
   },
-
   {
     id: "user",
     name: "Perfil",
     href: "/user",
     icon: User,
   },
-
-  // 🔐 ADMIN
   {
     id: "users",
     name: "Usuarios",
-    href: `/admin/users`,
+    href: "/admin/users",
     icon: Users,
     roles: ["admin", "owner"],
   },
-
   {
     id: "user-cards",
     name: "Admin Tarjetas",
@@ -94,11 +88,9 @@ export const navigationMenu: NavigationItem[] = [
       },
     ],
   },
-
-  // 👑 OWNER
   {
     id: "admin",
-    name: "Admin - Organizations",
+    name: "Admin - Organizaciones",
     href: "/admin/organizations",
     icon: Shield,
     roles: ["owner"],
@@ -107,17 +99,14 @@ export const navigationMenu: NavigationItem[] = [
 
 export function getNavigationByRole(
   menu: NavigationItem[],
-  role: UserRole,
+  role: Role,
 ): NavigationItem[] {
-  console.log("tipo de Role", role);
   return menu
     .filter((item) => !item.roles || item.roles.includes(role))
     .map((item) => ({
       ...item,
-      children: item.children
-        ? item.children.filter(
-            (child) => !child.roles || child.roles.includes(role),
-          )
-        : undefined,
+      children: item.children?.filter(
+        (child) => !child.roles || child.roles.includes(role),
+      ),
     }));
 }

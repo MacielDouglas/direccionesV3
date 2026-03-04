@@ -1,9 +1,8 @@
 "use client";
 
+import "mapbox-gl/dist/mapbox-gl.css";
 import mapboxgl from "mapbox-gl";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
 type MapContextType = {
   map: mapboxgl.Map | null;
@@ -29,7 +28,15 @@ export function MapboxProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
+    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+    if (!token) {
+      console.error("[MapboxProvider] NEXT_PUBLIC_MAPBOX_TOKEN no definido.");
+      return;
+    }
+
     if (!containerRef.current) return;
+
+    mapboxgl.accessToken = token;
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
@@ -40,19 +47,14 @@ export function MapboxProvider({ children }: { children: React.ReactNode }) {
 
     mapRef.current = map;
 
-    map.on("load", () => {
-      setState({
-        map,
-        isLoaded: true,
-      });
-    });
+    map.on("load", () => setState({ map, isLoaded: true }));
 
     return () => map.remove();
   }, []);
 
   return (
     <MapContext.Provider value={state}>
-      <div ref={containerRef} className="w-full h-full" />
+      <div ref={containerRef} className="h-full w-full" />
       {state.isLoaded && children}
     </MapContext.Provider>
   );

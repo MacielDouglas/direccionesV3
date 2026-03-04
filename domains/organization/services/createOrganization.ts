@@ -1,31 +1,36 @@
 import { canCreateOrganization } from "../permissions/canCreateOrganizations";
+import type { CreateOrganizationInput } from "../schemas/organization.schema";
 import { createOrganizationSchema } from "../schemas/organization.schema";
-import { Role } from "@/domains/member/types/role.types";
+import type { Role } from "@/domains/member/types/role.types";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
+interface CreateOrganizationContext {
+  userId: string;
+  role: Role | null;
+}
+
 export async function createOrganizationService(
   input: unknown,
-  context: {
-    userId: string;
-    role: Role;
-  },
+  context: CreateOrganizationContext,
 ) {
-  const data = createOrganizationSchema.parse(input);
+  if (!context.role) {
+    throw new Error("El usuario no pertenece a ninguna organización activa.");
+  }
 
-  if (!canCreateOrganization(context.role))
-    throw new Error("Não tem autorização para criar uma organização.");
+  if (!canCreateOrganization(context.role)) {
+    throw new Error("No tiene autorización para crear una organización.");
+  }
+
+  const data: CreateOrganizationInput = createOrganizationSchema.parse(input);
 
   const result = await auth.api.createOrganization({
-    body: {
-      name: data.name,
-      slug: data.slug,
-    },
+    body: { name: data.name, slug: data.slug },
     headers: await headers(),
   });
 
-  revalidatePath("/security/organizations");
+  revalidatePath("/admin/organizations");
 
   return result;
 }

@@ -4,101 +4,95 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
-export const getCurrentUser = async () => {
+export const getCurrentUser = cache(async () => {
   const reqHeaders = await headers();
 
-  const session = await auth.api.getSession({
-    headers: reqHeaders,
-  });
+  const session = await auth.api.getSession({ headers: reqHeaders });
+  if (!session) return null;
 
-  if (!session) {
-    return null;
-  }
+  const [activeMember, currentUser] = await Promise.all([
+    auth.api.getActiveMember({ headers: reqHeaders }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, email: true, role: true, createdAt: true },
+    }),
+  ]);
 
-  const activeMember = await auth.api.getActiveMember({
-    headers: reqHeaders,
-  });
+  if (!currentUser) return null;
 
-  const memberRole = activeMember
-    ? await auth.api.getActiveMemberRole({ headers: reqHeaders })
-    : null;
-
-  const organization = activeMember
-    ? await prisma.organization.findUnique({
-        where: { id: activeMember.organizationId },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          createdAt: true,
-          logo: true,
-        },
-      })
-    : null;
-
-  const currentUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      id: true,
-      email: true,
-      role: true,
-      createdAt: true,
-    },
-  });
-
-  if (!currentUser) {
-    return null;
-  }
+  const [memberRole, activeOrganization] = await Promise.all([
+    activeMember
+      ? auth.api.getActiveMemberRole({ headers: reqHeaders })
+      : Promise.resolve(null),
+    activeMember
+      ? prisma.organization.findUnique({
+          where: { id: activeMember.organizationId },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            createdAt: true,
+            logo: true,
+          },
+        })
+      : Promise.resolve(null),
+  ]);
 
   return {
     session,
     user: currentUser,
     activeMember,
     memberRole,
-    activeOrganization: organization,
+    activeOrganization,
   };
-};
+});
 
 export const getUniqueUser = async (userId: string) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
+  if (!userId) return null;
+
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      role: true,
+      createdAt: true,
     },
   });
-
-  return user;
 };
 
-export const getUsers = async (organizationId: string) => {
+export const getNonMemberUsers = async (organizationId: string) => {
   try {
     const members = await prisma.member.findMany({
       where: { organizationId },
-
       select: { userId: true },
     });
 
     const memberIds = members.map((m) => m.userId);
 
-    const users = await prisma.user.findMany({
-      where: {
-        id: {
-          notIn: memberIds.length > 0 ? memberIds : [""], // evita erro com array vazio
-        },
+    return prisma.user.findMany({
+      where: memberIds.length > 0 ? { id: { notIn: memberIds } } : undefined,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        role: true,
       },
+      orderBy: { name: "asc" },
     });
-
-    return users;
   } catch (error) {
-    console.error(error);
+    console.error("[getNonMemberUsers]", error);
     return [];
   }
 };
 
-export const sessionUser = async () => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) return redirect("/");
+export const requireSession = async () => {
+  const data = await getCurrentUser();
+  if (!data) redirect("/login");
+  return data.session;
 };

@@ -1,13 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-// import imageCompression from "browser-image-compression";
-// import heic2any from "heic2any";
-// import * as exifr from "exifr";
 
 const MAX_SIZE_MB = 5;
 const MAX_DIMENSION = 1920;
-// const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB por parte
 
 async function getImageCompression() {
   const mod = await import("browser-image-compression");
@@ -20,7 +16,7 @@ async function getHeic2Any() {
 }
 
 async function getExif() {
-  return await import("exifr");
+  return import("exifr");
 }
 
 export function useSmartImageUpload() {
@@ -33,8 +29,6 @@ export function useSmartImageUpload() {
   const abortController = useRef<AbortController | null>(null);
   const uploadedKey = useRef<string | null>(null);
 
-  //  HEIC -> JPEG
-
   async function normalizeHeic(file: File): Promise<File> {
     const isHeic =
       file.type === "image/heic" ||
@@ -44,38 +38,29 @@ export function useSmartImageUpload() {
     if (!isHeic) return file;
 
     const heic2any = await getHeic2Any();
-
     const converted = await heic2any({
       blob: file,
       toType: "image/jpeg",
       quality: 0.95,
     });
-
-    let blob: Blob;
-
-    if (Array.isArray(converted)) {
-      blob = converted[0];
-    } else {
-      blob = converted as Blob;
-    }
+    const blob = Array.isArray(converted) ? converted[0] : (converted as Blob);
 
     return new File([blob], `${crypto.randomUUID()}.jpg`, {
       type: "image/jpeg",
     });
   }
 
-  // EXIF Orientation
-
   async function fixOrientation(file: File): Promise<File> {
-    const imageCompression = await getImageCompression();
-    const exifr = await getExif();
+    const [imageCompression, exifr] = await Promise.all([
+      getImageCompression(),
+      getExif(),
+    ]);
 
     try {
       const orientation = await exifr.orientation(file);
-
       if (!orientation || orientation === 1) return file;
 
-      return await imageCompression(file, {
+      return imageCompression(file, {
         maxSizeMB: 50,
         useWebWorker: true,
         exifOrientation: orientation,
@@ -85,20 +70,17 @@ export function useSmartImageUpload() {
     }
   }
 
-  /* Resize + Compress to WebP ≤ 5MB           */
-
   async function resizeAndCompress(originalFile: File): Promise<File> {
-    if (!originalFile) {
-      throw new Error("Arquivo inválido");
-    }
-
+    if (!originalFile) throw new Error("Archivo inválido.");
     if (!originalFile.type.startsWith("image/")) {
-      throw new Error(`Tipo inválido: ${originalFile.type || "desconhecido"}`);
+      throw new Error(
+        `Tipo de archivo no soportado: ${originalFile.type || "desconocido"}`,
+      );
     }
 
-    let quality = 0.9;
-    let compressed: File = originalFile;
     const imageCompression = await getImageCompression();
+    let quality = 0.9;
+    let compressed = originalFile;
 
     while (true) {
       compressed = await imageCompression(compressed, {
@@ -127,24 +109,18 @@ export function useSmartImageUpload() {
 
     const res = await fetch("/api/upload-url", {
       method: "POST",
-      body: JSON.stringify({
-        key,
-        contentType: file.type,
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key, contentType: file.type }),
     });
 
-    if (!res.ok) {
-      throw new Error("Erro ao gerar signed URL");
-    }
+    if (!res.ok) throw new Error(`Error al generar URL firmada: ${res.status}`);
 
     const { url } = await res.json();
 
     await fetch(url, {
       method: "PUT",
       body: file,
-      headers: {
-        "Content-Type": file.type,
-      },
+      headers: { "Content-Type": file.type },
       signal: abortController.current.signal,
     });
 
@@ -152,11 +128,7 @@ export function useSmartImageUpload() {
     setIsUploading(false);
   }
 
-  /* ------------------------------------------ */
-  /* Retry automático                          */
-  /* ------------------------------------------ */
-
-  async function retry<T>(fn: () => Promise<T>, retries = 3) {
+  async function retry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
     try {
       return await fn();
     } catch (err) {
@@ -166,40 +138,35 @@ export function useSmartImageUpload() {
     }
   }
 
-  /* ------------------------------------------ */
-  /* Pipeline Completo                         */
-  /* ------------------------------------------ */
-
-  async function processAndUpload(file: File, organizationId: string) {
+  async function processAndUpload(
+    file: File,
+    organizationId: string,
+  ): Promise<string | null> {
     setError(null);
     setIsProcessing(true);
 
-    const heic = await normalizeHeic(file);
-    const oriented = await fixOrientation(heic);
-    const compressed = await resizeAndCompress(oriented);
+    try {
+      const heic = await normalizeHeic(file);
+      const oriented = await fixOrientation(heic);
+      const compressed = await resizeAndCompress(oriented);
 
-    setIsProcessing(false);
+      setIsProcessing(false);
 
-    const confirmUpload = confirm(
-      `La imagen fue optimizada (${(compressed.size / 1024 / 1024).toFixed(
-        2,
-      )} MB). ¿Deseas usarla?`,
-    );
+      const key = `organizations/${organizationId}/addresses/${compressed.name}`;
+      uploadedKey.current = key;
 
-    if (!confirmUpload) return null;
+      await retry(() => uploadFile(compressed, key));
 
-    const key = `organizations/${organizationId}/addresses/${compressed.name}`;
-    uploadedKey.current = key;
-
-    // await retry(() => uploadChunked(compressed, key));
-    await retry(() => uploadFile(compressed, key));
-
-    return `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${key}`;
+      return `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${key}`;
+    } catch (err) {
+      setIsProcessing(false);
+      setIsUploading(false);
+      const message =
+        err instanceof Error ? err.message : "Error al procesar la imagen.";
+      setError(message);
+      return null;
+    }
   }
-
-  /* ------------------------------------------ */
-  /* Cancelar                                  */
-  /* ------------------------------------------ */
 
   async function cancelUpload() {
     abortController.current?.abort();
@@ -207,8 +174,10 @@ export function useSmartImageUpload() {
     if (uploadedKey.current) {
       await fetch("/api/delete-image", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: uploadedKey.current }),
       });
+      uploadedKey.current = null;
     }
 
     setUploadProgress(0);

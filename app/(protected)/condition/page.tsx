@@ -1,19 +1,17 @@
 export default function ConditionPage() {
   return (
-    <div className="px-4 py-6 space-y-6">
-      {/* Introdução */}
-      <section className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl p-6 shadow max-w-2xl mx-auto">
+    <div className="space-y-6 px-4 py-6">
+      <section className="mx-auto max-w-2xl rounded-2xl bg-muted p-6 shadow">
         <h1 className="text-4xl font-semibold">Condiciones de Uso</h1>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400 text-lg">
+        <p className="mt-2 text-lg text-muted-foreground">
           Aquí puedes consultar las condiciones de uso de este sistema.
         </p>
       </section>
 
-      {/* Condições */}
-      <div className="space-y-6 max-w-2xl mx-auto p-6 text-base text-zinc-700 dark:text-zinc-300">
-        <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl shadow p-4 space-y-4">
+      <div className="mx-auto max-w-2xl space-y-6 p-6 text-base text-foreground/80">
+        <div className="space-y-4 rounded-2xl bg-muted p-4 shadow">
           <h2 className="text-xl font-semibold">Términos Generales</h2>
-          <ul className="list-disc pl-5 space-y-2">
+          <ul className="list-disc space-y-2 pl-5">
             <li>
               Todos los derechos están reservados. Sin embargo, el uso de este
               sistema es gratuito.
@@ -25,9 +23,9 @@ export default function ConditionPage() {
           </ul>
         </div>
 
-        <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl shadow p-4 space-y-4">
+        <div className="space-y-4 rounded-2xl bg-muted p-4 shadow">
           <h2 className="text-xl font-semibold">Privacidad y Datos</h2>
-          <ul className="list-disc pl-5 space-y-2">
+          <ul className="list-disc space-y-2 pl-5">
             <li>
               No almacenamos información sensible, cumpliendo con la{" "}
               <strong>Ley General de Protección de Datos (LGPD)</strong> de
@@ -49,7 +47,7 @@ export default function ConditionPage() {
           </ul>
         </div>
 
-        <div className="bg-yellow-100 dark:bg-yellow-900 rounded-2xl shadow p-4 space-y-4">
+        <div className="space-y-4 rounded-2xl bg-yellow-100 p-4 shadow dark:bg-yellow-900">
           <h2 className="text-xl font-semibold text-yellow-800 dark:text-yellow-300">
             Información para Administradores
           </h2>

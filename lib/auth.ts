@@ -4,23 +4,34 @@ import { organization } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { prisma } from "./prisma";
 import { ac, admin, member, owner } from "./auth/permissions";
-import { getActiveOrganization } from "@/server/organization/organization.queries";
+
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+if (!googleClientId || !googleClientSecret) {
+  throw new Error(
+    "[auth] Faltan variables de entorno: GOOGLE_CLIENT_ID y/o GOOGLE_CLIENT_SECRET",
+  );
+}
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
 
-  /* 🔐 SESSÃO — ALTERAÇÃO PRINCIPAL */
   session: {
-    expiresIn: 60 * 60, // 1 hora (3600s)
-    disableSessionRefresh: true, // impede aumentar a duração automática
+    expiresIn: 60 * 60, // 1 hora
+    disableSessionRefresh: true,
   },
+
+  trustedOrigins: process.env.NEXT_PUBLIC_APP_URL
+    ? [process.env.NEXT_PUBLIC_APP_URL]
+    : [],
 
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      clientId: googleClientId,
+      clientSecret: googleClientSecret,
     },
   },
 
@@ -39,11 +50,16 @@ export const auth = betterAuth({
     session: {
       create: {
         before: async (session) => {
-          const organization = await getActiveOrganization(session.userId);
+          const membership = await prisma.member.findFirst({
+            where: { userId: session.userId },
+            orderBy: { lastActiveAt: "desc" }, // ← última org acessada
+            select: { organizationId: true },
+          });
+
           return {
             data: {
               ...session,
-              activeOrganizationId: organization?.id,
+              activeOrganizationId: membership?.organizationId ?? null,
             },
           };
         },
@@ -52,16 +68,7 @@ export const auth = betterAuth({
   },
 
   plugins: [
-    organization({
-      ac,
-      roles: {
-        owner,
-        admin,
-        member,
-      },
-    }),
-
-    // ⚠️ Boa prática: sempre por último
-    nextCookies(),
+    organization({ ac, roles: { owner, admin, member } }),
+    nextCookies(), // sempre por último
   ],
 });

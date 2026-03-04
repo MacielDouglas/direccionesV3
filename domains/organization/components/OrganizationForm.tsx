@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import {
@@ -11,56 +10,56 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { createOrganizationAction } from "@/server/organization/organization.actions";
+import {
+  createOrganizationAction,
+  setActiveOrg,
+} from "@/server/organization/organization.actions";
+import { createOrganizationSchema } from "@/domains/organization/schemas/organization.schema";
+import type { z } from "zod";
 
-const formSchema = z.object({
-  name: z.string().min(2).max(50),
-  slug: z.string().min(2).max(50),
-});
+type FormValues = z.infer<typeof createOrganizationSchema>;
 
-function createSlug(text: string) {
+function createSlug(text: string): string {
   return text
-    .normalize("NFD") // remove acentos
+    .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s]/g, "") // remove símbolos
-    .replace(/\s+/g, "_"); // troca espaços por _
+    .replace(/[^\w\s]/g, "")
+    .replace(/\s+/g, "_");
 }
 
 export default function OrganizationForm() {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      slug: "",
-    },
+  const form = useForm<FormValues>({
+    resolver: zodResolver(createOrganizationSchema),
+    defaultValues: { name: "", slug: "" },
   });
 
-  const nameValue = useWatch({
-    control: form.control,
-    name: "name",
-  });
-
+  const nameValue = useWatch({ control: form.control, name: "name" });
   const slug = useMemo(() => createSlug(nameValue), [nameValue]);
 
   useEffect(() => {
-    form.setValue("slug", slug);
+    form.setValue("slug", slug, { shouldValidate: true });
   }, [slug, form]);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: FormValues) {
     try {
-      await createOrganizationAction(values);
-
-      toast.success("Organização Criada!");
+      const newOrg = await createOrganizationAction(values);
+      toast.success("¡Organización creada correctamente!");
+      if (newOrg?.id) {
+        await setActiveOrg(newOrg.id);
+      }
       form.reset();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Erro ao criar organização",
+        error instanceof Error
+          ? error.message
+          : "Error al crear la organización.",
       );
     }
   }
@@ -69,17 +68,18 @@ export default function OrganizationForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 md:flex items-center gap-3 w-full bg-slate-200 p-5 rounded-xl"
+        className="w-full space-y-4 rounded-xl bg-muted p-5 md:flex md:items-end md:gap-3 md:space-y-0"
       >
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nome da organização</FormLabel>
+            <FormItem className="flex-1">
+              <FormLabel>Nombre de la organización</FormLabel>
               <FormControl>
-                <Input placeholder="Nova Organização" {...field} />
+                <Input placeholder="Nueva Organización" {...field} />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -88,20 +88,29 @@ export default function OrganizationForm() {
           control={form.control}
           name="slug"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Slug (gerado automaticamente)</FormLabel>
+            <FormItem className="flex-1">
+              <FormLabel>Slug (generado automáticamente)</FormLabel>
               <FormControl>
-                <Input disabled placeholder="slug_gerado" {...field} />
+                <Input disabled placeholder="slug_generado" {...field} />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
 
-        <Button disabled={form.formState.isSubmitting} type="submit">
+        <Button
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          aria-busy={form.formState.isSubmitting}
+          className="w-full md:w-auto"
+        >
           {form.formState.isSubmitting ? (
-            <Loader2 className="size-4 animate-spin" />
+            <>
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+              <span>Creando…</span>
+            </>
           ) : (
-            "Criar organização"
+            "Crear organización"
           )}
         </Button>
       </form>

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Address } from "@prisma/client";
+import type { Address } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -16,17 +16,14 @@ type AddressListScreenProps = {
   query?: string;
 };
 
-const ADDRESS_PLACEHOLDER = "/images/address-placeholder.jpg"; // ajuste para seu placeholder
+const ADDRESS_PLACEHOLDER = "/images/address-placeholder.jpg";
 
 function AddressTypeIcon({ type }: { type: string }) {
   const config = ADDRESS_TYPE_OPTIONS.find((t) => t.value === type);
   if (!config) return null;
   const Icon = config.icon;
   return (
-    <span
-      aria-label={`Tipo: ${config.label}`}
-      // className="bg-black rounded-bl-xl "
-    >
+    <span aria-label={`Tipo: ${config.label}`}>
       <Icon className={config.color} size={28} aria-hidden="true" />
     </span>
   );
@@ -42,20 +39,20 @@ function StatusBadge({
   return (
     <div
       role="group"
-      aria-label="Status do endereço"
+      aria-label="Estado de la dirección"
       className="flex flex-wrap gap-2"
     >
       <span
-        className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
           confirmed
             ? "bg-blue-100/20 text-blue-300"
             : "bg-red-100/20 text-red-400"
         }`}
       >
-        {confirmed ? "✓ Confirmado" : "✗ No confirmado"}
+        {confirmed ? "✓ Confirmada" : "✗ No confirmada"}
       </span>
       <span
-        className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
           active ? "bg-blue-100/20 text-blue-300" : "bg-red-100/20 text-red-400"
         }`}
       >
@@ -88,9 +85,9 @@ export default function AddressListScreen({
   const hasResults = addresses.length > 0;
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-3 py-4 sm:px-4 sm:py-6 flex flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-3 py-4 sm:px-4 sm:py-6">
       {/* ── Search ── */}
-      <section aria-label="Buscar endereços">
+      <section aria-label="Buscar dirección">
         <form
           onSubmit={handleSearch}
           role="search"
@@ -101,14 +98,14 @@ export default function AddressListScreen({
           </label>
           <div className="relative flex-1">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
               aria-hidden="true"
             />
             <Input
               id="address-search"
               type="search"
               autoComplete="off"
-              className="bg-white pl-9 rounded-xl border border-border focus-visible:ring-1 focus-visible:ring-orange-500"
+              className="rounded-xl border border-border pl-9 focus-visible:ring-1 focus-visible:ring-brand"
               placeholder="Buscar dirección..."
               value={value}
               onChange={(e) => setValue(e.target.value)}
@@ -128,14 +125,14 @@ export default function AddressListScreen({
       >
         {hasResults
           ? `${addresses.length} dirección${addresses.length !== 1 ? "es" : ""} encontrada${addresses.length !== 1 ? "s" : ""}`
-          : "Nenhum endereço encontrado"}
+          : "No se encontraron direcciones."}
       </p>
 
       {/* ── List ── */}
       {hasResults ? (
         <ul
-          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-          aria-label="Lista de endereços"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+          aria-label="Lista de direcciones"
         >
           {addresses.map((address) => {
             const label = `${address.businessName ?? address.street}, ${address.number} — ${address.neighborhood}, ${address.city}`;
@@ -144,11 +141,10 @@ export default function AddressListScreen({
               <li key={address.id}>
                 <Link
                   href={`/org/${organizationSlug}/addresses/${address.id}`}
-                  aria-label={`Ver detalhes: ${label}`}
-                  className="group block rounded-2xl overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                  aria-label={`Ver detalles: ${label}`}
+                  className="group block overflow-hidden rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
                 >
-                  <article className="relative w-full aspect-video bg-muted">
-                    {/* Background Image */}
+                  <article className="relative aspect-video w-full bg-muted">
                     <Image
                       src={address.image ?? ADDRESS_PLACEHOLDER}
                       alt=""
@@ -159,44 +155,39 @@ export default function AddressListScreen({
                       priority={false}
                     />
 
-                    {/* Dark overlay */}
                     <div
-                      className="absolute inset-0 bg-black/20 group-hover:bg-black/55 transition-colors duration-300"
+                      className="absolute inset-0 bg-black/20 transition-colors duration-300 group-hover:bg-black/55"
                       aria-hidden="true"
                     />
 
                     {/* Type icon — top right */}
-                    <div className="absolute top-[0%] right-[0%] z-10 bg-black/70 p-2 rounded-bl-xl">
+                    <div className="absolute right-0 top-0 z-10 rounded-bl-xl bg-black/70 p-2">
                       <AddressTypeIcon type={address.type} />
                     </div>
 
                     {/* Content — bottom */}
-                    <div className="absolute bottom-0 inset-x-0 z-10 bg-linear-to-t from-black/80 via-black/50 to-black/30 px-3 pt-1 pb-3 flex flex-col gap-1.5">
-                      {/* Name */}
+                    <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-1.5 bg-liner-to-t from-black/80 via-black/50 to-transparent px-3 pb-3 pt-1">
                       {address.businessName && (
-                        <p className="text-lg sm:text-base font-semibold text-white leading-tight tracking-wide truncate">
+                        <p className="truncate text-lg font-semibold leading-tight tracking-wide text-white sm:text-base">
                           {address.businessName}
                         </p>
                       )}
 
-                      {/* Street */}
-                      <p className="text-base sm:text-sm text-primary-lgt font-light flex items-center gap-1 truncate">
+                      <p className="flex items-center gap-1 truncate text-base font-light text-white/80 sm:text-sm">
                         <MapPin
-                          className="shrink-0 w-3.5 h-3.5"
+                          className="h-3.5 w-3.5 shrink-0"
                           aria-hidden="true"
                         />
                         {address.street}, {address.number} —{" "}
                         {address.neighborhood}, {address.city}
                       </p>
 
-                      {/* Extra info */}
                       {address.info && (
-                        <p className="text-xs text-white/60 truncate">
+                        <p className="truncate text-xs text-white/60">
                           {address.info}
                         </p>
                       )}
 
-                      {/* Status badges */}
                       <StatusBadge
                         active={address.active}
                         confirmed={address.confirmed}
@@ -211,13 +202,12 @@ export default function AddressListScreen({
       ) : (
         /* ── Empty state ── */
         <section
-          aria-label="Nenhum resultado"
+          aria-label="Sin resultados"
           className="flex flex-col items-center justify-center gap-3 py-16 text-center text-muted-foreground"
         >
-          <MapPin className="w-10 h-10 opacity-30" aria-hidden="true" />
+          <MapPin className="h-10 w-10 opacity-30" aria-hidden="true" />
           <p className="text-sm font-medium">
-            Nenhum endereço encontrado
-            {query ? ` para "${query}"` : ""}
+            No se encontraron direcciones{query ? ` para "${query}"` : "."}
           </p>
           {query && (
             <Button
@@ -228,7 +218,7 @@ export default function AddressListScreen({
                 router.push(`/org/${organizationSlug}/addresses`);
               }}
             >
-              Limpar busca
+              Limpiar búsqueda
             </Button>
           )}
         </section>
@@ -236,5 +226,3 @@ export default function AddressListScreen({
     </div>
   );
 }
-
-// Dentro de transportes / call center

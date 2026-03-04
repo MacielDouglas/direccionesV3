@@ -1,19 +1,18 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "mapbox-gl/dist/mapbox-gl.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-primary-lgt: #f1f2f4;
-  --color-primary-drk: #101010;
-  --color-second-lgt: #d4d4d4;
-  --color-second-drk: #252525;
-  --color-destaque-primary: #ff6828;
-  --color-destaque-second: #666666;
-  --color-tertiary-drk: #1a1a1a;
-  --color-tertiary-lgt: #cccccc;
-  /* --color-tertiary-lgt: #fff; */
+  --color-brand: #ff6828;
+  --color-brand-muted: #666666;
+
+  --color-surface-light: #f1f2f4;
+  --color-surface-dark: #101010;
+  --color-surface-subtle-light: #d4d4d4;
+  --color-surface-subtle-dark: #252525;
+  --color-surface-elevated-dark: #1a1a1a;
+  --color-surface-elevated-light: #cccccc;
 }
 
 @theme inline {
@@ -129,10 +128,30 @@
 }
 
 @layer base {
-  * {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

@@ -5,30 +5,31 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-
 import { MapPinPen } from "lucide-react";
 import { useFormContext } from "react-hook-form";
-import { AddressFormData } from "../../domain/address.schema";
+import type { AddressFormData } from "../../domain/address.schema";
 import { ADDRESS_FORMS_OPTIONS } from "../config/address-form.config";
+
+const inputStyle =
+  "border-0 border-b-2 border-b-muted rounded-none px-0 shadow-none bg-transparent " +
+  "focus-visible:ring-0 focus-visible:outline-none focus-visible:border-b-brand " +
+  "transition-colors duration-150";
 
 export default function AddressFormFields() {
   const { control, watch } = useFormContext<AddressFormData>();
-
   const addressType = watch("addressType");
 
-  const inputStyle =
-    "bg-muted/40 border-0 border-b-2 border-transparent rounded-none px-0 shadow-none focus-visible:ring-0 focus-visible:outline-none transition-colors duration-150 border-b-muted !focus:border-orange-500 bg-white p-2";
-
   return (
-    <section className="space-y-4  py-5">
+    <section className="space-y-4 py-5">
       <header>
-        <h2 className="text-xl font-semibold inline-flex gap-1 items-baseline">
-          <MapPinPen className="text-orange-500 w-7 h-7" /> Información de la
-          dirección
+        <h2 className="inline-flex items-baseline gap-1 text-xl font-semibold">
+          <MapPinPen className="h-7 w-7 text-brand" aria-hidden="true" />
+          Información de la dirección
         </h2>
         <p className="text-sm text-muted-foreground">
           Por favor enviar información como: calle, número de casa, ciudad,
@@ -38,9 +39,6 @@ export default function AddressFormFields() {
 
       <div className="space-y-6">
         {ADDRESS_FORMS_OPTIONS.map((item, index) => {
-          /**
-           * esconder businessName quando for casa
-           */
           if (
             item.kind === "text" &&
             item.name === "businessName" &&
@@ -49,19 +47,15 @@ export default function AddressFormFields() {
             return null;
           }
 
-          /**
-           * GROUP
-           */
           if (item.kind === "group") {
             const hasSwitch =
-              item.fields?.some((field) => field.kind === "switch") ?? false;
+              item.fields?.some((f) => f.kind === "switch") ?? false;
 
-            // GROUP DE SWITCHES
             if (hasSwitch) {
               return (
                 <div
                   key={index}
-                  className="space-y-3 flex items-center justify-between gap-5"
+                  className="flex items-center justify-between gap-5"
                 >
                   {item.fields?.map((sub) => (
                     <FormField
@@ -69,13 +63,12 @@ export default function AddressFormFields() {
                       control={control}
                       name={sub.name as keyof AddressFormData}
                       render={({ field }) => (
-                        <FormItem className="flex items-center justify-between">
+                        <FormItem className="flex items-center gap-3">
                           <FormLabel>{sub.label}</FormLabel>
                           <FormControl>
                             <Switch
                               checked={Boolean(field.value)}
                               onCheckedChange={field.onChange}
-                              className="checked:text-orange-500!"
                             />
                           </FormControl>
                         </FormItem>
@@ -86,7 +79,6 @@ export default function AddressFormFields() {
               );
             }
 
-            // GROUP DE INPUTS
             return (
               <div className="flex gap-3" key={index}>
                 {item.fields?.map((sub) => (
@@ -95,7 +87,7 @@ export default function AddressFormFields() {
                     control={control}
                     name={sub.name as keyof AddressFormData}
                     render={({ field }) => (
-                      <FormItem className="flex-1 ">
+                      <FormItem className="flex-1">
                         <FormLabel>{sub.label}</FormLabel>
                         <FormControl>
                           <Input
@@ -105,6 +97,7 @@ export default function AddressFormFields() {
                             placeholder={sub.placeholder}
                           />
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -113,15 +106,12 @@ export default function AddressFormFields() {
             );
           }
 
-          /**
-           * TEXTAREA
-           */
           if (item.name === "info") {
             return (
               <FormField
                 key={item.name}
                 control={control}
-                name={item.name}
+                name="info"
                 render={({ field }) => {
                   const length = String(field.value ?? "").length;
                   const max = 300;
@@ -130,19 +120,16 @@ export default function AddressFormFields() {
                   return (
                     <FormItem>
                       <FormLabel>{item.label}</FormLabel>
-
                       <FormControl>
                         <Textarea
                           {...field}
                           placeholder={item.placeholder}
                           maxLength={max}
-                          // dir={dir}
                           rows={4}
-                          className={`${inputStyle} `}
+                          className={inputStyle}
                         />
                       </FormControl>
-
-                      <div className="flex justify-end text-xs mt-1">
+                      <div className="mt-1 flex justify-end text-xs">
                         <span
                           className={
                             length >= max
@@ -151,10 +138,12 @@ export default function AddressFormFields() {
                                 ? "text-yellow-500"
                                 : "text-muted-foreground"
                           }
+                          aria-live="polite"
                         >
                           {length}/{max}
                         </span>
                       </div>
+                      <FormMessage />
                     </FormItem>
                   );
                 }}
@@ -162,9 +151,6 @@ export default function AddressFormFields() {
             );
           }
 
-          /**
-           * DEFAULT INPUT
-           */
           return (
             <FormField
               key={item.name}
@@ -181,6 +167,7 @@ export default function AddressFormFields() {
                       className={inputStyle}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />

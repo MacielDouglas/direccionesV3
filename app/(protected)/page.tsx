@@ -1,13 +1,15 @@
 import LogoutButton from "@/components/LogoutButton";
 import MainAppMenu from "@/components/menu/MainAppMenu";
-import { getActiveOrganization } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
 
 export default async function Home() {
   const data = await getCurrentUser();
-  const member = data?.session.session.activeOrganizationId;
 
-  const organization = await getActiveOrganization(data?.user.id ?? "");
+  const hasOrganization = !!data?.session.session.activeOrganizationId;
+
+  // Usa activeOrganization já resolvida pelo getCurrentUser
+  // em vez de fazer uma segunda query
+  const organization = data?.activeOrganization;
 
   return (
     <main className="h-full w-full">
@@ -17,21 +19,19 @@ export default async function Home() {
           <span className="font-medium">{data?.session.user.name}</span>
         </h1>
 
-        {member ? (
+        {hasOrganization ? (
           <div className="space-y-6">
-            <p className="text-lg">Para empezar, elige una opción</p>
-
+            <p className="text-lg">Para empezar, elige una opción.</p>
             <MainAppMenu
-              role={data.memberRole?.role}
+              role={data?.memberRole?.role ?? null}
               orgSlug={organization?.slug ?? ""}
             />
           </div>
         ) : (
-          <div className="space-y-4 text-lg">
-            <p>Obrigado por se conectar!!</p>
-            <p>Você ainda não faz parte de um grupo</p>
-            <p>Fale com um administrador para pertencer a um grupo.</p>
-
+          <div className="space-y-4 text-lg text-muted-foreground">
+            <p>¡Gracias por conectarte!</p>
+            <p>Todavía no formas parte de ningún grupo.</p>
+            <p>Habla con un administrador para unirte a uno.</p>
             <LogoutButton />
           </div>
         )}

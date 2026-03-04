@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "*.tiles.mapbox.com",
+        hostname: "events.mapbox.com",
       },
     ],
   },

@@ -11,57 +11,35 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
-type Props = {
-  src: string;
-  alt: string;
-  // children?: React.ReactNode;
-};
+type Props = { src: string; alt: string };
 
 export function AddressImageViewer({ src, alt }: Props) {
   return (
     <Dialog>
-      <figure className="relative w-full h-40 sm:h-80 md:h-96">
+      <figure className="relative h-40 w-full sm:h-80 md:h-96">
         <DialogTrigger asChild>
           <Image
             src={src}
             alt={alt}
             fill
             priority
-            className="object-cover cursor-pointer rounded-xl"
-            sizes="100vw"
+            className="cursor-pointer rounded-xl object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
           />
-        </DialogTrigger>
-        {/* {children} */}
-
-        <DialogTrigger asChild>
-          {/* <Button
-            size="sm"
-            className="absolute top-4 right-4 bg-black/80 hover:bg-black text-white"
-          >
-            Ver imagen
-          </Button> */}
         </DialogTrigger>
       </figure>
 
-      <DialogContent
-        className="
-          p-0
-          border-none
-          bg-black
-          max-w-none
-          w-screen
-          h-screen
-          rounded-none
-        "
-      >
+      <DialogContent className="h-screen max-w-none rounded-none border-none bg-black p-0 w-screen">
         <DialogHeader className="sr-only">
-          <DialogTitle>Visualização da imagem</DialogTitle>
+          <DialogTitle>Visualización de imagen</DialogTitle>
           <DialogDescription>
-            Visualização ampliada da imagem do endereço.
+            Vista ampliada de la imagen de la dirección.
           </DialogDescription>
         </DialogHeader>
-        <div className="relative w-full h-full">
+
+        <div className="relative h-full w-full">
           <Image
             src={src}
             alt={alt}
@@ -71,14 +49,14 @@ export function AddressImageViewer({ src, alt }: Props) {
             className="object-contain"
           />
 
-          {/* <DialogTitle className="">{alt}</DialogTitle> */}
           <DialogClose asChild>
             <Button
-              size="sm"
+              size="icon"
               variant="secondary"
-              className="absolute top-40 right-6 border-2"
+              aria-label="Cerrar imagen"
+              className="absolute right-4 top-4 rounded-full opacity-80 hover:opacity-100"
             >
-              Cerrar
+              <X className="h-5 w-5" aria-hidden="true" />
             </Button>
           </DialogClose>
         </div>

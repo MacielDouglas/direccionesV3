@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Camera, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormField, FormItem } from "@/components/ui/form";
-import { AddressFormData } from "../../domain/address.schema";
+import type { AddressFormData } from "../../domain/address.schema";
 import { getDefaultAddressImage } from "../../utils/getDefaultAddressImage";
 import { useSmartImageUpload } from "../../hooks/useSmartImageUpload";
 import { useTenant } from "@/providers/TenantProvider";
@@ -20,7 +20,6 @@ export default function AddressImageField() {
   const isCustomImage = watch("image.isCustomImage");
 
   const inputRef = useRef<HTMLInputElement>(null);
-
   const [dragActive, setDragActive] = useState(false);
 
   const {
@@ -32,17 +31,10 @@ export default function AddressImageField() {
     isUploading,
   } = useSmartImageUpload();
 
-  /* ------------------------------------------ */
-  /* Default image por tipo                    */
-  /* ------------------------------------------ */
-
   useEffect(() => {
     if (isCustomImage) return;
-
     const defaultImage = getDefaultAddressImage(addressType);
-    if (defaultImage) {
-      setValue("image.imageUrl", defaultImage);
-    }
+    if (defaultImage) setValue("image.imageUrl", defaultImage);
   }, [addressType, isCustomImage, setValue]);
 
   async function handleFile(file?: File) {
@@ -60,40 +52,29 @@ export default function AddressImageField() {
         setValue("image.imageUrl", uploadedUrl);
       }
     } catch (err) {
-      console.error(err);
+      console.error("[AddressImageField] Error al procesar imagen:", err);
     }
   }
 
-  /* ------------------------------------------ */
-  /* Remove image                              */
-  /* ------------------------------------------ */
-
   function handleRemove() {
     cancelUpload();
-
     const defaultImage = getDefaultAddressImage(addressType);
-
     setValue("image.imageFile", undefined);
     setValue("image.imageUrl", defaultImage ?? undefined);
     setValue("image.isCustomImage", false);
   }
 
-  /* ------------------------------------------ */
-  /* Drag & Drop                               */
-  /* ------------------------------------------ */
-
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     setDragActive(false);
-    const file = e.dataTransfer.files?.[0];
-    handleFile(file);
+    handleFile(e.dataTransfer.files?.[0]);
   }
 
   return (
     <section className="space-y-4 border-b p-4">
       <header>
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Camera className="text-orange-500 w-6 h-6" />
+        <h2 className="flex items-center gap-2 text-lg font-semibold">
+          <Camera className="h-6 w-6 text-brand" aria-hidden="true" />
           Imagen del lugar
         </h2>
         <p className="text-xs text-muted-foreground">
@@ -107,61 +88,66 @@ export default function AddressImageField() {
         render={() => (
           <FormItem>
             <div
+              role="button"
+              tabIndex={0}
+              aria-label="Seleccionar imagen"
               onClick={() => inputRef.current?.click()}
+              onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
               onDrop={handleDrop}
               onDragOver={(e) => {
                 e.preventDefault();
                 setDragActive(true);
               }}
               onDragLeave={() => setDragActive(false)}
-              className={`relative w-full aspect-square rounded-2xl border-2 border-dashed transition-all cursor-pointer flex items-center justify-center overflow-hidden
-              ${
-                dragActive ? "border-orange-500 bg-orange-50" : "border-muted"
-              }`}
+              className={`relative flex aspect-square w-full cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed transition-all
+                ${dragActive ? "border-brand bg-brand/5" : "border-muted"}`}
             >
-              {/* ---------------- Preview ---------------- */}
-
               {preview && (
                 <Image
                   src={preview}
-                  alt="Imagen"
+                  alt="Vista previa de la imagen seleccionada"
                   fill
                   className="object-cover"
                 />
               )}
 
-              {/* ---------------- Placeholder ------------- */}
-
               {!preview && !isProcessing && (
                 <div className="flex flex-col items-center text-muted-foreground">
-                  <UploadCloud className="w-8 h-8 mb-2" />
+                  <UploadCloud className="mb-2 h-8 w-8" aria-hidden="true" />
                   <span className="text-sm">Subir imagen</span>
                 </div>
               )}
 
-              {/* ---------------- Skeleton --------------- */}
-
               {isProcessing && (
-                <div className="absolute inset-0 animate-pulse bg-muted" />
+                <div
+                  className="absolute inset-0 animate-pulse bg-muted"
+                  aria-hidden="true"
+                />
               )}
 
-              {/* ---------------- Overlay Progress -------- */}
-
               {(isProcessing || isUploading) && (
-                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white space-y-3 p-4">
+                <div
+                  role="status"
+                  aria-label={
+                    isProcessing
+                      ? `Procesando ${processingProgress}%`
+                      : `Enviando ${uploadProgress}%`
+                  }
+                  className="absolute inset-0 flex flex-col items-center justify-center space-y-3 bg-black/60 p-4 text-white"
+                >
                   <p className="text-sm font-medium">
                     {isProcessing
                       ? `Procesando ${processingProgress}%`
                       : `Enviando ${uploadProgress}%`}
                   </p>
-
                   <progress
                     value={isProcessing ? processingProgress : uploadProgress}
                     max={100}
                     className="w-full"
+                    aria-hidden="true"
                   />
-
                   <Button
+                    type="button"
                     variant="destructive"
                     size="sm"
                     onClick={(e) => {
@@ -174,31 +160,28 @@ export default function AddressImageField() {
                 </div>
               )}
 
-              {/* ---------------- Remove Button ---------- */}
-
               {isCustomImage && !isUploading && (
                 <Button
                   type="button"
+                  size="sm"
+                  variant="destructive"
+                  className="absolute right-2 top-2"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleRemove();
                   }}
-                  size="sm"
-                  variant="destructive"
-                  className="absolute top-2 right-2"
                 >
-                  Remover
+                  Quitar imagen
                 </Button>
               )}
             </div>
-
-            {/* Hidden Input */}
 
             <input
               ref={inputRef}
               type="file"
               accept="image/*,.heic,.heif"
-              className="hidden"
+              className="sr-only"
+              aria-hidden="true"
               onChange={(e) => handleFile(e.target.files?.[0])}
             />
           </FormItem>

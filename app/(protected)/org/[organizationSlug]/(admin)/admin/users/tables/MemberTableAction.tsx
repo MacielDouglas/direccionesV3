@@ -17,14 +17,15 @@ export default function MembersTableAction({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleRemover = async () => {
+  const handleRemove = async () => {
     try {
       setIsLoading(true);
       await removeMemberManually(organizationId, memberIdOrEmail);
-      toast.success("Membro removido com sucesso!");
+      toast.success("Miembro eliminado correctamente.");
       router.refresh();
-    } catch {
-      toast.error("Erro ao remover membro");
+    } catch (error) {
+      console.error("[MembersTableAction]", error);
+      toast.error("Error al eliminar el miembro. Intente nuevamente.");
     } finally {
       setIsLoading(false);
     }
@@ -32,16 +33,18 @@ export default function MembersTableAction({
 
   return (
     <Button
+      type="button"
       size="icon"
       variant="destructive"
       className="shrink-0"
       disabled={isLoading}
-      onClick={handleRemover}
+      aria-label="Eliminar miembro"
+      onClick={handleRemove}
     >
       {isLoading ? (
-        <Loader2 className="size-4 animate-spin" />
+        <Loader2 className="size-4 animate-spin" aria-hidden="true" />
       ) : (
-        <Trash2 className="size-4" />
+        <Trash2 className="size-4" aria-hidden="true" />
       )}
     </Button>
   );

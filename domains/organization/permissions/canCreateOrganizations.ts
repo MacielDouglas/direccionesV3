@@ -1,5 +1,5 @@
-import { Role } from "@/domains/member/types/role.types";
+import type { Role } from "@/domains/member/types/role.types";
 
-export function canCreateOrganization(role: Role) {
+export function canCreateOrganization(role: Role): boolean {
   return role === "owner";
 }

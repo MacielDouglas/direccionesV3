@@ -5,32 +5,40 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { LogOut } from "lucide-react";
-import { redirect } from "next/navigation";
 
 export default function LogoutButton() {
   const [loading, setLoading] = useState(false);
 
-  const signOut = async () => {
-    setLoading(true);
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          toast.success("Logout sucesso!!!");
-          redirect("/login");
+  const handleSignOut = async () => {
+    try {
+      setLoading(true);
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success("Sesión cerrada correctamente");
+            window.location.href = "/login";
+          },
+          onError: () => {
+            toast.error("Error al cerrar sesión. Intente nuevamente.");
+          },
         },
-      },
-    });
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Button
       variant="destructive"
-      className="mt-6"
-      onClick={signOut}
+      onClick={handleSignOut}
       disabled={loading}
+      aria-busy={loading}
+      aria-label={loading ? "Cerrando sesión…" : "Cerrar sesión"}
+      className="w-full"
     >
-      <LogOut className="mr-2 h-4 w-4" />
-      Salir
+      <LogOut className="h-4 w-4" aria-hidden="true" />
+      {loading ? "Cerrando sesión…" : "Cerrar sesión"}
     </Button>
   );
 }

@@ -2,7 +2,8 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AddressFormData, addressFormSchema } from "../domain/address.schema";
+import type { AddressFormData } from "../domain/address.schema";
+import { addressFormSchema } from "../domain/address.schema";
 
 export function useAddressForm(defaultValues?: Partial<AddressFormData>) {
   return useForm<AddressFormData>({
@@ -13,21 +14,18 @@ export function useAddressForm(defaultValues?: Partial<AddressFormData>) {
       number: "",
       neighborhood: "",
       city: "",
-      latitude: 0,
-      longitude: 0,
-
+      latitude: null,
+      longitude: null,
       image: {
         imageUrl: undefined,
         imageFile: undefined,
         isCustomImage: false,
       },
-
       active: true,
       confirmed: false,
       invited: false,
       info: "",
       businessName: null,
-
       ...defaultValues,
     },
   });
