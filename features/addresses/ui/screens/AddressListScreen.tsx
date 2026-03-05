@@ -88,6 +88,14 @@ export default function AddressListScreen({
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-3 py-4 sm:px-4 sm:py-6">
       {/* ── Search ── */}
       <section aria-label="Buscar dirección">
+        <div className="mb-6">
+          <Link
+            href={`/org/${organizationSlug}/addresses/new`}
+            className="p-2 rounded-md bg-black font-light text-xs text-white"
+          >
+            Enviar nueva dirección
+          </Link>
+        </div>
         <form
           onSubmit={handleSearch}
           role="search"
@@ -105,7 +113,7 @@ export default function AddressListScreen({
               id="address-search"
               type="search"
               autoComplete="off"
-              className="rounded-xl border border-border pl-9 focus-visible:ring-1 focus-visible:ring-brand"
+              className="rounded-xl border border-border pl-9 focus-visible:ring-1 focus-visible:ring-brand bg-white"
               placeholder="Buscar dirección..."
               value={value}
               onChange={(e) => setValue(e.target.value)}
@@ -156,7 +164,7 @@ export default function AddressListScreen({
                     />
 
                     <div
-                      className="absolute inset-0 bg-black/20 transition-colors duration-300 group-hover:bg-black/55"
+                      className="absolute inset-0 bg-black/30 transition-colors duration-300 group-hover:bg-black/55"
                       aria-hidden="true"
                     />
 
@@ -164,9 +172,16 @@ export default function AddressListScreen({
                     <div className="absolute right-0 top-0 z-10 rounded-bl-xl bg-black/70 p-2">
                       <AddressTypeIcon type={address.type} />
                     </div>
+                    <div className="absolute inset-x-0 bottom-[50%] z-20">
+                      {address.pendingDeletionAt && (
+                        <p className="uppercase text-red-500 bg-black/60 text-center p-2">
+                          Borrar dirección. Confirmación pendiente.
+                        </p>
+                      )}
+                    </div>
 
                     {/* Content — bottom */}
-                    <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-1.5 bg-liner-to-t from-black/80 via-black/50 to-transparent px-3 pb-3 pt-1">
+                    <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-1.5 bg-linear-to-t from-black/80 via-black/50 to-black/10 px-3 pb-3 pt-1">
                       {address.businessName && (
                         <p className="truncate text-lg font-semibold leading-tight tracking-wide text-white sm:text-base">
                           {address.businessName}

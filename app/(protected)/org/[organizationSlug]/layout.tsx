@@ -1,7 +1,6 @@
 import { TenantProvider } from "@/providers/TenantProvider";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
-import { mapAuthRole } from "@/infrastructure/auth/mapRole";
 import { notFound, redirect } from "next/navigation";
 
 type Props = {
@@ -29,7 +28,7 @@ export default async function TenantLayout({ children, params }: Props) {
     // Não redireciona — continua renderizando com a nova org ativa
   }
 
-  const role = data.memberRole?.role ? mapAuthRole(data.memberRole.role) : null;
+  const role = data.memberRole?.role ?? null;
 
   return (
     <TenantProvider

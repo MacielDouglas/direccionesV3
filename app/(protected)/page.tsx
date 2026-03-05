@@ -1,5 +1,6 @@
 import LogoutButton from "@/components/LogoutButton";
 import MainAppMenu from "@/components/menu/MainAppMenu";
+import { PendingDeletionBadge } from "@/features/addresses/ui/components/PendingDeletionBadge";
 import { getCurrentUser } from "@/server/users";
 
 export default async function Home() {
@@ -26,6 +27,13 @@ export default async function Home() {
               role={data?.memberRole?.role ?? null}
               orgSlug={organization?.slug ?? ""}
             />
+            {hasOrganization &&
+              ["admin", "owner"].includes(data?.memberRole?.role ?? "") && (
+                <PendingDeletionBadge
+                  organizationId={organization?.id ?? ""}
+                  orgSlug={organization?.slug ?? ""}
+                />
+              )}
           </div>
         ) : (
           <div className="space-y-4 text-lg text-muted-foreground">

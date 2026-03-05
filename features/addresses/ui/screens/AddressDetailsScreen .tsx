@@ -5,6 +5,8 @@ import { AddressImageViewer } from "../components/AddressImageViewer";
 import { AddressViewMap } from "@/features/map/components/AddressViewMap";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import DeleteAddressButton from "../components/DeleteAddressButton";
+// import { useState } from "react";
 
 type AddressDetailsScreenProps = {
   address: Address;
@@ -40,6 +42,7 @@ export default async function AddressDetailsScreen({
     getUniqueUser(address.createdUserId),
     address.updatedUserId ? getUniqueUser(address.updatedUserId) : null,
   ]);
+  // const [editing, setEditing] = useState(false)
 
   const typeConfig = ADDRESS_TYPE_OPTIONS.find((t) => t.value === address.type);
   const Icon = typeConfig?.icon;
@@ -87,7 +90,6 @@ export default async function AddressDetailsScreen({
             </div>
           )}
         </header>
-
         <div
           className="flex flex-wrap gap-3"
           role="group"
@@ -200,6 +202,9 @@ export default async function AddressDetailsScreen({
             <Button className="w-full sm:w-auto">Editar dirección</Button>
           </Link>
         </footer>
+      </section>
+      <section className="p-4">
+        <DeleteAddressButton addressId={address.id} />
       </section>
     </article>
   );

@@ -52,6 +52,8 @@ model User {
   members     Member[]
   invitations Invitation[]
 
+  deletionRequests  Address[]  @relation("AddressDeletionRequests")
+
   @@map("user")
 }
 
@@ -106,6 +108,13 @@ model Address {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  //Delete
+  pendingDeletion   Boolean   @default(false)
+  pendingDeletionAt DateTime?
+  pendingDeletionBy String?   // userId de quem solicitou
+
+  requestedBy  User? @relation("AddressDeletionRequests", fields: [pendingDeletionBy], references: [id])
 
   @@index([organizationId])
   @@index([latitude, longitude])

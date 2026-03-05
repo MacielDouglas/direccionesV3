@@ -1,28 +1,38 @@
 "use server";
 
 import { createOrganizationService } from "@/domains/organization";
-import { getSession } from "@/infrastructure/auth/session";
+import { getCurrentUser } from "@/server/users"; // ← era getSession
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { prisma } from "@/lib/prisma";
+import { toRole } from "@/domains/member/utils/toRole";
 
 export async function createOrganizationAction(data: {
   name: string;
   slug: string;
 }) {
-  const session = await getSession();
-  if (!session) throw new Error("No autorizado.");
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("No autorizado.");
 
   return createOrganizationService(data, {
-    userId: session.user.id,
-    role: session.user.role,
+    userId: currentUser.user.id,
+    role: toRole(currentUser.user.role), // ← string → Role | null
   });
 }
 
-// server/organization/organization.actions.ts
 export const setActiveOrg = async (organizationId: string) => {
   const reqHeaders = await headers();
-  const session = await auth.api.getSession({ headers: reqHeaders });
-  if (!session) throw new Error("No autenticado.");
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("No autenticado.");
+
+  await prisma.member.updateMany({
+    where: {
+      userId: currentUser.user.id,
+      organizationId: organizationId,
+    },
+    data: { lastActiveAt: new Date() },
+  });
 
   await auth.api.setActiveOrganization({
     body: { organizationId },
