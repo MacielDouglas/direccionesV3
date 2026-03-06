@@ -23,9 +23,9 @@ export type NavigationItem = {
 
 export const navigationMenu: NavigationItem[] = [
   {
-    id: "cards",
-    name: "Tarjetas",
-    href: "/cards",
+    id: "my-cards", // ← era "cards", renomeado
+    name: "Mis Tarjetas",
+    href: "/my-cards",
     icon: CreditCard,
   },
   {
@@ -62,29 +62,23 @@ export const navigationMenu: NavigationItem[] = [
     roles: ["admin", "owner"],
   },
   {
-    id: "user-cards",
+    id: "admin-cards", // ← era "cards", renomeado
     name: "Admin Tarjetas",
-    href: "/admin/user-cards",
+    href: "/admin/cards",
     icon: Layers,
     roles: ["admin", "owner"],
     children: [
       {
         id: "user-cards-manage",
-        name: "Enviar Tarjetas",
-        href: "/admin/user-cards/manage",
-        icon: Layers,
+        name: "Administrar Tarjetas",
+        href: "/admin/cards",
+        icon: Pencil,
       },
       {
         id: "user-cards-create",
         name: "Crear Tarjetas",
-        href: "/admin/user-cards/create",
+        href: "/admin/cards/new",
         icon: Plus,
-      },
-      {
-        id: "user-cards-edit",
-        name: "Editar Tarjetas",
-        href: "/admin/user-cards/edit",
-        icon: Pencil,
       },
     ],
   },

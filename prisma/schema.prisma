@@ -103,7 +103,7 @@ model Address {
   
   //  Relação com Card
   
-  cardId String? @unique
+  cardId String? 
   card   Card?   @relation(fields: [cardId], references: [id])
 
   createdAt DateTime @default(now())
@@ -127,45 +127,43 @@ model Address {
 //////////////////////////////////////////////////////
 
 model Card {
-  id String @id @default(uuid())
+  id     String @id @default(uuid())
+  number Int
 
-  
-    // Dono do Card
-   
+  organizationId String
+
+  // Dono do Card
   ownerId String?
   owner   User?   @relation("CardOwner", fields: [ownerId], references: [id])
 
-  
-  //  Auditoria
-   
+  // Auditoria
   createdById String
   createdBy   User   @relation("CardCreatedBy", fields: [createdById], references: [id])
 
   updatedById String?
   updatedBy   User?   @relation("CardUpdatedBy", fields: [updatedById], references: [id])
 
-  
-  //  Atribuição
-   
+  // Atribuição
   assignedUserId String?
   assignedUser   User?   @relation("CardAssignedTo", fields: [assignedUserId], references: [id])
 
-  
-    // Relações
-  
+  // Relações
   addresses Address[]
   events    CardEvent[]
 
-  startDate DateTime
-  endDate   DateTime
+  startDate DateTime?  // ← agora opcional
+  endDate   DateTime?  // ← agora opcional
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([organizationId, number])  // ← número único por org
   @@index([assignedUserId])
   @@index([ownerId])
+  @@index([organizationId])
   @@map("card")
 }
+
 
 //////////////////////////////////////////////////////
 // AUTH

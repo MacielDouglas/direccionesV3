@@ -22,12 +22,14 @@ export default function MenuItem({
       href={`/org/${orgSlug}${item.href}`}
       onClick={onSelect}
       className={cn(
-        "flex items-center gap-3 text-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
+        "text-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
         className,
       )}
     >
-      <Icon className="h-7 w-7" aria-hidden="true" />
-      <span className="font-medium">{item.name}</span>
+      <div className="inline-flex gap-3">
+        <Icon className="h-7 w-7" aria-hidden="true" />
+        <span className="font-medium">{item.name}</span>
+      </div>
     </Link>
   );
 }

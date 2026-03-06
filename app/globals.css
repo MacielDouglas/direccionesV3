@@ -154,4 +154,16 @@
       transition-duration: 0.01ms !important;
     }
   }
+
+  /* Mapbox popup — reset para tema customizado */
+  .card-address-popup .mapboxgl-popup-content {
+    background: transparent !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  .card-address-popup .mapboxgl-popup-tip {
+    display: none !important;
+  }
 }
