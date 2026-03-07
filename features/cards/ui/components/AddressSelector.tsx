@@ -46,7 +46,7 @@ export function AddressSelector({
   }
 
   return (
-    <fieldset>
+    <fieldset className="min-w-0">
       <legend className="text-sm font-medium mb-2">
         Direcciones{" "}
         <span className="text-muted-foreground font-normal">
@@ -58,14 +58,19 @@ export function AddressSelector({
         role="listbox"
         aria-multiselectable="true"
         aria-label="Seleccionar direcciones"
-        className="flex flex-col gap-2"
+        className="flex flex-col gap-2 min-w-0"
       >
         {addresses.map((addr, index) => {
           const isSelected = selected.includes(addr.id);
           const num = index + 1;
 
           return (
-            <li key={addr.id} role="option" aria-selected={isSelected}>
+            <li
+              key={addr.id}
+              role="option"
+              aria-selected={isSelected}
+              className="min-w-0"
+            >
               <button
                 type="button"
                 onClick={() => {
@@ -73,7 +78,9 @@ export function AddressSelector({
                   flyTo(addr);
                 }}
                 className={cn(
-                  "w-full text-left rounded-lg border p-3 transition-colors",
+                  // w-full + min-w-0 + overflow-hidden impedem expansão horizontal
+                  "w-full min-w-0 overflow-hidden",
+                  "text-left rounded-lg border p-3 transition-colors",
                   "flex items-center gap-3",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isSelected
@@ -93,15 +100,14 @@ export function AddressSelector({
                   {num}
                 </span>
 
-                <span className="flex flex-col gap-0.5 min-w-0">
-                  {/* {addr.businessName && ( */}
+                {/* Texto — min-w-0 + overflow-hidden para truncate funcionar */}
+                <span className="flex flex-col gap-0.5 min-w-0 flex-1 overflow-hidden">
                   <span className="font-medium text-sm truncate">
-                    {addr.businessName ? addr.businessName : "Casa"}
+                    {addr.businessName ?? "Casa"}
                   </span>
-                  {/* )} */}
-                  <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  <span className="text-sm text-muted-foreground flex items-center gap-1 min-w-0">
                     <MapPin className="size-3 shrink-0" aria-hidden />
-                    <span className="truncate">
+                    <span className="truncate min-w-0">
                       {addr.street}, {addr.number} — {addr.neighborhood},{" "}
                       {addr.city}
                     </span>
@@ -110,7 +116,7 @@ export function AddressSelector({
 
                 <CheckCircle2
                   className={cn(
-                    "ml-auto size-4 shrink-0 transition-colors",
+                    "shrink-0 size-4 transition-colors",
                     isSelected ? "text-blue-500" : "text-muted-foreground/20",
                   )}
                   aria-hidden

@@ -13,6 +13,7 @@ import { updateCardAction } from "../../application/card.actions";
 import { Button } from "@/components/ui/button";
 import { MapboxProvider } from "@/features/map/core/MapboxProvider";
 import { SelectableAddressesLayer } from "@/features/map/layers/SelectableAddressesLayer";
+import { sortAddressesByProximity } from "../../utils/sortAddressesByProximity";
 
 type Address = {
   id: string;
@@ -68,8 +69,12 @@ export function CardEditClient({
     setValue("addressIds", next, { shouldValidate: true });
   };
 
-  // Todos os addresses para o mapa — linked + available com coords
-  const allForMap = [...linkedAddresses, ...availableAddresses]
+  const sortedAll = sortAddressesByProximity([
+    ...linkedAddresses,
+    ...availableAddresses,
+  ]);
+
+  const allForMap = sortedAll
     .filter((a) => a.latitude != null && a.longitude != null)
     .map((a, i) => ({
       id: a.id,

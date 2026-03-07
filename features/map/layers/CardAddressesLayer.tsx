@@ -73,7 +73,7 @@ export function CardAddressesLayer({
   ">${addr.label}</span>`,
       );
 
-      const marker = new mapboxgl.Marker({ element: el })
+      const marker = new mapboxgl.Marker({ element: el, anchor: "center" })
         .setLngLat([addr.longitude, addr.latitude])
         .setPopup(popup)
         .addTo(map);
@@ -124,13 +124,22 @@ export function CardAddressesLayer({
 
 function createMarkerEl(index: number): HTMLElement {
   const el = document.createElement("div");
-  el.className = [
-    "flex items-center justify-center",
-    "size-7 rounded-full",
-    "bg-red-500 text-white text-xs font-bold",
-    "shadow-md border-2 border-white",
-    "select-none",
-  ].join(" ");
   el.textContent = String(index);
+  el.style.width = "28px";
+  el.style.height = "28px";
+  el.style.borderRadius = "50%";
+  el.style.border = "2px solid white";
+  el.style.display = "flex";
+  el.style.alignItems = "center";
+  el.style.justifyContent = "center";
+  el.style.fontSize = "11px";
+  el.style.fontWeight = "700";
+  el.style.color = "white";
+  el.style.cursor = "pointer";
+  el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
+  el.style.backgroundColor = "#ef4444";
+  el.style.flexShrink = "0";
+  el.style.lineHeight = "1";
+  el.style.padding = "0";
   return el;
 }

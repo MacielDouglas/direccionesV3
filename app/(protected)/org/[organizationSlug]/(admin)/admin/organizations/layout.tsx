@@ -5,5 +5,9 @@ export default function SecurityLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <RoleGuard minRole="owner">{children}</RoleGuard>;
+  return (
+    <RoleGuard minRole="owner">
+      <main id="main-content">{children}</main>
+    </RoleGuard>
+  );
 }

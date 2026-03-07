@@ -13,13 +13,18 @@ export default async function ProtectedLayout({
   if (!data) redirect("/login");
 
   return (
-    <div className="flex min-h-svh flex-col bg-surface-light text-surface-dark dark:bg-surface-dark dark:text-surface-light">
+    <div className="flex min-h-svh flex-col overflow-hidden bg-surface-light text-surface-dark dark:bg-surface-dark dark:text-surface-light">
       <Header
         session={data.session.session}
         role={data.activeMember?.role ?? null}
         organization={data.activeOrganization}
       />
-      <main className="flex-1">{children}</main>
+      <main
+        id="main-content"
+        className="flex-1 min-h-0 flex flex-col overflow-hidden"
+      >
+        {children}
+      </main>
       <Footer organization={data.activeOrganization} />
     </div>
   );

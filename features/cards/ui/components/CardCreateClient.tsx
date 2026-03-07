@@ -2,7 +2,7 @@
 
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition } from "react";
+import { useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -16,6 +16,7 @@ import type { AvailableAddress } from "../../types/card.types";
 import { MapboxProvider } from "@/features/map/core/MapboxProvider";
 import { SelectableAddressesLayer } from "@/features/map/layers/SelectableAddressesLayer";
 import { AddressSelector } from "./AddressSelector";
+import { sortAddressesByProximity } from "../../utils/sortAddressesByProximity";
 
 interface Props {
   organizationId: string;
@@ -52,15 +53,19 @@ export function CardCreateClient({
     setValue("addressIds", next, { shouldValidate: true });
   };
 
-  const selectableAddresses = availableAddresses
-    .filter((a) => a.latitude != null && a.longitude != null)
-    .map((a, i) => ({
-      id: a.id,
-      label: a.businessName ?? `${a.street}, ${a.number}`,
-      latitude: a.latitude!,
-      longitude: a.longitude!,
-      index: i + 1,
-    }));
+  const sortedAddresses = sortAddressesByProximity(availableAddresses);
+
+  const selectableAddresses = useMemo(
+    () =>
+      sortAddressesByProximity(availableAddresses).map((a, i) => ({
+        id: a.id,
+        label: a.businessName ?? `${a.street}, ${a.number}`,
+        latitude: a.latitude!,
+        longitude: a.longitude!,
+        index: i + 1,
+      })),
+    [availableAddresses], // só recalcula se a lista mudar
+  );
 
   const onSubmit = (data: CreateCardInput) => {
     startTransition(async () => {
@@ -81,9 +86,11 @@ export function CardCreateClient({
   };
 
   return (
-    <div className="flex flex-col h-dvh">
+    // flex-1 ocupa o espaço disponível dentro do main
+    // overflow-hidden no container pai para isolar o scroll interno
+    <div className="flex flex-1 flex-col overflow-hidden">
       {/* Mapa fixo no topo */}
-      <div className="h-64 shrink-0 w-full">
+      <div className="h-96 w-full shrink-0 ">
         <MapboxProvider>
           <SelectableAddressesLayer
             addresses={selectableAddresses}
@@ -93,8 +100,11 @@ export function CardCreateClient({
         </MapboxProvider>
       </div>
 
-      {/* Área rolável */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Área rolável — min-h-0 é essencial para flex + overflow no iOS */}
+      <div
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
         <form
           onSubmit={handleSubmit(onSubmit)}
           noValidate
@@ -104,7 +114,7 @@ export function CardCreateClient({
           {/* Próximo número */}
           <div className="rounded-lg border bg-muted/40 px-4 py-3 flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
-              Crear tarjeta numero:
+              Crear tarjeta número:
             </span>
             <span className="text-2xl font-bold tabular-nums">
               #{String(nextNumber).padStart(2, "0")}
@@ -112,8 +122,9 @@ export function CardCreateClient({
           </div>
 
           {/* Lista de seleção */}
+
           <AddressSelector
-            addresses={availableAddresses}
+            addresses={sortedAddresses} // ← ordenado
             selected={selectedIds}
             onChange={(ids) =>
               setValue("addressIds", ids, { shouldValidate: true })
@@ -122,7 +133,12 @@ export function CardCreateClient({
           />
 
           {/* Ações */}
-          <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2 pb-6">
+          <div
+            className="flex flex-col-reverse gap-3 pt-2 sm:flex-row"
+            style={{
+              paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+            }}
+          >
             <Button
               type="button"
               variant="outline"
