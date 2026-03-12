@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <main
+    <div
       aria-label="Página de inicio de sesión"
       className="relative flex min-h-svh w-full flex-col items-center justify-center px-4"
     >
@@ -41,7 +41,7 @@ export default function LoginPage() {
             alt="Logotipo de Direcciones"
             width={180}
             height={180}
-            priority
+            unoptimized
           />
 
           <p className="rounded-lg bg-black/40 px-3 py-2 text-center text-lg text-stone-200">
@@ -54,6 +54,6 @@ export default function LoginPage() {
           <LoginButton />
         </div>
       </div>
-    </main>
+    </div>
   );
 }

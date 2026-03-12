@@ -8,6 +8,7 @@ import {
   Plus,
   Search,
   Pencil,
+  ScanSearch,
 } from "lucide-react";
 import type { ElementType } from "react";
 import type { Role } from "@/domains/member/types/role.types";
@@ -53,6 +54,12 @@ export const navigationMenu: NavigationItem[] = [
     name: "Perfil",
     href: "/user",
     icon: User,
+  },
+  {
+    id: "busqueda",
+    name: "Busqueda",
+    href: "/surveys",
+    icon: ScanSearch,
   },
   {
     id: "users",

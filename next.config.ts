@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
 
   images: {
     formats: ["image/avif", "image/webp"],
+    qualities: [75, 80],
     remotePatterns: [
       {
         protocol: "https",
@@ -36,6 +37,8 @@ const nextConfig: NextConfig = {
         hostname: "events.mapbox.com",
       },
     ],
+    minimumCacheTTL: 60,
+    dangerouslyAllowSVG: false,
   },
 };
 
