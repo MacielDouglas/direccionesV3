@@ -7,14 +7,14 @@ import { ThemeProvider } from "next-themes";
 
 const outfit = Outfit({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
   variable: "--font-outfit",
   display: "swap",
 });
 
 const inconsolata = Inconsolata({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
   variable: "--font-inconsolata",
   display: "swap",
 });
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1, // evita zoom involuntário em inputs no iOS
+  // maximumScale: 1, // evita zoom involuntário em inputs no iOS
   // userScalable: false, // junto com maximumScale — padrão para app-like
   viewportFit: "cover", // safe area para notch/dynamic island
   themeColor: [

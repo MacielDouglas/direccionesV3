@@ -1,3 +1,4 @@
+import { setActiveOrg } from "@/server/organization/organization.actions";
 import { TenantProvider } from "@/providers/TenantProvider";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
@@ -20,12 +21,8 @@ export default async function TenantLayout({ children, params }: Props) {
   // Verifica se o usuário é membro desta org
   if (!data.activeMember) redirect("/organizations");
 
-  // Se a org da URL é diferente da ativa → troca automaticamente
   if (data.activeMember.organizationId !== organization.id) {
-    const { setActiveOrg } =
-      await import("@/server/organization/organization.actions");
     await setActiveOrg(organization.id);
-    // Não redireciona — continua renderizando com a nova org ativa
   }
 
   const role = data.memberRole?.role ?? null;

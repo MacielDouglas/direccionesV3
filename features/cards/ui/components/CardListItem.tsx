@@ -1,14 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  MapPin,
-  User,
-  Clock,
-  CheckCircle2,
-  Circle,
-  Pencil,
-} from "lucide-react";
+import { MapPin, User, Clock, Circle, Pencil, CheckCircle } from "lucide-react";
 import { AssignCardModal } from "./AssignCardModal";
 import { ReturnCardButton } from "./ReturnCardButton";
 import { DeleteCardButton } from "./DeleteCardButton";
@@ -79,12 +72,12 @@ export function CardListItem({
                 "inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full",
                 isAssigned
                   ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                  : "bg-muted text-muted-foreground",
+                  : "text-blue-500 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400",
               )}
             >
               {isAssigned ? (
                 <>
-                  <CheckCircle2 className="size-3" aria-hidden />
+                  <CheckCircle className="size-3" aria-hidden />
                   Asignado
                 </>
               ) : (
@@ -95,7 +88,7 @@ export function CardListItem({
               )}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-center">
             {!isAssigned && (
               <Button size="sm" onClick={() => setAssignOpen(true)}>
                 <User className="size-4 mr-1.5" aria-hidden />

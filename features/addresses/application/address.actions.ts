@@ -43,25 +43,35 @@ export async function getAddressByIdAction(addressId: string) {
 }
 
 // Qualquer usuário — solicita deleção
-export async function requestAddressDeletionAction(addressId: string) {
-  const data = await getCurrentUser();
-  if (!data) throw new Error("No autorizado.");
+export async function requestAddressDeletionAction(
+  addressId: string,
+): Promise<{ error?: string }> {
+  try {
+    const data = await getCurrentUser();
+    if (!data) throw new Error("No autorizado.");
 
-  const address = await prisma.address.findFirst({
-    where: { id: addressId, organizationId: data.activeOrganization?.id },
-  });
-  if (!address) throw new Error("Dirección no encontrada.");
+    const address = await prisma.address.findFirst({
+      where: { id: addressId, organizationId: data.activeOrganization?.id },
+    });
+    if (!address) throw new Error("Dirección no encontrada.");
 
-  await prisma.address.update({
-    where: { id: addressId },
-    data: {
-      pendingDeletion: true,
-      pendingDeletionAt: new Date(),
-      pendingDeletionBy: data.user.id,
-    },
-  });
+    await prisma.address.update({
+      where: { id: addressId },
+      data: {
+        pendingDeletion: true,
+        pendingDeletionAt: new Date(),
+        pendingDeletionBy: data.user.id,
+      },
+    });
 
-  revalidatePath(`/org/${data.activeOrganization?.slug}/addresses`);
+    revalidatePath(`/org/${data.activeOrganization?.slug}/addresses`);
+    return {};
+  } catch (err) {
+    return {
+      error:
+        err instanceof Error ? err.message : "Error al solicitar eliminación.",
+    };
+  }
 }
 
 // Admin/Owner — confirma deleção real

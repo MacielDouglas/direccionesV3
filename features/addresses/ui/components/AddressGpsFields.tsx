@@ -2,18 +2,20 @@
 
 import { useCallback, useState } from "react";
 import { useFormContext } from "react-hook-form";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { BrushCleaning, Paperclip, Pin, SatelliteDish } from "lucide-react";
-import { MapboxMap } from "@/features/map/components/MapboxMap";
 import type { AddressFormData } from "../../domain/address.schema";
+import dynamic from "next/dynamic";
+
+const MapboxMap = dynamic(
+  () => import("@/features/map/components/MapboxMap").then((m) => m.MapboxMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-80 w-full animate-pulse rounded-xl bg-muted" />
+    ),
+  },
+);
 
 const extractCoords = (value: string) => {
   const cleaned = value.replace(/[()]/g, "").trim();
@@ -27,13 +29,8 @@ const extractCoords = (value: string) => {
   return { lat, lng };
 };
 
-const inputStyle =
-  "border-0 border-b-2 border-b-muted rounded-none px-0 shadow-none bg-transparent " +
-  "focus-visible:ring-0 focus-visible:outline-none focus-visible:border-b-brand " +
-  "transition-colors disabled:text-blue-500";
-
 export default function AddressGpsFields() {
-  const { control, setValue, watch } = useFormContext<AddressFormData>();
+  const { setValue, watch } = useFormContext<AddressFormData>();
   const latitude = watch("latitude");
   const longitude = watch("longitude");
 
@@ -113,49 +110,14 @@ export default function AddressGpsFields() {
       </div>
 
       <div className="flex items-center justify-around gap-10">
-        <FormField
-          control={control}
-          name="latitude"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Latitud:{" "}
-                <span className="text-blue-500">{field.value ?? "—"}</span>
-              </FormLabel>
-              <FormControl className="hidden">
-                <Input
-                  {...field}
-                  value={field.value ?? ""}
-                  className={inputStyle}
-                  disabled
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
-          name="longitude"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Longitud:{" "}
-                <span className="text-blue-500">{field.value ?? "—"}</span>
-              </FormLabel>
-              <FormControl className="hidden">
-                <Input
-                  {...field}
-                  value={field.value ?? ""}
-                  className={inputStyle}
-                  disabled
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <p className="text-sm">
+          Latitud:{" "}
+          <span className="text-blue-500 font-mono">{latitude ?? "—"}</span>
+        </p>
+        <p className="text-sm">
+          Longitud:{" "}
+          <span className="text-blue-500 font-mono">{longitude ?? "—"}</span>
+        </p>
       </div>
 
       {error && (

@@ -13,10 +13,10 @@ import {
 import { createCardAction } from "../../application/card.actions";
 import { Button } from "@/components/ui/button";
 import type { AvailableAddress } from "../../types/card.types";
-import { MapboxProvider } from "@/features/map/core/MapboxProvider";
 import { SelectableAddressesLayer } from "@/features/map/layers/SelectableAddressesLayer";
 import { AddressSelector } from "./AddressSelector";
 import { sortAddressesByProximity } from "../../utils/sortAddressesByProximity";
+import { LazyMapboxProvider } from "@/features/map/core/LazyMapboxProvider";
 
 interface Props {
   organizationId: string;
@@ -53,19 +53,20 @@ export function CardCreateClient({
     setValue("addressIds", next, { shouldValidate: true });
   };
 
-  const sortedAddresses = sortAddressesByProximity(availableAddresses);
-
-  const selectableAddresses = useMemo(
-    () =>
-      sortAddressesByProximity(availableAddresses).map((a, i) => ({
+  // ✅ CORRIGIDO — uma única fonte de verdade, memoizada
+  const { sortedAddresses, selectableAddresses } = useMemo(() => {
+    const sorted = sortAddressesByProximity(availableAddresses);
+    return {
+      sortedAddresses: sorted,
+      selectableAddresses: sorted.map((a, i) => ({
         id: a.id,
         label: a.businessName ?? `${a.street}, ${a.number}`,
         latitude: a.latitude!,
         longitude: a.longitude!,
         index: i + 1,
       })),
-    [availableAddresses], // só recalcula se a lista mudar
-  );
+    };
+  }, [availableAddresses]);
 
   const onSubmit = (data: CreateCardInput) => {
     startTransition(async () => {
@@ -90,15 +91,14 @@ export function CardCreateClient({
     // overflow-hidden no container pai para isolar o scroll interno
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Mapa fixo no topo */}
-      <div className="h-96 w-full shrink-0 ">
-        <MapboxProvider>
-          <SelectableAddressesLayer
-            addresses={selectableAddresses}
-            selectedIds={selectedIds}
-            onToggle={toggle}
-          />
-        </MapboxProvider>
-      </div>
+
+      <LazyMapboxProvider className="h-96 w-full shrink-0">
+        <SelectableAddressesLayer
+          addresses={selectableAddresses}
+          selectedIds={selectedIds}
+          onToggle={toggle}
+        />
+      </LazyMapboxProvider>
 
       {/* Área rolável — min-h-0 é essencial para flex + overflow no iOS */}
       <div

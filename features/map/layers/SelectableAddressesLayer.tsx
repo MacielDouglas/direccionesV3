@@ -41,7 +41,7 @@ export function SelectableAddressesLayer({
     const bounds = new mapboxgl.LngLatBounds();
 
     addresses.forEach((addr) => {
-      const el = createMarkerEl(addr.index, false); // sempre inicia sem seleção
+      const el = createMarkerEl(addr.index); // sempre inicia sem seleção
 
       el.addEventListener("click", () => onToggleRef.current(addr.id));
 
@@ -89,32 +89,15 @@ export function SelectableAddressesLayer({
   return null;
 }
 
-function createMarkerEl(index: number, isSelected: boolean): HTMLElement {
+function createMarkerEl(index: number): HTMLElement {
   const el = document.createElement("button");
   el.type = "button";
   el.textContent = String(index);
-  // Tamanho explícito garante que o anchor: "center" funcione corretamente
-  el.style.width = "28px";
-  el.style.height = "28px";
-  el.style.borderRadius = "50%";
-  el.style.border = "2px solid white";
-  el.style.display = "flex";
-  el.style.alignItems = "center";
-  el.style.justifyContent = "center";
-  el.style.fontSize = "11px";
-  el.style.fontWeight = "700";
-  el.style.color = "white";
-  el.style.cursor = "pointer";
-  el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
-  el.style.transition = "background-color 150ms ease";
-  el.style.padding = "0";
-  el.style.lineHeight = "1";
-  // Impede que o Mapbox adicione qualquer tamanho padrão
-  el.style.flexShrink = "0";
-  applyMarkerStyle(el, isSelected);
+  el.className = "map-marker map-marker--default";
   return el;
 }
 
 function applyMarkerStyle(el: HTMLElement, isSelected: boolean) {
-  el.style.backgroundColor = isSelected ? "#3b82f6" : "#ef4444";
+  el.classList.toggle("map-marker--selected", isSelected);
+  el.classList.toggle("map-marker--default", !isSelected);
 }

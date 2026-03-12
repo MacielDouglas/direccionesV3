@@ -79,7 +79,7 @@ export default function AddressListScreen({
     } else {
       params.delete("q");
     }
-    router.push(`/org/${organizationSlug}/addresses?${params.toString()}`);
+    router.replace(`/org/${organizationSlug}/addresses?${params.toString()}`);
   }
 
   const hasResults = addresses.length > 0;
@@ -142,7 +142,7 @@ export default function AddressListScreen({
           className="grid grid-cols-1 gap-4 sm:grid-cols-2"
           aria-label="Lista de direcciones"
         >
-          {addresses.map((address) => {
+          {addresses.map((address, index) => {
             const label = `${address.businessName ?? address.street}, ${address.number} — ${address.neighborhood}, ${address.city}`;
 
             return (
@@ -160,7 +160,7 @@ export default function AddressListScreen({
                       fill
                       sizes="(max-width: 640px) 100vw, 50vw"
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      priority={false}
+                      priority={index < 4}
                     />
 
                     <div

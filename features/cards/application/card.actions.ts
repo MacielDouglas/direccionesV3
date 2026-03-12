@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getNextCardNumber } from "./card.service";
 import { createCardSchema, editCardSchema } from "../domain/card.schema";
-import { requireSession } from "@/server/users";
+import { getCurrentUser, requireSession } from "@/server/users";
 
 export async function createCardAction(
   organizationId: string,
@@ -144,14 +144,23 @@ export async function deleteCardAction(
   cardId: string,
   organizationSlug: string,
 ) {
+  const data = await getCurrentUser(); // já cacheado
+  if (!data) return { error: "No autenticado." };
+
+  const organizationId = data.activeMember?.organizationId;
+  if (!organizationId) return { error: "Sin organización activa." };
+
+  const card = await prisma.card.findFirst({
+    where: { id: cardId, organizationId },
+  });
+  if (!card) return { error: "Tarjeta no encontrada." };
+
   try {
     await prisma.$transaction(async (tx) => {
-      // Desvincula addresses antes de deletar
       await tx.address.updateMany({
         where: { cardId },
         data: { cardId: null },
       });
-
       await tx.cardEvent.deleteMany({ where: { cardId } });
       await tx.card.delete({ where: { id: cardId } });
     });

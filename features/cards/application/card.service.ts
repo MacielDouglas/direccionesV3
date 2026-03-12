@@ -1,17 +1,15 @@
+"use server";
+
 import { prisma } from "@/lib/prisma";
 
 export async function getNextCardNumber(
   organizationId: string,
 ): Promise<number> {
-  const cards = await prisma.card.findMany({
+  const result = await prisma.card.aggregate({
     where: { organizationId },
-    select: { number: true },
-    orderBy: { number: "asc" },
+    _max: { number: true },
   });
-  const numbers = new Set(cards.map((c) => c.number));
-  let next = 1;
-  while (numbers.has(next)) next++;
-  return next;
+  return (result._max.number ?? 0) + 1;
 }
 
 export async function getAvailableAddresses(organizationId: string) {

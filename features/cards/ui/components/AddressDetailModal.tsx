@@ -87,7 +87,7 @@ function AddressContent({
             longitude={Number(address.longitude)}
           />
           {address.pendingDeletionAt && (
-            <div className="absolute top-50% left-0 bg-black/80 text-red-500 uppercase w-full text-center p-2">
+            <div className="absolute top-1/2 left-0 bg-black/80 text-red-500 uppercase w-full text-center p-2">
               Solicitado borrar dirección. Confirmación pendiente.
             </div>
           )}

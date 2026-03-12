@@ -7,11 +7,12 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTenant } from "@/providers/TenantProvider";
 import { toast } from "sonner";
+import { useState } from "react";
 import AddressFields from "./AddressFields";
 import type { AddressFormData } from "../../domain/address.schema";
-import { uploadAddressImage } from "../../application/address-image.service";
 import { updateAddressAction } from "../../application/address.actions";
 import { useAddressEditForm } from "../../hooks/useAddressEditForm";
+import { uploadFile } from "../../utils/uploadFile";
 
 type Props = { address: Address };
 
@@ -20,6 +21,7 @@ export default function AddressEditForm({ address }: Props) {
   const { organization } = useTenant();
   const router = useRouter();
   const { isSubmitting } = form.formState;
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   async function onSubmit(values: AddressFormData) {
     try {
@@ -27,9 +29,12 @@ export default function AddressEditForm({ address }: Props) {
       let imageKey = values.image.imageKey ?? null;
 
       if (values.image.imageFile instanceof File) {
-        const uploaded = await uploadAddressImage(values.image.imageFile, {
-          organizationId: organization.id,
-        });
+        setUploadProgress(0);
+        const uploaded = await uploadFile(
+          values.image.imageFile,
+          organization.id,
+          setUploadProgress,
+        );
         imageUrl = uploaded.publicUrl;
         imageKey = uploaded.key;
       }
@@ -46,8 +51,17 @@ export default function AddressEditForm({ address }: Props) {
     } catch (error) {
       console.error("[AddressEditForm]", error);
       toast.error("Error al actualizar la dirección. Intente nuevamente.");
+    } finally {
+      setUploadProgress(0);
     }
   }
+
+  const submitLabel = () => {
+    if (uploadProgress > 0 && uploadProgress < 100)
+      return `Enviando imagen ${uploadProgress}%`;
+    if (isSubmitting) return "Guardando…";
+    return "Guardar cambios";
+  };
 
   return (
     <Form {...form}>
@@ -69,21 +83,34 @@ export default function AddressEditForm({ address }: Props) {
             Cancelar
           </Button>
 
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            aria-busy={isSubmitting}
-            className="min-w-32"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                <span>Guardando…</span>
-              </>
-            ) : (
-              "Guardar cambios"
+          <div className="flex flex-col items-end gap-1">
+            {uploadProgress > 0 && uploadProgress < 100 && (
+              <progress
+                value={uploadProgress}
+                max={100}
+                className="w-32"
+                aria-label={`Subiendo imagen: ${uploadProgress}%`}
+              />
             )}
-          </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              aria-busy={isSubmitting}
+              className="min-w-32"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2
+                    className="h-4 w-4 animate-spin"
+                    aria-hidden="true"
+                  />
+                  <span>{submitLabel()}</span>
+                </>
+              ) : (
+                "Guardar cambios"
+              )}
+            </Button>
+          </div>
         </div>
       </form>
     </Form>

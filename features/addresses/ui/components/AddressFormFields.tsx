@@ -18,7 +18,7 @@ import { ADDRESS_FORMS_OPTIONS } from "../config/address-form.config";
 const inputStyle =
   "border-0 border-b-2 border-b-muted rounded-none px-0 shadow-none bg-transparent " +
   "focus-visible:ring-0 focus-visible:outline-none focus-visible:border-b-brand " +
-  "transition-colors duration-150";
+  "transition-colors duration-150 bg-white pl-2";
 
 export default function AddressFormFields() {
   const { control, watch } = useFormContext<AddressFormData>();

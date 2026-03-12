@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import Image from "next/image";
 import { Camera, UploadCloud } from "lucide-react";
@@ -9,55 +9,62 @@ import { FormField, FormItem } from "@/components/ui/form";
 import type { AddressFormData } from "../../domain/address.schema";
 import { getDefaultAddressImage } from "../../utils/getDefaultAddressImage";
 import { useSmartImageUpload } from "../../hooks/useSmartImageUpload";
-import { useTenant } from "@/providers/TenantProvider";
 
 export default function AddressImageField() {
   const { watch, setValue, control } = useFormContext<AddressFormData>();
-  const { organization } = useTenant();
 
   const addressType = watch("addressType");
   const preview = watch("image.imageUrl");
   const isCustomImage = watch("image.isCustomImage");
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const previewUrlRef = useRef<string | null>(null); // controla revoke
   const [dragActive, setDragActive] = useState(false);
 
-  const {
-    processAndUpload,
-    cancelUpload,
-    processingProgress,
-    uploadProgress,
-    isProcessing,
-    isUploading,
-  } = useSmartImageUpload();
+  const { processImage, processingProgress, isProcessing, error } =
+    useSmartImageUpload();
 
+  // Atualiza imagem padrão quando muda o tipo (sem sobrescrever imagem customizada)
   useEffect(() => {
     if (isCustomImage) return;
     const defaultImage = getDefaultAddressImage(addressType);
     if (defaultImage) setValue("image.imageUrl", defaultImage);
   }, [addressType, isCustomImage, setValue]);
 
+  // Limpa blob URL ao desmontar
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    };
+  }, []);
+
   async function handleFile(file?: File) {
     if (!file) return;
 
-    try {
-      const localUrl = URL.createObjectURL(file);
-      setValue("image.imageUrl", localUrl);
-      setValue("image.isCustomImage", true);
+    // Preview imediato para UX responsiva
+    const localUrl = URL.createObjectURL(file);
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    previewUrlRef.current = localUrl;
+    setValue("image.imageUrl", localUrl);
+    setValue("image.isCustomImage", true);
 
-      const uploadedUrl = await processAndUpload(file, organization.id);
-
-      if (uploadedUrl) {
-        URL.revokeObjectURL(localUrl);
-        setValue("image.imageUrl", uploadedUrl);
-      }
-    } catch (err) {
-      console.error("[AddressImageField] Error al procesar imagen:", err);
+    // Processa (HEIC → compress → webp) sem fazer upload
+    const processed = await processImage(file);
+    if (!processed) {
+      // processImage falhou — reverte para default
+      handleRemove();
+      return;
     }
+
+    // Armazena o File processado para upload no submit
+    setValue("image.imageFile", processed);
   }
 
   function handleRemove() {
-    cancelUpload();
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
     const defaultImage = getDefaultAddressImage(addressType);
     setValue("image.imageFile", undefined);
     setValue("image.imageUrl", defaultImage ?? undefined);
@@ -108,6 +115,10 @@ export default function AddressImageField() {
                   alt="Vista previa de la imagen seleccionada"
                   fill
                   className="object-cover"
+                  // blob URLs não devem usar sizes otimizados
+                  unoptimized={
+                    preview.startsWith("blob:") || preview.startsWith("http") // R2, mapbox, qualquer CDN externo
+                  }
                 />
               )}
 
@@ -120,47 +131,23 @@ export default function AddressImageField() {
 
               {isProcessing && (
                 <div
-                  className="absolute inset-0 animate-pulse bg-muted"
-                  aria-hidden="true"
-                />
-              )}
-
-              {(isProcessing || isUploading) && (
-                <div
                   role="status"
-                  aria-label={
-                    isProcessing
-                      ? `Procesando ${processingProgress}%`
-                      : `Enviando ${uploadProgress}%`
-                  }
+                  aria-label={`Procesando ${processingProgress}%`}
                   className="absolute inset-0 flex flex-col items-center justify-center space-y-3 bg-black/60 p-4 text-white"
                 >
                   <p className="text-sm font-medium">
-                    {isProcessing
-                      ? `Procesando ${processingProgress}%`
-                      : `Enviando ${uploadProgress}%`}
+                    Procesando {processingProgress}%
                   </p>
                   <progress
-                    value={isProcessing ? processingProgress : uploadProgress}
+                    value={processingProgress}
                     max={100}
                     className="w-full"
                     aria-hidden="true"
                   />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      cancelUpload();
-                    }}
-                  >
-                    Cancelar
-                  </Button>
                 </div>
               )}
 
-              {isCustomImage && !isUploading && (
+              {isCustomImage && !isProcessing && (
                 <Button
                   type="button"
                   size="sm"
@@ -175,6 +162,12 @@ export default function AddressImageField() {
                 </Button>
               )}
             </div>
+
+            {error && (
+              <p role="alert" className="text-sm text-destructive mt-1">
+                {error}
+              </p>
+            )}
 
             <input
               ref={inputRef}

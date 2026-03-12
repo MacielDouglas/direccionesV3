@@ -10,6 +10,7 @@ interface Props {
   selected: string[];
   onChange: (ids: string[]) => void;
   error?: string;
+  map?: mapboxgl.Map | null; // opcional
 }
 
 export function AddressSelector({

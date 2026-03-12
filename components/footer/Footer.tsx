@@ -1,32 +1,20 @@
-"use client";
-
 import type { Organization } from "better-auth/plugins";
-import { ChevronUp, Compass } from "lucide-react";
+import { Compass } from "lucide-react";
 import Link from "next/link";
+import BackToTopButton from "../ui/BackToTopButton";
 
 interface FooterProps {
   organization: Organization | null;
 }
 
+const currentYear = new Date().getFullYear();
+
 export default function Footer({ organization }: FooterProps) {
-  const currentYear = new Date().getFullYear();
-
-  const handleBackToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   return (
     <footer className="w-full border-t border-white/10 bg-[#0c232a] text-slate-100">
       <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
         {/* Volver al inicio */}
-        <button
-          type="button"
-          onClick={handleBackToTop}
-          aria-label="Volver al inicio de la página"
-          className="absolute right-4 top-4 rounded-full bg-teal-600 p-2 text-white shadow-sm transition-colors hover:bg-teal-500 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400 sm:right-6 sm:top-6 lg:right-8 lg:top-8"
-        >
-          <ChevronUp className="size-5" aria-hidden="true" />
-        </button>
+        <BackToTopButton />
 
         <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
           {/* Brand */}

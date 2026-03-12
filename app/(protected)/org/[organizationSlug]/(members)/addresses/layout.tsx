@@ -3,5 +3,5 @@ export default function AddressLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <main id="main-content">{children}</main>;
+  return <>{children}</>;
 }

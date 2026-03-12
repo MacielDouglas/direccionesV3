@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { Car, Footprints } from "lucide-react";
-import { MapboxProvider } from "../core/MapboxProvider";
 import type { Coordinates, RouteProfile } from "../types/map.types";
 import RouteLayer from "../layers/RouteLayer";
 import Link from "next/link";
+import { LazyMapboxProvider } from "../core/LazyMapboxProvider";
 
 export function AddressViewMap({ latitude, longitude }: Coordinates) {
   const [profile, setProfile] = useState<RouteProfile>("walking");
@@ -18,9 +18,9 @@ export function AddressViewMap({ latitude, longitude }: Coordinates) {
     <div className="flex w-full flex-col">
       {/* Mapa */}
       <div className="relative h-96 w-full overflow-hidden shadow-md">
-        <MapboxProvider>
+        <LazyMapboxProvider className="h-96">
           <RouteLayer destination={destination} profile={profile} />
-        </MapboxProvider>
+        </LazyMapboxProvider>
 
         {/* Badge de modo */}
         <div className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-full bg-background/90 px-3 py-1 text-xs font-semibold text-foreground shadow backdrop-blur-sm">

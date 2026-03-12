@@ -24,7 +24,6 @@ type AddressItem = {
 
 export function PendingDeletionList({
   addresses,
-  // orgSlug,
 }: {
   addresses: AddressItem[];
   orgSlug: string;

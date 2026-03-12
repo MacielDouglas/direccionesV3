@@ -1,10 +1,8 @@
-// app/(protected)/organizations/page.tsx
 import { getCurrentUser } from "@/server/users";
 import { getOrganizations } from "@/server/organization/organization.queries";
 import { setActiveOrg } from "@/server/organization/organization.actions";
 import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Building2 } from "lucide-react";
+import { OrgSwitchButton } from "@/domains/organization/components/OrgSwitchButtom";
 
 export default async function OrganizationsPage() {
   const data = await getCurrentUser();
@@ -29,14 +27,7 @@ export default async function OrganizationsPage() {
               redirect(`/org/${org.slug}/addresses`);
             }}
           >
-            <Button
-              type="submit"
-              variant="outline"
-              className="w-full justify-start gap-3"
-            >
-              <Building2 className="h-4 w-4 shrink-0" aria-hidden="true" />
-              {org.name}
-            </Button>
+            <OrgSwitchButton name={org.name} />
           </form>
         ))}
       </div>

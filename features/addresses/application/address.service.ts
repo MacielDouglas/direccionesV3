@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import type { AddressFormData } from "../domain/address.schema";
 import { addressFormSchema } from "../domain/address.schema";
-import { Address } from "@prisma/client";
+import { cache } from "react";
 
 export async function createAddressService(params: {
   input: AddressFormData;
@@ -124,10 +124,6 @@ export async function getAddressByIdService(params: {
   });
 }
 
-export async function getAddressById(
-  addressId: string,
-): Promise<Address | null> {
-  return prisma.address.findUnique({
-    where: { id: addressId },
-  });
-}
+export const getAddressById = cache(async (addressId: string) => {
+  return prisma.address.findUnique({ where: { id: addressId } });
+});

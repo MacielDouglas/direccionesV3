@@ -7,11 +7,18 @@ interface SessionTimerProps {
   expiresAt: string | Date;
 }
 
+function getInterval(remaining: number): number {
+  if (remaining <= 60_000) return 1_000; // últimos 60s — tick a cada 1s
+  if (remaining <= 2 * 60_000) return 1_000; // últimos 2min — tick a cada 1s
+  return 30_000; // resto — tick a cada 30s
+}
+
 export default function SessionTimer({ expiresAt }: SessionTimerProps) {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
   useEffect(() => {
     const target = new Date(expiresAt).getTime();
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const tick = () => {
       const remaining = target - Date.now();
@@ -21,37 +28,52 @@ export default function SessionTimer({ expiresAt }: SessionTimerProps) {
         authClient.signOut().then(() => {
           window.location.href = "/login";
         });
+        return;
       }
+
+      // Agenda próximo tick com intervalo adaptativo
+      timeoutId = setTimeout(tick, getInterval(remaining));
     };
 
-    tick(); // executa imediatamente ao montar
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
+    tick();
+    return () => clearTimeout(timeoutId);
   }, [expiresAt]);
 
-  // SSR / hidratação: não renderiza até ter valor
-  if (timeLeft === null) return null;
+  if (timeLeft === null || timeLeft <= 0) return null;
 
-  if (timeLeft <= 0) return null;
+  const totalSeconds = Math.ceil(timeLeft / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
 
-  const minutes = Math.floor(timeLeft / 1000 / 60)
-    .toString()
-    .padStart(2, "0");
-  const seconds = Math.floor((timeLeft / 1000) % 60)
-    .toString()
-    .padStart(2, "0");
-  const isCritical = timeLeft <= 10 * 60 * 1000;
+  const isCountdown = timeLeft <= 60_000; // últimos 60s — mostra segundos
+  const isCritical = timeLeft <= 5 * 60_000; // últimos 5min — fica vermelho
 
   return (
     <time
-      dateTime={new Date(new Date(expiresAt).getTime()).toISOString()}
-      aria-label={`Sesión expira en ${minutes} minutos y ${seconds} segundos`}
-      aria-live="off"
-      className={`font-mono text-sm font-semibold tabular-nums ${
+      dateTime={new Date(expiresAt).toISOString()}
+      aria-live={isCritical ? "polite" : "off"}
+      aria-label={
+        isCountdown
+          ? `Sesión expira en ${seconds} segundos`
+          : `Sesión expira en ${minutes} minutos`
+      }
+      className={`font-mono text-sm font-semibold tabular-nums transition-colors ${
         isCritical ? "text-red-500" : "text-muted-foreground"
       }`}
     >
-      {minutes}:{seconds}
+      {isCountdown ? (
+        // Contagem regressiva em segundos
+        <>
+          {String(seconds).padStart(2, "0")}
+          <span className="text-xs font-normal ml-0.5">s</span>
+        </>
+      ) : (
+        // Exibe só os minutos restantes
+        <>
+          {minutes}
+          <span className="text-xs font-normal ml-0.5">min</span>
+        </>
+      )}
     </time>
   );
 }

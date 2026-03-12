@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { Tag } from "lucide-react";
-import { MapboxProvider } from "../core/MapboxProvider";
+
 import {
   CardAddressesLayer,
   type CardAddress,
 } from "../layers/CardAddressesLayer";
 import { cn } from "@/lib/utils";
+import { LazyMapboxProvider } from "../core/LazyMapboxProvider";
 
 interface Props {
   addresses: CardAddress[];
@@ -31,14 +32,13 @@ export function CardViewMap({ addresses, onMarkerClick }: Props) {
 
   return (
     <div className="relative h-64 w-full overflow-hidden rounded-xl shadow-sm">
-      <MapboxProvider>
-        {/* <UserLocationLayer /> */}
+      <LazyMapboxProvider className="h-64">
         <CardAddressesLayer
           addresses={validAddresses}
           onMarkerClick={onMarkerClick}
           showLabels={showLabels}
         />
-      </MapboxProvider>
+      </LazyMapboxProvider>
 
       {/* Botão toggle labels */}
       <button

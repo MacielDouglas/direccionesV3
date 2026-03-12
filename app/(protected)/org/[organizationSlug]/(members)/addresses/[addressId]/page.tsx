@@ -1,7 +1,6 @@
 import { getAddressByIdService } from "@/features/addresses/application/address.service";
 import AddressDetailsScreen from "@/features/addresses/ui/screens/AddressDetailsScreen ";
-
-import { prisma } from "@/lib/prisma";
+import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { notFound } from "next/navigation";
 
 type AddressPageProps = {
@@ -14,37 +13,19 @@ type AddressPageProps = {
 export default async function AddressPage({ params }: AddressPageProps) {
   const { organizationSlug, addressId } = await params;
 
-  if (!organizationSlug || !addressId) {
-    notFound();
-  }
-
-  const organization = await prisma.organization.findUnique({
-    where: { slug: organizationSlug },
-  });
-
-  if (!organization) {
-    notFound();
-  }
+  const org = await getOrganizationBySlug(organizationSlug);
+  if (!org) notFound();
 
   const address = await getAddressByIdService({
     addressId,
-    organizationId: organization.id,
+    organizationId: org.id,
   });
-
-  if (!address) {
-    notFound();
-  }
+  if (!address) notFound();
 
   return (
-    <>
-      <div className="p-2">
-        <h1 className="text-2xl font-bold">Detalle de la dirección</h1>
-      </div>
-
-      <AddressDetailsScreen
-        address={address}
-        organizationSlug={organizationSlug}
-      />
-    </>
+    <AddressDetailsScreen
+      address={address}
+      organizationSlug={organizationSlug}
+    />
   );
 }

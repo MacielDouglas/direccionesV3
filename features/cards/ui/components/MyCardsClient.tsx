@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Clock } from "lucide-react";
 import type { Address } from "@prisma/client";
 import { getAddressById } from "@/features/addresses/application/address.service";
@@ -36,17 +36,22 @@ export function MyCardsClient({ cards, organizationSlug }: Props) {
   const [addressPromise, setAddressPromise] =
     useState<Promise<Address | null> | null>(null);
 
-  const allAddresses = cards
-    .flatMap((card) => card.addresses)
-    .filter((a) => a.latitude != null && a.longitude != null)
-    .map((a) => ({
-      id: a.id,
-      label: a.businessName ?? `${a.street}, ${a.number}`,
-      latitude: a.latitude!,
-      longitude: a.longitude!,
-    }));
+  const { allAddresses, addressIndexMap } = useMemo(() => {
+    const addresses = cards
+      .flatMap((card) => card.addresses)
+      .filter((a) => a.latitude != null && a.longitude != null)
+      .map((a) => ({
+        id: a.id,
+        label: a.businessName ?? `${a.street}, ${a.number}`,
+        latitude: a.latitude!,
+        longitude: a.longitude!,
+      }));
 
-  const addressIndexMap = new Map(allAddresses.map((a, i) => [a.id, i + 1]));
+    return {
+      allAddresses: addresses,
+      addressIndexMap: new Map(addresses.map((a, i) => [a.id, i + 1])),
+    };
+  }, [cards]);
 
   const openAddress = (id: string) => setAddressPromise(getAddressById(id));
 

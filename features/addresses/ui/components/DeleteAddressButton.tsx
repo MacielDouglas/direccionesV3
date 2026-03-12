@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { requestAddressDeletionAction } from "../../application/address.actions";
 import { toast } from "sonner";
 import {
@@ -24,7 +24,7 @@ export default function DeleteAddressButton({
   addressId: string;
   isPendingDeletion?: boolean;
 }) {
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
@@ -37,22 +37,17 @@ export default function DeleteAddressButton({
     );
   }
 
-  async function handleConfirm() {
-    try {
-      setLoading(true);
-      await requestAddressDeletionAction(addressId);
+  function handleConfirm() {
+    startTransition(async () => {
+      const result = await requestAddressDeletionAction(addressId);
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
       toast.success("Solicitud de eliminación enviada.");
       setOpen(false);
       router.back();
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Error al solicitar eliminar dirección.",
-      );
-    } finally {
-      setLoading(false);
-    }
+    });
   }
 
   return (
@@ -76,17 +71,17 @@ export default function DeleteAddressButton({
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline" disabled={loading}>
+            <Button variant="outline" disabled={isPending}>
               Cancelar
             </Button>
           </DialogClose>
 
           <Button
             variant="destructive"
-            disabled={loading}
+            disabled={isPending}
             onClick={handleConfirm}
           >
-            {loading ? (
+            {isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             ) : (
               "Sí, solicitar eliminación"

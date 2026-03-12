@@ -1,9 +1,16 @@
-import RoleGuard from "@/components/RoleGuard";
+import { getCurrentUser } from "@/server/users";
+import { canAccess } from "@/lib/autorize";
+import { redirect } from "next/navigation";
 
-export default function MemberLayout({
+export default async function MemberLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <RoleGuard minRole="member">{children}</RoleGuard>;
+  const data = await getCurrentUser(); // cacheado — sem custo
+  const role = data?.memberRole?.role ?? null;
+
+  if (!role || !canAccess(role as "member", "member")) redirect("/");
+
+  return <>{children}</>;
 }

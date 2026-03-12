@@ -50,7 +50,7 @@ export function AssignCardModal({
         return;
       }
       toast.success(
-        `Card #${String(cardNumber).padStart(2, "0")} atribuído com sucesso!`,
+        `¡Tarjeta #${String(cardNumber).padStart(2, "0")} asignada exitosamente!`,
       );
       onClose();
     });

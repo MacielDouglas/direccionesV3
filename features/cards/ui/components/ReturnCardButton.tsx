@@ -29,7 +29,7 @@ export function ReturnCardButton({
         return;
       }
       toast.success(
-        `Tarjeta #${String(cardNumber).padStart(2, "0")} devolvido.`,
+        `Tarjeta #${String(cardNumber).padStart(2, "0")} devuelta.`,
       );
     });
   };

@@ -7,26 +7,32 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import AddressFields from "./AddressFields";
 import type { AddressFormData } from "../../domain/address.schema";
-import { uploadAddressImage } from "../../application/address-image.service";
 import { useTenant } from "@/providers/TenantProvider";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useState } from "react";
+import { uploadFile } from "../../utils/uploadFile";
 
 export default function AddressForm() {
   const form = useAddressForm();
   const { organization } = useTenant();
   const router = useRouter();
   const { isSubmitting } = form.formState;
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   async function onSubmit(values: AddressFormData) {
     try {
       let imageUrl = values.image.imageUrl ?? null;
       let imageKey: string | null = null;
 
+      // Upload só acontece aqui, no submit
       if (values.image.imageFile instanceof File) {
-        const uploaded = await uploadAddressImage(values.image.imageFile, {
-          organizationId: organization.id,
-        });
+        setUploadProgress(0);
+        const uploaded = await uploadFile(
+          values.image.imageFile,
+          organization.id,
+          setUploadProgress,
+        );
         imageUrl = uploaded.publicUrl;
         imageKey = uploaded.key;
       }
@@ -43,8 +49,17 @@ export default function AddressForm() {
     } catch (error) {
       console.error("[AddressForm]", error);
       toast.error("Error al crear la dirección. Intente nuevamente.");
+    } finally {
+      setUploadProgress(0);
     }
   }
+
+  const submitLabel = () => {
+    if (uploadProgress > 0 && uploadProgress < 100)
+      return `Enviando imagen ${uploadProgress}%`;
+    if (isSubmitting) return "Creando…";
+    return "Crear dirección";
+  };
 
   return (
     <Form {...form}>
@@ -57,6 +72,14 @@ export default function AddressForm() {
         </div>
 
         <div className="sticky bottom-0 z-10 border-t bg-background px-4 py-3 shadow-md">
+          {uploadProgress > 0 && uploadProgress < 100 && (
+            <progress
+              value={uploadProgress}
+              max={100}
+              className="mb-2 w-full"
+              aria-label={`Subiendo imagen: ${uploadProgress}%`}
+            />
+          )}
           <Button
             type="submit"
             disabled={isSubmitting}
@@ -66,7 +89,7 @@ export default function AddressForm() {
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                <span>Creando…</span>
+                <span>{submitLabel()}</span>
               </>
             ) : (
               "Crear dirección"

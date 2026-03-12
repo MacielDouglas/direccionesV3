@@ -3,10 +3,6 @@ import AddressFormFields from "./AddressFormFields";
 import AddressGpsFields from "./AddressGpsFields";
 import AddressImageField from "./AddressImageFields";
 
-// type Props = {
-//   control: Control<AddressFormData>;
-// };
-
 export default function AddressFields() {
   return (
     <>

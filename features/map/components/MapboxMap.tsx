@@ -1,6 +1,6 @@
 "use client";
 
-import { MapboxProvider } from "../core/MapboxProvider";
+import { LazyMapboxProvider } from "../core/LazyMapboxProvider";
 import { SelectLocationLayer } from "../layers/SelectLocationLayer";
 import { UserLocationLayer } from "../layers/UserLocationLayer";
 import type { Coordinates } from "../types/map.types";
@@ -13,10 +13,10 @@ type Props = {
 export function MapboxMap({ value, onChange }: Props) {
   return (
     <div className="h-80 w-full overflow-hidden rounded-xl">
-      <MapboxProvider>
+      <LazyMapboxProvider className="h-80 w-full">
         <UserLocationLayer />
         <SelectLocationLayer value={value} onChange={onChange} />
-      </MapboxProvider>
+      </LazyMapboxProvider>
     </div>
   );
 }

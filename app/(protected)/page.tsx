@@ -6,29 +6,32 @@ import { getCurrentUser } from "@/server/users";
 export default async function Home() {
   const data = await getCurrentUser();
 
-  const hasOrganization = !!data?.session.session.activeOrganizationId;
+  // ✅ CORRIGIDO
+  const { session, activeOrganization: organization, memberRole } = data!;
+  // depois usa sem ?.
+
+  // const hasOrganization = !!data?.session.session.activeOrganizationId;
 
   // Usa activeOrganization já resolvida pelo getCurrentUser
   // em vez de fazer uma segunda query
-  const organization = data?.activeOrganization;
+  // const organization = data?.activeOrganization;
 
   return (
     <main className="h-full w-full">
       <div className="mx-auto max-w-md px-4 py-10 text-center">
         <h1 className="text-3xl font-light">
-          Bienvenido,{" "}
-          <span className="font-medium">{data?.session.user.name}</span>
+          Bienvenido, <span className="font-medium">{session.user.name}</span>
         </h1>
 
-        {hasOrganization ? (
+        {organization ? (
           <div className="space-y-6">
             <p className="text-lg">Para empezar, elige una opción.</p>
             <MainAppMenu
-              role={data?.memberRole?.role ?? null}
+              role={memberRole?.role ?? null}
               orgSlug={organization?.slug ?? ""}
             />
-            {hasOrganization &&
-              ["admin", "owner"].includes(data?.memberRole?.role ?? "") && (
+            {organization &&
+              ["admin", "owner"].includes(memberRole?.role ?? "") && (
                 <PendingDeletionBadge
                   organizationId={organization?.id ?? ""}
                   orgSlug={organization?.slug ?? ""}

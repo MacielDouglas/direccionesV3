@@ -2,7 +2,7 @@
 
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition } from "react";
+import { useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -11,9 +11,9 @@ import { MapPin, CheckCircle2 } from "lucide-react";
 import { editCardSchema, type EditCardInput } from "../../domain/card.schema";
 import { updateCardAction } from "../../application/card.actions";
 import { Button } from "@/components/ui/button";
-import { MapboxProvider } from "@/features/map/core/MapboxProvider";
 import { SelectableAddressesLayer } from "@/features/map/layers/SelectableAddressesLayer";
 import { sortAddressesByProximity } from "../../utils/sortAddressesByProximity";
+import { LazyMapboxProvider } from "@/features/map/core/LazyMapboxProvider";
 
 type Address = {
   id: string;
@@ -69,23 +69,28 @@ export function CardEditClient({
     setValue("addressIds", next, { shouldValidate: true });
   };
 
-  const sortedAll = sortAddressesByProximity([
-    ...linkedAddresses,
-    ...availableAddresses,
-  ]);
+  const { allForMap, indexMap } = useMemo(() => {
+    const sorted = sortAddressesByProximity([
+      ...linkedAddresses,
+      ...availableAddresses,
+    ]);
+    const forMap = sorted
+      .filter((a) => a.latitude != null && a.longitude != null)
+      .map((a, i) => ({
+        id: a.id,
+        label: a.businessName ?? `${a.street}, ${a.number}`,
+        latitude: a.latitude!,
+        longitude: a.longitude!,
+        index: i + 1,
+      }));
 
-  const allForMap = sortedAll
-    .filter((a) => a.latitude != null && a.longitude != null)
-    .map((a, i) => ({
-      id: a.id,
-      label: a.businessName ?? `${a.street}, ${a.number}`,
-      latitude: a.latitude!,
-      longitude: a.longitude!,
-      index: i + 1,
-    }));
+    return {
+      allForMap: forMap,
+      indexMap: new Map(forMap.map((a) => [a.id, a.index])),
+    };
+  }, [linkedAddresses, availableAddresses]);
 
   // Índice global para correlacionar lista ↔ mapa
-  const indexMap = new Map(allForMap.map((a) => [a.id, a.index]));
 
   const onSubmit = (data: EditCardInput) => {
     startTransition(async () => {
@@ -109,14 +114,15 @@ export function CardEditClient({
   return (
     <div className="flex flex-col h-dvh">
       {/* Mapa fixo no topo */}
+
       <div className="h-96 w-full overflow-hidden shadow-md">
-        <MapboxProvider>
+        <LazyMapboxProvider className="h-96">
           <SelectableAddressesLayer
             addresses={allForMap}
             selectedIds={selectedIds}
             onToggle={toggle}
           />
-        </MapboxProvider>
+        </LazyMapboxProvider>
       </div>
 
       {/* Área rolável */}

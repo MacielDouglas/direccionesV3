@@ -14,11 +14,5 @@ export function middleware(req: NextRequest): NextResponse {
 }
 
 export const config = {
-  matcher: [
-    "/org/:path*",
-    "/admin/:path*",
-    "/cards/:path*",
-    "/addresses/:path*",
-    "/user/:path*",
-  ],
+  matcher: ["/((?!login|_next/static|_next/image|favicon.ico|api/auth).*)"],
 };

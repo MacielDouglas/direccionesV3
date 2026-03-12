@@ -69,10 +69,10 @@ export default async function AddressDetailsScreen({
         <header className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <span
-              className={`h-8 w-8 shrink-0 rounded-sm border ${colorClass}`}
+              className={`h-8 w-2 shrink-0 rounded-full ${colorClass}`}
               aria-hidden="true"
             />
-            <h1 className="-ml-8 truncate text-lg font-semibold uppercase tracking-wide sm:text-2xl">
+            <h1 className="truncate text-lg font-semibold uppercase tracking-wide sm:text-2xl">
               {address.businessName ?? "Residencial"}
             </h1>
           </div>

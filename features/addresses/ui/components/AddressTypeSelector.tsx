@@ -7,8 +7,6 @@ import { useController, useFormContext } from "react-hook-form";
 import type { AddressFormData } from "../../domain/address.schema";
 import { ADDRESS_TYPE_OPTIONS } from "../../domain/constants/address.constants";
 
-// type Props = { control: Control<AddressFormData> };
-
 export default function AddressTypeSelector() {
   const { control } = useFormContext<AddressFormData>();
   const {

@@ -1,18 +1,15 @@
 import AddressEditScreen from "@/features/addresses/ui/screens/AddressEditScreen";
 
-type PageProps = {
-  params: {
-    organizationSlug: string;
-    addressId: string;
-  };
-};
+interface Props {
+  params: Promise<{ organizationSlug: string; addressId: string }>;
+}
 
-export default async function UpdateAddressPage({ params }: PageProps) {
-  const address = await params;
+export default async function UpdateAddressPage({ params }: Props) {
+  const { organizationSlug, addressId } = await params;
   return (
     <AddressEditScreen
-      organizationSlug={address.organizationSlug}
-      addressId={address.addressId}
+      organizationSlug={organizationSlug}
+      addressId={addressId}
     />
   );
 }
