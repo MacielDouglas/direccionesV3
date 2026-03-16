@@ -30,7 +30,7 @@ export default function AddressForm() {
         setUploadProgress(0);
         const uploaded = await uploadFile(
           values.image.imageFile,
-          organization.id,
+          organization.slug,
           setUploadProgress,
         );
         imageUrl = uploaded.publicUrl;

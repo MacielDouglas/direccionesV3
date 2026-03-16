@@ -102,9 +102,9 @@ export default function RootLayout({
             Ir al contenido principal
           </a>
 
-          <NextTopLoader color="#ff6828" showSpinner={false} height={2} />
           <Toaster position="top-center" richColors closeButton />
           {children}
+          <NextTopLoader color="#ff6828" showSpinner={false} height={3} />
         </ThemeProvider>
       </body>
     </html>

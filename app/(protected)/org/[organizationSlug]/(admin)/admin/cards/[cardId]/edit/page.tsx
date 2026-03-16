@@ -23,10 +23,12 @@ export default async function CardEditPage({ params }: Props) {
   if (!canManage) redirect(`/org/${organizationSlug}`);
 
   return (
-    <CardEditScreen
-      cardId={cardId}
-      organizationId={org.id}
-      organizationSlug={organizationSlug}
-    />
+    <div className="w-full max-w-3xl mx-auto py-2">
+      <CardEditScreen
+        cardId={cardId}
+        organizationId={org.id}
+        organizationSlug={organizationSlug}
+      />
+    </div>
   );
 }

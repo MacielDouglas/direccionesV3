@@ -6,7 +6,11 @@ import type { AddressFormData } from "../domain/address.schema";
 import { addressFormSchema } from "../domain/address.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-export function useAddressEditForm(address: Address) {
+interface AddressWithImageKey extends Address {
+  imageKey?: string | null;
+}
+
+export function useAddressEditForm(address: AddressWithImageKey) {
   return useForm<AddressFormData>({
     resolver: zodResolver(addressFormSchema),
     defaultValues: {
@@ -24,8 +28,8 @@ export function useAddressEditForm(address: Address) {
       invited: address.invited,
       image: {
         imageUrl: address.image ?? undefined,
-        imageKey: null,
-        isCustomImage: !!address.image,
+        imageKey: address.imageKey || null, // ✅ TypeScript feliz
+        isCustomImage: !!address.imageKey,
       },
     },
   });

@@ -55,7 +55,8 @@ export function CardAddressesLayer({
       const popup = new mapboxgl.Popup({
         offset: 28,
         closeButton: false,
-        className: "card-address-popup",
+        // className: "card-address-popup",
+        className: "text-black ",
       }).setText(addr.label);
 
       const marker = new mapboxgl.Marker({ element: el, anchor: "center" })

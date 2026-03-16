@@ -1,9 +1,9 @@
 export async function uploadFile(
   file: File,
-  organizationId: string,
+  organizationSlug: string,
   onProgress: (p: number) => void,
 ): Promise<{ key: string; publicUrl: string }> {
-  const key = `organizations/${organizationId}/addresses/${file.name}`;
+  const key = `organizations/${organizationSlug}/addresses/${file.name}`;
 
   const res = await fetch("/api/upload-url", {
     method: "POST",
@@ -32,4 +32,29 @@ export async function uploadFile(
     key,
     publicUrl: `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${key}`,
   };
+}
+
+export async function deleteFile(imageKey: string): Promise<void> {
+  // ✅ PROTEÇÃO — nunca deleta pasta security
+  if (imageKey.startsWith("security/")) {
+    console.warn("🔒 DELETE BLOQUEADO — imagem protegida:", imageKey);
+    return;
+  }
+
+  // ✅ PROTEÇÃO — só deleta pasta organizations
+  if (!imageKey.startsWith("organizations/")) {
+    console.warn("🔒 DELETE BLOQUEADO — key fora de organizations:", imageKey);
+    return;
+  }
+
+  const res = await fetch("/api/delete-file", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ key: imageKey }),
+  });
+
+  if (!res.ok) {
+    const error = await res.text();
+    throw new Error(`Failed to delete ${imageKey}: ${res.status} ${error}`);
+  }
 }

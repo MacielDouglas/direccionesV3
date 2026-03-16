@@ -3,6 +3,7 @@ import { getOrganizations } from "@/server/organization/organization.queries";
 import { setActiveOrg } from "@/server/organization/organization.actions";
 import { redirect } from "next/navigation";
 import { OrgSwitchButton } from "@/domains/organization/components/OrgSwitchButtom";
+import OrganizationForm from "@/domains/organization/components/OrganizationForm";
 
 export default async function OrganizationsPage() {
   const data = await getCurrentUser();
@@ -16,6 +17,8 @@ export default async function OrganizationsPage() {
       <p className="mt-2 text-muted-foreground">
         Elige con cuál organización deseas continuar.
       </p>
+
+      <OrganizationForm />
 
       <div className="mt-6 flex flex-col gap-3">
         {organizations.map((org) => (

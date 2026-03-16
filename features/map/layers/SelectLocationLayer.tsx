@@ -37,15 +37,30 @@ export function SelectLocationLayer({ value, onChange }: Props) {
     };
   }, [map, isLoaded, onChange]);
 
-  // Atualização externa (react-hook-form)
+  // ✅ CORREÇÃO: Limpa marker quando value=null E atualiza quando tem valor
   useEffect(() => {
-    if (!map || !value) return;
+    if (!map || !isLoaded) return;
 
+    // Remove marker anterior
     markerRef.current?.remove();
-    markerRef.current = new mapboxgl.Marker({ color: "#ef4444" })
-      .setLngLat([value.longitude, value.latitude])
-      .addTo(map);
-  }, [map, value]);
+
+    // Se tem valor, adiciona novo marker
+    if (value) {
+      markerRef.current = new mapboxgl.Marker({ color: "#ef4444" })
+        .setLngLat([value.longitude, value.latitude])
+        .addTo(map);
+    } else {
+      // Garante que markerRef fica null quando value=null
+      markerRef.current = null;
+    }
+  }, [map, isLoaded, value]); // ← value na dependência garante reexecução
+
+  // Cleanup final
+  useEffect(() => {
+    return () => {
+      markerRef.current?.remove();
+    };
+  }, []);
 
   return null;
 }

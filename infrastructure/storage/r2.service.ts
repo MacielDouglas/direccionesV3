@@ -1,4 +1,8 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const requiredEnvVars = {
@@ -21,6 +25,7 @@ const {
   R2_BUCKET_NAME,
 } = requiredEnvVars as Record<keyof typeof requiredEnvVars, string>;
 
+// ✅ UM único client — mesmo para upload e delete
 const s3 = new S3Client({
   region: "auto",
   endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -39,6 +44,14 @@ export async function generateUploadUrl(
     Key: key,
     ContentType: contentType,
   });
-
   return getSignedUrl(s3, command, { expiresIn: 60 });
+}
+
+// ✅ USA o mesmo client s3 (R2_BUCKET_NAME, não CLOUDFLARE_R2_BUCKET_NAME)
+export async function deleteR2Object(key: string): Promise<void> {
+  const command = new DeleteObjectCommand({
+    Bucket: R2_BUCKET_NAME,
+    Key: key,
+  });
+  await s3.send(command);
 }

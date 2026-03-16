@@ -24,7 +24,7 @@ export function CardViewMap({ addresses, onMarkerClick }: Props) {
 
   if (validAddresses.length === 0) {
     return (
-      <div className="flex h-48 items-center justify-center rounded-xl border bg-muted text-sm text-muted-foreground">
+      <div className="flex h-48 items-center justify-center rounded-xl border text-sm text-muted-foreground">
         Sin coordenadas disponibles
       </div>
     );
