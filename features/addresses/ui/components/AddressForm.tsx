@@ -1,3 +1,4 @@
+// features/addresses/ui/components/AddressForm.tsx
 "use client";
 
 import { useAddressForm } from "../../hooks/useAddressForm";
@@ -13,7 +14,15 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { uploadFile } from "../../utils/uploadFile";
 
-export default function AddressForm() {
+interface Props {
+  existingNeighborhoods: string[];
+  existingCities: string[];
+}
+
+export default function AddressForm({
+  existingNeighborhoods,
+  existingCities,
+}: Props) {
   const form = useAddressForm();
   const { organization } = useTenant();
   const router = useRouter();
@@ -25,7 +34,6 @@ export default function AddressForm() {
       let imageUrl = values.image.imageUrl ?? null;
       let imageKey: string | null = null;
 
-      // Upload só acontece aqui, no submit
       if (values.image.imageFile instanceof File) {
         setUploadProgress(0);
         const uploaded = await uploadFile(
@@ -68,7 +76,11 @@ export default function AddressForm() {
         className="flex flex-col gap-8 pb-10"
       >
         <div className="px-1 pt-1">
-          <AddressFields />
+          {/* ✅ repassa listas para AddressFields */}
+          <AddressFields
+            existingNeighborhoods={existingNeighborhoods}
+            existingCities={existingCities}
+          />
         </div>
 
         <div className="sticky bottom-0 z-10 border-t bg-background px-4 py-3 shadow-md">

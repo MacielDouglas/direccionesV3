@@ -1,7 +1,16 @@
 import { MapPinPlus } from "lucide-react";
 import AddressForm from "../components/AddressForm";
+import { getCurrentUser } from "@/server/users";
+import { getExistingLocations } from "../../application/address.service";
 
-export default function AddressCreateScreen() {
+export default async function AddressCreateScreen() {
+  const session = await getCurrentUser();
+  const organizationId = session?.activeMember?.organizationId ?? "";
+
+  const { neighborhoods, cities } = organizationId
+    ? await getExistingLocations(organizationId)
+    : { neighborhoods: [], cities: [] };
+
   return (
     <div className="mx-auto h-full w-full max-w-5xl space-y-4">
       <div className="space-y-6 border-b p-5 md:p-10">
@@ -17,7 +26,12 @@ export default function AddressCreateScreen() {
           </p>
         </div>
       </div>
-      <AddressForm />
+
+      {/* ✅ passa listas para o form */}
+      <AddressForm
+        existingNeighborhoods={neighborhoods}
+        existingCities={cities}
+      />
     </div>
   );
 }

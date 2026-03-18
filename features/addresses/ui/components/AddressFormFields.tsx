@@ -14,15 +14,28 @@ import { MapPinPen } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import type { AddressFormData } from "../../domain/address.schema";
 import { ADDRESS_FORMS_OPTIONS } from "../config/address-form.config";
+import { SmartCombobox } from "./SmartCombobox";
 
 const inputStyle =
   "border-0 border-b-2 border-b-muted rounded-none px-0 shadow-none bg-transparent " +
   "focus-visible:ring-0 focus-visible:outline-none focus-visible:border-b-brand " +
   "transition-colors duration-150 bg-white pl-2";
 
-export default function AddressFormFields() {
-  const { control, watch } = useFormContext<AddressFormData>();
+const comboboxInputStyle = inputStyle + " pr-7";
+interface Props {
+  existingNeighborhoods: string[];
+  existingCities: string[];
+}
+
+export default function AddressFormFields({
+  existingNeighborhoods,
+  existingCities,
+}: Props) {
+  const { control, watch, setValue } = useFormContext<AddressFormData>();
   const addressType = watch("addressType");
+  const {
+    formState: { submitCount },
+  } = useFormContext();
 
   return (
     <section className="space-y-4 py-5">
@@ -43,9 +56,121 @@ export default function AddressFormFields() {
             item.kind === "text" &&
             item.name === "businessName" &&
             addressType === "House"
-          ) {
+          )
             return null;
+
+          // ✅ SmartCombobox para neighborhood
+          if (item.kind === "text" && item.name === "neighborhood") {
+            return (
+              <FormField
+                key={item.name}
+                control={control}
+                name="neighborhood"
+                render={({ fieldState }) => (
+                  <FormItem>
+                    <SmartCombobox
+                      key={`neighborhood-${submitCount}`}
+                      label={item.label}
+                      value={watch("neighborhood") ?? ""}
+                      onChange={(val) =>
+                        setValue("neighborhood", val, { shouldValidate: true })
+                      }
+                      existing={existingNeighborhoods}
+                      placeholder={item.placeholder}
+                      error={fieldState.error?.message}
+                      inputClassName={comboboxInputStyle}
+                    />
+                  </FormItem>
+                )}
+              />
+            );
           }
+
+          // ✅ SmartCombobox para city
+          if (item.kind === "text" && item.name === "city") {
+            return (
+              <FormField
+                key={item.name}
+                control={control}
+                name="city"
+                render={({ fieldState }) => (
+                  <FormItem>
+                    <SmartCombobox
+                      key={`city-${submitCount}`}
+                      label={item.label}
+                      value={watch("city") ?? ""}
+                      onChange={(val) =>
+                        setValue("city", val, { shouldValidate: true })
+                      }
+                      existing={existingCities}
+                      placeholder={item.placeholder}
+                      error={fieldState.error?.message}
+                      inputClassName={comboboxInputStyle}
+                    />
+                  </FormItem>
+                )}
+              />
+            );
+          }
+
+          // if (item.kind === "group") {
+          //   const hasSwitch =
+          //     item.fields?.some((f) => f.kind === "switch") ?? false;
+
+          //   if (hasSwitch) {
+          //     return (
+          //       <div
+          //         key={index}
+          //         className="flex items-center justify-between gap-5"
+          //       >
+          //         {item.fields?.map((sub) => (
+          //           <FormField
+          //             key={sub.name}
+          //             control={control}
+          //             name={sub.name as keyof AddressFormData}
+          //             render={({ field }) => (
+          //               <FormItem className="flex items-center gap-3">
+          //                 <FormLabel>{sub.label}</FormLabel>
+          //                 <FormControl>
+          //                   <Switch
+          //                     checked={Boolean(field.value)}
+          //                     onCheckedChange={field.onChange}
+          //                   />
+          //                 </FormControl>
+          //               </FormItem>
+          //             )}
+          //           />
+          //         ))}
+          //       </div>
+          //     );
+          //   }
+
+          //   return (
+          //     <div className="flex gap-3" key={index}>
+          //       {item.fields?.map((sub) => (
+          //         <FormField
+          //           key={sub.name}
+          //           control={control}
+          //           name={sub.name as keyof AddressFormData}
+          //           render={({ field }) => (
+          //             <FormItem className="flex-1">
+          //               <FormLabel>{sub.label}</FormLabel>
+          //               <FormControl>
+          //                 <Input
+          //                   {...field}
+          //                   value={String(field.value ?? "")}
+          //                   className={inputStyle}
+          //                   placeholder={sub.placeholder}
+          //                 />
+          //               </FormControl>
+          //               <FormMessage />
+          //             </FormItem>
+          //           )}
+          //         />
+          //       ))}
+          //     </div>
+          //   );
+          // }
 
           if (item.kind === "group") {
             const hasSwitch =
@@ -79,29 +204,61 @@ export default function AddressFormFields() {
               );
             }
 
+            // ✅ Grupo com inputs — trata neighborhood especialmente
             return (
               <div className="flex gap-3" key={index}>
-                {item.fields?.map((sub) => (
-                  <FormField
-                    key={sub.name}
-                    control={control}
-                    name={sub.name as keyof AddressFormData}
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormLabel>{sub.label}</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            value={String(field.value ?? "")}
-                            className={inputStyle}
-                            placeholder={sub.placeholder}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                ))}
+                {item.fields?.map((sub) => {
+                  // ✅ neighborhood dentro do grupo → SmartCombobox
+                  if (sub.name === "neighborhood") {
+                    return (
+                      <FormField
+                        key={sub.name}
+                        control={control}
+                        name="neighborhood"
+                        render={({ fieldState }) => (
+                          <FormItem className="flex-1">
+                            <SmartCombobox
+                              key={`neighborhood-${submitCount}`}
+                              label={sub.label}
+                              value={watch("neighborhood") ?? ""}
+                              onChange={(val) =>
+                                setValue("neighborhood", val, {
+                                  shouldValidate: true,
+                                })
+                              }
+                              existing={existingNeighborhoods}
+                              placeholder={sub.placeholder}
+                              error={fieldState.error?.message}
+                            />
+                          </FormItem>
+                        )}
+                      />
+                    );
+                  }
+
+                  // Input normal para os demais campos do grupo (ex: number)
+                  return (
+                    <FormField
+                      key={sub.name}
+                      control={control}
+                      name={sub.name as keyof AddressFormData}
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>{sub.label}</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              value={String(field.value ?? "")}
+                              className={inputStyle}
+                              placeholder={sub.placeholder}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  );
+                })}
               </div>
             );
           }
@@ -116,7 +273,6 @@ export default function AddressFormFields() {
                   const length = String(field.value ?? "").length;
                   const max = 300;
                   const warning = max - length <= 20;
-
                   return (
                     <FormItem>
                       <FormLabel>{item.label}</FormLabel>

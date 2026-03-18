@@ -127,3 +127,16 @@ export async function getAddressByIdService(params: {
 export const getAddressById = cache(async (addressId: string) => {
   return prisma.address.findUnique({ where: { id: addressId } });
 });
+
+export async function getExistingLocations(organizationId: string) {
+  const addresses = await prisma.address.findMany({
+    where: { organizationId },
+    select: { neighborhood: true, city: true },
+    distinct: ["neighborhood", "city"],
+  });
+
+  return {
+    neighborhoods: [...new Set(addresses.map((a) => a.neighborhood))].sort(),
+    cities: [...new Set(addresses.map((a) => a.city))].sort(),
+  };
+}
