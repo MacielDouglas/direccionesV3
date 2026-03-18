@@ -19,4 +19,5 @@ export type AvailableAddress = Pick<
   | "image"
   | "latitude"
   | "longitude"
+  | "active"
 >;

@@ -1,5 +1,6 @@
 "use server";
 
+import { AddressType } from "@/features/addresses/types/address.types";
 import { prisma } from "@/lib/prisma";
 
 export async function getNextCardNumber(
@@ -12,13 +13,18 @@ export async function getNextCardNumber(
   return (result._max.number ?? 0) + 1;
 }
 
+export type AddressFilters = {
+  active?: boolean; // true | false | undefined (todos)
+  types?: AddressType[]; // [] = todos
+};
+
 export async function getAvailableAddresses(organizationId: string) {
   return prisma.address.findMany({
     where: {
       organizationId,
       cardId: null,
-      // active: true,
       pendingDeletion: false,
+      // ✅ sem filtro active — o cliente filtra
     },
     select: {
       id: true,
@@ -29,6 +35,7 @@ export async function getAvailableAddresses(organizationId: string) {
       city: true,
       businessName: true,
       image: true,
+      active: true, // ✅ adicionado
       latitude: true,
       longitude: true,
     },
