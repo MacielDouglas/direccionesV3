@@ -17,7 +17,7 @@ export async function getAvailableAddresses(organizationId: string) {
     where: {
       organizationId,
       cardId: null,
-      active: true,
+      // active: true,
       pendingDeletion: false,
     },
     select: {
