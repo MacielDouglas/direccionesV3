@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import { getAddressByIdAction } from "../../application/address.actions";
+// import { getExistingLocations } from "../../application/address.queries";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import AddressEditForm from "../components/AddressEditForm";
+import { getExistingLocations } from "../../application/address.service";
 
 type Props = {
   organizationSlug: string;
@@ -15,6 +17,11 @@ export default async function AddressEditScreen({
 }: Props) {
   const address = await getAddressByIdAction(addressId);
   if (!address) notFound();
+
+  // ✅ busca neighborhoods e cities existentes
+  const { neighborhoods, cities } = await getExistingLocations(
+    address.organizationId,
+  );
 
   return (
     <article className="mx-auto flex w-full max-w-2xl flex-col gap-2">
@@ -34,7 +41,11 @@ export default async function AddressEditScreen({
         </div>
       </header>
 
-      <AddressEditForm address={address} />
+      <AddressEditForm
+        address={address}
+        existingNeighborhoods={neighborhoods} // ✅
+        existingCities={cities} // ✅
+      />
     </article>
   );
 }

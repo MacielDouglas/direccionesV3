@@ -14,10 +14,11 @@ import { updateAddressAction } from "../../application/address.actions";
 import { useAddressEditForm } from "../../hooks/useAddressEditForm";
 import { deleteFile, uploadFile } from "../../utils/uploadFile";
 
-type Props = {
+interface Props {
   address: Address;
-};
-
+  existingNeighborhoods: string[]; // ✅
+  existingCities: string[]; // ✅
+}
 // ✅ Extrai key da URL — type-safe, zero any
 function extractKeyFromUrl(imageUrl: string | null): string | null {
   if (!imageUrl) return null;
@@ -26,7 +27,11 @@ function extractKeyFromUrl(imageUrl: string | null): string | null {
   return imageUrl.replace(`${r2BaseUrl}/`, "");
 }
 
-export default function AddressEditForm({ address }: Props) {
+export default function AddressEditForm({
+  address,
+  existingNeighborhoods,
+  existingCities,
+}: Props) {
   const form = useAddressEditForm(address);
   const { organization } = useTenant();
   const router = useRouter();
@@ -145,7 +150,10 @@ export default function AddressEditForm({ address }: Props) {
         className="flex flex-col gap-8 pb-10"
       >
         <div className="px-1 pt-1">
-          <AddressFields />
+          <AddressFields
+            existingNeighborhoods={existingNeighborhoods}
+            existingCities={existingCities}
+          />
         </div>
 
         <div className="sticky bottom-0 z-10 flex items-center justify-between gap-3 border-t bg-background px-4 py-3 shadow-md">
