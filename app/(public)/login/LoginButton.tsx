@@ -12,7 +12,7 @@ export default function LoginButton() {
     try {
       setLoading(true);
       await signIn();
-      toast.success("Sesión iniciada correctamente");
+      // toast.success("Sesión iniciada correctamente");
     } catch (error) {
       console.error("[LoginButton] Error al iniciar sesión:", error);
       toast.error("No se pudo iniciar sesión. Intente nuevamente.");

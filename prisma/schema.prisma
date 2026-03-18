@@ -57,6 +57,8 @@ model User {
   surveysCreated   SurveyPin[] @relation("SurveyCreatedPins")
   surveysConfirmed SurveyPin[] @relation("SurveyConfirmedPins")
 
+  agendaConductor AgendaEvent[] @relation("AgendaEventConductor")
+
   @@map("user")
 }
 
@@ -243,7 +245,10 @@ model Organization {
 
   members     Member[]
   invitations Invitation[]
- surveys     Survey[] 
+  surveys     Survey[] 
+  agenda      AgendaEvent[]
+  agendaOption AgendaFieldOption[]
+
   
   @@map("organization")
 }
@@ -351,4 +356,45 @@ enum PinStatus {
   SUGGESTED   // amarelo   — enviado por admin/owner
   CONFIRMED   // verde     — confirmado por qualquer membro
   CANCELLED   // cinza     — cancelado
+}
+
+
+
+//////////////////////////////////////////////////////
+// AGENDA
+//////////////////////////////////////////////////////
+
+model AgendaEvent {
+  id             String    @id @default(cuid())
+  organizationId String
+  date           DateTime
+  time           String?
+  conductorId    String?
+  saida          String?
+  tipo           String?
+  territorio     String?
+  info           String?
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  conductor      User?        @relation("AgendaEventConductor", fields: [conductorId], references: [id])
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([organizationId, date])
+}
+
+// ✅ Armazena opções salvas por campo e organização
+model AgendaFieldOption {
+  id             String   @id @default(cuid())
+  organizationId String
+  field          String   // "saida" | "tipo" | "territorio"
+  value          String
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime @default(now())
+
+  @@unique([organizationId, field, value]) // ← sem duplicatas
+  @@index([organizationId, field])
 }

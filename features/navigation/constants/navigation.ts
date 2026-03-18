@@ -9,6 +9,8 @@ import {
   Search,
   Pencil,
   ScanSearch,
+  CalendarDays,
+  CalendarCheck,
 } from "lucide-react";
 import type { ElementType } from "react";
 import type { Role } from "@/domains/member/types/role.types";
@@ -61,6 +63,13 @@ export const navigationMenu: NavigationItem[] = [
     href: "/surveys",
     icon: ScanSearch,
   },
+
+  {
+    id: "agenda",
+    name: "Agenda",
+    href: "/agenda",
+    icon: CalendarDays,
+  },
   {
     id: "users",
     name: "Usuarios",
@@ -88,6 +97,13 @@ export const navigationMenu: NavigationItem[] = [
         icon: Plus,
       },
     ],
+  },
+  {
+    id: "admin-agenda",
+    name: "Programar agenda",
+    href: "/admin/agenda",
+    icon: CalendarCheck,
+    roles: ["admin", "owner"],
   },
   {
     id: "admin",
