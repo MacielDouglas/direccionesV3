@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Compass } from "lucide-react";
 import MobileHeader from "./MobileHeader";
 import SessionTimer from "@/domains/auth/components/SessionTimer";
@@ -6,6 +5,7 @@ import DarkModeButton from "../ui/DarkModeButton";
 import type { Session } from "better-auth";
 import type { Role } from "@/domains/member/types/role.types";
 import type { Organization } from "better-auth/plugins";
+import { NavLink } from "../ui/NavLink";
 
 interface HeaderProps {
   role?: Role | null;
@@ -28,13 +28,13 @@ export default function Header({ session, role, organization }: HeaderProps) {
     <header className="w-full border-b border-white/10 bg-[#0c232a]">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:h-20 md:px-8">
         {organization?.slug ? (
-          <Link
+          <NavLink
             href="/"
             className="rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             aria-label="Ir al inicio de Direcciones"
           >
             <Logo />
-          </Link>
+          </NavLink>
         ) : (
           <Logo />
         )}

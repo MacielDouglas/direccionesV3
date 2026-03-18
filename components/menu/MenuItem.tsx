@@ -1,6 +1,7 @@
 import type { NavigationItem as Item } from "@/features/navigation/constants/navigation";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
+// import Link from "next/link";
+import { NavLink } from "../ui/NavLink";
 
 type Props = {
   item: Item;
@@ -18,7 +19,7 @@ export default function MenuItem({
   const Icon = item.icon;
 
   return (
-    <Link
+    <NavLink
       href={`/org/${orgSlug}${item.href}`}
       onClick={onSelect}
       className={cn(
@@ -30,6 +31,6 @@ export default function MenuItem({
         <Icon className="h-7 w-7" aria-hidden="true" />
         <span className="font-medium">{item.name}</span>
       </div>
-    </Link>
+    </NavLink>
   );
 }

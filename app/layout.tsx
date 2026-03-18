@@ -2,8 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Outfit, Inconsolata } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import NextTopLoader from "nextjs-toploader";
+// import NextTopLoader from "nextjs-toploader";
 import { ThemeProvider } from "next-themes";
+import { NavigationProvider } from "@/components/NavigationProvider";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -103,8 +104,8 @@ export default function RootLayout({
           </a>
 
           <Toaster position="top-center" richColors closeButton />
-          {children}
-          <NextTopLoader color="#ff6828" showSpinner={false} height={3} />
+          <NavigationProvider>{children}</NavigationProvider>
+          {/* <NextTopLoader color="#ff6828" showSpinner={false} height={3} /> */}
         </ThemeProvider>
       </body>
     </html>
