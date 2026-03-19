@@ -11,6 +11,7 @@ import {
   ScanSearch,
   CalendarDays,
   CalendarCheck,
+  Link2,
 } from "lucide-react";
 import type { ElementType } from "react";
 import type { Role } from "@/domains/member/types/role.types";
@@ -104,6 +105,13 @@ export const navigationMenu: NavigationItem[] = [
     href: "/admin/agenda",
     icon: CalendarCheck,
     roles: ["admin", "owner"],
+  },
+  {
+    id: "invitation-org",
+    name: "Invitaciones",
+    href: "/admin/invitations",
+    icon: Link2, // import { Link2 } from "lucide-react"
+    roles: ["admin", "owner"], // só aparece para admin/owner
   },
   {
     id: "admin",

@@ -1,6 +1,7 @@
 import Image from "next/image";
-import LoginButton from "./LoginButton";
+// import LoginButton from "./LoginButton";
 import type { Metadata } from "next";
+import LoginButton from "@/components/LoginButton";
 
 export const metadata: Metadata = {
   title: "Iniciar sesión",
@@ -37,7 +38,7 @@ export default function LoginPage() {
           </h1>
 
           <Image
-            src="/logo_white.svg"
+            src="/Logo.svg"
             alt="Logotipo de Direcciones"
             width={180}
             height={180}

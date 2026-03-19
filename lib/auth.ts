@@ -24,8 +24,8 @@ export const auth = betterAuth({
     disableSessionRefresh: true,
   },
 
-  trustedOrigins: process.env.NEXT_PUBLIC_APP_URL
-    ? [process.env.NEXT_PUBLIC_APP_URL]
+  trustedOrigins: process.env.NEXT_PUBLIC_URL
+    ? [process.env.NEXT_PUBLIC_URL]
     : [],
 
   socialProviders: {
@@ -68,7 +68,11 @@ export const auth = betterAuth({
   },
 
   plugins: [
-    organization({ ac, roles: { owner, admin, member } }),
+    organization({
+      ac,
+      roles: { owner, admin, member },
+      invitationExpiresIn: 60 * 60 * 24,
+    }),
     nextCookies(), // sempre por último
   ],
 });

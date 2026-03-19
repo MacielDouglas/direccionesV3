@@ -59,6 +59,8 @@ model User {
 
   agendaConductor AgendaEvent[] @relation("AgendaEventConductor")
 
+   inviteTokensCreated InviteToken[] @relation("InviteTokensCreated")
+  inviteTokensUsed    InviteToken[] @relation("InviteTokensUsed")
   @@map("user")
 }
 
@@ -249,6 +251,7 @@ model Organization {
   agenda      AgendaEvent[]
   agendaOption AgendaFieldOption[]
 
+   inviteTokens InviteToken[]
   
   @@map("organization")
 }
@@ -339,8 +342,8 @@ model SurveyPin {
   latitude      Float
   longitude     Float
   status        PinStatus @default(PENDING)
-  createdById   String
-  createdBy     User      @relation("SurveyCreatedPins", fields: [createdById], references: [id])
+  createdById   String?
+  createdBy     User?      @relation("SurveyCreatedPins", fields: [createdById], references: [id])
   confirmedById String?
   confirmedBy   User?     @relation("SurveyConfirmedPins", fields: [confirmedById], references: [id])
   createdAt     DateTime  @default(now())
@@ -397,4 +400,30 @@ model AgendaFieldOption {
 
   @@unique([organizationId, field, value]) // ← sem duplicatas
   @@index([organizationId, field])
+}
+
+
+//////////////////////////////////////////////////////
+// INVITATION
+//////////////////////////////////////////////////////
+
+model InviteToken {
+  id             String   @id @default(cuid())
+  token          String   @unique @default(cuid())
+  organizationId String
+  role           String   @default("member")
+  createdById    String
+  expiresAt      DateTime
+  usedAt         DateTime?
+  usedByUserId   String?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User         @relation("InviteTokensCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  usedBy       User?        @relation("InviteTokensUsed", fields: [usedByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([organizationId])
+  @@map("invite_token")
 }

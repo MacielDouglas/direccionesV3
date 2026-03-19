@@ -5,6 +5,9 @@ import { redirect } from "next/navigation";
 import { EditNameForm } from "@/features/user/ui/EditNameForm";
 import Link from "next/link";
 import { CreditCard } from "lucide-react";
+import { LeaveOrganizationButton } from "./_components/LeaveOrganizationButton";
+import type { Role } from "@/domains/member/types/role.types";
+import { DeleteAccountButton } from "./_components/DeleteAccountButton";
 
 interface Props {
   params: Promise<{ organizationSlug: string }>;
@@ -24,7 +27,7 @@ export default async function UserPage({ params }: Props) {
   if (!data) redirect("/login");
 
   const { session, activeOrganization } = data;
-  if (!session) return;
+  if (!session || !activeOrganization) return;
 
   const user = session.user;
 
@@ -141,6 +144,36 @@ export default async function UserPage({ params }: Props) {
             ))}
           </ul>
         )}
+        <div className="border-t pt-6 flex flex-col gap-4">
+          <h2 className="text-sm font-medium text-destructive">
+            Zona de perigo
+          </h2>
+
+          <div className="flex flex-col gap-1.5">
+            <p className="text-sm font-medium">Sair da organização</p>
+            <p className="text-xs text-muted-foreground">
+              Você perde acesso a esta organização. Sua conta permanece ativa.
+            </p>
+            <div className="mt-1">
+              <LeaveOrganizationButton
+                organizationId={activeOrganization.id}
+                organizationName={activeOrganization.name}
+                role={data.memberRole?.role as Role}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <p className="text-sm font-medium">Excluir conta</p>
+            <p className="text-xs text-muted-foreground">
+              Remove sua conta permanentemente de todas as organizações e do
+              app.
+            </p>
+            <div className="mt-1">
+              <DeleteAccountButton userEmail={session.user.email} />
+            </div>
+          </div>
+        </div>
       </section>
     </main>
   );

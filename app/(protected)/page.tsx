@@ -2,6 +2,7 @@ import LogoutButton from "@/components/LogoutButton";
 import MainAppMenu from "@/components/menu/MainAppMenu";
 import { PendingDeletionBadge } from "@/features/addresses/ui/components/PendingDeletionBadge";
 import { getCurrentUser } from "@/server/users";
+import { DeleteAccountButton } from "./org/[organizationSlug]/(members)/user/_components/DeleteAccountButton";
 
 export default async function Home() {
   const data = await getCurrentUser();
@@ -44,6 +45,7 @@ export default async function Home() {
             <p>Todavía no formas parte de ningún grupo.</p>
             <p>Habla con un administrador para unirte a uno.</p>
             <LogoutButton />
+            <DeleteAccountButton userEmail={session.user.email} />
           </div>
         )}
       </div>
