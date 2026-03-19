@@ -1,5 +1,5 @@
 import Image from "next/image";
-// import LoginButton from "./LoginButton";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import LoginButton from "@/components/LoginButton";
 
@@ -13,7 +13,6 @@ export default function LoginPage() {
       aria-label="Página de inicio de sesión"
       className="relative flex min-h-svh w-full flex-col items-center justify-center px-4"
     >
-      {/* Background image via Next.js Image para otimização */}
       <Image
         src="/street.webp"
         alt=""
@@ -24,10 +23,8 @@ export default function LoginPage() {
         aria-hidden="true"
       />
 
-      {/* Overlay escuro sobre o background */}
       <div aria-hidden="true" className="absolute inset-0 bg-black/30" />
 
-      {/* Card */}
       <div className="relative z-10 w-full max-w-sm rounded-2xl bg-black/20 p-8 shadow-xl shadow-black/40 backdrop-blur-md sm:p-10">
         <header className="flex flex-col items-center space-y-8">
           <h1 className="self-start text-4xl font-bold leading-snug text-white sm:text-3xl">
@@ -52,7 +49,14 @@ export default function LoginPage() {
         </header>
 
         <div className="mt-6">
-          <LoginButton />
+          {/* ✅ Suspense necessário por causa do useSearchParams no LoginButton */}
+          <Suspense
+            fallback={
+              <div className="h-10 w-full animate-pulse rounded-md bg-white/20" />
+            }
+          >
+            <LoginButton />
+          </Suspense>
         </div>
       </div>
     </div>
