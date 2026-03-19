@@ -112,7 +112,7 @@ export default function SurveyMap({
       const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "200px" })
         .setHTML(`
         <div style="font-size:13px;padding:4px 2px">
-          <p style="font-weight:600;margin:0 0 2px 0;color:#111">${pin.createdBy.name}</p>
+          <p style="font-weight:600;margin:0 0 2px 0;color:#111">${pin.createdBy?.name ?? "—"}</p>
           <p style="margin:0 0 8px 0;font-size:11px;color:#6b7280">${STATUS_LABEL[pin.status]}</p>
           <div style="display:flex;flex-direction:column;gap:6px">
             ${
