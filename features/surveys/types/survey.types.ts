@@ -6,11 +6,11 @@ export interface SurveyPin {
   latitude: number;
   longitude: number;
   status: PinStatus;
-  createdById: string;
+  createdById: string | null;
   confirmedById: string | null;
   createdAt: Date;
   updatedAt: Date;
-  createdBy: { name: string };
+  createdBy: { name: string } | null;
 }
 
 export interface CreatePinsInput {
