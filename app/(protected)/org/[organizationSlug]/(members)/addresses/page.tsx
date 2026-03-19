@@ -3,6 +3,11 @@ import AddressListScreen from "@/features/addresses/ui/screens/AddressListScreen
 import { prisma } from "@/lib/prisma";
 import { MapPinned } from "lucide-react";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Direcciones Page",
+};
 
 type AddressPageProps = {
   params: {

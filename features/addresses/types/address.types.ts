@@ -1,3 +1,4 @@
+import { Address } from "@prisma/client";
 import type { AddressFormData } from "../domain/address.schema";
 
 export const ADDRESS_TYPES = [
@@ -23,4 +24,9 @@ export type FieldName = keyof AddressFormData;
 export type BaseField = {
   label: string;
   description?: string;
+};
+
+export type AddressWithUsers = Address & {
+  createdUser: { name: string } | null;
+  updatedUser: { name: string } | null;
 };

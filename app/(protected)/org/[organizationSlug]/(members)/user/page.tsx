@@ -8,6 +8,11 @@ import { CreditCard } from "lucide-react";
 import { LeaveOrganizationButton } from "./_components/LeaveOrganizationButton";
 import type { Role } from "@/domains/member/types/role.types";
 import { DeleteAccountButton } from "./_components/DeleteAccountButton";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Perfil de Usuario",
+};
 
 interface Props {
   params: Promise<{ organizationSlug: string }>;

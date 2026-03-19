@@ -54,7 +54,7 @@ export function AddressImageViewer({ src, alt }: Props) {
               size="icon"
               variant="secondary"
               aria-label="Cerrar imagen"
-              className="absolute right-4 top-4 rounded-full opacity-80 hover:opacity-100"
+              className="absolute right-10 top-20 rounded-full opacity-80 hover:opacity-100"
             >
               <X className="h-5 w-5" aria-hidden="true" />
             </Button>

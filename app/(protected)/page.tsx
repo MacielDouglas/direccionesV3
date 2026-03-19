@@ -3,19 +3,16 @@ import MainAppMenu from "@/components/menu/MainAppMenu";
 import { PendingDeletionBadge } from "@/features/addresses/ui/components/PendingDeletionBadge";
 import { getCurrentUser } from "@/server/users";
 import { DeleteAccountButton } from "./org/[organizationSlug]/(members)/user/_components/DeleteAccountButton";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Página Home",
+};
 
 export default async function Home() {
   const data = await getCurrentUser();
 
-  // ✅ CORRIGIDO
   const { session, activeOrganization: organization, memberRole } = data!;
-  // depois usa sem ?.
-
-  // const hasOrganization = !!data?.session.session.activeOrganizationId;
-
-  // Usa activeOrganization já resolvida pelo getCurrentUser
-  // em vez de fazer uma segunda query
-  // const organization = data?.activeOrganization;
 
   return (
     <main className="h-full w-full">

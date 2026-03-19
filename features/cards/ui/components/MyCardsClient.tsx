@@ -2,11 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { Clock } from "lucide-react";
-import type { Address } from "@prisma/client";
-import { getAddressById } from "@/features/addresses/application/address.service";
 import { ReturnCardButton } from "./ReturnCardButton";
 import { CardViewMap } from "@/features/map/components/CardViewMap";
 import { AddressDetailModal } from "./AddressDetailModal";
+import type { AddressWithUsers } from "@/features/addresses/types/address.types";
+import { fetchAddressWithUsers } from "@/server/address/address.action";
 
 type CardAddress = {
   id: string;
@@ -34,7 +34,7 @@ interface Props {
 
 export function MyCardsClient({ cards, organizationSlug }: Props) {
   const [addressPromise, setAddressPromise] =
-    useState<Promise<Address | null> | null>(null);
+    useState<Promise<AddressWithUsers | null> | null>(null);
 
   const { allAddresses, addressIndexMap } = useMemo(() => {
     const addresses = cards
@@ -53,7 +53,10 @@ export function MyCardsClient({ cards, organizationSlug }: Props) {
     };
   }, [cards]);
 
-  const openAddress = (id: string) => setAddressPromise(getAddressById(id));
+  // ✅ chama o server action e armazena a promise
+  const openAddress = (id: string) => {
+    setAddressPromise(fetchAddressWithUsers(id));
+  };
 
   return (
     <div className="flex flex-col h-dvh">
@@ -68,7 +71,7 @@ export function MyCardsClient({ cards, organizationSlug }: Props) {
           <h1 className="text-2xl font-bold">Mis Tarjetas</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             {cards.length} tarjeta{cards.length !== 1 ? "s" : ""} asignada
-            {cards.length !== 1 ? "s" : ""} a ti
+            {cards.length !== 1 ? "s" : ""}
           </p>
         </header>
 
@@ -129,7 +132,7 @@ export function MyCardsClient({ cards, organizationSlug }: Props) {
                               </span>
                             )}
                             <span
-                              className={`truncate ${addr.pendingDeletionAt && "line-through"}`}
+                              className={`truncate ${addr.pendingDeletionAt ? "line-through" : ""}`}
                             >
                               {addr.businessName && (
                                 <span className="font-medium">

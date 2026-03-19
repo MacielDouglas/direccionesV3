@@ -2,6 +2,11 @@ import { getAddressByIdService } from "@/features/addresses/application/address.
 import AddressDetailsScreen from "@/features/addresses/ui/screens/AddressDetailsScreen ";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Dirección",
+};
 
 type AddressPageProps = {
   params: {
