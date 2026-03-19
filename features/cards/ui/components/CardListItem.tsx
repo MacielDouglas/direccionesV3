@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CardViewMap } from "@/features/map/components/CardViewMap";
 import { AddressDetailModal } from "./AddressDetailModal";
-import { getAddressById } from "@/features/addresses/application/address.service";
-import { Address } from "@prisma/client";
 import Link from "next/link";
+import { fetchAddressWithUsers } from "@/server/address/address.action";
+import { AddressWithUsers } from "@/features/addresses/types/address.types";
 
 interface CardItemProps {
   card: {
@@ -49,8 +49,12 @@ export function CardListItem({
 }: CardItemProps) {
   const [assignOpen, setAssignOpen] = useState(false);
   const [addressPromise, setAddressPromise] =
-    useState<Promise<Address | null> | null>(null);
-  const openAddress = (id: string) => setAddressPromise(getAddressById(id));
+    useState<Promise<AddressWithUsers | null> | null>(null);
+
+  // openAddress usando o server action
+  const openAddress = (id: string) => {
+    setAddressPromise(fetchAddressWithUsers(id));
+  };
 
   const isAssigned = !!card.assignedUser;
   const lastReturn = card.events[0] ?? null;
