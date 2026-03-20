@@ -79,6 +79,7 @@ export default function AddressFormFields({
                       placeholder={item.placeholder}
                       error={fieldState.error?.message}
                       inputClassName={comboboxInputStyle}
+                      // inputClassName={comboboxInputStyle}
                     />
                   </FormItem>
                 )}
@@ -105,6 +106,7 @@ export default function AddressFormFields({
                       existing={existingCities}
                       placeholder={item.placeholder}
                       error={fieldState.error?.message}
+                      // inputClassName={comboboxInputStyle}
                       inputClassName={comboboxInputStyle}
                     />
                   </FormItem>
@@ -112,65 +114,6 @@ export default function AddressFormFields({
               />
             );
           }
-
-          // if (item.kind === "group") {
-          //   const hasSwitch =
-          //     item.fields?.some((f) => f.kind === "switch") ?? false;
-
-          //   if (hasSwitch) {
-          //     return (
-          //       <div
-          //         key={index}
-          //         className="flex items-center justify-between gap-5"
-          //       >
-          //         {item.fields?.map((sub) => (
-          //           <FormField
-          //             key={sub.name}
-          //             control={control}
-          //             name={sub.name as keyof AddressFormData}
-          //             render={({ field }) => (
-          //               <FormItem className="flex items-center gap-3">
-          //                 <FormLabel>{sub.label}</FormLabel>
-          //                 <FormControl>
-          //                   <Switch
-          //                     checked={Boolean(field.value)}
-          //                     onCheckedChange={field.onChange}
-          //                   />
-          //                 </FormControl>
-          //               </FormItem>
-          //             )}
-          //           />
-          //         ))}
-          //       </div>
-          //     );
-          //   }
-
-          //   return (
-          //     <div className="flex gap-3" key={index}>
-          //       {item.fields?.map((sub) => (
-          //         <FormField
-          //           key={sub.name}
-          //           control={control}
-          //           name={sub.name as keyof AddressFormData}
-          //           render={({ field }) => (
-          //             <FormItem className="flex-1">
-          //               <FormLabel>{sub.label}</FormLabel>
-          //               <FormControl>
-          //                 <Input
-          //                   {...field}
-          //                   value={String(field.value ?? "")}
-          //                   className={inputStyle}
-          //                   placeholder={sub.placeholder}
-          //                 />
-          //               </FormControl>
-          //               <FormMessage />
-          //             </FormItem>
-          //           )}
-          //         />
-          //       ))}
-          //     </div>
-          //   );
-          // }
 
           if (item.kind === "group") {
             const hasSwitch =
@@ -244,7 +187,7 @@ export default function AddressFormFields({
                       name={sub.name as keyof AddressFormData}
                       render={({ field }) => (
                         <FormItem className="flex-1">
-                          <FormLabel>{sub.label}</FormLabel>
+                          <FormLabel>{sub.label} </FormLabel>
                           <FormControl>
                             <Input
                               {...field}

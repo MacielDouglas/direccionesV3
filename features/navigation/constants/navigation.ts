@@ -67,7 +67,7 @@ export const navigationMenu: NavigationItem[] = [
 
   {
     id: "agenda",
-    name: "Agenda",
+    name: "Cronograma",
     href: "/agenda",
     icon: CalendarDays,
   },
@@ -101,14 +101,14 @@ export const navigationMenu: NavigationItem[] = [
   },
   {
     id: "admin-agenda",
-    name: "Programar agenda",
+    name: "Programar Cronograma",
     href: "/admin/agenda",
     icon: CalendarCheck,
     roles: ["admin", "owner"],
   },
   {
     id: "invitation-org",
-    name: "Invitaciones",
+    name: "Invitar Usuarios",
     href: "/admin/invitations",
     icon: Link2, // import { Link2 } from "lucide-react"
     roles: ["admin", "owner"], // só aparece para admin/owner

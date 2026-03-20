@@ -8,6 +8,7 @@ import {
 import { AgendaAdminForm } from "@/features/agenda/components/AgendaAdminForm";
 import { AgendaEventList } from "@/features/agenda/components/AgendaEventList";
 import { AgendaCalendar } from "@/features/agenda/components/AgendaCalendat";
+import { AgendaPdfButton } from "@/features/agenda/components/AgendaPdfButton";
 
 const MONTHS_ES = [
   "Enero",
@@ -78,6 +79,13 @@ export default async function AdminAgendaPage({ params, searchParams }: Props) {
         canDelete={true}
         canEdit={true}
         members={members}
+      />
+
+      <AgendaPdfButton
+        events={events}
+        monthLabel={monthLabel}
+        month={activeMonth}
+        year={activeYear}
       />
     </main>
   );

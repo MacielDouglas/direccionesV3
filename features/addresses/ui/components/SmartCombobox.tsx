@@ -120,7 +120,7 @@ export function SmartCombobox({
             !inputClassName &&
               "rounded-md border border-input focus-visible:ring-2 focus-visible:ring-ring",
             error && "border-destructive",
-            inputClassName,
+            // inputClassName,
           )}
         />
         <ChevronsUpDown

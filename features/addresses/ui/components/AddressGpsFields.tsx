@@ -205,7 +205,7 @@ export default function AddressGpsFields() {
   return (
     <section
       aria-labelledby="gps-section-title"
-      className="space-y-4 border-b p-5 dark:bg-surface-elevated-dark"
+      className="space-y-4 border-b p-5 dark:bg-surface-elevated-dark "
     >
       <header>
         <h2
@@ -220,10 +220,10 @@ export default function AddressGpsFields() {
         </p>
       </header>
 
-      <div className="rounded-lg bg-surface-subtle-light p-3 text-sm dark:bg-surface-subtle-dark dark:text-slate-400">
+      <div className="rounded-lg bg-surface-subtle-light text-lg text-center p-3  dark:bg-surface-subtle-dark dark:text-slate-400">
         <p>
-          Esta información se puede enviar seleccionando la ubicación en el
-          mapa, enviando su ubicación o pegando las coordenadas GPS.
+          Seleccione directamente en el mapa, o utilice su ubicación o pegue las
+          coordenadas GPS.
         </p>
       </div>
 
