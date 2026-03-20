@@ -2,16 +2,11 @@ import {
   CreditCard,
   MapPin,
   User,
-  Users,
   Shield,
-  Layers,
   Plus,
   Search,
-  Pencil,
   ScanSearch,
   CalendarDays,
-  CalendarCheck,
-  Link2,
 } from "lucide-react";
 import type { ElementType } from "react";
 import type { Role } from "@/domains/member/types/role.types";
@@ -72,53 +67,11 @@ export const navigationMenu: NavigationItem[] = [
     icon: CalendarDays,
   },
   {
-    id: "users",
-    name: "Usuarios",
-    href: "/admin/users",
-    icon: Users,
-    roles: ["admin", "owner"],
-  },
-  {
-    id: "admin-cards", // ← era "cards", renomeado
-    name: "Admin Tarjetas",
-    href: "/admin/cards",
-    icon: Layers,
-    roles: ["admin", "owner"],
-    children: [
-      {
-        id: "user-cards-manage",
-        name: "Administrar Tarjetas",
-        href: "/admin/cards",
-        icon: Pencil,
-      },
-      {
-        id: "user-cards-create",
-        name: "Crear Tarjetas",
-        href: "/admin/cards/new",
-        icon: Plus,
-      },
-    ],
-  },
-  {
-    id: "admin-agenda",
-    name: "Programar Cronograma",
-    href: "/admin/agenda",
-    icon: CalendarCheck,
-    roles: ["admin", "owner"],
-  },
-  {
-    id: "invitation-org",
-    name: "Invitar Usuarios",
-    href: "/admin/invitations",
-    icon: Link2, // import { Link2 } from "lucide-react"
-    roles: ["admin", "owner"], // só aparece para admin/owner
-  },
-  {
     id: "admin",
-    name: "Admin - Organizaciones",
-    href: "/admin/organizations",
+    name: "Administración",
+    href: "/admin",
     icon: Shield,
-    roles: ["owner"],
+    roles: ["admin", "owner"],
   },
 ];
 
