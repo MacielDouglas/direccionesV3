@@ -1,8 +1,11 @@
 "use client";
 
-import "mapbox-gl/dist/mapbox-gl.css";
+// ─── REMOVA a importação do CSS daqui (agora está no GlobalMapProvider) ───
+// import "mapbox-gl/dist/mapbox-gl.css"; // ← DELETE esta linha
+
 import mapboxgl from "mapbox-gl";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { mapPool } from "./mapPool";
 
 type MapContextType = {
   map: mapboxgl.Map | null;
@@ -28,39 +31,34 @@ export function MapboxProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-    if (!token) {
-      console.error("[MapboxProvider] NEXT_PUBLIC_MAPBOX_TOKEN no definido.");
-      return;
-    }
-
     if (!containerRef.current) return;
 
-    mapboxgl.accessToken = token;
-
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: "mapbox://styles/mapbox/streets-v12",
-      center: [-34.8714515, -8.0630082],
-      zoom: 15,
-      pitchWithRotate: false, // desativa rotação 3D
-      dragRotate: false, // desativa drag para rotacionar
-      attributionControl: false, // remove controle de atribuição padrão (pesado)
-      fadeDuration: 0, // tiles aparecem sem fade — mais rápido no mobile
-    });
-
+    // ✅ Pega do pool em vez de criar novo
+    const { map, isNew } = mapPool.acquire(containerRef.current);
     mapRef.current = map;
 
-    map.on("load", () => {
-      mapRef.current = map;
+    if (!isNew && map.isStyleLoaded()) {
+      // Instância reutilizada já está carregada
       setState({ map, isLoaded: true });
-    });
+      requestAnimationFrame(() => map.resize());
+    } else {
+      // Nova instância — aguarda o evento "load"
+      map.once("load", () => {
+        setState({ map, isLoaded: true });
+      });
+    }
 
-    return () => map.remove();
+    return () => {
+      // ✅ Devolve ao pool em vez de destruir
+      mapPool.release(map);
+      setState({ map: null, isLoaded: false });
+      mapRef.current = null;
+    };
   }, []);
 
   return (
     <MapContext.Provider value={state}>
+      {/* container vazio — o pool injeta o div interno aqui */}
       <div ref={containerRef} className="h-full w-full" />
       {state.isLoaded && children}
     </MapContext.Provider>

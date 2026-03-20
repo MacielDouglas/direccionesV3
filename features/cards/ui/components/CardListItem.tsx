@@ -122,7 +122,6 @@ export function CardListItem({
             />
           </div>
         </div>
-
         {/* Usuário atribuído */}
         {isAssigned && card.assignedUser && (
           <div className="flex items-center gap-2 text-sm">
@@ -140,7 +139,6 @@ export function CardListItem({
             </span>
           </div>
         )}
-
         {/* Último retorno */}
         {!isAssigned && lastReturn && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -153,7 +151,6 @@ export function CardListItem({
             </span>
           </div>
         )}
-
         {/* Addresses — clicáveis */}
         <ul
           className="flex flex-col gap-1"
@@ -185,7 +182,6 @@ export function CardListItem({
             </li>
           ))}
         </ul>
-
         {/* Mapa — markers clicáveis */}
         <CardViewMap
           addresses={card.addresses
