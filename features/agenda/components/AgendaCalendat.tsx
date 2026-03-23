@@ -25,10 +25,11 @@ const MONTHS_ES = [
 interface Props {
   events: AgendaEventItem[];
   year: number;
-  month: number; // 0-based
+  month: number;
+  onDayClick?: (day: number) => void; // ✅ novo
 }
 
-export function AgendaCalendar({ events, year, month }: Props) {
+export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const today = new Date();
@@ -65,7 +66,6 @@ export function AgendaCalendar({ events, year, month }: Props) {
     year === today.getFullYear();
 
   const hasEvent = (day: number) => eventDays.has(`${year}-${month}-${day}`);
-
   const isCurrentMonth =
     year === today.getFullYear() && month === today.getMonth();
 
@@ -104,7 +104,7 @@ export function AgendaCalendar({ events, year, month }: Props) {
         </button>
       </div>
 
-      {/* Dias da semana */}
+      {/* Cabeçalho dias da semana */}
       <div role="row" className="grid grid-cols-7 mb-2">
         {WEEK_DAYS.map((d) => (
           <div
@@ -131,25 +131,38 @@ export function AgendaCalendar({ events, year, month }: Props) {
           const day = i + 1;
           const todayDay = isToday(day);
           const eventDay = hasEvent(day);
+          const isClickable = !!onDayClick; // ✅ clicável se callback fornecido
 
           return (
             <div
               key={day}
               role="gridcell"
-              aria-label={`${day} de ${MONTHS_ES[month]}${todayDay ? ", hoy" : ""}${eventDay ? ", tiene eventos" : ""}`}
               className="flex flex-col items-center justify-center py-0.5"
             >
-              <span
+              <button
+                type="button"
+                disabled={!isClickable}
+                onClick={() => onDayClick?.(day)}
+                aria-label={`${day} de ${MONTHS_ES[month]}${todayDay ? ", hoy" : ""}${eventDay ? ", tiene eventos" : ", sin eventos"}`}
                 className={cn(
-                  "flex size-8 items-center justify-center rounded-full text-sm font-medium transition-colors",
+                  "flex size-8 items-center justify-center rounded-full text-sm font-medium transition-all",
+                  // ✅ cursor e hover apenas se clicável
+                  isClickable && "cursor-pointer",
+                  isClickable &&
+                    eventDay &&
+                    "hover:ring-2 hover:ring-primary hover:ring-offset-1",
+                  isClickable && !eventDay && "hover:bg-muted",
+                  // cores
                   todayDay && "bg-[#bfd142] text-black font-bold",
                   !todayDay &&
                     eventDay &&
                     "bg-primary/10 text-primary font-semibold",
+                  !todayDay && !eventDay && "text-muted-foreground",
+                  !isClickable && "cursor-default",
                 )}
               >
                 {day}
-              </span>
+              </button>
               {eventDay && (
                 <span
                   className={cn(

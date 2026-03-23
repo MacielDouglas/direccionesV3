@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, User, Clock, Circle, Pencil, CheckCircle } from "lucide-react";
+import {
+  MapPin,
+  User,
+  Clock,
+  Circle,
+  Pencil,
+  CheckCircle,
+  CircleAlert,
+} from "lucide-react";
 import { AssignCardModal } from "./AssignCardModal";
 import { ReturnCardButton } from "./ReturnCardButton";
 import { DeleteCardButton } from "./DeleteCardButton";
@@ -33,6 +41,7 @@ interface CardItemProps {
       businessName: string | null;
       latitude: number | null;
       longitude: number | null;
+      active: boolean;
     }[];
     events: { date: Date; user: { name: string } }[];
   };
@@ -170,6 +179,12 @@ export function CardListItem({
                   className="size-3.5 mt-0.5 shrink-0 text-red-500"
                   aria-hidden
                 />
+                {!addr.active && (
+                  <CircleAlert
+                    className="size-6 shrink-0 text-red-500 animate-ping"
+                    aria-hidden
+                  />
+                )}
                 <span className="truncate">
                   {addr.businessName && (
                     <span className="font-medium text-foreground">

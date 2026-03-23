@@ -16,6 +16,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import DeleteAddressButton from "@/features/addresses/ui/components/DeleteAddressButton";
 import { AddressWithUsers } from "@/features/addresses/types/address.types";
+import { CircleAlert } from "lucide-react";
 
 const ADDRESS_COLOR_MAP: Record<string, string> = {
   House: "bg-green-500",
@@ -259,6 +260,18 @@ function AddressContent({
             )}
           </dl>
         </section>
+
+        {!address.active && (
+          <p className="text-red-500 font-semibold text-lg inline-flex gap-2">
+            <CircleAlert
+              className="size-6 shrink-0 text-red-500 animate-bounce"
+              aria-hidden
+            />{" "}
+            Dirección desactivada. Puede haber cambiado.
+            <br />
+            Revise notas o contacte a quien la actualizó.
+          </p>
+        )}
 
         {/* Info adicional */}
         {address.info && (

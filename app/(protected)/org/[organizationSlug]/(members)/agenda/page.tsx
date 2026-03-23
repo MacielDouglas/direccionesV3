@@ -1,13 +1,10 @@
 import { getCurrentUser } from "@/server/users";
 import { redirect } from "next/navigation";
 import { getAgendaEventsByMonth } from "@/features/agenda/application/agenda.service";
-import { AgendaEventList } from "@/features/agenda/components/AgendaEventList";
-import { AgendaCalendar } from "@/features/agenda/components/AgendaCalendat";
 import type { Metadata } from "next";
+import { AgendaPageClient } from "@/features/agenda/components/AgendaPageClient";
 
-export const metadata: Metadata = {
-  title: "Cronograma",
-};
+export const metadata: Metadata = { title: "Cronograma" };
 
 const MONTHS_ES = [
   "Enero",
@@ -56,9 +53,10 @@ export default async function AgendaPage({ params, searchParams }: Props) {
         </p>
       </header>
 
-      <AgendaCalendar events={events} year={activeYear} month={activeMonth} />
-      <AgendaEventList
+      <AgendaPageClient
         events={events}
+        year={activeYear}
+        month={activeMonth}
         monthLabel={monthLabel}
         organizationSlug={slug}
         canDelete={false}

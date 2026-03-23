@@ -58,6 +58,7 @@ export async function listCards(organizationId: string) {
           businessName: true,
           latitude: true,
           longitude: true,
+          active: true,
         },
       },
       assignedUser: {
@@ -91,6 +92,7 @@ export async function listMyCards(organizationId: string, userId: string) {
           latitude: true,
           longitude: true,
           pendingDeletionAt: true,
+          active: true,
         },
       },
     },

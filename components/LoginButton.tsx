@@ -18,11 +18,7 @@ export default function LoginButton() {
   console.log(loading);
 
   return (
-    <Button
-      onClick={() => handleClick()}
-      className={`w-full ${loading && "duration-300 animate-bounce"}`}
-      disabled={loading}
-    >
+    <Button onClick={() => handleClick()} className="w-full" disabled={loading}>
       {loading ? (
         <>
           <svg

@@ -6,6 +6,7 @@ import { AddressViewMap } from "@/features/map/components/AddressViewMap";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import DeleteAddressButton from "../components/DeleteAddressButton";
+import { CircleAlert } from "lucide-react";
 // import { useState } from "react";
 
 type AddressDetailsScreenProps = {
@@ -155,6 +156,17 @@ export default async function AddressDetailsScreen({
             </div>
           </dl>
         </section>
+        {!address.active && (
+          <p className="text-red-500 font-semibold text-lg inline-flex gap-2">
+            <CircleAlert
+              className="size-6 shrink-0 text-red-500 animate-bounce"
+              aria-hidden
+            />{" "}
+            Dirección desactivada. Puede haber cambiado.
+            <br />
+            Revise notas o contacte a quien la actualizó.
+          </p>
+        )}
 
         {address.info && (
           <section

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Clock } from "lucide-react";
+import { CircleAlert, Clock } from "lucide-react";
 import { ReturnCardButton } from "./ReturnCardButton";
 import { CardViewMap } from "@/features/map/components/CardViewMap";
 import { AddressDetailModal } from "./AddressDetailModal";
@@ -18,6 +18,7 @@ type CardAddress = {
   pendingDeletionAt: Date | null;
   latitude: number | null;
   longitude: number | null;
+  active: boolean;
 };
 
 type Card = {
@@ -130,6 +131,12 @@ export function MyCardsClient({ cards, organizationSlug }: Props) {
                               >
                                 {index}
                               </span>
+                            )}
+                            {!addr.active && (
+                              <CircleAlert
+                                className="size-4 shrink-0 text-red-500 animate-ping"
+                                aria-hidden
+                              />
                             )}
                             <span
                               className={`truncate ${addr.pendingDeletionAt ? "line-through" : ""}`}

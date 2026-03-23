@@ -47,6 +47,7 @@ export async function CardListScreen({
               <CardListItem
                 card={{
                   ...card,
+
                   events: card.events.map((e) => ({
                     date: e.date,
                     user: e.user,

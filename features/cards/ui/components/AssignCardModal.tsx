@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { UserCircle } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Member {
   user: { id: string; name: string; email: string; image: string | null };
@@ -79,10 +79,16 @@ export function AssignCardModal({
                     : "border-border hover:bg-muted/50"
                 }`}
             >
-              <UserCircle
+              <Avatar className="size-6 shrink-0">
+                <AvatarImage src={user.image ?? undefined} />
+                <AvatarFallback>
+                  {user.name?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              {/* <UserCircle
                 className="size-5 shrink-0 text-muted-foreground"
                 aria-hidden
-              />
+              /> */}
               <span className="flex flex-col min-w-0">
                 <span className="text-sm font-medium truncate">
                   {user.name}

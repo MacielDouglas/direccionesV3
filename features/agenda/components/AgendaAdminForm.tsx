@@ -186,7 +186,7 @@ export function AgendaAdminForm({
         className="flex flex-col gap-4"
       >
         {/* Fecha + Hora */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex-wrap md:grid md:grid-cols-2 gap-3 ">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="event-date">Fecha</Label>
             <Input id="event-date" type="date" {...register("date")} />

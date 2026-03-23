@@ -24,7 +24,7 @@ export async function createCardAction(
           id: { in: addressIds },
           organizationId,
           cardId: null,
-          active: true,
+          // active: true,
           pendingDeletion: false,
         },
         select: { id: true },

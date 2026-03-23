@@ -131,18 +131,22 @@ export function AgendaEventItem({
         {(event.saida || event.tipo || event.territorio) && (
           <div className={cn("flex flex-wrap gap-2", isPast && "opacity-60")}>
             {event.saida && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                📍 {event.saida}
-              </span>
+              <p className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
+                📍{" "}
+                <span className="text-xs font-light text-muted-foreground">
+                  Salida:
+                </span>{" "}
+                {event.saida}
+              </p>
             )}
             {event.tipo && (
               <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                🏷️ {event.tipo}
+                🏷️ Modalidad: {event.tipo}
               </span>
             )}
             {event.territorio && (
               <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                🗺️ {event.territorio}
+                🗺️ Territorio: {event.territorio}
               </span>
             )}
           </div>
