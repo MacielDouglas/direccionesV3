@@ -44,7 +44,7 @@ export default async function AddressPage({
       <div className="space-y-6 border-b p-5 md:p-10">
         <div className="flex items-center gap-4">
           <MapPinned className="w-10 h-10 text-orange-500 " />
-          <h1 className="text-3xl font-semibold">Todas Direcciones</h1>
+          <h1 className="text-3xl font-semibold">Todas las direcciones</h1>
         </div>
         <div className="mt-2 text-lg text-neutral-600 dark:text-neutral-400 ">
           <p>En esta página puede ver todas las direcciones registradas.</p>
@@ -58,7 +58,7 @@ export default async function AddressPage({
       <AddressListScreen
         addresses={addresses}
         organizationSlug={organizationSlug}
-        query={q}
+        // query={q}
       />
     </div>
   );

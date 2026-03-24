@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import type { AddressFormData } from "../domain/address.schema";
 import { addressFormSchema } from "../domain/address.schema";
 import { cache } from "react";
+import { sanitizeInfo } from "../utils/sanitizeInfo";
 
 export async function createAddressService(params: {
   input: AddressFormData;
@@ -22,7 +23,7 @@ export async function createAddressService(params: {
       latitude: data.latitude ?? null,
       longitude: data.longitude ?? null,
       image: data.image.imageUrl ?? null,
-      info: data.info ?? null,
+      info: sanitizeInfo(data.info ?? null),
       businessName: data.businessName ?? null,
       active: data.active,
       confirmed: data.confirmed,
@@ -79,7 +80,7 @@ export async function updateAddressService({
       city,
       latitude,
       longitude,
-      info,
+      info: sanitizeInfo(info ?? null),
       confirmed,
       active,
       invited,
