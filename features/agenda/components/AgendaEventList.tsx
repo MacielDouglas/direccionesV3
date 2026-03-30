@@ -5,9 +5,6 @@ import { CalendarX, ChevronDown, ChevronUp } from "lucide-react";
 import type { AgendaEventItem as TAgendaEventItem } from "../types/agenda.types";
 import { AgendaEventItem } from "./AgendaEventItem";
 import { AgendaEventModal } from "./ui/AgendaEventModal";
-// import { AgendaEventItem } from "./AgendaEventItem";
-// import { AgendaEventModal } from "./AgendaEventModal";
-// import { cn } from "@/lib/utils";
 
 interface Member {
   user: { id: string; name: string; image: string | null };

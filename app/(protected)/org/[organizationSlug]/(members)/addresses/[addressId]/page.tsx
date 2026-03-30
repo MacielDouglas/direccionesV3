@@ -4,7 +4,7 @@ import { getOrganizationBySlug } from "@/server/organization/organization.querie
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { MapPinCheck, Pin } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Dirección",
@@ -31,12 +31,18 @@ export default async function AddressPage({ params }: AddressPageProps) {
 
   return (
     <>
-      <div className="pt-2 px-3">
+      <div className="pt-2 px-3 flex justify-between">
         <Link
           href={`/org/${organizationSlug}/addresses/new`}
           className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-2 text-xs font-medium text-background transition-opacity hover:opacity-80"
         >
-          <Plus size={16} /> Enviar nueva dirección
+          <MapPinCheck size={16} /> Enviar nueva dirección
+        </Link>
+        <Link
+          href={`/org/${organizationSlug}/addresses`}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-2 text-xs font-medium text-background transition-opacity hover:opacity-80"
+        >
+          <Pin size={16} /> Ver todas las direcciones
         </Link>
       </div>
       <AddressDetailsScreen
