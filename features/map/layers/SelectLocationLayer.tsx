@@ -29,6 +29,13 @@ export function SelectLocationLayer({ value, onChange }: Props) {
       const coords = { latitude: e.lngLat.lat, longitude: e.lngLat.lng };
       setMarker(coords);
       onChange?.(coords);
+      // ✅ Centraliza no clique do usuário
+      map.flyTo({
+        center: [coords.longitude, coords.latitude],
+        zoom: Math.max(map.getZoom(), 15),
+        essential: true,
+        duration: 600,
+      });
     };
 
     map.on("click", handler);
@@ -37,23 +44,28 @@ export function SelectLocationLayer({ value, onChange }: Props) {
     };
   }, [map, isLoaded, onChange]);
 
-  // ✅ CORREÇÃO: Limpa marker quando value=null E atualiza quando tem valor
+  // ✅ Sincroniza marker externo (colar coords / GPS) E centraliza no pin
   useEffect(() => {
     if (!map || !isLoaded) return;
 
-    // Remove marker anterior
     markerRef.current?.remove();
 
-    // Se tem valor, adiciona novo marker
     if (value) {
       markerRef.current = new mapboxgl.Marker({ color: "#ef4444" })
         .setLngLat([value.longitude, value.latitude])
         .addTo(map);
+
+      // ✅ Centraliza o mapa no pin vermelho quando value muda externamente
+      map.flyTo({
+        center: [value.longitude, value.latitude],
+        zoom: Math.max(map.getZoom(), 15),
+        essential: true,
+        duration: 800,
+      });
     } else {
-      // Garante que markerRef fica null quando value=null
       markerRef.current = null;
     }
-  }, [map, isLoaded, value]); // ← value na dependência garante reexecução
+  }, [map, isLoaded, value]);
 
   // Cleanup final
   useEffect(() => {

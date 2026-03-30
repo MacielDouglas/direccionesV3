@@ -129,6 +129,18 @@ export default async function AddressDetailsScreen({
           <h2 id="address-info-title" className="sr-only">
             Información de ubicación
           </h2>
+          {!address.confirmed && (
+            <div className="flex gap-2 items-center border border-red-500 py-2 px-4 rounded-xl justify-between bg-red-100 dark:bg-red-950 mb-3">
+              <CircleAlert
+                className="size-6 shrink-0 text-red-500 animate-pulse"
+                aria-hidden
+              />{" "}
+              <p className="text-red-500 font-semibold text-xs inline-flex gap-2 ">
+                Dirección no verificada, puede tener errores. Revise la
+                información adicional o confirme con quien la envió.
+              </p>
+            </div>
+          )}
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             <div>
               <dt className="text-xs uppercase tracking-wide text-gray-400">
@@ -157,15 +169,17 @@ export default async function AddressDetailsScreen({
           </dl>
         </section>
         {!address.active && (
-          <p className="text-red-500 font-semibold text-lg inline-flex gap-2">
+          <div className="flex gap-2 items-center border border-red-500 py-2 px-4 rounded-xl justify-between bg-red-100 dark:bg-red-950">
             <CircleAlert
-              className="size-6 shrink-0 text-red-500 animate-bounce"
+              className="size-10 shrink-0 text-red-500 animate-pulse"
               aria-hidden
             />{" "}
-            Dirección desactivada. Puede haber cambiado.
-            <br />
-            Revise notas o contacte a quien la actualizó.
-          </p>
+            <p className="text-red-500 font-semibold text-md inline-flex gap-2 text-center">
+              Dirección desactivada. Puede haber cambiado.
+              <br />
+              Revise notas o contacte a quien la actualizó.
+            </p>
+          </div>
         )}
 
         {address.info && (
