@@ -44,23 +44,25 @@ export function DeleteAccountButton({ userEmail }: { userEmail: string }) {
       <AlertDialogTrigger asChild>
         <Button variant="destructive" size="sm" className="gap-2">
           <Trash2 className="size-4" aria-hidden />
-          Excluir minha conta
+          Eliminar mi cuenta
         </Button>
       </AlertDialogTrigger>
 
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Excluir conta permanentemente?</AlertDialogTitle>
+          <AlertDialogTitle>
+            ¿Eliminar la cuenta permanentemente?
+          </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="flex flex-col gap-3">
               <p>
-                Esta ação é <strong>irreversível</strong>. Seus dados de acesso,
-                memberships e histórico serão removidos. Endereços e cards
-                criados por você serão mantidos.
+                Esta acción es <strong>irreversible</strong>. Tus datos de
+                inicio de sesión, memberships y historial serán eliminados. Las
+                direcciones y tarjetas que hayas creado se conservarán.
               </p>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="confirm-email" className="text-sm">
-                  Digite seu e-mail para confirmar:{" "}
+                  Introduce tu correo electrónico para confirmar:{" "}
                   <span className="font-mono text-foreground">{userEmail}</span>
                 </Label>
                 <Input
@@ -92,7 +94,7 @@ export function DeleteAccountButton({ userEmail }: { userEmail: string }) {
             ) : (
               <Trash2 className="size-4" aria-hidden />
             )}
-            Excluir permanentemente
+            Eliminar permanentemente
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

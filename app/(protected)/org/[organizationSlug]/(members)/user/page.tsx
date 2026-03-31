@@ -151,13 +151,14 @@ export default async function UserPage({ params }: Props) {
         )}
         <div className="border-t pt-6 flex flex-col gap-4">
           <h2 className="text-sm font-medium text-destructive">
-            Zona de perigo
+            Zona de peligro
           </h2>
 
           <div className="flex flex-col gap-1.5">
-            <p className="text-sm font-medium">Sair da organização</p>
+            <p className="text-sm font-medium">Abandonar la organización</p>
             <p className="text-xs text-muted-foreground">
-              Você perde acesso a esta organização. Sua conta permanece ativa.
+              Perderás el acceso a esta organización. Tu cuenta permanecerá
+              activa.
             </p>
             <div className="mt-1">
               <LeaveOrganizationButton
@@ -169,10 +170,10 @@ export default async function UserPage({ params }: Props) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <p className="text-sm font-medium">Excluir conta</p>
+            <p className="text-sm font-medium">Eliminar cuenta</p>
             <p className="text-xs text-muted-foreground">
-              Remove sua conta permanentemente de todas as organizações e do
-              app.
+              Eliminar permanentemente tu cuenta de todas las organizaciones y
+              de la aplicación.
             </p>
             <div className="mt-1">
               <DeleteAccountButton userEmail={session.user.email} />

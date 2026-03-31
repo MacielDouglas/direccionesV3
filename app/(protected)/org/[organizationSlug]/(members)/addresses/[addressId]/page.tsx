@@ -31,7 +31,7 @@ export default async function AddressPage({ params }: AddressPageProps) {
 
   return (
     <>
-      <div className="pt-2 px-3 flex justify-between">
+      <div className="pt-2 px-3 flex justify-between w-full mx-auto max-w-5xl">
         <Link
           href={`/org/${organizationSlug}/addresses/new`}
           className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-2 text-xs font-medium text-background transition-opacity hover:opacity-80"

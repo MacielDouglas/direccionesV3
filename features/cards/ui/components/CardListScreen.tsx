@@ -19,7 +19,7 @@ export async function CardListScreen({
   ]);
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-6 sm:py-10">
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:py-10">
       <header className="flex items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-bold">Tarjetas</h1>

@@ -50,7 +50,8 @@ export function LeaveOrganizationButton({
           usuarios. Tus <strong>direcciones registradas</strong> se conservarán.
           <span className="uppercase text-red-500 font-semibold">
             Toda su información personal será borrada y eliminada de esta
-            aplicación,
+            organización, aún tendra acceso a la aplicación con otras
+            organizaciones a las que pertenezca.
           </span>{" "}
           según nuestra condiciones de uso.
         </p>
@@ -75,7 +76,7 @@ export function LeaveOrganizationButton({
       <AlertDialogTrigger asChild>
         <Button variant="destructive" size="sm" className="gap-2">
           <LogOut className="size-4" aria-hidden />
-          Sair da organização
+          Abandonar la organización
         </Button>
       </AlertDialogTrigger>
 

@@ -31,7 +31,7 @@ const ADMIN_CARDS: AdminCard[] = [
     href: "/admin/users",
     icon: Users,
     color:
-      "bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800",
+      "bg-blue-100 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800",
   },
   {
     id: "cards",
@@ -40,7 +40,7 @@ const ADMIN_CARDS: AdminCard[] = [
     href: "/admin/cards",
     icon: Layers,
     color:
-      "bg-violet-50 border-violet-200 dark:bg-violet-950/30 dark:border-violet-800",
+      "bg-violet-100 border-violet-200 dark:bg-violet-950/30 dark:border-violet-800",
     children: [
       { name: "Administrar", href: "/admin/cards", icon: Pencil },
       { name: "Crear nueva", href: "/admin/cards/new", icon: Plus },
@@ -53,7 +53,7 @@ const ADMIN_CARDS: AdminCard[] = [
     href: "/admin/agenda",
     icon: CalendarCheck,
     color:
-      "bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-800",
+      "bg-green-100 border-green-200 dark:bg-green-950/30 dark:border-green-800",
   },
   {
     id: "invitations",
@@ -62,7 +62,7 @@ const ADMIN_CARDS: AdminCard[] = [
     href: "/admin/invitations",
     icon: Link2,
     color:
-      "bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800",
+      "bg-amber-100 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800",
   },
   {
     id: "organizations",
@@ -70,7 +70,7 @@ const ADMIN_CARDS: AdminCard[] = [
     description: "Administra todas las organizaciones del sistema.",
     href: "/admin/organizations",
     icon: Shield,
-    color: "bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800",
+    color: "bg-red-100 border-red-200 dark:bg-red-950/30 dark:border-red-800",
     ownerOnly: true,
   },
 ];
@@ -93,7 +93,7 @@ export default async function AdminPage() {
 
   return (
     <main
-      className="mx-auto w-full max-w-3xl px-4 py-6"
+      className="mx-auto w-full max-w-5xl px-4 py-6"
       aria-labelledby="admin-heading"
     >
       {/* Header */}

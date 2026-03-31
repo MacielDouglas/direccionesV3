@@ -91,7 +91,7 @@ export default function AddressListScreen({
     query || activeFilter !== undefined || typeFilters.length > 0;
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-3 py-4 sm:px-4 sm:py-6">
+    <div className="mx-auto flex w-full flex-col gap-5 px-3 py-4 sm:px-4 sm:py-6">
       <div>
         <Link
           href={`/org/${organizationSlug}/addresses/new`}
@@ -103,7 +103,7 @@ export default function AddressListScreen({
 
       {/* Busca */}
       <section aria-label="Buscar dirección">
-        <div className="relative">
+        <div className="relative max-w-2xl">
           <Search
             className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
             aria-hidden
@@ -123,7 +123,7 @@ export default function AddressListScreen({
       {/* Filtros */}
       <section
         aria-label="Filtros"
-        className="flex flex-col gap-2 rounded-xl border bg-muted/30 p-3"
+        className="flex flex-col gap-2 rounded-xl border bg-muted/30 p-3 w-full max-w-2xl"
       >
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="w-10 shrink-0 text-xs font-medium text-muted-foreground">

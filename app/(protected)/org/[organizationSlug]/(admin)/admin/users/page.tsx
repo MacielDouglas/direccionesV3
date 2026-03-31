@@ -17,7 +17,7 @@ export default async function UsersPage({ params }: Props) {
   const nonMembers = await getNonMemberUsers(organization.id);
 
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-8 px-4 py-6">
+    <main className="mx-auto w-full max-w-5xl space-y-8 px-4 py-6">
       <header>
         <h1 className="text-3xl font-semibold">
           {organization.name} — Usuarios
