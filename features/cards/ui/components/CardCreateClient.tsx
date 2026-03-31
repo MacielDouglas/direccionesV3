@@ -106,7 +106,7 @@ export function CardCreateClient({
   };
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden max-w-7xl mx-auto">
+    <div className="w-full flex flex-1 flex-col overflow-hidden max-w-7xl mx-auto">
       <div className="w-full h-96">
         <LazyMapboxProvider className="h-96 w-full shrink-0">
           <SelectableAddressesLayer
@@ -136,7 +136,18 @@ export function CardCreateClient({
               #{String(nextNumber).padStart(2, "0")}
             </span>
           </div>
-
+          {/* {selectedIds.length > 0 && ( */}
+          <Button
+            type="submit"
+            className="w-full sm:w-auto"
+            disabled={isPending || selectedIds.length === 0}
+            aria-busy={isPending}
+          >
+            {isPending
+              ? "Creando..."
+              : `Crear Tarjeta #${String(nextNumber).padStart(2, "0")}`}
+          </Button>
+          {/* )} */}
           {/* ✅ Filtros */}
           <AddressFilterBar
             filters={filters}

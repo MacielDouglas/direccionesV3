@@ -6,14 +6,6 @@
 
 **Plataforma multi-tenant de gerenciamento de endereços para organizações**
 
-[
-[
-[
-[
-[
-[
-[
-
 </div>
 
 ---
