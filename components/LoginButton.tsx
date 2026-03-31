@@ -15,8 +15,6 @@ export default function LoginButton() {
     setLoading(true);
   };
 
-  console.log(loading);
-
   return (
     <Button onClick={() => handleClick()} className="w-full" disabled={loading}>
       {loading ? (
