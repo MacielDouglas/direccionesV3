@@ -173,6 +173,12 @@
     display: none !important;
   }
 
+  /* Card selecionado — ring com cor dinâmica via CSS custom property */
+.card-selected {
+  outline: 2px solid var(--card-color);
+  outline-offset: 2px;
+}
+
   .map-marker {
     width: 28px;
     height: 28px;
