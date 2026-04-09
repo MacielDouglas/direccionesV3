@@ -1,8 +1,5 @@
 "use client";
 
-// ─── REMOVA a importação do CSS daqui (agora está no GlobalMapProvider) ───
-// import "mapbox-gl/dist/mapbox-gl.css"; // ← DELETE esta linha
-
 import mapboxgl from "mapbox-gl";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { mapPool } from "./mapPool";

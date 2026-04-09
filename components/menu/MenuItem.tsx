@@ -1,6 +1,5 @@
 import type { NavigationItem as Item } from "@/features/navigation/constants/navigation";
 import { cn } from "@/lib/utils";
-// import Link from "next/link";
 import { NavLink } from "../ui/NavLink";
 
 type Props = {

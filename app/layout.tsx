@@ -1,10 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Outfit, Inconsolata } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes";
 import { NavigationProvider } from "@/components/NavigationProvider";
-import "mapbox-gl/dist/mapbox-gl.css";
 import { GlobalMapProvider } from "@/features/map/core/GlobalMapProvider";
 
 const outfit = Outfit({

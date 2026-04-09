@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
 import PinControls from "./PinControls";
 import ConfirmModal from "./ConfirmModal";
 
@@ -13,7 +12,13 @@ import {
   createSurveyPinsAction,
 } from "../../application/survey.action";
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
+const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+
+if (!token) {
+  throw new Error("NEXT_PUBLIC_MAPBOX_TOKEN is not configured.");
+}
+
+mapboxgl.accessToken = token;
 
 interface LocalPin {
   tmpId: string;
