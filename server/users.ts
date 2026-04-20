@@ -13,19 +13,23 @@ export const getCurrentUser = cache(async () => {
   const session = await auth.api.getSession({ headers: reqHeaders });
   if (!session) return null;
 
-  const [activeMemberRaw, currentUser] = await Promise.all([
-    auth.api.getActiveMember({ headers: reqHeaders }),
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, email: true, role: true, createdAt: true },
-    }),
-  ]);
+  let activeMemberRaw = null;
+  try {
+    activeMemberRaw = await auth.api.getActiveMember({ headers: reqHeaders });
+  } catch {
+    activeMemberRaw = null;
+  }
+
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, email: true, role: true, createdAt: true },
+  });
 
   if (!currentUser) return null;
 
   const [memberRoleRaw, activeOrganization] = await Promise.all([
     activeMemberRaw
-      ? auth.api.getActiveMemberRole({ headers: reqHeaders })
+      ? auth.api.getActiveMemberRole({ headers: reqHeaders }).catch(() => null)
       : Promise.resolve(null),
     activeMemberRaw
       ? prisma.organization.findUnique({
@@ -41,7 +45,6 @@ export const getCurrentUser = cache(async () => {
       : Promise.resolve(null),
   ]);
 
-  // Normaliza todos os roles de string → Role tipado
   const activeMember = activeMemberRaw
     ? { ...activeMemberRaw, role: toRole(activeMemberRaw.role) }
     : null;
@@ -78,9 +81,7 @@ export const getNonMemberUsers = async (organizationId: string) => {
   try {
     return prisma.user.findMany({
       where: {
-        members: {
-          none: { organizationId }, // Prisma gera NOT EXISTS automaticamente
-        },
+        members: { none: { organizationId } },
       },
       select: { id: true, name: true, email: true, image: true, role: true },
       orderBy: { name: "asc" },

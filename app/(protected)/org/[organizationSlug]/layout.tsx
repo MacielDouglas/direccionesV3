@@ -3,6 +3,7 @@ import { TenantProvider } from "@/providers/TenantProvider";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
 import { notFound, redirect } from "next/navigation";
+import { SetActiveOrg } from "@/components/SetActiveOrg";
 
 type Props = {
   children: React.ReactNode;
@@ -21,9 +22,16 @@ export default async function TenantLayout({ children, params }: Props) {
   // Verifica se o usuário é membro desta org
   if (!data.activeMember) redirect("/organizations");
 
-  if (data.activeMember.organizationId !== organization.id) {
-    await setActiveOrg(organization.id);
+ if (data.activeMember?.organizationId !== organization.id) {
+  await setActiveOrg(organization.id)
   }
+
+  const needsOrgSwitch =
+  data.activeMember?.organizationId !== organization.id;
+
+if (needsOrgSwitch) {
+  await setActiveOrg(organization.id);
+}
 
   const role = data.memberRole?.role ?? null;
 
@@ -38,6 +46,9 @@ export default async function TenantLayout({ children, params }: Props) {
         membership: { role },
       }}
     >
+       {needsOrgSwitch && (
+      <SetActiveOrg organizationId={organization.id} />
+    )}
       {children}
     </TenantProvider>
   );

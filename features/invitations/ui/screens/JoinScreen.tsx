@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, Users, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client"; // ← client SDK do better-auth
 import { applyInviteTokenAction } from "../../applications/inviteToken.action";
 
 export function JoinScreen({ token }: { token: string }) {
@@ -18,14 +19,20 @@ export function JoinScreen({ token }: { token: string }) {
   async function handleJoin() {
     setStatus("loading");
     try {
+      // 1️⃣ Server Action: adiciona membro, marca token como usado
       const org = await applyInviteTokenAction(token);
+
+      // 2️⃣ Client SDK: seta org ativa — único lugar onde o Set-Cookie funciona
+      await authClient.organization.setActive({
+        organizationId: org.id,
+      });
+
       setOrgName(org.name);
       setStatus("success");
       toast.success(`¡Te uniste a ${org.name}!`);
 
-      // ✅ redireciona direto para a org em vez de "/"
+      // 3️⃣ Redireciona para a org após 2s
       setTimeout(() => router.push("/"), 2000);
-      // setTimeout(() => router.push(`/org/${org.slug}/addresses`), 2000);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Error al unirse.";
       setErrorMsg(msg);

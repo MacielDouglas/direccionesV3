@@ -1,9 +1,7 @@
 "use server";
 
 import { createOrganizationService } from "@/domains/organization";
-import { getCurrentUser } from "@/server/users"; // ← era getSession
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getCurrentUser } from "@/server/users";
 import { prisma } from "@/lib/prisma";
 import { toRole } from "@/domains/member/utils/toRole";
 
@@ -16,26 +14,20 @@ export async function createOrganizationAction(data: {
 
   return createOrganizationService(data, {
     userId: currentUser.user.id,
-    role: toRole(currentUser.user.role), // ← string → Role | null
+    role: toRole(currentUser.user.role),
   });
 }
 
-export const setActiveOrg = async (organizationId: string) => {
-  const reqHeaders = await headers();
 
+export const setActiveOrg = async (organizationId: string) => {
   const currentUser = await getCurrentUser();
   if (!currentUser) throw new Error("No autenticado.");
 
   await prisma.member.updateMany({
     where: {
       userId: currentUser.user.id,
-      organizationId: organizationId,
+      organizationId,
     },
     data: { lastActiveAt: new Date() },
-  });
-
-  await auth.api.setActiveOrganization({
-    body: { organizationId },
-    headers: reqHeaders,
   });
 };

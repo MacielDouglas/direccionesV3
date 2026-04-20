@@ -4,6 +4,7 @@ import { PendingDeletionBadge } from "@/features/addresses/ui/components/Pending
 import { getCurrentUser } from "@/server/users";
 import { DeleteAccountButton } from "./org/[organizationSlug]/(members)/user/_components/DeleteAccountButton";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Página Home",
@@ -11,6 +12,10 @@ export const metadata: Metadata = {
 
 export default async function Home() {
   const data = await getCurrentUser();
+
+    if (!data) {
+    redirect("/login");
+  }
 
   const { session, activeOrganization: organization, memberRole } = data!;
 

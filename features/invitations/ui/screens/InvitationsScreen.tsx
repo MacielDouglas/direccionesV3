@@ -1,4 +1,3 @@
-// features/invitations/ui/screens/InvitationsScreen.tsx
 import { Link2 } from "lucide-react";
 import { InviteTokenGenerator } from "../components/InviteTokenGenerator";
 import { InviteTokenList } from "../components/InviteTokenList";

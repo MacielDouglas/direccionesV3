@@ -19,14 +19,13 @@ export async function createInviteTokenAction(data: {
     throw new Error("Sin permiso para generar invitaciones.");
   }
 
-  // Invalida tokens anteriores não usados da mesma org
   await prisma.inviteToken.updateMany({
     where: {
       organizationId: data.organizationId,
       usedAt: null,
       expiresAt: { gt: new Date() },
     },
-    data: { expiresAt: new Date() }, // expira imediatamente
+    data: { expiresAt: new Date() },
   });
 
   const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24h
@@ -34,7 +33,7 @@ export async function createInviteTokenAction(data: {
   const token = await prisma.inviteToken.create({
     data: {
       organizationId: data.organizationId,
-      role: "member", // ✅ sempre member
+      role: "member",
       createdById: userData.user.id,
       expiresAt,
     },
@@ -68,7 +67,7 @@ export async function applyInviteTokenAction(token: string) {
 
   const reqHeaders = await headers();
 
-  // ✅ Adiciona como member
+  // ✅ Adiciona como member via better-auth
   await auth.api.addMember({
     body: {
       userId: userData.user.id,
@@ -78,13 +77,7 @@ export async function applyInviteTokenAction(token: string) {
     headers: reqHeaders,
   });
 
-  // ✅ Seta a org como ativa na sessão imediatamente
-  await auth.api.setActiveOrganization({
-    body: { organizationId: invite.organizationId },
-    headers: reqHeaders,
-  });
-
-  // ✅ Atualiza lastActiveAt do member
+  // ✅ Atualiza lastActiveAt
   await prisma.member.updateMany({
     where: {
       userId: userData.user.id,
@@ -93,12 +86,14 @@ export async function applyInviteTokenAction(token: string) {
     data: { lastActiveAt: new Date() },
   });
 
-  // Marca token como usado
+  // ✅ Marca token como usado
   await prisma.inviteToken.update({
     where: { token },
     data: { usedAt: new Date(), usedByUserId: userData.user.id },
   });
 
+  // ❌ setActiveOrganization REMOVIDO — não propaga cookie em Server Action
+  // Será chamado no cliente via authClient após este retorno
   return invite.organization;
 }
 
@@ -111,6 +106,6 @@ export async function getOrgInviteTokensAction(organizationId: string) {
       usedBy: { select: { name: true } },
     },
     orderBy: { createdAt: "desc" },
-    take: 10, // últimos 10
+    take: 10,
   });
 }

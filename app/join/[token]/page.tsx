@@ -1,4 +1,3 @@
-// app/join/[token]/page.tsx
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/server/users";
 import { JoinScreen } from "@/features/invitations/ui/screens/JoinScreen";
