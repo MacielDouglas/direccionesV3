@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
 import mapboxgl from "mapbox-gl";
-import PinControls from "./PinControls";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ConfirmModal from "./ConfirmModal";
+import PinControls from "./PinControls";
 
-import type { SurveyPin, PinStatus } from "../../types/survey.types";
 import {
   cancelSurveyPinAction,
   confirmSurveyPinAction,
   createSurveyPinsAction,
 } from "../../application/survey.action";
+import type { PinStatus, SurveyPin } from "../../types/survey.types";
 
 const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 

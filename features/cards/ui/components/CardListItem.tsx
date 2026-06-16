@@ -1,21 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import {
-  MapPin,
-  User,
-  Clock,
-  Circle,
-  Pencil,
-  CheckCircle,
-  CircleAlert,
-} from "lucide-react";
-import { AssignCardModal } from "./AssignCardModal";
-import { ReturnCardButton } from "./ReturnCardButton";
-import { DeleteCardButton } from "./DeleteCardButton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  CheckCircle,
+  Circle,
+  CircleAlert,
+  Clock,
+  MapPin,
+  Pencil,
+  User,
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { AssignCardModal } from "./AssignCardModal";
+import { DeleteCardButton } from "./DeleteCardButton";
+import { ReturnCardButton } from "./ReturnCardButton";
 
 interface CardItemProps {
   card: {
@@ -66,17 +66,17 @@ export function CardListItem({
 
   return (
     <>
-<article
-  style={
-    isSelected
-      ? { outline: `2px solid ${color}`, outlineOffset: "2px" }
-      : undefined
-  }
-  className={cn(
-    "rounded-xl border bg-card p-4 flex flex-col gap-3 shadow-sm cursor-pointer",
-    "transition-all duration-200",
-    isSelected ? "shadow-md" : "hover:shadow-md hover:border-border/80",
-  )}
+      <article
+        style={
+          isSelected
+            ? { outline: `2px solid ${color}`, outlineOffset: "2px" }
+            : undefined
+        }
+        className={cn(
+          "rounded-xl border bg-card p-4 flex flex-col gap-3 shadow-sm cursor-pointer",
+          "transition-all duration-200",
+          isSelected ? "shadow-md" : "hover:shadow-md hover:border-border/80",
+        )}
       >
         {/* Header */}
         <div className="flex items-center justify-between gap-2">
@@ -114,6 +114,15 @@ export function CardListItem({
                 </>
               )}
             </span>
+            <p className="font-bold text-xs">
+              {Array.from(
+                new Set(
+                  card.addresses
+                    .map((item) => item.neighborhood?.trim())
+                    .filter((item): item is string => !!item),
+                ),
+              ).join(", ")}
+            </p>
           </div>
 
           {/* Ações — stopPropagation para não disparar onSelect */}
@@ -153,13 +162,15 @@ export function CardListItem({
         {/* Usuário atribuído */}
         {isAssigned && card.assignedUser && (
           <div className="flex items-center gap-2 text-sm">
-            <User className="size-4 text-muted-foreground shrink-0" aria-hidden />
+            <User
+              className="size-4 text-muted-foreground shrink-0"
+              aria-hidden
+            />
             <span>
               <span className="font-medium">{card.assignedUser.name}</span>
               {card.startDate && (
                 <span className="text-muted-foreground ml-1">
-                  desde{" "}
-                  {new Date(card.startDate).toLocaleDateString("es-419")}
+                  desde {new Date(card.startDate).toLocaleDateString("es-419")}
                 </span>
               )}
             </span>
@@ -212,8 +223,7 @@ export function CardListItem({
                       {addr.businessName} —{" "}
                     </span>
                   )}
-                  {addr.street}, {addr.number}, {addr.neighborhood},{" "}
-                  {addr.city}
+                  {addr.street}, {addr.number}, {addr.neighborhood}, {addr.city}
                 </span>
               </button>
             </li>

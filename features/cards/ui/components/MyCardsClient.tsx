@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CircleAlert, Clock } from "lucide-react";
-import { ReturnCardButton } from "./ReturnCardButton";
-import { CardViewMap } from "@/features/map/components/CardViewMap";
-import { AddressDetailModal } from "./AddressDetailModal";
 import type { AddressWithUsers } from "@/features/addresses/types/address.types";
+import { CardViewMap } from "@/features/map/components/CardViewMap";
 import { fetchAddressWithUsers } from "@/server/address/address.action";
+import { CircleAlert, Clock } from "lucide-react";
+import { useMemo, useState } from "react";
+import { AddressDetailModal } from "./AddressDetailModal";
+import { ReturnCardButton } from "./ReturnCardButton";
 
 type CardAddress = {
   id: string;
@@ -66,7 +66,6 @@ export function MyCardsClient({ cards, organizationSlug }: Props) {
           <CardViewMap addresses={allAddresses} onMarkerClick={openAddress} />
         </div>
       )}
-
       <main className="flex-1 overflow-y-auto px-4 py-4">
         <header className="mb-4">
           <h1 className="text-2xl font-bold">Mis Tarjetas</h1>
@@ -92,6 +91,15 @@ export function MyCardsClient({ cards, organizationSlug }: Props) {
                     <span className="text-lg font-bold tabular-nums">
                       #{String(card.number).padStart(2, "0")}
                     </span>
+                    <p className="font-bold  text-xs text-muted-foreground">
+                      {Array.from(
+                        new Set(
+                          card.addresses
+                            .map((item) => item.neighborhood?.trim())
+                            .filter((item): item is string => !!item),
+                        ),
+                      ).join(", ")}
+                    </p>
                     <ReturnCardButton
                       cardId={card.id}
                       cardNumber={card.number}
