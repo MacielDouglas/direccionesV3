@@ -1,5 +1,6 @@
 import { searchAddressesService } from "@/features/addresses/application/address.service";
 import AddressListScreen from "@/features/addresses/ui/screens/AddressListScreen";
+import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { MapPinned } from "lucide-react";
 import type { Metadata } from "next";
@@ -36,20 +37,22 @@ export default async function AddressPage({ params, searchParams }: AddressPageP
     query: q,
   });
 
+  const t = await getServerDictionary();
+
   return (
-    <div className="w-full h-full space-y-4  max-w-5xl mx-auto">
-      <div className="space-y-6 border-b p-5 md:p-10">
-        <div className="flex items-center gap-4">
-          <MapPinned className="w-10 h-10 text-orange-500 " />
-          <h1 className="text-3xl font-semibold">Todas las direcciones</h1>
+    <div className="w-full h-full space-y-6 max-w-5xl mx-auto pb-6">
+      <div className="space-y-3 border-b border-border px-4 pt-6 pb-6 md:px-8 md:pt-10 md:pb-8">
+        <div className="flex items-center gap-3">
+          <span className="flex size-11 items-center justify-center rounded-2xl bg-brand/10">
+            <MapPinned className="h-6 w-6 text-brand" aria-hidden="true" />
+          </span>
+          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
+            {t.addresses.allTitle}
+          </h1>
         </div>
-        <div className="mt-2 text-lg text-neutral-600 dark:text-neutral-400 ">
-          <p>En esta página puede ver todas las direcciones registradas.</p>
-          <p className="text-sm font-light text-slate-500">
-            Puedes buscar una dirección específica utilizando el campo de búsqueda. Simplemente
-            ingresa el nombre de la calle, número, barrio o ciudad para encontrar la dirección que
-            estás buscando.
-          </p>
+        <div className="text-muted-foreground">
+          <p>{t.addresses.allDescription}</p>
+          <p className="text-sm font-light">{t.addresses.searchHint}</p>
         </div>
       </div>
       <AddressListScreen

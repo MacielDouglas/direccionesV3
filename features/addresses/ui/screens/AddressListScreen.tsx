@@ -3,9 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { AddressType } from "@/features/addresses/types/address.types";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import type { Address } from "@prisma/client";
-import { MapPin, Search } from "lucide-react";
+import { MapPin, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { ADDRESS_TYPE_OPTIONS } from "../../domain/constants/address.constants";
@@ -28,6 +29,7 @@ type Props = {
 };
 
 export default function AddressListScreen({ addresses, organizationSlug }: Props) {
+  const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [activeFilter, setActive] = useState<ActiveFilter>(undefined);
   const [typeFilters, setTypes] = useState<AddressType[]>([]);
@@ -74,42 +76,45 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
   const hasActiveFilters = query || activeFilter !== undefined || typeFilters.length > 0;
 
   return (
-    <div className="mx-auto flex w-full flex-col gap-5 px-3 py-4 sm:px-4 sm:py-6">
+    <div className="mx-auto flex w-full flex-col gap-6 px-4 py-6 sm:px-6 md:py-10">
       <div>
         <Link
           href={`/org/${organizationSlug}/addresses/new`}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-2 text-xs font-medium text-background transition-opacity hover:opacity-80"
+          className="inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground shadow-sm transition-colors hover:bg-brand/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
-          + Enviar nueva dirección
+          <Plus className="size-4" aria-hidden="true" />
+          {t.addresses.sendNew}
         </Link>
       </div>
 
       {/* Busca */}
-      <section aria-label="Buscar dirección">
+      <section aria-label={t.common.search}>
         <div className="relative max-w-2xl">
           <Search
-            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
             aria-hidden
           />
           <Input
             type="search"
             autoComplete="off"
-            className="rounded-xl border border-border pl-9 focus-visible:ring-1"
-            placeholder="Buscar por nombre, calle, barrio..."
+            className="h-12 rounded-2xl border-border bg-card pl-10 shadow-xs focus-visible:ring-2"
+            placeholder={t.addresses.searchPlaceholder}
             value={query}
             onChange={handleQueryChange}
-            aria-label="Buscar dirección"
+            aria-label={t.addresses.searchPlaceholder}
           />
         </div>
       </section>
 
       {/* Filtros */}
       <section
-        aria-label="Filtros"
-        className="flex flex-col gap-2 rounded-xl border bg-muted/30 p-3 w-full max-w-2xl"
+        aria-label={t.addresses.status}
+        className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 w-full max-w-2xl shadow-xs"
       >
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="w-10 shrink-0 text-xs font-medium text-muted-foreground">Estado</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="w-12 shrink-0 text-xs font-medium text-muted-foreground">
+            {t.addresses.status}
+          </span>
           {ACTIVE_OPTIONS.map((opt) => (
             <button
               key={String(opt.value)}
@@ -117,10 +122,10 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
               onClick={() => handleActiveChange(opt.value)}
               aria-pressed={activeFilter === opt.value}
               className={cn(
-                "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
                 activeFilter === opt.value
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
+                  ? "border-brand bg-brand text-brand-foreground"
+                  : "border-border text-muted-foreground hover:border-brand/50 hover:text-foreground",
               )}
             >
               {opt.label}
@@ -128,8 +133,10 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="w-10 shrink-0 text-xs font-medium text-muted-foreground">Tipo</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="w-12 shrink-0 text-xs font-medium text-muted-foreground">
+            {t.addresses.type}
+          </span>
           {ADDRESS_TYPE_OPTIONS.map((opt) => {
             const Icon = opt.icon;
             const isSelected = typeFilters.includes(opt.value as AddressType);
@@ -140,10 +147,10 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
                 onClick={() => toggleType(opt.value as AddressType)}
                 aria-pressed={isSelected}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                  "flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
                   isSelected
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
+                    ? "border-brand bg-brand text-brand-foreground"
+                    : "border-border text-muted-foreground hover:border-brand/50 hover:text-foreground",
                 )}
               >
                 <Icon className={cn("size-3.5", opt.color)} aria-hidden />
@@ -158,13 +165,13 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
       <p className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">
         {filtered.length > 0
           ? `${filtered.length} dirección${filtered.length !== 1 ? "es" : ""} encontrada${filtered.length !== 1 ? "s" : ""}`
-          : "No se encontraron direcciones."}
+          : t.addresses.noResults}
       </p>
 
       {/* Lista */}
       {paginated.length > 0 ? (
         <>
-          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-label="Lista de direcciones">
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-label={t.common.addresses}>
             {paginated.map((address, index) => (
               <li key={address.id}>
                 <AddressCard
@@ -184,12 +191,13 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
         </>
       ) : (
         <section
-          aria-label="Sin resultados"
+          aria-label={t.addresses.noResults}
           className="flex flex-col items-center justify-center gap-3 py-16 text-center text-muted-foreground"
         >
           <MapPin className="size-10 opacity-30" aria-hidden />
           <p className="text-sm font-medium">
-            No se encontraron direcciones{query ? ` para "${query}"` : "."}
+            {t.addresses.noResults}
+            {query ? ` "${query}"` : ""}
           </p>
           {hasActiveFilters && (
             <Button
@@ -202,7 +210,7 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
                 setPage(1);
               }}
             >
-              Limpiar filtros
+              {t.addresses.clearFilters}
             </Button>
           )}
         </section>

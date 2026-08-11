@@ -9,7 +9,7 @@ type Props = {
   className?: string;
 };
 
-export default function MenuItem({ item, onSelect, orgSlug, className }: Props) {
+export default function MenuItem({ item, orgSlug, onSelect, className }: Props) {
   const Icon = item.icon;
 
   return (
@@ -23,7 +23,7 @@ export default function MenuItem({ item, onSelect, orgSlug, className }: Props) 
     >
       <div className="inline-flex gap-3">
         <Icon className="h-7 w-7" aria-hidden="true" />
-        <span className="font-medium">{item.name}</span>
+        <span className="font-medium">{item.label ?? item.name}</span>
       </div>
     </NavLink>
   );

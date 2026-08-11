@@ -1,10 +1,13 @@
 "use client";
 
+import { useHaptic } from "@/app/hooks/useHaptic";
 import type { Role } from "@/domains/member/types/role.types";
 import { getNavigationByRole, navigationMenu } from "@/features/navigation/constants/navigation";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Home, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LanguageSelector } from "../LanguageSelector";
 import LogoutButton from "../LogoutButton";
 import MenuItem from "../menu/MenuItem";
 import { Button } from "../ui/button";
@@ -18,6 +21,8 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDialogElement>(null);
+  const { t } = useI18n();
+  const { vibrate } = useHaptic();
 
   const navigation = role ? getNavigationByRole(navigationMenu, role) : [];
   const closeMenu = useCallback(() => setIsMenuOpen(false), []);
@@ -90,11 +95,14 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
         ref={triggerRef}
         variant="ghost"
         size="icon"
-        onClick={toggleMenu}
-        aria-label="Abrir menú"
+        onClick={() => {
+          vibrate("light");
+          toggleMenu();
+        }}
+        aria-label={t.header.menu}
         aria-expanded={isMenuOpen}
         aria-controls="mobile-menu"
-        className="h-11 w-11 rounded-xl text-slate-200 hover:bg-white/10 active:scale-95"
+        className="h-11 w-11 rounded-xl text-foreground hover:bg-accent active:scale-95"
       >
         <Menu className="h-5 w-5" aria-hidden="true" />
       </Button>
@@ -118,13 +126,13 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
         ref={drawerRef}
         id="mobile-menu"
         aria-modal="true"
-        aria-label="Menú de navegación"
+        aria-label={t.header.navigation}
         open
         className={`
           fixed inset-y-0 right-0 left-auto z-50
           m-0 flex max-h-none max-w-none flex-col
           w-[min(100vw,22rem)]
-          border-0 bg-[#0c232a] p-0 text-slate-100
+          border-0 border-l border-border bg-background p-0 text-foreground
           shadow-2xl
           transition-transform duration-300 ease-out
           will-change-transform
@@ -139,8 +147,10 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 pb-3 pt-4">
           <div>
-            <p className="text-xs font-light uppercase tracking-widest text-slate-400">Menú</p>
-            <h2 className="mt-0.5 text-xl font-semibold">Navegación</h2>
+            <p className="text-xs font-light uppercase tracking-widest text-muted-foreground">
+              {t.header.menu}
+            </p>
+            <h2 className="mt-0.5 text-xl font-semibold">{t.header.navigation}</h2>
           </div>
 
           <Button
@@ -150,17 +160,20 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
               closeMenu();
               triggerRef.current?.focus();
             }}
-            aria-label="Cerrar menú"
-            className="h-11 w-11 rounded-xl text-slate-200 hover:bg-white/10 active:scale-95"
+            aria-label={t.header.closeMenu}
+            className="h-11 w-11 rounded-xl text-foreground hover:bg-accent active:scale-95"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </Button>
         </div>
 
-        <div className="mx-5 h-px bg-white/10" aria-hidden="true" />
+        <div className="mx-5 h-px bg-border" aria-hidden="true" />
 
         {/* Nav */}
-        <nav aria-label="Menú principal" className="flex-1 overflow-y-auto overscroll-contain py-2">
+        <nav
+          aria-label={t.header.mainMenu}
+          className="flex-1 overflow-y-auto overscroll-contain py-2"
+        >
           <ul className="flex flex-col gap-1 px-3">
             <li>
               <Link
@@ -171,18 +184,18 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
                   rounded-xl px-4 py-3.5
                   text-base font-medium
                   transition-all
-                  hover:bg-white/8
-                  active:scale-[0.98] active:bg-white/12
+                  hover:bg-accent
+                  active:scale-[0.98] active:bg-accent
                   focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand
                 "
               >
-                <Home className="h-5 w-5 shrink-0" aria-hidden="true" />
-                Inicio
+                <Home className="h-5 w-5 shrink-0 text-brand" aria-hidden="true" />
+                {t.navigation.homeLabel}
               </Link>
             </li>
 
             {navigation.length > 0 && (
-              <li aria-hidden="true" className="mx-1 my-1 h-px bg-white/10" />
+              <li aria-hidden="true" className="mx-1 my-1 h-px bg-border" />
             )}
 
             {navigation.map((item) => (
@@ -196,8 +209,8 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
                     rounded-xl px-4 py-3.5
                     text-base font-medium
                     transition-all
-                    hover:bg-white/8
-                    active:scale-[0.98] active:bg-white/12
+                    hover:bg-accent
+                    active:scale-[0.98] active:bg-accent
                     focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand
                   "
                 />
@@ -206,8 +219,9 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
           </ul>
         </nav>
 
-        <div className="mx-5 h-px bg-white/10" aria-hidden="true" />
-        <div className="px-5 py-4">
+        <div className="mx-5 h-px bg-border" aria-hidden="true" />
+        <div className="flex flex-col gap-4 px-5 py-4">
+          <LanguageSelector />
           <LogoutButton />
         </div>
       </dialog>

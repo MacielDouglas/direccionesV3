@@ -43,8 +43,8 @@ export default function AddressTypeSelector() {
                 "transition-all duration-150 active:scale-[0.97]",
                 "focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none",
                 isActive
-                  ? "border-brand bg-brand text-white shadow-md"
-                  : "border-border bg-surface-elevated-light text-surface-dark hover:bg-muted dark:bg-surface-elevated-dark dark:text-surface-light",
+                  ? "border-brand bg-brand text-brand-foreground shadow-md"
+                  : "border-border bg-card text-card-foreground hover:bg-muted dark:bg-surface-elevated-dark",
               )}
             >
               <Icon width={20} height={20} aria-hidden="true" />

@@ -1,5 +1,7 @@
 "use client";
 
+import { Check, Eraser, MapPin, Plus, Send, TriangleAlert } from "lucide-react";
+
 interface Props {
   localPinsCount: number;
   isAdminOrOwner: boolean;
@@ -30,8 +32,9 @@ export default function PinControls({
         <output
           aria-live="polite"
           aria-label={`${localPinsCount} pins marcados`}
-          className="rounded-full bg-orange-500 px-3 py-1 text-sm font-semibold text-white shadow-md"
+          className="flex items-center gap-1.5 rounded-full bg-brand px-3 py-1 text-sm font-semibold text-brand-foreground shadow-md"
         >
+          <MapPin className="size-3.5" aria-hidden />
           {localPinsCount} pin{localPinsCount > 1 ? "s" : ""} marcado
           {localPinsCount > 1 ? "s" : ""}
         </output>
@@ -46,18 +49,20 @@ export default function PinControls({
               onClick={onOpenConfirmModal}
               disabled={loading}
               aria-label="Confirmar marcaciones realizadas"
-              className="rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-green-700 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-600 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
             >
-              ✅ Confirmar marcación
+              <Check className="size-4" aria-hidden />
+              Confirmar marcación
             </button>
             <button
               type="button"
               onClick={onClearLocalPins}
               disabled={loading}
               aria-label="Limpiar pins no guardados"
-              className="rounded-xl bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-red-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background/90 px-3 py-2 text-sm font-semibold text-foreground shadow-lg backdrop-blur-sm transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
             >
-              ✕ Limpiar
+              <Eraser className="size-4" aria-hidden />
+              Limpiar
             </button>
           </>
         )}
@@ -73,13 +78,23 @@ export default function PinControls({
               aria-label={
                 isAddingMode ? "Desactivar modo sugerencia" : "Activar modo envío de sugerencias"
               }
-              className={`rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-lg transition focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 ${
+              className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 ${
                 isAddingMode
-                  ? "bg-yellow-500 hover:bg-yellow-600 focus-visible:ring-yellow-500"
-                  : "bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-600"
+                  ? "bg-amber-500 hover:bg-amber-600 focus-visible:ring-amber-500"
+                  : "bg-foreground hover:bg-foreground/90 focus-visible:ring-ring"
               }`}
             >
-              {isAddingMode ? "🟡 Modo sugerencia activo" : "📤 Enviar marcaciones"}
+              {isAddingMode ? (
+                <>
+                  <TriangleAlert className="size-4" aria-hidden />
+                  Modo sugerencia activo
+                </>
+              ) : (
+                <>
+                  <Send className="size-4" aria-hidden />
+                  Enviar marcaciones
+                </>
+              )}
             </button>
 
             {isAddingMode && localPinsCount > 0 && (
@@ -88,8 +103,9 @@ export default function PinControls({
                 onClick={onOpenConfirmModal}
                 disabled={loading}
                 aria-label={`Enviar ${localPinsCount} sugerencias`}
-                className="rounded-xl bg-yellow-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-yellow-700 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-600 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-500 disabled:opacity-50"
               >
+                <Plus className="size-4" aria-hidden />
                 Enviar {localPinsCount} sugerencia
                 {localPinsCount > 1 ? "s" : ""}
               </button>

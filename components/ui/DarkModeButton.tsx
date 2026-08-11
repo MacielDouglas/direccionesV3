@@ -36,11 +36,11 @@ export default function DarkModeButton() {
       aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
     >
       <Sun
-        className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90 text-slate-100"
+        className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90 text-muted-foreground"
         aria-hidden="true"
       />
       <Moon
-        className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0 text-slate-100"
+        className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0 text-muted-foreground"
         aria-hidden="true"
       />
     </Button>

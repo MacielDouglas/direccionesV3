@@ -46,7 +46,7 @@ export default async function AgendaPage({ params, searchParams }: Props) {
   return (
     <main className="mx-auto w-full max-w-lg px-4 py-6 flex flex-col gap-6">
       <header>
-        <h1 className="text-2xl font-bold">Cronograma</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Cronograma</h1>
         <p className="text-sm text-muted-foreground mt-0.5">Cronogramas y actividades del mes.</p>
       </header>
 

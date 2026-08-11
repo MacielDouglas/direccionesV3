@@ -3,6 +3,7 @@ import type { Role } from "@/domains/member/types/role.types";
 import type { Session } from "better-auth";
 import type { Organization } from "better-auth/plugins";
 import { Compass } from "lucide-react";
+import { LanguageSelector } from "../LanguageSelector";
 import DarkModeButton from "../ui/DarkModeButton";
 import { NavLink } from "../ui/NavLink";
 import MobileHeader from "./MobileHeader";
@@ -15,17 +16,16 @@ interface HeaderProps {
 
 function Logo() {
   return (
-    <span className="flex items-center gap-1 tracking-widest text-white">
-      <span className="text-lg font-light uppercase md:text-xl">Direcci</span>
+    <span className="flex items-center gap-1.5 tracking-wide text-foreground">
       <Compass className="size-5 text-brand" aria-hidden="true" />
-      <span className="text-lg font-light uppercase md:text-xl">nes</span>
+      <span className="text-lg font-medium uppercase md:text-xl">Direcciones</span>
     </span>
   );
 }
 
 export default function Header({ session, role, organization }: HeaderProps) {
   return (
-    <header className="w-full border-b border-white/10 bg-[#0c232a]">
+    <header className="sticky top-0 z-30 w-full border-b border-border bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:h-20 md:px-8">
         {organization?.slug ? (
           <NavLink
@@ -41,6 +41,9 @@ export default function Header({ session, role, organization }: HeaderProps) {
 
         {organization?.slug && (
           <div className="flex items-center gap-2">
+            <div className="hidden md:block">
+              <LanguageSelector />
+            </div>
             <SessionTimer expiresAt={session.expiresAt} />
             <DarkModeButton />
             <MobileHeader role={role ?? null} orgSlug={organization.slug} />

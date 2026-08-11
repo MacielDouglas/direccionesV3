@@ -1,0 +1,272 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-11T00:00:00.000Z",
+  "title": "Design System: Direcciones_V3",
+  "extensions": {
+    "colorMeta": {
+      "brand": {
+        "role": "primary",
+        "displayName": "Laranja Direcciones",
+        "canonical": "#ff6828",
+        "tonalRamp": [
+          "#5a1d00",
+          "#8a2f05",
+          "#b3430f",
+          "#d45314",
+          "#ff6828",
+          "#ff8a52",
+          "#ffad7d",
+          "#ffd1b3"
+        ]
+      },
+      "brand-foreground": {
+        "role": "on-primary",
+        "displayName": "Marrom Escuro (sobre laranja)",
+        "canonical": "#2a1405",
+        "tonalRamp": ["#1a0d02", "#2a1405", "#3d1d0a", "#52270f", "#6b3413", "#8a4520"]
+      },
+      "background-light": {
+        "role": "neutral",
+        "displayName": "Off-white Quente",
+        "canonical": "#faf8f5",
+        "tonalRamp": ["#1a1712", "#3a352c", "#6b6357", "#a49a8d", "#d4cdc1", "#faf8f5"]
+      },
+      "background-dark": {
+        "role": "neutral",
+        "displayName": "Quase-preto Quente",
+        "canonical": "#161310",
+        "tonalRamp": ["#0a0907", "#161310", "#23201b", "#332e27", "#4a443b", "#6b6357"]
+      },
+      "map-default": {
+        "role": "tertiary",
+        "displayName": "Vermelho Padrão",
+        "canonical": "#ef4444",
+        "tonalRamp": [
+          "#4c1212",
+          "#6f1d1d",
+          "#932626",
+          "#b52d2d",
+          "#ef4444",
+          "#f26d6d",
+          "#f59797",
+          "#f9c3c3"
+        ]
+      },
+      "map-selected": {
+        "role": "tertiary",
+        "displayName": "Azul Seleção",
+        "canonical": "#3b82f6",
+        "tonalRamp": [
+          "#122a5c",
+          "#1c3f8a",
+          "#2553b8",
+          "#2f67e0",
+          "#3b82f6",
+          "#669cf8",
+          "#94bafb",
+          "#c5dafd"
+        ]
+      },
+      "map-confirmed": {
+        "role": "tertiary",
+        "displayName": "Verde Confirmado",
+        "canonical": "#22c55e",
+        "tonalRamp": [
+          "#0a3320",
+          "#0f4d2c",
+          "#15683a",
+          "#1b8d4b",
+          "#22c55e",
+          "#4ed97f",
+          "#7ceca0",
+          "#b4f5c9"
+        ]
+      },
+      "map-suggested": {
+        "role": "tertiary",
+        "displayName": "Amarelo Sugerido",
+        "canonical": "#eab308",
+        "tonalRamp": [
+          "#4d3902",
+          "#6b4f05",
+          "#8a6608",
+          "#c08f0a",
+          "#eab308",
+          "#f0c43a",
+          "#f5d869",
+          "#faecae"
+        ]
+      },
+      "map-cancelled": {
+        "role": "tertiary",
+        "displayName": "Cinza Cancelado",
+        "canonical": "#9ca3af",
+        "tonalRamp": [
+          "#26282c",
+          "#3a3d42",
+          "#4d5157",
+          "#666b73",
+          "#9ca3af",
+          "#b4bac4",
+          "#cdd2da",
+          "#e6e9ed"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Títulos hero e logo do login." },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Títulos de página (text-2xl semibold tracking-tight)."
+      },
+      "body": { "displayName": "Body", "purpose": "Texto principal." },
+      "label": { "displayName": "Label", "purpose": "Rótulos de campo; tab bar em text-xs." },
+      "mono": { "displayName": "Mono", "purpose": "Contraste técnico (identificadores, dados)." }
+    },
+    "shadows": [
+      {
+        "name": "ambient-weak",
+        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "purpose": "Repouso de cards e containers."
+      },
+      {
+        "name": "hover",
+        "value": "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+        "purpose": "Elevação no hover de cards interativos."
+      },
+      {
+        "name": "drawer",
+        "value": "0 25px 50px -12px rgb(0 0 0 / 0.25)",
+        "purpose": "Drawer mobile, modais nativos e bottom tab bar."
+      },
+      { "name": "marker", "value": "0 2px 6px rgba(0,0,0,0.3)", "purpose": "Pins do mapa." }
+    ],
+    "motion": [
+      {
+        "name": "ease-default",
+        "value": "150ms ease",
+        "purpose": "Transições de estado de componentes."
+      },
+      { "name": "ease-drawer", "value": "300ms ease-out", "purpose": "Abertura do drawer mobile." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação primária default em laranja da marca.",
+      "html": "<button class=\"ds-btn-primary\">Acción principal</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 8px 16px; border-radius: 6px; background: #ff6828; color: #2a1405; font-family: Outfit, system-ui, sans-serif; font-size: 14px; font-weight: 500; border: none; cursor: pointer; transition: background-color 150ms ease; } .ds-btn-primary:hover { background: rgb(255 104 40 / 0.9); } .ds-btn-primary:focus-visible { outline: 3px solid rgb(255 104 40 / 0.5); outline-offset: 1px; }"
+    },
+    {
+      "name": "Destructive Button",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "Ação destrutiva (excluir, sair, limpar).",
+      "html": "<button class=\"ds-btn-destructive\">Cerrar sesión</button>",
+      "css": ".ds-btn-destructive { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 8px 16px; border-radius: 6px; background: #d93535; color: #fff; font-family: Outfit, system-ui, sans-serif; font-size: 14px; font-weight: 500; border: none; cursor: pointer; transition: background-color 150ms ease; } .ds-btn-destructive:hover { background: rgb(217 53 53 / 0.9); } .ds-btn-destructive:focus-visible { outline: 3px solid rgb(217 53 53 / 0.5); outline-offset: 1px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Campo de texto com foco laranja.",
+      "html": "<input class=\"ds-input\" placeholder=\"Buscar dirección...\" />",
+      "css": ".ds-input { height: 36px; width: 100%; min-width: 0; border-radius: 6px; border: 1px solid #e0d9cd; background: transparent; padding: 8px 12px; font-family: Outfit, system-ui, sans-serif; font-size: 16px; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); outline: none; transition: border-color 150ms ease, box-shadow 150ms ease; } .ds-input::placeholder { color: #6b6357; } .ds-input:focus-visible { border-color: #ff6828; box-shadow: 0 0 0 3px rgb(255 104 40 / 0.3); }"
+    },
+    {
+      "name": "Status Chip",
+      "kind": "chip",
+      "refersTo": "chip-status",
+      "description": "Badge-pílula de status e categorias.",
+      "html": "<span class=\"ds-chip\">Confirmada</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; border-radius: 9999px; background: #eee9e1; padding: 2px 10px; font-family: Outfit, system-ui, sans-serif; font-size: 12px; font-weight: 500; color: #1a1712; white-space: nowrap; }"
+    },
+    {
+      "name": "Surface Card",
+      "kind": "card",
+      "refersTo": "card-surface",
+      "description": "Container de conteúdo com borda quente e sombra leve.",
+      "html": "<div class=\"ds-card\"><strong>Título</strong><p>Contenido del card.</p></div>",
+      "css": ".ds-card { border-radius: 16px; border: 1px solid #e5ded3; background: #ffffff; padding: 16px; font-family: Outfit, system-ui, sans-serif; color: #1a1712; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); } .ds-card strong { font-size: 15px; font-weight: 600; } .ds-card p { margin: 4px 0 0; font-size: 14px; color: #6b6357; }"
+    },
+    {
+      "name": "App Header",
+      "kind": "nav",
+      "refersTo": "background-light",
+      "description": "Header claro com blur e logo sem moldura.",
+      "html": "<header class=\"ds-header\"><span class=\"ds-logo\">Direcciones</span></header>",
+      "css": ".ds-header { display: flex; align-items: center; width: 100%; height: 64px; padding: 0 16px; background: rgb(250 248 245 / 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid #e5ded3; } .ds-logo { font-family: Outfit, system-ui, sans-serif; color: #1a1712; font-size: 20px; font-weight: 600; letter-spacing: 0.02em; display: inline-flex; align-items: center; gap: 6px; }"
+    },
+    {
+      "name": "Map Marker",
+      "kind": "custom",
+      "refersTo": "map-default",
+      "description": "Pin circular de mapa com borda branca e sombra.",
+      "html": "<span class=\"ds-marker\">5</span>",
+      "css": ".ds-marker { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; background: #ef4444; color: #fff; font-size: 11px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }"
+    },
+    {
+      "name": "Mobile Drawer Item",
+      "kind": "nav",
+      "refersTo": "card-surface",
+      "description": "Item de navegação do drawer mobile sobre superfície do tema.",
+      "html": "<a class=\"ds-drawer-item\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/></svg> Direcciones</a>",
+      "css": ".ds-drawer-item { display: flex; align-items: center; gap: 16px; border-radius: 16px; padding: 14px 16px; color: #1a1712; font-family: Outfit, system-ui, sans-serif; font-size: 16px; font-weight: 500; text-decoration: none; transition: background-color 150ms ease, transform 150ms ease; } .ds-drawer-item:hover { background: #eee9e1; } .ds-drawer-item:active { transform: scale(0.98); } .ds-drawer-item:focus-visible { outline: 2px solid #ff6828; outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "O Acento Laranja como Ação Primária em Neutros Quentes",
+    "overview": "Sistema mobile-first de estética de banco digital moderno (Nubank) com tipografia clara e respiração (estapar.com.br). Neutros quentes (off-white #faf8f5 no claro / quase-preto #161310 no escuro) e o laranja #ff6828 como marca e ação primária. Header claro com blur, bottom tab bar fixa no mobile, cards rounded-2xl com borda quente e sombra leve. Profundidade vem do contraste de superfícies. UI totalmente bilíngue (pt/es).",
+    "keyCharacteristics": [
+      "Acento laranja #ff6828 como cor de ação primária (botões default, tab ativa, toggle, dia hoje) e foco.",
+      "Neutros quentes em fundos e bordas — nunca cinzas frios ou azulados.",
+      "Header claro com blur (bg-background/80 backdrop-blur-md), sem moldura escura fixa.",
+      "Bottom tab bar fixa no mobile (md:hidden) com 5 rotas e i18n.",
+      "Cards rounded-2xl com borda quente + shadow-xs como unidade composicional.",
+      "Text-brand-foreground (#2a1405) sobre laranja; text-white sobre laranja é proibido.",
+      "UI bilíngue pt/es via dicionários i18n (nunca misturar idiomas na mesma tela)."
+    ],
+    "rules": [
+      {
+        "name": "The Orange Action Rule",
+        "body": "O laranja #ff6828 é reservado para ações e estados ativos. Texto sobre laranja usa --color-brand-foreground (#2a1405); text-white sobre laranja é proibido por baixo contraste.",
+        "section": "colors"
+      },
+      {
+        "name": "The Warm Neutral Rule",
+        "body": "Fundos e bordas usam neutros quentes (off-white, quase-preto com tom marrom), nunca cinzas frios ou azulados.",
+        "section": "colors"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "Superfícies são planas em repouso; sombra aparece como resposta de estado (hover) ou em camadas flutuantes (drawer/modal/tab bar), nunca como decoração permanente.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do usar #ff6828 como ação primária (botões default, tab ativa, toggle) e foco (--ring).",
+      "Do usar text-brand-foreground (#2a1405) sobre laranja — nunca text-white.",
+      "Do manter neutros quentes em fundos e bordas (Warm Neutral Rule).",
+      "Do usar rounded-2xl para cards e rounded-full para chips/pins.",
+      "Do usar shadow-xs em repouso e hover:shadow-md em interação (Flat-By-Default Rule).",
+      "Do aplicar font-size: 16px em inputs para evitar zoom no iOS.",
+      "Do respeitar safe-area-insets em elementos fixos.",
+      "Do manter header claro/blur sem moldura escura fixa."
+    ],
+    "donts": [
+      "Don't usar text-white sobre fundo laranja (contraste insuficiente).",
+      "Don't usar o shell escuro #0c232a como moldura fixa de header/footer.",
+      "Don't usar neutros frios/azulados em superfícies e bordas.",
+      "Don't remover o ring de foco (ring-[3px]) dos controles.",
+      "Don't usar sombras pesadas em repouso — profundidade vem de contraste de superfícies.",
+      "Don't misturar texto espanhol e português na mesma UI — sempre via dicionários i18n."
+    ]
+  }
+}

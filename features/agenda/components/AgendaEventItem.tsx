@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Clock, Info, Pencil, User } from "lucide-react";
+import { Clock, Info, MapPin, Pencil, Tag, User } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import type { AgendaEventItem as TAgendaEventItem } from "../types/agenda.types";
@@ -49,7 +49,7 @@ export function AgendaEventItem({
     <>
       <article
         className={cn(
-          "rounded-xl border bg-card p-4 flex flex-col gap-2 shadow-sm transition-opacity",
+          "rounded-2xl border bg-card p-4 flex flex-col gap-2 shadow-xs transition-opacity",
           isPast && "opacity-50",
         )}
         aria-label={isPast ? `Evento pasado: ${dateStr}` : `Evento: ${dateStr}`}
@@ -123,19 +123,21 @@ export function AgendaEventItem({
         {(event.saida || event.tipo || event.territorio) && (
           <div className={cn("flex flex-wrap gap-2", isPast && "opacity-60")}>
             {event.saida && (
-              <p className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                📍 <span className="text-xs font-light text-muted-foreground">Salida:</span>{" "}
-                {event.saida}
-              </p>
+              <span className="inline-flex items-center gap-1.5 rounded-full border bg-muted/50 px-2.5 py-1 text-xs font-medium text-foreground">
+                <MapPin className="size-3 shrink-0 text-primary" aria-hidden />
+                <span className="font-light text-muted-foreground">Salida:</span> {event.saida}
+              </span>
             )}
             {event.tipo && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                🏷️ Modalidad: {event.tipo}
+              <span className="inline-flex items-center gap-1.5 rounded-full border bg-muted/50 px-2.5 py-1 text-xs font-medium text-foreground">
+                <Tag className="size-3 shrink-0 text-primary" aria-hidden />
+                Modalidad: {event.tipo}
               </span>
             )}
             {event.territorio && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                🗺️ Territorio: {event.territorio}
+              <span className="inline-flex items-center gap-1.5 rounded-full border bg-muted/50 px-2.5 py-1 text-xs font-medium text-foreground">
+                <MapPin className="size-3 shrink-0 text-primary" aria-hidden />
+                Territorio: {event.territorio}
               </span>
             )}
           </div>

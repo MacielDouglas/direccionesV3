@@ -1,3 +1,4 @@
+import { LanguageSelector } from "@/components/LanguageSelector";
 import LoginButton from "@/components/LoginButton";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -11,7 +12,7 @@ export default function LoginPage() {
   return (
     <div
       aria-label="Página de inicio de sesión"
-      className="relative flex min-h-svh w-full flex-col items-center justify-center px-4"
+      className="relative flex min-h-svh w-full flex-col items-center justify-center px-4 py-12"
     >
       <Image
         src="/street.webp"
@@ -23,34 +24,39 @@ export default function LoginPage() {
         aria-hidden="true"
       />
 
-      <div aria-hidden="true" className="absolute inset-0 bg-black/30" />
+      <div aria-hidden="true" className="absolute inset-0 bg-black/50" />
 
-      <div className="relative z-10 w-full max-w-sm rounded-2xl bg-black/20 p-8 shadow-xl shadow-black/40 backdrop-blur-md sm:p-10">
-        <header className="flex flex-col items-center space-y-8">
-          <h1 className="self-start text-4xl font-bold leading-snug text-white sm:text-3xl">
-            Bienvenido a{" "}
-            <span className="text-5xl font-bold tracking-wide text-brand">Direcciones</span>
-          </h1>
-
+      <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-8 rounded-2xl bg-background p-8 shadow-xl shadow-black/20 sm:p-10">
+        <header className="flex flex-col items-center gap-6 text-center">
           <Image
             src="/Logo.svg"
             alt="Logotipo de Direcciones"
-            width={180}
-            height={180}
+            width={112}
+            height={112}
             unoptimized
+            className="rounded-2xl"
           />
 
-          <p className="rounded-lg bg-black/40 px-3 py-2 text-center text-lg text-stone-200">
-            Para comenzar, inicie sesión con su cuenta{" "}
-            <span className="font-semibold text-red-400">Google</span>.
-          </p>
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+              Bienvenido a <span className="font-bold text-brand">Direcciones</span>
+            </h1>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              Para comenzar, inicie sesión con su cuenta{" "}
+              <span className="font-semibold text-foreground">Google</span>.
+            </p>
+          </div>
         </header>
 
-        <div className="mt-6">
+        <div className="w-full">
           {/* ✅ Suspense necessário por causa do useSearchParams no LoginButton */}
-          <Suspense fallback={<div className="h-10 w-full animate-pulse rounded-md bg-white/20" />}>
+          <Suspense fallback={<div className="h-11 w-full animate-pulse rounded-full bg-muted" />}>
             <LoginButton />
           </Suspense>
+        </div>
+
+        <div className="w-full border-t border-border pt-6">
+          <LanguageSelector className="items-center" />
         </div>
       </div>
     </div>

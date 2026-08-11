@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { signIn } from "@/lib/auth-client";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -9,6 +10,7 @@ export default function LoginButton() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/";
   const [loading, setLoading] = useState(false);
+  const { t } = useI18n();
 
   const handleClick = () => {
     signIn(next);
@@ -16,7 +18,11 @@ export default function LoginButton() {
   };
 
   return (
-    <Button onClick={() => handleClick()} className="w-full" disabled={loading}>
+    <Button
+      onClick={() => handleClick()}
+      className="h-11 w-full rounded-full text-base font-medium"
+      disabled={loading}
+    >
       {loading ? (
         <>
           <svg
@@ -46,10 +52,10 @@ export default function LoginButton() {
               />
             </path>
           </svg>
-          Conectando…
+          {t.login.signingIn}
         </>
       ) : (
-        " Iniciar sesión con Google"
+        t.login.loginWithGoogle
       )}
     </Button>
   );

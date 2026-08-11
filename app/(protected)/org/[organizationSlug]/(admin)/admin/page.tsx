@@ -22,7 +22,7 @@ const ADMIN_CARDS: AdminCard[] = [
     description: "Gestiona los miembros de la organización y sus roles.",
     href: "/admin/users",
     icon: Users,
-    color: "bg-blue-100 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800",
+    color: "bg-blue-100/60 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800",
   },
   {
     id: "cards",
@@ -30,7 +30,7 @@ const ADMIN_CARDS: AdminCard[] = [
     description: "Administra y crea tarjetas para los publicadores.",
     href: "/admin/cards",
     icon: Layers,
-    color: "bg-violet-100 border-violet-200 dark:bg-violet-950/30 dark:border-violet-800",
+    color: "bg-violet-100/60 border-violet-200 dark:bg-violet-950/30 dark:border-violet-800",
     children: [
       { name: "Administrar", href: "/admin/cards", icon: Pencil },
       { name: "Crear nueva", href: "/admin/cards/new", icon: Plus },
@@ -42,7 +42,7 @@ const ADMIN_CARDS: AdminCard[] = [
     description: "Crea y gestiona los eventos del cronograma mensual.",
     href: "/admin/agenda",
     icon: CalendarCheck,
-    color: "bg-green-100 border-green-200 dark:bg-green-950/30 dark:border-green-800",
+    color: "bg-green-100/60 border-green-200 dark:bg-green-950/30 dark:border-green-800",
   },
   {
     id: "invitations",
@@ -50,7 +50,7 @@ const ADMIN_CARDS: AdminCard[] = [
     description: "Genera invitaciones para nuevos miembros de la organización.",
     href: "/admin/invitations",
     icon: Link2,
-    color: "bg-amber-100 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800",
+    color: "bg-amber-100/60 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800",
   },
   {
     id: "organizations",
@@ -58,7 +58,7 @@ const ADMIN_CARDS: AdminCard[] = [
     description: "Administra todas las organizaciones del sistema.",
     href: "/admin/organizations",
     icon: Shield,
-    color: "bg-red-100 border-red-200 dark:bg-red-950/30 dark:border-red-800",
+    color: "bg-red-100/60 border-red-200 dark:bg-red-950/30 dark:border-red-800",
     ownerOnly: true,
   },
 ];
@@ -83,7 +83,7 @@ export default async function AdminPage() {
     <main className="mx-auto w-full max-w-5xl px-4 py-6" aria-labelledby="admin-heading">
       {/* Header */}
       <header className="mb-6">
-        <h1 id="admin-heading" className="text-2xl font-bold tracking-tight">
+        <h1 id="admin-heading" className="text-2xl font-semibold tracking-tight">
           Panel de administración
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -98,15 +98,17 @@ export default async function AdminPage() {
           return (
             <li key={card.id}>
               <div
-                className={`flex flex-col gap-3 rounded-2xl border p-5 shadow-sm transition-shadow hover:shadow-md ${card.color}`}
+                className={`flex flex-col gap-3 rounded-2xl border p-5 shadow-xs transition-shadow hover:shadow-md ${card.color}`}
               >
                 {/* Ícone + título */}
                 <div className="flex items-start gap-3">
-                  <div className="rounded-xl bg-white/70 p-2.5 dark:bg-black/20 shrink-0">
+                  <div className="rounded-xl bg-background/70 p-2.5 dark:bg-black/20 shrink-0">
                     <Icon className="size-5 text-foreground" aria-hidden />
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-base font-semibold leading-tight">{card.title}</h2>
+                    <h2 className="text-base font-semibold leading-tight tracking-tight">
+                      {card.title}
+                    </h2>
                     <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
                       {card.description}
                     </p>
@@ -122,7 +124,7 @@ export default async function AdminPage() {
                         <Link
                           key={child.href}
                           href={`/org/${slug}${child.href}`}
-                          className="flex items-center gap-1.5 rounded-lg bg-white/80 px-3 py-1.5 text-xs font-medium shadow-sm transition-colors hover:bg-white dark:bg-black/20 dark:hover:bg-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="flex items-center gap-1.5 rounded-lg bg-background/80 px-3 py-1.5 text-xs font-medium shadow-sm transition-colors hover:bg-background dark:bg-black/20 dark:hover:bg-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           aria-label={`${child.name} — ${card.title}`}
                         >
                           <ChildIcon className="size-3.5" aria-hidden />
@@ -134,7 +136,7 @@ export default async function AdminPage() {
                 ) : (
                   <Link
                     href={`/org/${slug}${card.href}`}
-                    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-white/80 px-3 py-2 text-xs font-medium shadow-sm transition-colors hover:bg-white dark:bg-black/20 dark:hover:bg-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-background/80 px-3 py-2 text-xs font-medium shadow-sm transition-colors hover:bg-background dark:bg-black/20 dark:hover:bg-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-label={`Ir a ${card.title}`}
                   >
                     Abrir

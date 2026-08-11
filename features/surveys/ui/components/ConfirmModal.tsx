@@ -47,15 +47,12 @@ export default function ConfirmModal({
         className="absolute inset-0 h-full w-full cursor-default bg-black/50 backdrop-blur-sm"
       />
 
-      <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl dark:bg-zinc-900 dark:text-white">
-        <h2 id="modal-title" className="mb-2 text-lg font-bold text-gray-900 dark:text-white">
+      <div className="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-2xl">
+        <h2 id="modal-title" className="mb-2 text-lg font-semibold tracking-tight text-foreground">
           {isSuggested ? "Enviar sugerencias de marcación" : "Confirmar marcación"}
         </h2>
 
-        <p
-          id="modal-description"
-          className="mb-6 text-sm leading-relaxed text-gray-600 dark:text-zinc-400"
-        >
+        <p id="modal-description" className="mb-6 text-sm leading-relaxed text-muted-foreground">
           {isSuggested
             ? `¿Desea enviar ${pinsCount} pin${pinsCount > 1 ? "s" : ""} como sugerencia para que los miembros confirmen? Aparecerán en amarillo en el mapa.`
             : `¿Desea confirmar ${pinsCount} pin${pinsCount > 1 ? "s" : ""} marcado${pinsCount > 1 ? "s" : ""}? Se guardarán como marcaciones pendientes.`}
@@ -67,7 +64,7 @@ export default function ConfirmModal({
             type="button"
             onClick={onCancel}
             disabled={loading}
-            className="flex-1 rounded-xl border border-gray-300 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            className="flex-1 rounded-xl border border-border bg-background py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
           >
             Cancelar
           </button>
@@ -76,7 +73,7 @@ export default function ConfirmModal({
             onClick={onConfirm}
             disabled={loading}
             aria-busy={loading}
-            className="flex-1 rounded-xl bg-green-600 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-600 disabled:opacity-50"
+            className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
           >
             {loading ? "Guardando..." : "Confirmar"}
           </button>

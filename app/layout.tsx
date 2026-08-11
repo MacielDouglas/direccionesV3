@@ -4,11 +4,12 @@ import "@/app/globals.css";
 import { NavigationProvider } from "@/components/NavigationProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalMapProvider } from "@/features/map/core/GlobalMapProvider";
+import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { ThemeProvider } from "next-themes";
 
 const outfit = Outfit({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-outfit",
   display: "swap",
 });
@@ -69,7 +70,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="pt" suppressHydrationWarning>
       <head>
         {/* Previne flash de conteúdo não estilizado no iOS PWA */}
         <meta name="mobile-web-app-capable" content="yes" />
@@ -88,10 +89,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {/* Skip to content — acessibilidade para teclado/screen reader */}
-          <a
-            href="#main-content"
-            className="
+          <I18nProvider>
+            {/* Skip to content — acessibilidade para teclado/screen reader */}
+            <a
+              href="#main-content"
+              className="
               sr-only focus:not-sr-only
               fixed top-2 left-2 
               rounded-md bg-background px-4 py-2
@@ -99,14 +101,15 @@ export default function RootLayout({
               shadow-md ring-2 ring-ring
               focus:outline-none
             "
-          >
-            Ir al contenido principal
-          </a>
+            >
+              Ir al contenido principal
+            </a>
 
-          <Toaster position="top-center" richColors closeButton />
-          <GlobalMapProvider>
-            <NavigationProvider>{children}</NavigationProvider>
-          </GlobalMapProvider>
+            <Toaster position="top-center" richColors closeButton />
+            <GlobalMapProvider>
+              <NavigationProvider>{children}</NavigationProvider>
+            </GlobalMapProvider>
+          </I18nProvider>
         </ThemeProvider>
       </body>
     </html>

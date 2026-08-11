@@ -1,6 +1,7 @@
 import LogoutButton from "@/components/LogoutButton";
 import MainAppMenu from "@/components/menu/MainAppMenu";
 import { PendingDeletionBadge } from "@/features/addresses/ui/components/PendingDeletionBadge";
+import { getServerDictionary } from "@/lib/i18n/server";
 import { getCurrentUser } from "@/server/users";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 
 export default async function Home() {
   const data = await getCurrentUser();
+  const t = await getServerDictionary();
 
   if (!data) {
     redirect("/login");
@@ -20,15 +22,15 @@ export default async function Home() {
   const { session, activeOrganization: organization, memberRole } = data;
 
   return (
-    <main className="h-full w-full">
-      <div className="mx-auto max-w-md px-4 py-10 text-center">
-        <h1 className="text-3xl font-light">
-          Bienvenido, <span className="font-medium">{session.user.name}</span>
+    <main className="w-full overflow-y-auto">
+      <div className="mx-auto max-w-md px-4 py-10 text-center md:py-14">
+        <h1 className="text-3xl font-semibold tracking-tight">
+          {t.home.welcome} <span className="text-brand">{session.user.name}</span>
         </h1>
 
         {organization ? (
           <div className="space-y-6">
-            <p className="text-lg">Para empezar, elige una opción.</p>
+            <p className="text-muted-foreground">{t.home.chooseOption}</p>
             <MainAppMenu role={memberRole?.role ?? null} orgSlug={organization?.slug ?? ""} />
             {organization && ["admin", "owner"].includes(memberRole?.role ?? "") && (
               <PendingDeletionBadge
@@ -38,10 +40,10 @@ export default async function Home() {
             )}
           </div>
         ) : (
-          <div className="space-y-4 text-lg text-muted-foreground">
-            <p>¡Gracias por conectarte!</p>
-            <p>Todavía no formas parte de ningún grupo.</p>
-            <p>Habla con un administrador para unirte a uno.</p>
+          <div className="space-y-4 text-muted-foreground">
+            <p>{t.home.thanks}</p>
+            <p>{t.home.notInGroup}</p>
+            <p>{t.home.talkToAdmin}</p>
             <LogoutButton />
             <DeleteAccountButton userEmail={session.user.email} />
           </div>

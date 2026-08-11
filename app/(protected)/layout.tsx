@@ -1,5 +1,6 @@
 import Footer from "@/components/footer/Footer";
 import Header from "@/components/header/Header";
+import { BottomTabBar } from "@/components/navigation/BottomTabBar";
 import { getCurrentUser } from "@/server/users";
 import { redirect } from "next/navigation";
 
@@ -13,7 +14,7 @@ export default async function ProtectedLayout({
   if (!data) redirect("/login");
 
   return (
-    <div className="flex min-h-svh flex-col overflow-hidden bg-surface-light text-surface-dark dark:bg-surface-dark dark:text-surface-light">
+    <div className="flex min-h-svh flex-col overflow-hidden bg-background text-foreground">
       <Header
         session={data.session.session}
         role={data.activeMember?.role ?? null}
@@ -23,6 +24,7 @@ export default async function ProtectedLayout({
         {children}
       </main>
       <Footer organization={data.activeOrganization} />
+      {data.activeOrganization?.slug && <BottomTabBar orgSlug={data.activeOrganization.slug} />}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import type { Role } from "@/domains/member/types/role.types";
 import {
   CalendarDays,
   CreditCard,
+  Home,
   MapPin,
   Plus,
   ScanSearch,
@@ -14,6 +15,7 @@ import type { ElementType } from "react";
 export type NavigationItem = {
   id: string;
   name: string;
+  label?: string;
   href: string;
   icon: ElementType;
   roles?: Role[];
@@ -21,6 +23,12 @@ export type NavigationItem = {
 };
 
 export const navigationMenu: NavigationItem[] = [
+  {
+    id: "home",
+    name: "Inicio",
+    href: "/",
+    icon: Home,
+  },
   {
     id: "my-cards", // ← era "cards", renomeado
     name: "Mis Tarjetas",

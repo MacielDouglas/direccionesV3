@@ -2,6 +2,7 @@
 
 import type { AddressWithUsers } from "@/features/addresses/types/address.types";
 import { CardViewMap } from "@/features/map/components/CardViewMap";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { fetchAddressWithUsers } from "@/server/address/address.action";
 import { CircleAlert, Clock } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -37,6 +38,7 @@ export function MyCardsClient({ cards, organizationSlug }: Props) {
   const [addressPromise, setAddressPromise] = useState<Promise<AddressWithUsers | null> | null>(
     null,
   );
+  const { t } = useI18n();
 
   const { allAddresses, addressIndexMap } = useMemo(() => {
     const addresses = cards
@@ -70,9 +72,9 @@ export function MyCardsClient({ cards, organizationSlug }: Props) {
           <CardViewMap addresses={allAddresses} onMarkerClick={openAddress} />
         </div>
       )}
-      <main className="flex-1 overflow-y-auto px-4 py-4">
+      <main className="flex-1 overflow-y-auto px-4 py-5">
         <header className="mb-4">
-          <h1 className="text-2xl font-bold">Mis Tarjetas</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t.cards.title}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             {cards.length} tarjeta{cards.length !== 1 ? "s" : ""} asignada
             {cards.length !== 1 ? "s" : ""}
@@ -81,15 +83,15 @@ export function MyCardsClient({ cards, organizationSlug }: Props) {
 
         {cards.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
-            <p className="text-sm">No tienes tarjetas asignadas.</p>
+            <p className="text-sm">{t.cards.noCards}</p>
           </div>
         ) : (
-          <ul className="flex flex-col gap-4" aria-label="Mis tarjetas">
+          <ul className="flex flex-col gap-4" aria-label={t.cards.title}>
             {cards.map((card) => (
               <li key={card.id}>
                 <article
                   aria-label={`Tarjeta #${String(card.number).padStart(2, "0")}`}
-                  className="rounded-xl border bg-card p-4 flex flex-col gap-3 shadow-sm"
+                  className="rounded-2xl border bg-card p-4 flex flex-col gap-3 shadow-xs"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-lg font-bold tabular-nums">
@@ -118,7 +120,7 @@ export function MyCardsClient({ cards, organizationSlug }: Props) {
                     </div>
                   )}
 
-                  <ul className="flex flex-col gap-1" aria-label="Direcciones">
+                  <ul className="flex flex-col gap-1" aria-label={t.common.addresses}>
                     {card.addresses.map((addr) => {
                       const index = addressIndexMap.get(addr.id);
                       return (
@@ -137,7 +139,7 @@ export function MyCardsClient({ cards, organizationSlug }: Props) {
                             {index != null && (
                               <span
                                 className="flex shrink-0 size-5 items-center justify-center
-                                  rounded-full bg-red-500 text-white text-xs font-bold"
+                                  rounded-full bg-brand text-brand-foreground text-xs font-bold"
                                 aria-hidden
                               >
                                 {index}

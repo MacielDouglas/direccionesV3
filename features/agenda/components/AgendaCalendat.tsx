@@ -71,7 +71,7 @@ export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
   const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
 
   return (
-    <div className="rounded-2xl border bg-card p-4 shadow-sm">
+    <div className="rounded-2xl border bg-card p-4 shadow-xs">
       {/* Header nav */}
       <div className="flex items-center justify-between mb-4">
         <button
@@ -86,7 +86,7 @@ export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
 
         {/* ✅ Título com spinner inline */}
         <div className="text-center">
-          <h2 className="text-lg font-bold flex items-center justify-center gap-2">
+          <h2 className="text-lg font-semibold tracking-tight flex items-center justify-center gap-2">
             {isPending && (
               <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden />
             )}
@@ -165,7 +165,7 @@ export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
                           eventDay &&
                           "hover:ring-2 hover:ring-primary hover:ring-offset-1",
                         isClickable && !isPending && !eventDay && "hover:bg-muted",
-                        todayDay && "bg-[#bfd142] text-black font-bold",
+                        todayDay && "bg-brand text-brand-foreground font-bold",
                         !todayDay && eventDay && "bg-primary/10 text-primary font-semibold",
                         !todayDay && !eventDay && "text-muted-foreground",
                         (!isClickable || isPending) && "cursor-default",
@@ -177,7 +177,7 @@ export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
                       <span
                         className={cn(
                           "mt-0.5 size-1.5 rounded-full",
-                          todayDay ? "bg-black/40" : "bg-primary",
+                          todayDay ? "bg-brand-foreground/50" : "bg-primary",
                         )}
                         aria-hidden
                       />
@@ -197,7 +197,7 @@ export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
           Evento
         </span>
         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span className="size-3 rounded-full bg-[#bfd142] inline-block" aria-hidden />
+          <span className="size-3 rounded-full bg-brand inline-block" aria-hidden />
           Hoy
         </span>
       </div>
