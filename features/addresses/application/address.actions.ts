@@ -2,14 +2,17 @@
 
 import { deleteR2Object } from "@/infrastructure/storage/r2.service";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/server/users";
+import { requireAdminOrOwner, requireAuthContext } from "@/server/users";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import type { AddressFormData } from "../domain/address.schema";
 import {
   createAddressService,
   getAddressByIdService,
   updateAddressService,
 } from "./address.service";
+
+const addressIdSchema = z.string().uuid();
 
 // ✅ Extrai key da URL — mesma lógica do client
 function extractKeyFromUrl(imageUrl: string | null | undefined): string | null {
@@ -24,39 +27,52 @@ function extractKeyFromUrl(imageUrl: string | null | undefined): string | null {
 }
 
 async function getSessionOrThrow() {
-  const session = await getCurrentUser();
-  if (!session) throw new Error("No autenticado.");
-  if (!session.activeMember?.organizationId) {
-    throw new Error("El usuario no pertenece a ninguna organización activa.");
-  }
-  return {
-    organizationId: session.activeMember.organizationId,
-    userId: session.user.id,
-  };
+  return requireAuthContext();
+}
+
+function getOrganizationId(data: Awaited<ReturnType<typeof requireAuthContext>>): string {
+  const organizationId = data.activeMember?.organizationId;
+  if (!organizationId) throw new Error("Sin organización activa.");
+  return organizationId;
 }
 
 export async function createAddressAction(input: AddressFormData) {
-  const { organizationId, userId } = await getSessionOrThrow();
-  return createAddressService({ input, organizationId, userId });
+  const data = await getSessionOrThrow();
+  return createAddressService({
+    input,
+    organizationId: getOrganizationId(data),
+    userId: data.user.id,
+  });
 }
 
 export async function updateAddressAction(addressId: string, input: AddressFormData) {
-  const { organizationId, userId } = await getSessionOrThrow();
-  return updateAddressService({ addressId, input, organizationId, userId });
+  const data = await getSessionOrThrow();
+  return updateAddressService({
+    addressId,
+    input,
+    organizationId: getOrganizationId(data),
+    userId: data.user.id,
+  });
 }
 
 export async function getAddressByIdAction(addressId: string) {
-  const { organizationId } = await getSessionOrThrow();
-  return getAddressByIdService({ addressId, organizationId });
+  const data = await getSessionOrThrow();
+  return getAddressByIdService({
+    addressId,
+    organizationId: getOrganizationId(data),
+  });
 }
 
 export async function requestAddressDeletionAction(addressId: string): Promise<{ error?: string }> {
   try {
-    const data = await getCurrentUser();
-    if (!data) throw new Error("No autorizado.");
+    if (!addressIdSchema.safeParse(addressId).success) {
+      return { error: "Dirección inválida." };
+    }
+    const data = await requireAuthContext();
+    const organizationId = getOrganizationId(data);
 
     const address = await prisma.address.findFirst({
-      where: { id: addressId, organizationId: data.activeOrganization?.id },
+      where: { id: addressId, organizationId },
     });
     if (!address) throw new Error("Dirección no encontrada.");
 
@@ -80,25 +96,25 @@ export async function requestAddressDeletionAction(addressId: string): Promise<{
 
 // ✅ Admin/Owner — confirma deleção real + deleta imagem do R2
 export async function confirmAddressDeletionAction(addressId: string) {
-  const data = await getCurrentUser();
-  if (!data) throw new Error("No autorizado.");
-
-  const role = data.memberRole?.role;
-  if (!role || !["admin", "owner"].includes(role)) {
-    throw new Error("Sin permiso para confirmar eliminaciones.");
+  if (!addressIdSchema.safeParse(addressId).success) {
+    throw new Error("Dirección inválida.");
   }
 
-  // ✅ Busca imagem ANTES de deletar do banco
-  const address = await prisma.address.findUnique({
-    where: { id: addressId },
+  const data = await requireAdminOrOwner();
+  const organizationId = getOrganizationId(data);
+
+  // ✅ Busca imagem ANTES de deletar do banco (escopado pela org)
+  const address = await prisma.address.findFirst({
+    where: { id: addressId, organizationId },
     select: { image: true },
   });
+  if (!address) throw new Error("Dirección no encontrada.");
 
   // ✅ Deleta do banco
   await prisma.address.delete({ where: { id: addressId } });
 
   // ✅ Deleta imagem do R2 (após confirmar deleção do banco)
-  const imageKey = extractKeyFromUrl(address?.image);
+  const imageKey = extractKeyFromUrl(address.image);
   if (imageKey) {
     try {
       await deleteR2Object(imageKey);
@@ -111,8 +127,18 @@ export async function confirmAddressDeletionAction(addressId: string) {
 }
 
 export async function cancelAddressDeletionAction(addressId: string) {
-  const data = await getCurrentUser();
-  if (!data) throw new Error("No autorizado.");
+  if (!addressIdSchema.safeParse(addressId).success) {
+    throw new Error("Dirección inválida.");
+  }
+
+  const data = await requireAdminOrOwner();
+  const organizationId = getOrganizationId(data);
+
+  const address = await prisma.address.findFirst({
+    where: { id: addressId, organizationId },
+    select: { id: true },
+  });
+  if (!address) throw new Error("Dirección no encontrada.");
 
   await prisma.address.update({
     where: { id: addressId },

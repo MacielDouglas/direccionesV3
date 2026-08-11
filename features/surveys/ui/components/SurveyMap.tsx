@@ -219,37 +219,43 @@ export default function SurveyMap({ organizationId, userRole, initialPins }: Pro
   }, []);
 
   // ── Confirmar pin do servidor ────────────────────────────────────────────
-  const handleConfirmSinglePin = useCallback(async (pinId: string) => {
-    setLoading(true);
-    try {
-      const result = await confirmSurveyPinAction(pinId);
-      if (result.success) {
-        setServerPins((prev) =>
-          prev.map((p) => (p.id === pinId ? { ...p, status: "CONFIRMED" } : p)),
-        );
+  const handleConfirmSinglePin = useCallback(
+    async (pinId: string) => {
+      setLoading(true);
+      try {
+        const result = await confirmSurveyPinAction(pinId, organizationId);
+        if (result.success) {
+          setServerPins((prev) =>
+            prev.map((p) => (p.id === pinId ? { ...p, status: "CONFIRMED" } : p)),
+          );
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [organizationId],
+  );
 
   // ── Cancelar pin do servidor ─────────────────────────────────────────────
-  const handleCancelPin = useCallback(async (pinId: string) => {
-    setLoading(true);
-    try {
-      const result = await cancelSurveyPinAction(pinId);
-      if (result.success) {
-        setServerPins((prev) =>
-          prev.map((p) => (p.id === pinId ? { ...p, status: "CANCELLED" } : p)),
-        );
-        const marker = serverMarkersRef.current.get(pinId);
-        marker?.remove();
-        serverMarkersRef.current.delete(pinId);
+  const handleCancelPin = useCallback(
+    async (pinId: string) => {
+      setLoading(true);
+      try {
+        const result = await cancelSurveyPinAction(pinId, organizationId);
+        if (result.success) {
+          setServerPins((prev) =>
+            prev.map((p) => (p.id === pinId ? { ...p, status: "CANCELLED" } : p)),
+          );
+          const marker = serverMarkersRef.current.get(pinId);
+          marker?.remove();
+          serverMarkersRef.current.delete(pinId);
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [organizationId],
+  );
 
   // ── Salvar pins locais como CONFIRMED ou SUGGESTED ───────────────────────
   const handleSavePins = async () => {

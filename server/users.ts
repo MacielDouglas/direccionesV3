@@ -2,6 +2,7 @@
 
 import { toRole } from "@/domains/member/utils/toRole";
 import { auth } from "@/lib/auth";
+import { type AppRole, canAccess } from "@/lib/autorize";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -94,3 +95,60 @@ export const requireSession = async () => {
   if (!data) redirect("/login");
   return data.session;
 };
+
+type AuthContext = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
+
+// ✅ Helper central — exige sessão autenticada com organização ativa
+export async function requireAuthContext(): Promise<AuthContext> {
+  const data = await getCurrentUser();
+  if (!data) throw new Error("No autenticado.");
+  if (!data.activeMember?.organizationId) {
+    throw new Error("Sin organización activa.");
+  }
+  return data;
+}
+
+// ✅ Helper central — exige role admin/owner na organização ativa
+export async function requireAdminOrOwner(): Promise<AuthContext> {
+  const data = await requireAuthContext();
+  const role = data.memberRole?.role;
+  if (!role || !canAccess(role, "admin")) throw new Error("Sin permiso.");
+  return data;
+}
+
+// ✅ Helper central — exige membro da organização (por organizationId)
+export async function requireOrgMember(organizationId: string): Promise<AuthContext> {
+  const data = await getCurrentUser();
+  if (!data) throw new Error("No autenticado.");
+
+  const member = await prisma.member.findFirst({
+    where: { organizationId, userId: data.user.id },
+    select: { id: true },
+  });
+  if (!member) throw new Error("Sin permiso para esta organización.");
+
+  return data;
+}
+
+// ✅ Helper central — exige role admin/owner na organização informada
+export async function requireOrgAdminOrOwner(organizationId: string): Promise<AuthContext> {
+  const data = await requireOrgMember(organizationId);
+
+  const member = await prisma.member.findFirst({
+    where: { organizationId, userId: data.user.id },
+    select: { role: true },
+  });
+
+  const role = toRole(member?.role ?? null);
+  if (!role || !canAccess(role, "admin")) throw new Error("Sin permiso.");
+
+  return data;
+}
+
+// ✅ Helper central — exige role mínimo na organização ativa
+export async function requireRole(required: AppRole): Promise<AuthContext> {
+  const data = await requireAuthContext();
+  const role = data.memberRole?.role;
+  if (!role || !canAccess(role, required)) throw new Error("Sin permiso.");
+  return data;
+}

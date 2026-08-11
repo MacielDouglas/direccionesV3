@@ -22,9 +22,11 @@ export interface CreatePinsInput {
 export interface ConfirmPinInput {
   pinId: string;
   userId: string;
+  organizationId: string;
 }
 
 export interface CancelPinInput {
   pinId: string;
   userId: string;
+  organizationId: string;
 }

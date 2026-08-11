@@ -2,9 +2,13 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/server/users";
+import { requireOrgAdminOrOwner } from "@/server/users";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { z } from "zod";
+
+const organizationIdSchema = z.string().uuid();
+const invitationIdSchema = z.string().min(1);
 
 export async function createInvitationAction(data: {
   email: string;
@@ -13,14 +17,12 @@ export async function createInvitationAction(data: {
   orgSlug: string;
 }) {
   const reqHeaders = await headers();
-  const userData = await getCurrentUser();
 
-  if (!userData) throw new Error("No autorizado.");
-
-  const role = userData.memberRole?.role;
-  if (!role || !["admin", "owner"].includes(role)) {
-    throw new Error(`Sin permiso. Role: ${role}`);
+  if (!organizationIdSchema.safeParse(data.organizationId).success) {
+    throw new Error("Organización inválida.");
   }
+
+  await requireOrgAdminOrOwner(data.organizationId);
 
   // ✅ Garante que a sessão tem a org correta como ativa
   await auth.api.setActiveOrganization({
@@ -61,6 +63,18 @@ export async function createInvitationAction(data: {
 export async function cancelInvitationAction(invitationId: string, orgSlug: string) {
   const reqHeaders = await headers();
 
+  if (!invitationIdSchema.safeParse(invitationId).success) {
+    throw new Error("Invitación inválida.");
+  }
+
+  const invitation = await prisma.invitation.findUnique({
+    where: { id: invitationId },
+    select: { organizationId: true },
+  });
+  if (!invitation) throw new Error("Invitación no encontrada.");
+
+  await requireOrgAdminOrOwner(invitation.organizationId);
+
   await auth.api.cancelInvitation({
     body: { invitationId },
     headers: reqHeaders,
@@ -70,6 +84,12 @@ export async function cancelInvitationAction(invitationId: string, orgSlug: stri
 }
 
 export async function getOrganizationInvitationsAction(organizationId: string) {
+  if (!organizationIdSchema.safeParse(organizationId).success) {
+    throw new Error("Organización inválida.");
+  }
+
+  await requireOrgAdminOrOwner(organizationId);
+
   return prisma.invitation.findMany({
     where: { organizationId },
     include: {

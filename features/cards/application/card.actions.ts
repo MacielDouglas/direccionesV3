@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser, requireSession } from "@/server/users";
+import { requireAdminOrOwner, requireOrgAdminOrOwner } from "@/server/users";
 import { revalidatePath } from "next/cache";
 import { createCardSchema, editCardSchema } from "../domain/card.schema";
 import { getNextCardNumber } from "./card.service";
@@ -11,13 +11,14 @@ export async function createCardAction(
   organizationSlug: string,
   rawData: unknown,
 ) {
-  const session = await requireSession();
   const parsed = createCardSchema.safeParse(rawData);
   if (!parsed.success) return { error: "Dados inválidos." };
 
   const { addressIds } = parsed.data;
 
   try {
+    const data = await requireOrgAdminOrOwner(organizationId);
+
     const result = await prisma.$transaction(async (tx) => {
       const addresses = await tx.address.findMany({
         where: {
@@ -40,7 +41,7 @@ export async function createCardAction(
         data: {
           number,
           organizationId,
-          createdById: session.user.id,
+          createdById: data.user.id,
           addresses: { connect: addressIds.map((id) => ({ id })) },
         },
       });
@@ -56,13 +57,23 @@ export async function createCardAction(
 }
 
 export async function assignCardAction(cardId: string, userId: string, organizationSlug: string) {
-  const session = await requireSession();
-
   try {
+    const data = await requireAdminOrOwner();
+    const organizationId = data.activeMember?.organizationId;
+    if (!organizationId) throw new Error("Sin organización activa.");
+
     await prisma.$transaction(async (tx) => {
-      const card = await tx.card.findUnique({ where: { id: cardId } });
+      const card = await tx.card.findFirst({
+        where: { id: cardId, organizationId },
+      });
       if (!card) throw new Error("Tarjeta no encontrada.");
       if (card.assignedUserId) throw new Error("La tarjeta ya ha sido asignada.");
+
+      const assignee = await tx.member.findFirst({
+        where: { organizationId, userId },
+        select: { id: true },
+      });
+      if (!assignee) throw new Error("El usuario no pertenece a la organización.");
 
       await tx.card.update({
         where: { id: cardId },
@@ -77,7 +88,7 @@ export async function assignCardAction(cardId: string, userId: string, organizat
         data: {
           id: crypto.randomUUID(),
           cardId,
-          userId: session.user.id,
+          userId: data.user.id,
           action: "ASSIGNED",
         },
       });
@@ -93,11 +104,15 @@ export async function assignCardAction(cardId: string, userId: string, organizat
 }
 
 export async function returnCardAction(cardId: string, organizationSlug: string) {
-  const session = await requireSession();
-
   try {
+    const data = await requireAdminOrOwner();
+    const organizationId = data.activeMember?.organizationId;
+    if (!organizationId) throw new Error("Sin organización activa.");
+
     await prisma.$transaction(async (tx) => {
-      const card = await tx.card.findUnique({ where: { id: cardId } });
+      const card = await tx.card.findFirst({
+        where: { id: cardId, organizationId },
+      });
       if (!card) throw new Error("Tarjeta no encontrada.");
       if (!card.assignedUserId) throw new Error("La tarjeta no está asignada.");
 
@@ -113,7 +128,7 @@ export async function returnCardAction(cardId: string, organizationSlug: string)
         data: {
           id: crypto.randomUUID(),
           cardId,
-          userId: session.user.id,
+          userId: data.user.id,
           action: "RETURNED",
         },
       });
@@ -130,18 +145,16 @@ export async function returnCardAction(cardId: string, organizationSlug: string)
 }
 
 export async function deleteCardAction(cardId: string, organizationSlug: string) {
-  const data = await getCurrentUser(); // já cacheado
-  if (!data) return { error: "No autenticado." };
-
-  const organizationId = data.activeMember?.organizationId;
-  if (!organizationId) return { error: "Sin organización activa." };
-
-  const card = await prisma.card.findFirst({
-    where: { id: cardId, organizationId },
-  });
-  if (!card) return { error: "Tarjeta no encontrada." };
-
   try {
+    const data = await requireAdminOrOwner();
+    const organizationId = data.activeMember?.organizationId;
+    if (!organizationId) return { error: "Sin organización activa." };
+
+    const card = await prisma.card.findFirst({
+      where: { id: cardId, organizationId },
+    });
+    if (!card) return { error: "Tarjeta no encontrada." };
+
     await prisma.$transaction(async (tx) => {
       await tx.address.updateMany({
         where: { cardId },
@@ -166,14 +179,14 @@ export async function updateCardAction(
   organizationSlug: string,
   rawData: unknown,
 ) {
-  const session = await requireSession();
-
   const parsed = editCardSchema.safeParse(rawData);
   if (!parsed.success) return { error: "Datos inválidos." };
 
   const { addressIds } = parsed.data;
 
   try {
+    const data = await requireOrgAdminOrOwner(organizationId);
+
     await prisma.$transaction(async (tx) => {
       const card = await tx.card.findFirst({
         where: { id: cardId, organizationId },
@@ -207,7 +220,7 @@ export async function updateCardAction(
       await tx.card.update({
         where: { id: cardId },
         data: {
-          updatedById: session.user.id,
+          updatedById: data.user.id,
           addresses: {
             connect: toConnect.map((id) => ({ id })),
             disconnect: toDisconnect.map((id) => ({ id })),

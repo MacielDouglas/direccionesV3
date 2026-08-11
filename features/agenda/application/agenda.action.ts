@@ -1,17 +1,13 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/server/users";
+import { requireAdminOrOwner, requireOrgAdminOrOwner } from "@/server/users";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { type AgendaEventInput, agendaEventSchema } from "../domain/agenda.schema";
 
-async function requireAdminOrOwner() {
-  const data = await getCurrentUser();
-  if (!data) throw new Error("No autenticado.");
-  const role = data.memberRole?.role;
-  if (!role || !["admin", "owner"].includes(role)) throw new Error("Sin permiso.");
-  return data;
-}
+const eventIdSchema = z.string().cuid();
+const organizationIdSchema = z.string().uuid();
 
 // ✅ Salva valor como opção se ainda não existir
 async function saveFieldOption(
@@ -67,7 +63,10 @@ export async function createAgendaEventAction(
   input: AgendaEventInput,
 ): Promise<{ error?: string }> {
   try {
-    await requireAdminOrOwner();
+    if (!organizationIdSchema.safeParse(organizationId).success) {
+      return { error: "Organización inválida." };
+    }
+    await requireOrgAdminOrOwner(organizationId);
     const parsed = agendaEventSchema.safeParse(input);
     if (!parsed.success) return { error: parsed.error.issues[0].message };
 
@@ -89,7 +88,13 @@ export async function updateAgendaEventAction(
   input: AgendaEventInput,
 ): Promise<{ error?: string }> {
   try {
-    // const session = await requireAdminOrOwner();
+    if (!eventIdSchema.safeParse(eventId).success) {
+      return { error: "Evento inválido." };
+    }
+    const data = await requireAdminOrOwner();
+    const organizationId = data.activeMember?.organizationId;
+    if (!organizationId) return { error: "Sin organización activa." };
+
     const parsed = agendaEventSchema.safeParse(input);
     if (!parsed.success) return { error: parsed.error.issues[0].message };
 
@@ -98,8 +103,8 @@ export async function updateAgendaEventAction(
     const [hours, minutes] = (time ?? "00:00").split(":").map(Number);
     const localDate = new Date(year, month - 1, day, hours, minutes);
 
-    const event = await prisma.agendaEvent.findUnique({
-      where: { id: eventId },
+    const event = await prisma.agendaEvent.findFirst({
+      where: { id: eventId, organizationId },
     });
     if (!event) return { error: "Evento no encontrado." };
 
@@ -137,7 +142,18 @@ export async function deleteAgendaEventAction(
   organizationSlug: string,
 ): Promise<{ error?: string }> {
   try {
-    await requireAdminOrOwner();
+    if (!eventIdSchema.safeParse(eventId).success) {
+      return { error: "Evento inválido." };
+    }
+    const data = await requireAdminOrOwner();
+    const organizationId = data.activeMember?.organizationId;
+    if (!organizationId) return { error: "Sin organización activa." };
+
+    const event = await prisma.agendaEvent.findFirst({
+      where: { id: eventId, organizationId },
+    });
+    if (!event) return { error: "Evento no encontrado." };
+
     await prisma.agendaEvent.delete({ where: { id: eventId } });
     revalidatePath(`/org/${organizationSlug}/agenda`);
     revalidatePath(`/org/${organizationSlug}/admin/agenda`);

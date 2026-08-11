@@ -8,7 +8,7 @@ export async function uploadFile(
   const res = await fetch("/api/upload-url", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ key, contentType: file.type }),
+    body: JSON.stringify({ key, contentType: file.type, maxSize: file.size }),
   });
 
   if (!res.ok) throw new Error(`Error al obtener URL firmada: ${res.status}`);

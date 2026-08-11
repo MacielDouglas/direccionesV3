@@ -1,10 +1,12 @@
 import { deleteR2Object } from "@/infrastructure/storage/r2.service";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const reqHeaders = await headers();
+  const session = await auth.api.getSession({ headers: reqHeaders });
 
   if (!session) {
     return NextResponse.json({ error: "No autorizado." }, { status: 401 });
@@ -28,6 +30,23 @@ export async function POST(req: Request) {
     if (!key.startsWith("organizations/")) {
       return NextResponse.json(
         { error: "Solo se pueden eliminar imágenes de organizations." },
+        { status: 403 },
+      );
+    }
+
+    // ✅ Escopo por organização — só deleta imagens da org ativa do usuário
+    const activeMember = await auth.api.getActiveMember({ headers: reqHeaders });
+    if (!activeMember?.organizationId) {
+      return NextResponse.json({ error: "Sin organización activa." }, { status: 403 });
+    }
+
+    const organization = await prisma.organization.findUnique({
+      where: { id: activeMember.organizationId },
+      select: { slug: true },
+    });
+    if (!organization || !key.startsWith(`organizations/${organization.slug}/`)) {
+      return NextResponse.json(
+        { error: "Sin permiso para eliminar esta imagen." },
         { status: 403 },
       );
     }

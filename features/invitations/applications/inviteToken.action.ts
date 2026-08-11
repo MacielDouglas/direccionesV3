@@ -2,22 +2,23 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/server/users";
+import { getCurrentUser, requireOrgAdminOrOwner } from "@/server/users";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { z } from "zod";
+
+const organizationIdSchema = z.string().uuid();
 
 // ── Gera token — apenas admin/owner ──────────────────────────
 export async function createInviteTokenAction(data: {
   organizationId: string;
   orgSlug: string;
 }) {
-  const userData = await getCurrentUser();
-  if (!userData) throw new Error("No autorizado.");
-
-  const role = userData.memberRole?.role;
-  if (!role || !["admin", "owner"].includes(role)) {
-    throw new Error("Sin permiso para generar invitaciones.");
+  if (!organizationIdSchema.safeParse(data.organizationId).success) {
+    throw new Error("Organización inválida.");
   }
+
+  const userData = await requireOrgAdminOrOwner(data.organizationId);
 
   await prisma.inviteToken.updateMany({
     where: {
@@ -47,7 +48,6 @@ export async function createInviteTokenAction(data: {
 export async function applyInviteTokenAction(token: string) {
   const userData = await getCurrentUser();
   if (!userData) throw new Error("No autorizado.");
-
   const invite = await prisma.inviteToken.findUnique({
     where: { token },
     include: { organization: true },
@@ -97,8 +97,14 @@ export async function applyInviteTokenAction(token: string) {
   return invite.organization;
 }
 
-// ── Lista tokens da org ──────────────────────────────────────
+// ── Lista tokens da org — apenas admin/owner ────────────────
 export async function getOrgInviteTokensAction(organizationId: string) {
+  if (!organizationIdSchema.safeParse(organizationId).success) {
+    throw new Error("Organización inválida.");
+  }
+
+  await requireOrgAdminOrOwner(organizationId);
+
   return prisma.inviteToken.findMany({
     where: { organizationId },
     include: {

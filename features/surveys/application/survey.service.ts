@@ -37,6 +37,16 @@ export async function createSurveyPins(input: CreatePinsInput, userId: string) {
 }
 
 export async function confirmSurveyPin(input: ConfirmPinInput) {
+  const pin = await prisma.surveyPin.findUnique({
+    where: { id: input.pinId },
+    select: { survey: { select: { organizationId: true } } },
+  });
+  if (!pin) throw new Error("Pin no encontrado.");
+
+  if (pin.survey.organizationId !== input.organizationId) {
+    throw new Error("Sin permiso para este pin.");
+  }
+
   return prisma.surveyPin.update({
     where: { id: input.pinId },
     data: { status: "CONFIRMED", confirmedById: input.userId },
@@ -45,6 +55,16 @@ export async function confirmSurveyPin(input: ConfirmPinInput) {
 }
 
 export async function cancelSurveyPin(input: CancelPinInput) {
+  const pin = await prisma.surveyPin.findUnique({
+    where: { id: input.pinId },
+    select: { survey: { select: { organizationId: true } } },
+  });
+  if (!pin) throw new Error("Pin no encontrado.");
+
+  if (pin.survey.organizationId !== input.organizationId) {
+    throw new Error("Sin permiso para este pin.");
+  }
+
   return prisma.surveyPin.update({
     where: { id: input.pinId },
     data: { status: "CANCELLED" },

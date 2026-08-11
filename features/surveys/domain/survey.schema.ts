@@ -6,7 +6,7 @@ export const pinCoordinateSchema = z.object({
 });
 
 export const createPinsSchema = z.object({
-  organizationId: z.string().min(1),
+  organizationId: z.string().uuid(),
   pins: z
     .array(pinCoordinateSchema)
     .min(1, "Debe haber al menos un pin")
@@ -15,11 +15,11 @@ export const createPinsSchema = z.object({
 });
 
 export const confirmPinSchema = z.object({
-  pinId: z.string().min(1),
+  pinId: z.string().cuid(),
 });
 
 export const cancelPinSchema = z.object({
-  pinId: z.string().min(1),
+  pinId: z.string().cuid(),
 });
 
 export type CreatePinsSchema = z.infer<typeof createPinsSchema>;
