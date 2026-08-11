@@ -1,7 +1,7 @@
+import LoginButton from "@/components/LoginButton";
+import type { Metadata } from "next";
 import Image from "next/image";
 import { Suspense } from "react";
-import type { Metadata } from "next";
-import LoginButton from "@/components/LoginButton";
 
 export const metadata: Metadata = {
   title: "Iniciar sesión",
@@ -29,9 +29,7 @@ export default function LoginPage() {
         <header className="flex flex-col items-center space-y-8">
           <h1 className="self-start text-4xl font-bold leading-snug text-white sm:text-3xl">
             Bienvenido a{" "}
-            <span className="text-5xl font-bold tracking-wide text-brand">
-              Direcciones
-            </span>
+            <span className="text-5xl font-bold tracking-wide text-brand">Direcciones</span>
           </h1>
 
           <Image
@@ -50,11 +48,7 @@ export default function LoginPage() {
 
         <div className="mt-6">
           {/* ✅ Suspense necessário por causa do useSearchParams no LoginButton */}
-          <Suspense
-            fallback={
-              <div className="h-10 w-full animate-pulse rounded-md bg-white/20" />
-            }
-          >
+          <Suspense fallback={<div className="h-10 w-full animate-pulse rounded-md bg-white/20" />}>
             <LoginButton />
           </Suspense>
         </div>

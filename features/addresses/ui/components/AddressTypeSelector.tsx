@@ -23,16 +23,11 @@ export default function AddressTypeSelector() {
           <MapPinHouse className="h-7 w-7 text-brand" aria-hidden="true" />
           Tipo de dirección
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Selecciona el tipo de lugar
-        </p>
+        <p className="text-sm text-muted-foreground">Selecciona el tipo de lugar</p>
       </header>
 
-      <div
-        role="radiogroup"
-        aria-label="Tipo de dirección"
-        className="grid grid-cols-2 gap-4 sm:grid-cols-3"
-      >
+      <fieldset className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <legend className="sr-only">Tipo de dirección</legend>
         {ADDRESS_TYPE_OPTIONS.map((type) => {
           const isActive = value === type.value;
           const Icon = type.icon;
@@ -41,8 +36,7 @@ export default function AddressTypeSelector() {
             <Button
               key={type.value}
               type="button"
-              role="radio"
-              aria-checked={isActive}
+              aria-pressed={isActive}
               onClick={() => onChange(type.value)}
               className={cn(
                 "rounded-xl border px-4 py-6 text-lg",
@@ -58,7 +52,7 @@ export default function AddressTypeSelector() {
             </Button>
           );
         })}
-      </div>
+      </fieldset>
     </section>
   );
 }

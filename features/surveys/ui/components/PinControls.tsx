@@ -71,9 +71,7 @@ export default function PinControls({
               disabled={loading}
               aria-pressed={isAddingMode}
               aria-label={
-                isAddingMode
-                  ? "Desactivar modo sugerencia"
-                  : "Activar modo envío de sugerencias"
+                isAddingMode ? "Desactivar modo sugerencia" : "Activar modo envío de sugerencias"
               }
               className={`rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-lg transition focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 ${
                 isAddingMode
@@ -81,9 +79,7 @@ export default function PinControls({
                   : "bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-600"
               }`}
             >
-              {isAddingMode
-                ? "🟡 Modo sugerencia activo"
-                : "📤 Enviar marcaciones"}
+              {isAddingMode ? "🟡 Modo sugerencia activo" : "📤 Enviar marcaciones"}
             </button>
 
             {isAddingMode && localPinsCount > 0 && (

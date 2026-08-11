@@ -1,16 +1,16 @@
 "use client";
 
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogTrigger,
-  DialogTitle,
-  DialogHeader,
   DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 
 type Props = { src: string; alt: string };
@@ -39,21 +39,12 @@ export function AddressImageViewer({ src, alt }: Props) {
       >
         <DialogHeader className="sr-only">
           <DialogTitle>Visualización de imagen</DialogTitle>
-          <DialogDescription>
-            Vista ampliada de la imagen de la dirección.
-          </DialogDescription>
+          <DialogDescription>Vista ampliada de la imagen de la dirección.</DialogDescription>
         </DialogHeader>
 
         {/* ✅ Container relativo — botão e imagem dentro do mesmo contexto */}
         <div className="relative h-full w-full">
-          <Image
-            src={src}
-            alt={alt}
-            fill
-            priority
-            sizes="100vw"
-            className="object-contain"
-          />
+          <Image src={src} alt={alt} fill priority sizes="100vw" className="object-contain" />
 
           {/* ✅ absolute dentro do container, não fixed */}
           <Button

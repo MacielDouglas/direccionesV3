@@ -1,14 +1,14 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getCurrentUser } from "@/server/users";
-import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
-import { EditNameForm } from "@/features/user/ui/EditNameForm";
-import Link from "next/link";
-import { CreditCard } from "lucide-react";
-import { LeaveOrganizationButton } from "./_components/LeaveOrganizationButton";
 import type { Role } from "@/domains/member/types/role.types";
-import { DeleteAccountButton } from "./_components/DeleteAccountButton";
+import { EditNameForm } from "@/features/user/ui/EditNameForm";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/server/users";
+import { CreditCard } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { DeleteAccountButton } from "./_components/DeleteAccountButton";
+import { LeaveOrganizationButton } from "./_components/LeaveOrganizationButton";
 
 export const metadata: Metadata = {
   title: "Perfil de Usuario",
@@ -18,9 +18,7 @@ interface Props {
   params: Promise<{ organizationSlug: string }>;
 }
 
-function upgradeGoogleAvatar(
-  url: string | null | undefined,
-): string | undefined {
+function upgradeGoogleAvatar(url: string | null | undefined): string | undefined {
   if (!url) return undefined;
   return url.replace(/s\d+-c/, "s720-c");
 }
@@ -77,9 +75,7 @@ export default async function UserPage({ params }: Props) {
             src={upgradeGoogleAvatar(user.image)}
             alt={`Foto de perfil de ${user.name}`}
           />
-          <AvatarFallback className="text-3xl font-semibold">
-            {initials}
-          </AvatarFallback>
+          <AvatarFallback className="text-3xl font-semibold">{initials}</AvatarFallback>
         </Avatar>
 
         <div className="flex flex-col items-center gap-1">
@@ -134,9 +130,7 @@ export default async function UserPage({ params }: Props) {
                     {card.addresses.length > 0 && (
                       <span className="text-xs text-muted-foreground truncate">
                         {card.addresses
-                          .map(
-                            (a) => a.businessName ?? `${a.street}, ${a.number}`,
-                          )
+                          .map((a) => a.businessName ?? `${a.street}, ${a.number}`)
                           .join(" · ")}
                       </span>
                     )}
@@ -150,15 +144,12 @@ export default async function UserPage({ params }: Props) {
           </ul>
         )}
         <div className="border-t pt-6 flex flex-col gap-4">
-          <h2 className="text-sm font-medium text-destructive">
-            Zona de peligro
-          </h2>
+          <h2 className="text-sm font-medium text-destructive">Zona de peligro</h2>
 
           <div className="flex flex-col gap-1.5">
             <p className="text-sm font-medium">Abandonar la organización</p>
             <p className="text-xs text-muted-foreground">
-              Perderás el acceso a esta organización. Tu cuenta permanecerá
-              activa.
+              Perderás el acceso a esta organización. Tu cuenta permanecerá activa.
             </p>
             <div className="mt-1">
               <LeaveOrganizationButton
@@ -172,8 +163,7 @@ export default async function UserPage({ params }: Props) {
           <div className="flex flex-col gap-1.5">
             <p className="text-sm font-medium">Eliminar cuenta</p>
             <p className="text-xs text-muted-foreground">
-              Eliminar permanentemente tu cuenta de todas las organizaciones y
-              de la aplicación.
+              Eliminar permanentemente tu cuenta de todas las organizaciones y de la aplicación.
             </p>
             <div className="mt-1">
               <DeleteAccountButton userEmail={session.user.email} />

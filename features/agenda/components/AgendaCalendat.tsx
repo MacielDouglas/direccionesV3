@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useTransition } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useMemo, useTransition } from "react";
 import type { AgendaEventItem } from "../types/agenda.types";
 
 const WEEK_DAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
@@ -65,13 +65,10 @@ export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
   );
 
   const isToday = (day: number) =>
-    day === today.getDate() &&
-    month === today.getMonth() &&
-    year === today.getFullYear();
+    day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
 
   const hasEvent = (day: number) => eventDays.has(`${year}-${month}-${day}`);
-  const isCurrentMonth =
-    year === today.getFullYear() && month === today.getMonth();
+  const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
 
   return (
     <div className="rounded-2xl border bg-card p-4 shadow-sm">
@@ -91,23 +88,18 @@ export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
         <div className="text-center">
           <h2 className="text-lg font-bold flex items-center justify-center gap-2">
             {isPending && (
-              <Loader2
-                className="size-4 animate-spin text-muted-foreground"
-                aria-hidden
-              />
+              <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden />
             )}
             {MONTHS_ES[month]} {year}
           </h2>
           {isCurrentMonth && !isPending && (
             <p className="text-xs text-muted-foreground mt-0.5">
-              Hoy es {WEEK_DAYS[today.getDay()]}, {today.getDate()} de{" "}
-              {MONTHS_ES[today.getMonth()]} de {year}.
+              Hoy es {WEEK_DAYS[today.getDay()]}, {today.getDate()} de {MONTHS_ES[today.getMonth()]}{" "}
+              de {year}.
             </p>
           )}
           {isPending && (
-            <p className="text-xs text-muted-foreground mt-0.5 animate-pulse">
-              Cargando eventos…
-            </p>
+            <p className="text-xs text-muted-foreground mt-0.5 animate-pulse">Cargando eventos…</p>
           )}
         </div>
 
@@ -129,94 +121,83 @@ export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
           isPending && "opacity-40 pointer-events-none",
         )}
       >
-        {/* Cabeçalho dias da semana */}
-        <div role="row" className="grid grid-cols-7 mb-2">
-          {WEEK_DAYS.map((d) => (
-            <div
-              key={d}
-              role="columnheader"
-              className="text-center text-xs font-semibold text-muted-foreground py-1"
-            >
-              {d}
-            </div>
-          ))}
-        </div>
-
-        {/* Grid de dias */}
-        <div
-          role="grid"
+        <table
           aria-label={`${MONTHS_ES[month]} ${year}`}
           aria-busy={isPending} // ✅ acessibilidade
-          className="grid grid-cols-7 gap-y-1"
+          className="w-full border-collapse"
         >
-          {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`e-${i}`} role="gridcell" aria-hidden />
-          ))}
-
-          {Array.from({ length: daysInMonth }).map((_, i) => {
-            const day = i + 1;
-            const todayDay = isToday(day);
-            const eventDay = hasEvent(day);
-            const isClickable = !!onDayClick;
-
-            return (
-              <div
-                key={day}
-                role="gridcell"
-                className="flex flex-col items-center justify-center py-0.5"
-              >
-                <button
-                  type="button"
-                  disabled={!isClickable || isPending} // ✅
-                  onClick={() => onDayClick?.(day)}
-                  aria-label={`${day} de ${MONTHS_ES[month]}${todayDay ? ", hoy" : ""}${eventDay ? ", tiene eventos" : ", sin eventos"}`}
-                  className={cn(
-                    "flex size-8 items-center justify-center rounded-full text-sm font-medium transition-all",
-                    isClickable && !isPending && "cursor-pointer",
-                    isClickable &&
-                      !isPending &&
-                      eventDay &&
-                      "hover:ring-2 hover:ring-primary hover:ring-offset-1",
-                    isClickable && !isPending && !eventDay && "hover:bg-muted",
-                    todayDay && "bg-[#bfd142] text-black font-bold",
-                    !todayDay &&
-                      eventDay &&
-                      "bg-primary/10 text-primary font-semibold",
-                    !todayDay && !eventDay && "text-muted-foreground",
-                    (!isClickable || isPending) && "cursor-default",
-                  )}
+          <thead>
+            <tr>
+              {WEEK_DAYS.map((d) => (
+                <th
+                  key={d}
+                  scope="col"
+                  className="text-center text-xs font-semibold text-muted-foreground py-1"
                 >
-                  {day}
-                </button>
-                {eventDay && (
-                  <span
-                    className={cn(
-                      "mt-0.5 size-1.5 rounded-full",
-                      todayDay ? "bg-black/40" : "bg-primary",
+                  {d}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              {Array.from({ length: firstDay }, (_, i) => i).map((offset) => (
+                <td key={`empty-${offset}`} aria-hidden />
+              ))}
+
+              {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
+                const todayDay = isToday(day);
+                const eventDay = hasEvent(day);
+                const isClickable = !!onDayClick;
+
+                return (
+                  <td key={day} className="text-center py-0.5">
+                    <button
+                      type="button"
+                      disabled={!isClickable || isPending} // ✅
+                      onClick={() => onDayClick?.(day)}
+                      aria-label={`${day} de ${MONTHS_ES[month]}${todayDay ? ", hoy" : ""}${eventDay ? ", tiene eventos" : ", sin eventos"}`}
+                      className={cn(
+                        "flex size-8 items-center justify-center rounded-full text-sm font-medium transition-all",
+                        isClickable && !isPending && "cursor-pointer",
+                        isClickable &&
+                          !isPending &&
+                          eventDay &&
+                          "hover:ring-2 hover:ring-primary hover:ring-offset-1",
+                        isClickable && !isPending && !eventDay && "hover:bg-muted",
+                        todayDay && "bg-[#bfd142] text-black font-bold",
+                        !todayDay && eventDay && "bg-primary/10 text-primary font-semibold",
+                        !todayDay && !eventDay && "text-muted-foreground",
+                        (!isClickable || isPending) && "cursor-default",
+                      )}
+                    >
+                      {day}
+                    </button>
+                    {eventDay && (
+                      <span
+                        className={cn(
+                          "mt-0.5 size-1.5 rounded-full",
+                          todayDay ? "bg-black/40" : "bg-primary",
+                        )}
+                        aria-hidden
+                      />
                     )}
-                    aria-hidden
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
+                  </td>
+                );
+              })}
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       {/* Legenda */}
       <div className="mt-4 flex items-center justify-center gap-4 flex-wrap">
         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span
-            className="size-3 rounded-full bg-primary inline-block"
-            aria-hidden
-          />
+          <span className="size-3 rounded-full bg-primary inline-block" aria-hidden />
           Evento
         </span>
         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span
-            className="size-3 rounded-full bg-[#bfd142] inline-block"
-            aria-hidden
-          />
+          <span className="size-3 rounded-full bg-[#bfd142] inline-block" aria-hidden />
           Hoy
         </span>
       </div>

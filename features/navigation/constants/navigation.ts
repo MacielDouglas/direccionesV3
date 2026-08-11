@@ -1,15 +1,15 @@
+import type { Role } from "@/domains/member/types/role.types";
 import {
+  CalendarDays,
   CreditCard,
   MapPin,
-  User,
-  Shield,
   Plus,
-  Search,
   ScanSearch,
-  CalendarDays,
+  Search,
+  Shield,
+  User,
 } from "lucide-react";
 import type { ElementType } from "react";
-import type { Role } from "@/domains/member/types/role.types";
 
 export type NavigationItem = {
   id: string;
@@ -75,16 +75,11 @@ export const navigationMenu: NavigationItem[] = [
   },
 ];
 
-export function getNavigationByRole(
-  menu: NavigationItem[],
-  role: Role,
-): NavigationItem[] {
+export function getNavigationByRole(menu: NavigationItem[], role: Role): NavigationItem[] {
   return menu
     .filter((item) => !item.roles || item.roles.includes(role))
     .map((item) => ({
       ...item,
-      children: item.children?.filter(
-        (child) => !child.roles || child.roles.includes(role),
-      ),
+      children: item.children?.filter((child) => !child.roles || child.roles.includes(role)),
     }));
 }

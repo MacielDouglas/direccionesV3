@@ -1,5 +1,5 @@
-import type { NextConfig } from "next";
 import withPWA from "@ducanh2912/next-pwa";
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   turbopack: {},
@@ -7,11 +7,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
 
   experimental: {
-    optimizePackageImports: [
-      "lucide-react",
-      "radix-ui",
-      "@radix-ui/react-slot",
-    ],
+    optimizePackageImports: ["lucide-react", "radix-ui", "@radix-ui/react-slot"],
   },
 
   images: {
@@ -50,8 +46,7 @@ export default withPWA({
     runtimeCaching: [
       {
         // ✅ Imagens do R2 — cache local 30 dias, sem re-download
-        urlPattern:
-          /^https:\/\/pub-20ea17ad5d694dbc94202efa1ea340ff\.r2\.dev\/.*/i,
+        urlPattern: /^https:\/\/pub-20ea17ad5d694dbc94202efa1ea340ff\.r2\.dev\/.*/i,
         handler: "CacheFirst",
         options: {
           cacheName: "r2-images",

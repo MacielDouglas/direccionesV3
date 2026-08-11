@@ -1,8 +1,8 @@
 "use client";
 
-import { MapPin, CheckCircle2 } from "lucide-react";
-import { AvailableAddress } from "../types/card.types";
 import { cn } from "@/lib/utils";
+import { CheckCircle2, MapPin } from "lucide-react";
+import type { AvailableAddress } from "../types/card.types";
 
 interface Props {
   addresses: AvailableAddress[];
@@ -11,18 +11,9 @@ interface Props {
   error?: string;
 }
 
-export function AddressSelector({
-  addresses,
-  selected,
-  onChange,
-  error,
-}: Props) {
+export function AddressSelector({ addresses, selected, onChange, error }: Props) {
   const toggle = (id: string) => {
-    onChange(
-      selected.includes(id)
-        ? selected.filter((s) => s !== id)
-        : [...selected, id],
-    );
+    onChange(selected.includes(id) ? selected.filter((s) => s !== id) : [...selected, id]);
   };
 
   if (addresses.length === 0) {
@@ -42,18 +33,14 @@ export function AddressSelector({
         </span>
       </legend>
 
-      <ul
-        role="listbox"
-        aria-multiselectable="true"
-        aria-label="Selecione os endereços"
-        className="flex flex-col gap-2"
-      >
+      <ul aria-label="Selecione os endereços" className="flex flex-col gap-2">
         {addresses.map((addr) => {
           const isSelected = selected.includes(addr.id);
           return (
-            <li key={addr.id} role="option" aria-selected={isSelected}>
+            <li key={addr.id}>
               <button
                 type="button"
+                aria-pressed={isSelected}
                 onClick={() => toggle(addr.id)}
                 className={cn(
                   "w-full text-left rounded-lg border p-3 transition-colors",
@@ -74,9 +61,7 @@ export function AddressSelector({
                 <span className="flex flex-col gap-0.5 min-w-0">
                   <span className="flex items-center gap-1.5 flex-wrap">
                     {addr.businessName && (
-                      <span className="font-medium text-sm truncate">
-                        {addr.businessName}
-                      </span>
+                      <span className="font-medium text-sm truncate">{addr.businessName}</span>
                     )}
                     <span className="text-xs text-muted-foreground uppercase tracking-wide">
                       {addr.type}
@@ -85,8 +70,7 @@ export function AddressSelector({
                   <span className="text-sm text-muted-foreground flex items-center gap-1">
                     <MapPin className="size-3 shrink-0" aria-hidden="true" />
                     <span className="truncate">
-                      {addr.street}, {addr.number} — {addr.neighborhood},{" "}
-                      {addr.city}
+                      {addr.street}, {addr.number} — {addr.neighborhood}, {addr.city}
                     </span>
                   </span>
                 </span>

@@ -1,17 +1,15 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { organization } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
-import { prisma } from "./prisma";
+import { organization } from "better-auth/plugins";
 import { ac, admin, member, owner } from "./auth/permissions";
+import { prisma } from "./prisma";
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
 if (!googleClientId || !googleClientSecret) {
-  throw new Error(
-    "[auth] Faltan variables de entorno: GOOGLE_CLIENT_ID y/o GOOGLE_CLIENT_SECRET",
-  );
+  throw new Error("[auth] Faltan variables de entorno: GOOGLE_CLIENT_ID y/o GOOGLE_CLIENT_SECRET");
 }
 
 export const auth = betterAuth({
@@ -24,9 +22,7 @@ export const auth = betterAuth({
     disableSessionRefresh: true,
   },
 
-  trustedOrigins: process.env.NEXT_PUBLIC_URL
-    ? [process.env.NEXT_PUBLIC_URL]
-    : [],
+  trustedOrigins: process.env.NEXT_PUBLIC_URL ? [process.env.NEXT_PUBLIC_URL] : [],
 
   socialProviders: {
     google: {

@@ -1,8 +1,5 @@
 import { redirect } from "next/navigation";
-import {
-  getCardWithAddresses,
-  getAvailableAddresses,
-} from "../../application/card.service";
+import { getAvailableAddresses, getCardWithAddresses } from "../../application/card.service";
 import { CardEditClient } from "../components/CardEditClient";
 
 interface Props {
@@ -11,11 +8,7 @@ interface Props {
   organizationSlug: string;
 }
 
-export async function CardEditScreen({
-  cardId,
-  organizationId,
-  organizationSlug,
-}: Props) {
+export async function CardEditScreen({ cardId, organizationId, organizationSlug }: Props) {
   const [card, available] = await Promise.all([
     getCardWithAddresses(cardId, organizationId),
     getAvailableAddresses(organizationId),

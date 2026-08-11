@@ -1,10 +1,5 @@
 "use client";
 
-import { useTransition } from "react";
-import { Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { deleteAgendaEventAction } from "../../application/agenda.action";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +11,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+import { useTransition } from "react";
+import { toast } from "sonner";
+import { deleteAgendaEventAction } from "../../application/agenda.action";
 
 interface Props {
   eventId: string;
@@ -53,9 +53,7 @@ export function DeleteAgendaEventButton({ eventId, organizationSlug }: Props) {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>¿Eliminar este evento?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Esta acción no se puede deshacer.
-          </AlertDialogDescription>
+          <AlertDialogDescription>Esta acción no se puede deshacer.</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>

@@ -7,10 +7,12 @@
     "build": "next build",
     "start": "next start",
     "postinstall": "prisma generate",
-    "lint": "eslint"
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "tsc --noEmit"
   },
   "engines": {
-    "node": "22.x"
+    "node": ">=22"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.993.0",
@@ -44,13 +46,12 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.16.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.6",
     "prisma": "^7.3.0",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",

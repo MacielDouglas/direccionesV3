@@ -29,11 +29,8 @@ export default function InvitationsLoading() {
       {/* Histórico */}
       <section className="space-y-3">
         <Skeleton className="h-5 w-24" />
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div
-            key={i}
-            className="rounded-xl border bg-card px-4 py-3 space-y-2"
-          >
+        {Array.from({ length: 3 }, (_, i) => i + 1).map((item) => (
+          <div key={`skeleton-${item}`} className="rounded-xl border bg-card px-4 py-3 space-y-2">
             <div className="flex items-center gap-2">
               <Skeleton className="h-4 w-4 rounded-full" />
               <Skeleton className="h-4 w-20" />

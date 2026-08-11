@@ -1,5 +1,5 @@
-import { MapPinPlus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MapPinPlus } from "lucide-react";
 
 export default function NewAddressLoading() {
   return (
@@ -11,10 +11,7 @@ export default function NewAddressLoading() {
       {/* ── Header ── */}
       <header className="space-y-6 border-b p-5 md:p-10">
         <div className="flex items-center gap-4">
-          <MapPinPlus
-            className="h-10 w-10 text-brand opacity-30"
-            aria-hidden="true"
-          />
+          <MapPinPlus className="h-10 w-10 text-brand opacity-30" aria-hidden="true" />
           <Skeleton className="h-9 w-52" />
         </div>
         <div className="space-y-2">
@@ -24,23 +21,17 @@ export default function NewAddressLoading() {
       </header>
 
       {/* ── Tipo de dirección ── */}
-      <section
-        aria-label="Cargando selector de tipo"
-        className="px-6 pt-5 space-y-3"
-      >
+      <section aria-label="Cargando selector de tipo" className="px-6 pt-5 space-y-3">
         <Skeleton className="h-5 w-36" />
         <div className="flex gap-3 overflow-hidden">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-16 shrink-0 rounded-xl" />
+          {Array.from({ length: 5 }, (_, i) => i + 1).map((item) => (
+            <Skeleton key={`skeleton-${item}`} className="h-16 w-16 shrink-0 rounded-xl" />
           ))}
         </div>
       </section>
 
       {/* ── Campos del formulario ── */}
-      <section
-        aria-label="Cargando campos de dirección"
-        className="px-6 space-y-6 py-4"
-      >
+      <section aria-label="Cargando campos de dirección" className="px-6 space-y-6 py-4">
         <div className="flex items-center gap-2">
           <Skeleton className="h-7 w-7 rounded" />
           <Skeleton className="h-6 w-52" />
@@ -105,10 +96,7 @@ export default function NewAddressLoading() {
       </section>
 
       {/* ── Imagen ── */}
-      <section
-        aria-label="Cargando campo de imagen"
-        className="px-6 py-4 space-y-3"
-      >
+      <section aria-label="Cargando campo de imagen" className="px-6 py-4 space-y-3">
         <Skeleton className="h-5 w-36" />
         <Skeleton className="aspect-square w-full rounded-2xl" />
       </section>

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
   id: string;
@@ -14,14 +14,7 @@ interface Props {
   disabled?: boolean;
 }
 
-export function ComboboxField({
-  id,
-  value,
-  onChange,
-  options,
-  placeholder,
-  disabled,
-}: Props) {
+export function ComboboxField({ id, value, onChange, options, placeholder, disabled }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState(value);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -34,10 +27,7 @@ export function ComboboxField({
   // Fecha ao clicar fora
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     }
@@ -83,29 +73,29 @@ export function ComboboxField({
       {/* Dropdown de sugestões */}
       {open && filtered.length > 0 && (
         <ul
-          role="listbox"
+          aria-label="Opciones guardadas"
           className={cn(
             "absolute z-50 mt-1 w-full rounded-lg border bg-popover shadow-md",
             "max-h-48 overflow-y-auto py-1",
           )}
         >
           {filtered.map((opt) => (
-            <li
-              key={opt}
-              role="option"
-              aria-selected={opt === value}
-              onMouseDown={(e) => {
-                e.preventDefault(); // evita blur antes do click
-                onChange(opt);
-                setQuery(opt);
-                setOpen(false);
-              }}
-              className={cn(
-                "px-3 py-2 text-sm cursor-pointer hover:bg-muted transition-colors",
-                opt === value && "bg-primary/10 text-primary font-medium",
-              )}
-            >
-              {opt}
+            <li key={opt} className="list-none">
+              <button
+                type="button"
+                aria-pressed={opt === value}
+                onClick={() => {
+                  onChange(opt);
+                  setQuery(opt);
+                  setOpen(false);
+                }}
+                className={cn(
+                  "block w-full px-3 py-2 text-left text-sm cursor-pointer hover:bg-muted transition-colors",
+                  opt === value && "bg-primary/10 text-primary font-medium",
+                )}
+              >
+                {opt}
+              </button>
             </li>
           ))}
         </ul>

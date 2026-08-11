@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { FileDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FileDown, Loader2 } from "lucide-react";
+import { useState } from "react";
 import type { AgendaEventItem } from "../types/agenda.types";
 
 const MONTHS_ES = [
@@ -20,15 +20,7 @@ const MONTHS_ES = [
   "Diciembre",
 ];
 
-const WEEK_DAYS_ES = [
-  "Domingo",
-  "Lunes",
-  "Martes",
-  "Miércoles",
-  "Jueves",
-  "Viernes",
-  "Sábado",
-];
+const WEEK_DAYS_ES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
 const DAY_COLORS: Record<number, [number, number, number]> = {
   0: [255, 220, 210],
@@ -51,10 +43,7 @@ const DAY_HEADER_COLORS: Record<number, [number, number, number]> = {
 };
 
 // Fonte e espaçamento por número de eventos na célula
-const FONT_SCALE: Record<
-  number,
-  { fontSize: number; lineH: number; sepH: number }
-> = {
+const FONT_SCALE: Record<number, { fontSize: number; lineH: number; sepH: number }> = {
   1: { fontSize: 6.2, lineH: 3.5, sepH: 4.5 },
   2: { fontSize: 5.6, lineH: 3.0, sepH: 3.0 },
   3: { fontSize: 5.0, lineH: 2.7, sepH: 2.5 },
@@ -73,11 +62,7 @@ interface Props {
   year: number;
 }
 
-function buildCalendarMatrix(
-  events: AgendaEventItem[],
-  month: number,
-  year: number,
-) {
+function buildCalendarMatrix(events: AgendaEventItem[], month: number, year: number) {
   const lastDay = new Date(year, month + 1, 0);
   const weeks: Record<number, Record<number, AgendaEventItem[]>> = {};
   let currentWeek = 0;
@@ -91,9 +76,7 @@ function buildCalendarMatrix(
     if (!weeks[currentWeek]) weeks[currentWeek] = {};
     if (!weeks[currentWeek][weekday]) weeks[currentWeek][weekday] = [];
 
-    const dayEvents = events.filter(
-      (e) => new Date(e.date).toDateString() === date.toDateString(),
-    );
+    const dayEvents = events.filter((e) => new Date(e.date).toDateString() === date.toDateString());
     weeks[currentWeek][weekday].push(...dayEvents);
   }
 
@@ -168,9 +151,9 @@ export function AgendaPdfButton({ events, monthLabel, month, year }: Props) {
       }
 
       // ── Dias ativos ────────────────────────
-      const activeWeekdays = Array.from(
-        new Set(events.map((e) => new Date(e.date).getDay())),
-      ).sort((a, b) => a - b);
+      const activeWeekdays = Array.from(new Set(events.map((e) => new Date(e.date).getDay()))).sort(
+        (a, b) => a - b,
+      );
 
       const cellH = (pageH - startY - margin) / activeWeekdays.length;
 
@@ -204,10 +187,7 @@ export function AgendaPdfButton({ events, monthLabel, month, year }: Props) {
 
           // ── Calcula escala dinâmica ─────────────────────────────────
           // Total de linhas de texto que precisam caber
-          const totalLines = dayEvents.reduce(
-            (acc, e) => acc + countEventLines(e),
-            0,
-          );
+          const totalLines = dayEvents.reduce((acc, e) => acc + countEventLines(e), 0);
           // Separadores entre eventos
           const totalSeps = dayEvents.length - 1;
 
@@ -291,12 +271,9 @@ export function AgendaPdfButton({ events, monthLabel, month, year }: Props) {
         doc.setPage(i);
         doc.setFontSize(7);
         doc.setTextColor(150, 150, 150);
-        doc.text(
-          `Predicación ${monthLabel} — Página ${i} de ${totalPages}`,
-          pageW / 2,
-          pageH - 5,
-          { align: "center" },
-        );
+        doc.text(`Predicación ${monthLabel} — Página ${i} de ${totalPages}`, pageW / 2, pageH - 5, {
+          align: "center",
+        });
       }
 
       doc.save(`Predicacion_${MONTHS_ES[month]}_${year}.pdf`);

@@ -2,12 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-type GeolocationState =
-  | "idle"
-  | "granted"
-  | "denied"
-  | "prompt"
-  | "unsupported";
+type GeolocationState = "idle" | "granted" | "denied" | "prompt" | "unsupported";
 
 function getInitialState(): GeolocationState {
   if (typeof window === "undefined") return "idle";
@@ -19,10 +14,8 @@ export function useGeolocation() {
   const [state, setState] = useState<GeolocationState>(getInitialState);
 
   useEffect(() => {
-    // Se já detectou unsupported no lazy init, não precisa fazer nada
-    if (state === "unsupported") return;
-
     // Permissions API indisponível (raro em browsers modernos):
+    // o estado inicial já vem de getInitialState (incl. "unsupported" sem geolocation);
     // não chama setState no body — deixa em "idle" e depende do requestPermission
     if (!navigator.permissions) return;
 
@@ -49,7 +42,6 @@ export function useGeolocation() {
         permissionStatus.onchange = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const requestPermission = (

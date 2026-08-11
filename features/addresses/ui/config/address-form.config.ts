@@ -13,6 +13,7 @@ export const ADDRESS_FORMS_OPTIONS = [
   },
   {
     kind: "group",
+    id: "group-number-neighborhood",
     fields: [
       {
         kind: "text",
@@ -44,6 +45,7 @@ export const ADDRESS_FORMS_OPTIONS = [
   },
   {
     kind: "group",
+    id: "group-active-confirmed",
     fields: [
       {
         kind: "switch",

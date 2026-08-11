@@ -1,7 +1,4 @@
-import {
-  getNextCardNumber,
-  getAvailableAddresses,
-} from "../../application/card.service";
+import { getAvailableAddresses, getNextCardNumber } from "../../application/card.service";
 import { CardCreateClient } from "../components/CardCreateClient";
 
 interface Props {
@@ -9,10 +6,7 @@ interface Props {
   organizationSlug: string;
 }
 
-export async function CardCreateScreen({
-  organizationId,
-  organizationSlug,
-}: Props) {
+export async function CardCreateScreen({ organizationId, organizationSlug }: Props) {
   const [nextNumber, availableAddresses] = await Promise.all([
     getNextCardNumber(organizationId),
     getAvailableAddresses(organizationId),

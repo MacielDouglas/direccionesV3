@@ -1,8 +1,8 @@
-import Image from "next/image";
-import Link from "next/link";
-import { MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Address } from "@prisma/client";
+import { MapPin } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { AddressTypeIcon } from "./AddressTypeIcon";
 // import { AddressTypeIcon } from "./AddressTypeIcon";
 
@@ -16,32 +16,24 @@ function StatusBadge({
   confirmed: boolean;
 }) {
   return (
-    <div
-      role="group"
-      aria-label="Estado de la dirección"
-      className="flex flex-wrap gap-2"
-    >
-      <span
+    <ul className="flex flex-wrap gap-2" aria-label="Estado de la dirección">
+      <li
         className={cn(
           "rounded-full px-2 py-0.5 text-xs font-semibold",
-          confirmed
-            ? "bg-blue-100/20 text-blue-300"
-            : "bg-red-100/20 text-red-400",
+          confirmed ? "bg-blue-100/20 text-blue-300" : "bg-red-100/20 text-red-400",
         )}
       >
         {confirmed ? "✓ Confirmada" : "✗ No confirmada"}
-      </span>
-      <span
+      </li>
+      <li
         className={cn(
           "rounded-full px-2 py-0.5 text-xs font-semibold",
-          active
-            ? "bg-blue-100/20 text-blue-300"
-            : "bg-red-100/20 text-red-400",
+          active ? "bg-blue-100/20 text-blue-300" : "bg-red-100/20 text-red-400",
         )}
       >
         {active ? "✓ Tarjeta activa" : "✗ Tarjeta desactivada"}
-      </span>
-    </div>
+      </li>
+    </ul>
   );
 }
 
@@ -51,11 +43,7 @@ interface Props {
   priority?: boolean;
 }
 
-export function AddressCard({
-  address,
-  organizationSlug,
-  priority = false,
-}: Props) {
+export function AddressCard({ address, organizationSlug, priority = false }: Props) {
   const label = `${address.businessName ?? address.street}, ${address.number} — ${address.neighborhood}, ${address.city}`;
 
   return (
@@ -100,12 +88,9 @@ export function AddressCard({
           )}
           <p className="flex items-center gap-1 truncate text-base font-light text-white/80 sm:text-sm">
             <MapPin className="size-3.5 shrink-0" aria-hidden />
-            {address.street}, {address.number} — {address.neighborhood},{" "}
-            {address.city}
+            {address.street}, {address.number} — {address.neighborhood}, {address.city}
           </p>
-          {address.info && (
-            <p className="truncate text-xs text-white/60">{address.info}</p>
-          )}
+          {address.info && <p className="truncate text-xs text-white/60">{address.info}</p>}
           <StatusBadge active={address.active} confirmed={address.confirmed} />
         </div>
       </article>

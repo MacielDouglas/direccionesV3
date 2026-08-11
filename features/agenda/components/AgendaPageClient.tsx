@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
+import type { AgendaEventItem } from "../types/agenda.types";
 import { AgendaCalendar } from "./AgendaCalendat";
 import { AgendaEventList } from "./AgendaEventList";
-import type { AgendaEventItem } from "../types/agenda.types";
 import { AgendaNoEventModal } from "./ui/AgendaNoEventModal";
 
 const MONTHS_ES = [
@@ -20,15 +20,7 @@ const MONTHS_ES = [
   "Noviembre",
   "Diciembre",
 ];
-const WEEK_DAYS_ES = [
-  "Domingo",
-  "Lunes",
-  "Martes",
-  "Miércoles",
-  "Jueves",
-  "Viernes",
-  "Sábado",
-];
+const WEEK_DAYS_ES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
 interface Props {
   events: AgendaEventItem[];
@@ -57,11 +49,7 @@ export function AgendaPageClient({
       // Encontra evento nesse dia
       const match = events.find((e) => {
         const d = new Date(e.date);
-        return (
-          d.getFullYear() === year &&
-          d.getMonth() === month &&
-          d.getDate() === day
-        );
+        return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day;
       });
 
       if (match) {
@@ -81,12 +69,7 @@ export function AgendaPageClient({
 
   return (
     <>
-      <AgendaCalendar
-        events={events}
-        year={year}
-        month={month}
-        onDayClick={handleDayClick}
-      />
+      <AgendaCalendar events={events} year={year} month={month} onDayClick={handleDayClick} />
 
       <AgendaEventList
         events={events}

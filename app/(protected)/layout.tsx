@@ -19,10 +19,7 @@ export default async function ProtectedLayout({
         role={data.activeMember?.role ?? null}
         organization={data.activeOrganization}
       />
-      <main
-        id="main-content"
-        className="flex-1 min-h-0 flex flex-col overflow-hidden"
-      >
+      <main id="main-content" className="flex-1 min-h-0 flex flex-col overflow-hidden">
         {children}
       </main>
       <Footer organization={data.activeOrganization} />

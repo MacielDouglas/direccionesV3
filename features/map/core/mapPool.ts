@@ -62,7 +62,7 @@ class MapPool {
 
   destroy() {
     if (this.gcTimer) clearTimeout(this.gcTimer);
-    this.entries.forEach((e) => e.map.remove());
+    for (const entry of this.entries) entry.map.remove();
     this.entries = [];
     this.initialized = false;
   }

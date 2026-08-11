@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,16 +15,13 @@ const inputStyle =
   "focus-visible:ring-0 focus-visible:outline-none focus-visible:border-b-brand " +
   "transition-colors duration-150 bg-white pl-2";
 
-const comboboxInputStyle = inputStyle + " pr-7";
+const comboboxInputStyle = `${inputStyle} pr-7`;
 interface Props {
   existingNeighborhoods: string[];
   existingCities: string[];
 }
 
-export default function AddressFormFields({
-  existingNeighborhoods,
-  existingCities,
-}: Props) {
+export default function AddressFormFields({ existingNeighborhoods, existingCities }: Props) {
   const { control, watch, setValue } = useFormContext<AddressFormData>();
   const addressType = watch("addressType");
   const {
@@ -45,18 +36,14 @@ export default function AddressFormFields({
           Información de la dirección
         </h2>
         <p className="text-sm text-muted-foreground">
-          Por favor enviar información como: calle, número de casa, ciudad,
-          barrio, información adicional, etc.
+          Por favor enviar información como: calle, número de casa, ciudad, barrio, información
+          adicional, etc.
         </p>
       </header>
 
       <div className="space-y-6">
-        {ADDRESS_FORMS_OPTIONS.map((item, index) => {
-          if (
-            item.kind === "text" &&
-            item.name === "businessName" &&
-            addressType === "House"
-          )
+        {ADDRESS_FORMS_OPTIONS.map((item) => {
+          if (item.kind === "text" && item.name === "businessName" && addressType === "House")
             return null;
 
           // ✅ SmartCombobox para neighborhood
@@ -72,9 +59,7 @@ export default function AddressFormFields({
                       key={`neighborhood-${submitCount}`}
                       label={item.label}
                       value={watch("neighborhood") ?? ""}
-                      onChange={(val) =>
-                        setValue("neighborhood", val, { shouldValidate: true })
-                      }
+                      onChange={(val) => setValue("neighborhood", val, { shouldValidate: true })}
                       existing={existingNeighborhoods}
                       placeholder={item.placeholder}
                       error={fieldState.error?.message}
@@ -100,9 +85,7 @@ export default function AddressFormFields({
                       key={`city-${submitCount}`}
                       label={item.label}
                       value={watch("city") ?? ""}
-                      onChange={(val) =>
-                        setValue("city", val, { shouldValidate: true })
-                      }
+                      onChange={(val) => setValue("city", val, { shouldValidate: true })}
                       existing={existingCities}
                       placeholder={item.placeholder}
                       error={fieldState.error?.message}
@@ -116,15 +99,11 @@ export default function AddressFormFields({
           }
 
           if (item.kind === "group") {
-            const hasSwitch =
-              item.fields?.some((f) => f.kind === "switch") ?? false;
+            const hasSwitch = item.fields?.some((f) => f.kind === "switch") ?? false;
 
             if (hasSwitch) {
               return (
-                <div
-                  key={index}
-                  className="flex items-center justify-between gap-5"
-                >
+                <div key={item.id} className="flex items-center justify-between gap-5">
                   {item.fields?.map((sub) => (
                     <FormField
                       key={sub.name}
@@ -149,7 +128,7 @@ export default function AddressFormFields({
 
             // ✅ Grupo com inputs — trata neighborhood especialmente
             return (
-              <div className="flex gap-3" key={index}>
+              <div className="flex gap-3" key={item.id}>
                 {item.fields?.map((sub) => {
                   // ✅ neighborhood dentro do grupo → SmartCombobox
                   if (sub.name === "neighborhood") {

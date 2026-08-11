@@ -24,18 +24,14 @@ export default function Footer({ organization }: FooterProps) {
               aria-label="Ir al inicio de Direcciones"
               className="inline-flex items-center gap-1 tracking-widest text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             >
-              <span className="text-lg font-light uppercase md:text-xl">
-                Direcci
-              </span>
+              <span className="text-lg font-light uppercase md:text-xl">Direcci</span>
               <Compass className="size-5 text-brand" aria-hidden="true" />
-              <span className="text-lg font-light uppercase md:text-xl">
-                nes
-              </span>
+              <span className="text-lg font-light uppercase md:text-xl">nes</span>
             </Link>
 
             <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-gray-400 lg:mx-0">
-              Un lugar para guardar, editar y almacenar direcciones favoritas
-              para una fácil referencia.
+              Un lugar para guardar, editar y almacenar direcciones favoritas para una fácil
+              referencia.
             </p>
           </div>
 

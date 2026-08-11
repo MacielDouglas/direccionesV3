@@ -1,15 +1,12 @@
 "use client";
 
-import {
-  getNavigationByRole,
-  navigationMenu,
-} from "@/features/navigation/constants/navigation";
-import { useEffect, useRef, useState } from "react";
+import type { Role } from "@/domains/member/types/role.types";
+import { getNavigationByRole, navigationMenu } from "@/features/navigation/constants/navigation";
+import { Home, Menu, X } from "lucide-react";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 import LogoutButton from "../LogoutButton";
 import MenuItem from "../menu/MenuItem";
-import type { Role } from "@/domains/member/types/role.types";
-import Link from "next/link";
-import { Home, Menu, X } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface MenuMobileProps {
@@ -20,11 +17,11 @@ interface MenuMobileProps {
 export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const drawerRef = useRef<HTMLElement>(null);
+  const drawerRef = useRef<HTMLDialogElement>(null);
 
   const navigation = role ? getNavigationByRole(navigationMenu, role) : [];
-  const closeMenu = () => setIsMenuOpen(false);
-  const toggleMenu = () => setIsMenuOpen((p) => !p);
+  const closeMenu = useCallback(() => setIsMenuOpen(false), []);
+  const toggleMenu = useCallback(() => setIsMenuOpen((p) => !p), []);
 
   // inert via DOM
   useEffect(() => {
@@ -84,7 +81,7 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
       window.scrollTo(0, scrollY);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isMenuOpen]);
+  }, [isMenuOpen, closeMenu]);
 
   return (
     <>
@@ -103,7 +100,9 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
       </Button>
 
       {/* Overlay */}
-      <div
+      <button
+        type="button"
+        tabIndex={-1}
         aria-hidden="true"
         onClick={closeMenu}
         className={`
@@ -115,17 +114,17 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
       />
 
       {/* Drawer */}
-      <aside
+      <dialog
         ref={drawerRef}
         id="mobile-menu"
-        role="dialog"
         aria-modal="true"
         aria-label="Menú de navegación"
+        open
         className={`
-          fixed inset-y-0 right-0 z-50
-          flex flex-col
+          fixed inset-y-0 right-0 left-auto z-50
+          m-0 flex max-h-none max-w-none flex-col
           w-[min(100vw,22rem)]
-          bg-[#0c232a] text-slate-100
+          border-0 bg-[#0c232a] p-0 text-slate-100
           shadow-2xl
           transition-transform duration-300 ease-out
           will-change-transform
@@ -140,9 +139,7 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 pb-3 pt-4">
           <div>
-            <p className="text-xs font-light uppercase tracking-widest text-slate-400">
-              Menú
-            </p>
+            <p className="text-xs font-light uppercase tracking-widest text-slate-400">Menú</p>
             <h2 className="mt-0.5 text-xl font-semibold">Navegación</h2>
           </div>
 
@@ -163,10 +160,7 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
         <div className="mx-5 h-px bg-white/10" aria-hidden="true" />
 
         {/* Nav */}
-        <nav
-          aria-label="Menú principal"
-          className="flex-1 overflow-y-auto overscroll-contain py-2"
-        >
+        <nav aria-label="Menú principal" className="flex-1 overflow-y-auto overscroll-contain py-2">
           <ul className="flex flex-col gap-1 px-3">
             <li>
               <Link
@@ -216,7 +210,7 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
         <div className="px-5 py-4">
           <LogoutButton />
         </div>
-      </aside>
+      </dialog>
     </>
   );
 }

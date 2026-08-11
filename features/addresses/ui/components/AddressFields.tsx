@@ -1,17 +1,14 @@
-import AddressTypeSelector from "./AddressTypeSelector";
 import AddressFormFields from "./AddressFormFields";
 import AddressGpsFields from "./AddressGpsFields";
 import AddressImageField from "./AddressImageFields";
+import AddressTypeSelector from "./AddressTypeSelector";
 
 interface Props {
   existingNeighborhoods: string[];
   existingCities: string[];
 }
 
-export default function AddressFields({
-  existingNeighborhoods,
-  existingCities,
-}: Props) {
+export default function AddressFields({ existingNeighborhoods, existingCities }: Props) {
   return (
     <>
       <div className="px-5 pt-5">

@@ -23,8 +23,7 @@ export default function MembersTableAction({
       await removeMemberManually(organizationId, memberIdOrEmail);
       toast.success("Miembro eliminado correctamente.");
       router.refresh();
-    } catch (error) {
-      console.error("[MembersTableAction]", error);
+    } catch {
       toast.error("Error al eliminar el miembro. Intente nuevamente.");
     } finally {
       setIsLoading(false);

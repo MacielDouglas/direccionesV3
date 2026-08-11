@@ -6,6 +6,6 @@ export async function deleteImage(key: string): Promise<void> {
   });
 
   if (!res.ok) {
-    console.error(`[deleteImage] Error al eliminar imagen: ${res.status}`);
+    throw new Error(`[deleteImage] Error al eliminar imagen: ${res.status}`);
   }
 }

@@ -1,17 +1,8 @@
 "use client";
 
-import { useForm, useWatch, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition, useState } from "react";
-import { toast } from "sonner";
-import { CalendarPlus } from "lucide-react";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { ComboboxField } from "./ui/ComboboxField";
 import {
   Select,
   SelectContent,
@@ -19,8 +10,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { AgendaFieldOptions, AgendaMember } from "../types/agenda.types";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CalendarPlus } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 import { createAgendaEventAction } from "../application/agenda.action";
+import type { AgendaFieldOptions, AgendaMember } from "../types/agenda.types";
+import { ComboboxField } from "./ui/ComboboxField";
 
 // ─── Schema local do form ─────────────────────────────────────────────────────
 
@@ -40,7 +40,7 @@ type FormInput = z.infer<typeof formSchema>;
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getSameWeekdayDates(dateStr: string): string[] {
-  const base = new Date(dateStr + "T12:00:00");
+  const base = new Date(`${dateStr}T12:00:00`);
   const weekday = base.getDay();
   const year = base.getFullYear();
   const month = base.getMonth();
@@ -58,22 +58,14 @@ function getSameWeekdayDates(dateStr: string): string[] {
 }
 
 function formatDateLabel(dateStr: string) {
-  return new Date(dateStr + "T12:00:00").toLocaleDateString("es-419", {
+  return new Date(`${dateStr}T12:00:00`).toLocaleDateString("es-419", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
   });
 }
 
-const WEEK_DAYS_ES = [
-  "domingos",
-  "lunes",
-  "martes",
-  "miércoles",
-  "jueves",
-  "viernes",
-  "sábados",
-];
+const WEEK_DAYS_ES = ["domingos", "lunes", "martes", "miércoles", "jueves", "viernes", "sábados"];
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -93,9 +85,7 @@ export function AgendaAdminForm({
   fieldOptions,
 }: Props) {
   const [isPending, startTransition] = useTransition();
-  const [conductorPerDate, setConductorPerDate] = useState<
-    Record<string, string | null>
-  >({});
+  const [conductorPerDate, setConductorPerDate] = useState<Record<string, string | null>>({});
 
   const {
     register,
@@ -121,17 +111,13 @@ export function AgendaAdminForm({
   const recurring = useWatch({ control, name: "recurring" });
   const selectedDate = useWatch({ control, name: "date" });
   const weekdayLabel = selectedDate
-    ? WEEK_DAYS_ES[new Date(selectedDate + "T12:00:00").getDay()]
+    ? WEEK_DAYS_ES[new Date(`${selectedDate}T12:00:00`).getDay()]
     : null;
-  const recurringDates =
-    recurring && selectedDate ? getSameWeekdayDates(selectedDate) : [];
+  const recurringDates = recurring && selectedDate ? getSameWeekdayDates(selectedDate) : [];
 
   const onSubmit = (data: FormInput) => {
     startTransition(async () => {
-      const dates =
-        data.recurring && data.date
-          ? getSameWeekdayDates(data.date)
-          : [data.date];
+      const dates = data.recurring && data.date ? getSameWeekdayDates(data.date) : [data.date];
 
       const results = await Promise.all(
         dates.map((d) =>
@@ -172,19 +158,12 @@ export function AgendaAdminForm({
       aria-labelledby="admin-form-heading"
       className="rounded-2xl border bg-card p-4 shadow-sm"
     >
-      <h2
-        id="admin-form-heading"
-        className="flex items-center gap-2 text-base font-semibold mb-4"
-      >
+      <h2 id="admin-form-heading" className="flex items-center gap-2 text-base font-semibold mb-4">
         <CalendarPlus className="size-5 text-primary" aria-hidden />
         Nuevo evento
       </h2>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        noValidate
-        className="flex flex-col gap-4"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         {/* Fecha + Hora */}
         <div className="flex-wrap md:grid md:grid-cols-2 gap-3 ">
           <div className="flex flex-col gap-1.5">
@@ -233,15 +212,10 @@ export function AgendaAdminForm({
         {!recurring ? (
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="event-conductor">
-              Conductor{" "}
-              <span className="text-muted-foreground font-normal">
-                (opcional)
-              </span>
+              Conductor <span className="text-muted-foreground font-normal">(opcional)</span>
             </Label>
             <Select
-              onValueChange={(val) =>
-                setValue("conductorId", val === "none" ? null : val)
-              }
+              onValueChange={(val) => setValue("conductorId", val === "none" ? null : val)}
               defaultValue="none"
             >
               <SelectTrigger id="event-conductor">
@@ -261,9 +235,7 @@ export function AgendaAdminForm({
           <div className="flex flex-col gap-2">
             <Label>
               Conductor por fecha{" "}
-              <span className="text-muted-foreground font-normal">
-                (opcional)
-              </span>
+              <span className="text-muted-foreground font-normal">(opcional)</span>
             </Label>
             <div className="flex flex-col gap-2 rounded-lg border bg-muted/20 p-3">
               {recurringDates.map((dateStr) => (
@@ -301,10 +273,7 @@ export function AgendaAdminForm({
         {/* Saída */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="event-saida">
-            Salida{" "}
-            <span className="text-muted-foreground font-normal">
-              (opcional)
-            </span>
+            Salida <span className="text-muted-foreground font-normal">(opcional)</span>
           </Label>
           <Controller
             control={control}
@@ -324,10 +293,7 @@ export function AgendaAdminForm({
         {/* Tipo */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="event-tipo">
-            Tipo{" "}
-            <span className="text-muted-foreground font-normal">
-              (opcional)
-            </span>
+            Tipo <span className="text-muted-foreground font-normal">(opcional)</span>
           </Label>
           <Controller
             control={control}
@@ -347,10 +313,7 @@ export function AgendaAdminForm({
         {/* Território */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="event-territorio">
-            Territorio{" "}
-            <span className="text-muted-foreground font-normal">
-              (opcional)
-            </span>
+            Territorio <span className="text-muted-foreground font-normal">(opcional)</span>
           </Label>
           <Controller
             control={control}
@@ -370,10 +333,7 @@ export function AgendaAdminForm({
         {/* Info */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="event-info">
-            Información{" "}
-            <span className="text-muted-foreground font-normal">
-              (opcional)
-            </span>
+            Información <span className="text-muted-foreground font-normal">(opcional)</span>
           </Label>
           <Textarea
             id="event-info"

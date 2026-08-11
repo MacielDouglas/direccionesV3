@@ -43,9 +43,7 @@ export async function deleteAccountAction() {
   }
 
   const orgIds = memberships.map((m) => m.organizationId);
-  const memberRoles = Object.fromEntries(
-    memberships.map((m) => [m.organizationId, m.role]),
-  );
+  const memberRoles = Object.fromEntries(memberships.map((m) => [m.organizationId, m.role]));
 
   // Orgs onde é membro comum → limpa ownerId dos cards
   const memberOrgIds = orgIds.filter((id) => memberRoles[id] === "member");

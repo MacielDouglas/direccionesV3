@@ -1,10 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { toast } from "sonner";
-import { deleteCardAction } from "../../application/card.actions";
 import { Button } from "@/components/ui/button";
-import { Trash2, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -15,6 +11,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Loader2, Trash2 } from "lucide-react";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { deleteCardAction } from "../../application/card.actions";
 
 interface Props {
   cardId: string;
@@ -22,11 +22,7 @@ interface Props {
   organizationSlug: string;
 }
 
-export function DeleteCardButton({
-  cardId,
-  cardNumber,
-  organizationSlug,
-}: Props) {
+export function DeleteCardButton({ cardId, cardNumber, organizationSlug }: Props) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -57,12 +53,10 @@ export function DeleteCardButton({
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            ¿Borrar Tarjeta #{String(cardNumber).padStart(2, "0")}?
-          </DialogTitle>
+          <DialogTitle>¿Borrar Tarjeta #{String(cardNumber).padStart(2, "0")}?</DialogTitle>
           <DialogDescription>
-            Esta acción no se puede deshacer. Las direcciones vinculadas
-            quedarán disponibles nuevamente.
+            Esta acción no se puede deshacer. Las direcciones vinculadas quedarán disponibles
+            nuevamente.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -71,16 +65,8 @@ export function DeleteCardButton({
               Cancelar
             </Button>
           </DialogClose>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isPending}
-          >
-            {isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-            ) : (
-              "Sí, borrar"
-            )}
+          <Button variant="destructive" onClick={handleDelete} disabled={isPending}>
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : "Sí, borrar"}
           </Button>
         </DialogFooter>
       </DialogContent>

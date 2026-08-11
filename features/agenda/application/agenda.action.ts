@@ -1,19 +1,15 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/server/users";
-import {
-  agendaEventSchema,
-  type AgendaEventInput,
-} from "../domain/agenda.schema";
+import { revalidatePath } from "next/cache";
+import { type AgendaEventInput, agendaEventSchema } from "../domain/agenda.schema";
 
 async function requireAdminOrOwner() {
   const data = await getCurrentUser();
   if (!data) throw new Error("No autenticado.");
   const role = data.memberRole?.role;
-  if (!role || !["admin", "owner"].includes(role))
-    throw new Error("Sin permiso.");
+  if (!role || !["admin", "owner"].includes(role)) throw new Error("Sin permiso.");
   return data;
 }
 
@@ -97,8 +93,7 @@ export async function updateAgendaEventAction(
     const parsed = agendaEventSchema.safeParse(input);
     if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-    const { date, time, conductorId, saida, tipo, territorio, info } =
-      parsed.data;
+    const { date, time, conductorId, saida, tipo, territorio, info } = parsed.data;
     const [year, month, day] = date.split("-").map(Number);
     const [hours, minutes] = (time ?? "00:00").split(":").map(Number);
     const localDate = new Date(year, month - 1, day, hours, minutes);

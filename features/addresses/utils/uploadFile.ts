@@ -19,11 +19,9 @@ export async function uploadFile(
     xhr.open("PUT", url);
     xhr.setRequestHeader("Content-Type", file.type);
     xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable)
-        onProgress(Math.round((e.loaded / e.total) * 100));
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
     };
-    xhr.onload = () =>
-      xhr.status >= 200 && xhr.status < 300 ? resolve() : reject();
+    xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject());
     xhr.onerror = reject;
     xhr.send(file);
   });
@@ -37,13 +35,11 @@ export async function uploadFile(
 export async function deleteFile(imageKey: string): Promise<void> {
   // ✅ PROTEÇÃO — nunca deleta pasta security
   if (imageKey.startsWith("security/")) {
-    console.warn("🔒 DELETE BLOQUEADO — imagem protegida:", imageKey);
     return;
   }
 
   // ✅ PROTEÇÃO — só deleta pasta organizations
   if (!imageKey.startsWith("organizations/")) {
-    console.warn("🔒 DELETE BLOQUEADO — key fora de organizations:", imageKey);
     return;
   }
 

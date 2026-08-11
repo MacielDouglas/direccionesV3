@@ -1,5 +1,5 @@
-import { getCurrentUser } from "@/server/users";
 import { canAccess } from "@/lib/autorize";
+import { getCurrentUser } from "@/server/users";
 import { redirect } from "next/navigation";
 
 export default async function MemberLayout({

@@ -1,7 +1,7 @@
 "use client";
 
 import { AppProgressBar } from "next-nprogress-bar";
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useCallback, useContext, useState } from "react";
 
 interface NavigationContextValue {
   isNavigating: boolean;

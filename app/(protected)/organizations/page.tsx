@@ -1,9 +1,9 @@
-import { getCurrentUser } from "@/server/users";
-import { getOrganizations } from "@/server/organization/organization.queries";
-import { setActiveOrg } from "@/server/organization/organization.actions";
-import { redirect } from "next/navigation";
 import { OrgSwitchButton } from "@/domains/organization/components/OrgSwitchButtom";
 import OrganizationForm from "@/domains/organization/components/OrganizationForm";
+import { setActiveOrg } from "@/server/organization/organization.actions";
+import { getOrganizations } from "@/server/organization/organization.queries";
+import { getCurrentUser } from "@/server/users";
+import { redirect } from "next/navigation";
 
 export default async function OrganizationsPage() {
   const data = await getCurrentUser();
@@ -14,9 +14,7 @@ export default async function OrganizationsPage() {
   return (
     <main className="mx-auto max-w-md px-4 py-10 text-center">
       <h1 className="text-2xl font-semibold">Selecciona una organización</h1>
-      <p className="mt-2 text-muted-foreground">
-        Elige con cuál organización deseas continuar.
-      </p>
+      <p className="mt-2 text-muted-foreground">Elige con cuál organización deseas continuar.</p>
 
       <OrganizationForm />
 

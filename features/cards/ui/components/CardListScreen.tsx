@@ -1,4 +1,4 @@
-import { listCards, getOrgMembers } from "../../application/card.service";
+import { getOrgMembers, listCards } from "../../application/card.service";
 import { CardListClient } from "../components/CardListClient";
 
 interface Props {
@@ -6,10 +6,7 @@ interface Props {
   organizationSlug: string;
 }
 
-export async function CardListScreen({
-  organizationId,
-  organizationSlug,
-}: Props) {
+export async function CardListScreen({ organizationId, organizationSlug }: Props) {
   const [cards, members] = await Promise.all([
     listCards(organizationId),
     getOrgMembers(organizationId),
@@ -29,7 +26,6 @@ export async function CardListScreen({
     />
   );
 }
-
 
 // import Link from "next/link";
 // import { Plus } from "lucide-react";

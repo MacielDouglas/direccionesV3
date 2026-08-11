@@ -21,9 +21,7 @@ async function getExif() {
 
 async function normalizeHeic(file: File): Promise<File> {
   const isHeic =
-    file.type === "image/heic" ||
-    file.type === "image/heif" ||
-    /\.(heic|heif)$/i.test(file.name);
+    file.type === "image/heic" || file.type === "image/heif" || /\.(heic|heif)$/i.test(file.name);
 
   if (!isHeic) return file;
 
@@ -38,10 +36,7 @@ async function normalizeHeic(file: File): Promise<File> {
 }
 
 async function fixOrientation(file: File): Promise<File> {
-  const [imageCompression, exifr] = await Promise.all([
-    getImageCompression(),
-    getExif(),
-  ]);
+  const [imageCompression, exifr] = await Promise.all([getImageCompression(), getExif()]);
   try {
     const orientation = await exifr.orientation(file);
     if (!orientation || orientation === 1) return file;
@@ -101,10 +96,7 @@ export function useSmartImageUpload() {
     try {
       const heic = await normalizeHeic(file);
       const oriented = await fixOrientation(heic);
-      const compressed = await resizeAndCompress(
-        oriented,
-        setProcessingProgress,
-      );
+      const compressed = await resizeAndCompress(oriented, setProcessingProgress);
       return compressed;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Error al procesar.";

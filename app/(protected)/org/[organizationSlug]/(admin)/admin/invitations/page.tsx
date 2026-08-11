@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/server/users";
-import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { InvitationsScreen } from "@/features/invitations/ui/screens/InvitationsScreen";
+import { getOrganizationBySlug } from "@/server/organization/organization.queries";
+import { getCurrentUser } from "@/server/users";
+import { redirect } from "next/navigation";
 
 interface Props {
   params: Promise<{ organizationSlug: string }>;
@@ -23,7 +23,5 @@ export default async function InvitationsPage({ params }: Props) {
     redirect(`/org/${organizationSlug}`);
   }
 
-  return (
-    <InvitationsScreen organizationId={org.id} orgSlug={organizationSlug} />
-  );
+  return <InvitationsScreen organizationId={org.id} orgSlug={organizationSlug} />;
 }

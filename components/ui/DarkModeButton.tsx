@@ -1,9 +1,9 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
-import { useTheme } from "next-themes";
-import { Button } from "../ui/button";
 import { Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useSyncExternalStore } from "react";
+import { Button } from "../ui/button";
 
 // useSyncExternalStore garante valor correto no server vs client sem useEffect
 function useIsMounted() {

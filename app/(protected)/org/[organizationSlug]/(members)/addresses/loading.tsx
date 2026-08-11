@@ -31,8 +31,8 @@ export default function AddressListLoading() {
 
         {/* Grid de cards */}
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <li key={i} className="overflow-hidden rounded-2xl">
+          {Array.from({ length: 6 }, (_, i) => i + 1).map((item) => (
+            <li key={`skeleton-${item}`} className="overflow-hidden rounded-2xl">
               <div className="relative aspect-video w-full animate-pulse bg-muted" />
             </li>
           ))}

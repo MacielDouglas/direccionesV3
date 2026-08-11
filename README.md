@@ -275,13 +275,14 @@ As migrações são gerenciadas com `prisma migrate` e versionadas em `prisma/mi
 Para aplicar as migrações em um ambiente novo:
 
 ```bash
-npx prisma migrate deploy
+
+bunx prisma migrate deploy
 ```
 
 Para regenerar o cliente Prisma após alterações no schema:
 
 ```bash
-npx prisma generate
+bunx prisma generate
 ```
 
 ---
@@ -321,7 +322,8 @@ NEXT_PUBLIC_MAPBOX_TOKEN="pk.seu-token-publico-mapbox"
 
 ### Pré-requisitos
 
-- **Node.js** ≥ 20.x
+- **Bun** ≥ 1.x (gerencia runtime e pacotes — não use npm)
+- **Node.js** ≥ 22.x (runtime do servidor Next.js)
 - Instância **PostgreSQL** (local ou remota)
 - Bucket no Cloudflare R2
 - Conta no Mapbox (o plano gratuito é suficiente para desenvolvimento)
@@ -335,17 +337,17 @@ git clone https://github.com/sua-org/direcciones.git
 cd direcciones
 
 # 2. Instale as dependências (o cliente Prisma é gerado automaticamente via postinstall)
-npm install
+bun install
 
 # 3. Configure as variáveis de ambiente
 cp .env.example .env
 # Edite o .env com suas credenciais
 
 # 4. Execute as migrações do banco de dados
-npx prisma migrate deploy
+bunx prisma migrate deploy
 
 # 5. Inicie o servidor de desenvolvimento
-npm run dev
+bun run dev
 ```
 
 A aplicação estará disponível em [http://localhost:3000](http://localhost:3000).
@@ -354,12 +356,14 @@ A aplicação estará disponível em [http://localhost:3000](http://localhost:30
 
 | Comando                  | Descrição                                          |
 | ------------------------ | -------------------------------------------------- |
-| `npm run dev`            | Inicia o servidor de desenvolvimento com Turbopack |
-| `npm run build`          | Build de produção                                  |
-| `npm run start`          | Inicia o servidor de produção                      |
-| `npm run lint`           | Executa o ESLint                                   |
-| `npx prisma studio`      | Abre a interface gráfica do banco de dados         |
-| `npx prisma migrate dev` | Cria e aplica uma nova migração                    |
+| `bun run dev`            | Inicia o servidor de desenvolvimento com Turbopack |
+| `bun run build`          | Build de produção                                  |
+| `bun run start`          | Inicia o servidor de produção                      |
+| `bun run lint`           | Executa o Biome (lint + format)                    |
+| `bun run lint:fix`       | Executa o Biome com auto-fix                       |
+| `bun run typecheck`      | Verificação de tipos (`tsc --noEmit`)              |
+| `bunx prisma studio`     | Abre a interface gráfica do banco de dados         |
+| `bunx prisma migrate dev`| Cria e aplica uma nova migração                    |
 
 ---
 
@@ -372,7 +376,7 @@ O Direcciones_V3 está hospedado na **Vercel**.
 1. Importe o repositório no painel da Vercel
 2. Defina todas as variáveis de ambiente da seção [Variáveis de Ambiente](#variáveis-de-ambiente) em **Project Settings → Environment Variables**
 3. Certifique-se de que o banco de dados PostgreSQL está acessível pelas funções serverless da Vercel — use um connection pooler como **PgBouncer** ou o **pooler do Supabase** em produção
-4. Faça o deploy — a Vercel executa automaticamente `npm run build` e `prisma generate` via o script `postinstall`
+4. Faça o deploy — a Vercel executa automaticamente `bun run build` e `prisma generate` via o script `postinstall`
 
 ### Observações de Build
 

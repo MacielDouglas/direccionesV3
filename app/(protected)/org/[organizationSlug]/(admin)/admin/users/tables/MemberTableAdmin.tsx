@@ -1,12 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import type { Role } from "@/domains/member/types/role.types";
 import { memberUpdateRole } from "@/server/member";
 import { Loader2, ShieldOff, ShieldUser } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { Role } from "@/domains/member/types/role.types";
 
 export default function MemberTableAdmin({
   organizationId,
@@ -21,8 +21,7 @@ export default function MemberTableAdmin({
   const router = useRouter();
 
   // Se já é admin → rebaixar para member; se é member → promover para admin
-  const targetRole: Exclude<Role, "owner"> =
-    memberRole === "admin" ? "member" : "admin";
+  const targetRole: Exclude<Role, "owner"> = memberRole === "admin" ? "member" : "admin";
 
   const handleToggleRole = async () => {
     try {
@@ -34,8 +33,7 @@ export default function MemberTableAdmin({
           : "Permisos de administrador removidos.",
       );
       router.refresh();
-    } catch (error) {
-      console.error("[MemberTableAdmin]", error);
+    } catch {
       toast.error("Error al cambiar el rol. Intente nuevamente.");
     } finally {
       setIsLoading(false);

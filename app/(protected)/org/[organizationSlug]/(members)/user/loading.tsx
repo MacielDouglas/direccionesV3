@@ -18,9 +18,9 @@ export default function UserLoading() {
           <div className="h-3 w-24 animate-pulse rounded bg-muted" />
           <div className="h-3 w-16 animate-pulse rounded bg-muted" />
         </div>
-        {Array.from({ length: 2 }).map((_, i) => (
+        {Array.from({ length: 2 }, (_, i) => i + 1).map((item) => (
           <div
-            key={i}
+            key={`skeleton-${item}`}
             className="flex items-center gap-3 rounded-xl border px-4 py-3"
           >
             <div className="h-5 w-5 animate-pulse rounded bg-muted shrink-0" />

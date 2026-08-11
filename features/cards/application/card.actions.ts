@@ -1,10 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
-import { getNextCardNumber } from "./card.service";
-import { createCardSchema, editCardSchema } from "../domain/card.schema";
 import { getCurrentUser, requireSession } from "@/server/users";
+import { revalidatePath } from "next/cache";
+import { createCardSchema, editCardSchema } from "../domain/card.schema";
+import { getNextCardNumber } from "./card.service";
 
 export async function createCardAction(
   organizationId: string,
@@ -31,9 +31,7 @@ export async function createCardAction(
       });
 
       if (addresses.length !== addressIds.length) {
-        throw new Error(
-          "Una o más direcciones no son válidas o ya están en uso.",
-        );
+        throw new Error("Una o más direcciones no son válidas o ya están en uso.");
       }
 
       const number = await getNextCardNumber(organizationId);
@@ -57,19 +55,14 @@ export async function createCardAction(
   }
 }
 
-export async function assignCardAction(
-  cardId: string,
-  userId: string,
-  organizationSlug: string,
-) {
+export async function assignCardAction(cardId: string, userId: string, organizationSlug: string) {
   const session = await requireSession();
 
   try {
     await prisma.$transaction(async (tx) => {
       const card = await tx.card.findUnique({ where: { id: cardId } });
       if (!card) throw new Error("Tarjeta no encontrada.");
-      if (card.assignedUserId)
-        throw new Error("La tarjeta ya ha sido asignada.");
+      if (card.assignedUserId) throw new Error("La tarjeta ya ha sido asignada.");
 
       await tx.card.update({
         where: { id: cardId },
@@ -99,10 +92,7 @@ export async function assignCardAction(
   }
 }
 
-export async function returnCardAction(
-  cardId: string,
-  organizationSlug: string,
-) {
+export async function returnCardAction(cardId: string, organizationSlug: string) {
   const session = await requireSession();
 
   try {
@@ -134,16 +124,12 @@ export async function returnCardAction(
     return { success: true };
   } catch (err) {
     return {
-      error:
-        err instanceof Error ? err.message : "Error al devolver la tarjeta.",
+      error: err instanceof Error ? err.message : "Error al devolver la tarjeta.",
     };
   }
 }
 
-export async function deleteCardAction(
-  cardId: string,
-  organizationSlug: string,
-) {
+export async function deleteCardAction(cardId: string, organizationSlug: string) {
   const data = await getCurrentUser(); // já cacheado
   if (!data) return { error: "No autenticado." };
 
@@ -169,8 +155,7 @@ export async function deleteCardAction(
     return { success: true };
   } catch (err) {
     return {
-      error:
-        err instanceof Error ? err.message : "Error al eliminar la tarjeta.",
+      error: err instanceof Error ? err.message : "Error al eliminar la tarjeta.",
     };
   }
 }
@@ -236,8 +221,7 @@ export async function updateCardAction(
     return { success: true };
   } catch (err) {
     return {
-      error:
-        err instanceof Error ? err.message : "Error al actualizar la tarjeta.",
+      error: err instanceof Error ? err.message : "Error al actualizar la tarjeta.",
     };
   }
 }

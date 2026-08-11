@@ -2,9 +2,9 @@ import LogoutButton from "@/components/LogoutButton";
 import MainAppMenu from "@/components/menu/MainAppMenu";
 import { PendingDeletionBadge } from "@/features/addresses/ui/components/PendingDeletionBadge";
 import { getCurrentUser } from "@/server/users";
-import { DeleteAccountButton } from "./org/[organizationSlug]/(members)/user/_components/DeleteAccountButton";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { DeleteAccountButton } from "./org/[organizationSlug]/(members)/user/_components/DeleteAccountButton";
 
 export const metadata: Metadata = {
   title: "Página Home",
@@ -13,11 +13,11 @@ export const metadata: Metadata = {
 export default async function Home() {
   const data = await getCurrentUser();
 
-    if (!data) {
+  if (!data) {
     redirect("/login");
   }
 
-  const { session, activeOrganization: organization, memberRole } = data!;
+  const { session, activeOrganization: organization, memberRole } = data;
 
   return (
     <main className="h-full w-full">
@@ -29,17 +29,13 @@ export default async function Home() {
         {organization ? (
           <div className="space-y-6">
             <p className="text-lg">Para empezar, elige una opción.</p>
-            <MainAppMenu
-              role={memberRole?.role ?? null}
-              orgSlug={organization?.slug ?? ""}
-            />
-            {organization &&
-              ["admin", "owner"].includes(memberRole?.role ?? "") && (
-                <PendingDeletionBadge
-                  organizationId={organization?.id ?? ""}
-                  orgSlug={organization?.slug ?? ""}
-                />
-              )}
+            <MainAppMenu role={memberRole?.role ?? null} orgSlug={organization?.slug ?? ""} />
+            {organization && ["admin", "owner"].includes(memberRole?.role ?? "") && (
+              <PendingDeletionBadge
+                organizationId={organization?.id ?? ""}
+                orgSlug={organization?.slug ?? ""}
+              />
+            )}
           </div>
         ) : (
           <div className="space-y-4 text-lg text-muted-foreground">

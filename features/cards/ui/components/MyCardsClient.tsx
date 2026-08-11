@@ -34,18 +34,22 @@ interface Props {
 }
 
 export function MyCardsClient({ cards, organizationSlug }: Props) {
-  const [addressPromise, setAddressPromise] =
-    useState<Promise<AddressWithUsers | null> | null>(null);
+  const [addressPromise, setAddressPromise] = useState<Promise<AddressWithUsers | null> | null>(
+    null,
+  );
 
   const { allAddresses, addressIndexMap } = useMemo(() => {
     const addresses = cards
       .flatMap((card) => card.addresses)
-      .filter((a) => a.latitude != null && a.longitude != null)
+      .filter(
+        (a): a is typeof a & { latitude: number; longitude: number } =>
+          a.latitude != null && a.longitude != null,
+      )
       .map((a) => ({
         id: a.id,
         label: a.businessName ?? `${a.street}, ${a.number}`,
-        latitude: a.latitude!,
-        longitude: a.longitude!,
+        latitude: a.latitude,
+        longitude: a.longitude,
       }));
 
     return {
@@ -110,8 +114,7 @@ export function MyCardsClient({ cards, organizationSlug }: Props) {
                   {card.startDate && (
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Clock className="size-3.5 shrink-0" aria-hidden />
-                      Recibido el{" "}
-                      {new Date(card.startDate).toLocaleDateString("es-419")}
+                      Recibido el {new Date(card.startDate).toLocaleDateString("es-419")}
                     </div>
                   )}
 
@@ -150,12 +153,9 @@ export function MyCardsClient({ cards, organizationSlug }: Props) {
                               className={`truncate ${addr.pendingDeletionAt ? "line-through" : ""}`}
                             >
                               {addr.businessName && (
-                                <span className="font-medium">
-                                  {addr.businessName} —{" "}
-                                </span>
+                                <span className="font-medium">{addr.businessName} — </span>
                               )}
-                              {addr.street}, {addr.number}, {addr.neighborhood},{" "}
-                              {addr.city}
+                              {addr.street}, {addr.number}, {addr.neighborhood}, {addr.city}
                             </span>
                           </button>
                         </li>

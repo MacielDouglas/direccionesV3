@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
-import { Pencil, Check, X, Loader2 } from "lucide-react";
 import { updateUserNameAction } from "@/server/users/user.action";
+import { Check, Loader2, Pencil, X } from "lucide-react";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
 
 interface Props {
   currentName: string;

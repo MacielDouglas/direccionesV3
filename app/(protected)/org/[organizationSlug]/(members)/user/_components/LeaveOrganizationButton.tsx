@@ -1,9 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { toast } from "sonner";
-import { LogOut, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,8 +11,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import type { Role } from "@/domains/member/types/role.types";
 import { leaveOrganizationAction } from "@/server/organization/leave-organization.action";
+import { Loader2, LogOut } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export function LeaveOrganizationButton({
   organizationId,
@@ -45,13 +45,12 @@ export function LeaveOrganizationButton({
     role === "member" ? (
       <>
         <p>
-          Tus <strong>tarjetas asignadas</strong> y{" "}
-          <strong>tus propias tarjetas</strong> se liberarán para otros
-          usuarios. Tus <strong>direcciones registradas</strong> se conservarán.
+          Tus <strong>tarjetas asignadas</strong> y <strong>tus propias tarjetas</strong> se
+          liberarán para otros usuarios. Tus <strong>direcciones registradas</strong> se
+          conservarán.
           <span className="uppercase text-red-500 font-semibold">
-            Toda su información personal será borrada y eliminada de esta
-            organización, aún tendra acceso a la aplicación con otras
-            organizaciones a las que pertenezca.
+            Toda su información personal será borrada y eliminada de esta organización, aún tendra
+            acceso a la aplicación con otras organizaciones a las que pertenezca.
           </span>{" "}
           según nuestra condiciones de uso.
         </p>
@@ -59,12 +58,10 @@ export function LeaveOrganizationButton({
     ) : (
       <>
         <p>
-          Tus <strong>tarjetas y registros enviados</strong> se conservarán.
-          Perderás el acceso a la applicación y tus tarjetas asignadas se
-          liberarán.
+          Tus <strong>tarjetas y registros enviados</strong> se conservarán. Perderás el acceso a la
+          applicación y tus tarjetas asignadas se liberarán.
           <span className="uppercase text-red-500 font-semibold">
-            Toda su información personal será borrada y eliminada de esta
-            aplicación,
+            Toda su información personal será borrada y eliminada de esta aplicación,
           </span>{" "}
           según nuestra condiciones de uso.
         </p>

@@ -13,9 +13,7 @@ const updateNameSchema = z.object({
     .trim(),
 });
 
-export async function updateUserNameAction(
-  rawData: unknown,
-): Promise<{ error?: string }> {
+export async function updateUserNameAction(rawData: unknown): Promise<{ error?: string }> {
   const data = await getCurrentUser();
   if (!data) return { error: "No autorizado." };
 

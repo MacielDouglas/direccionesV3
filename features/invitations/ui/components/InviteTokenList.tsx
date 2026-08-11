@@ -1,5 +1,5 @@
-import { CheckCircle, Clock, XCircle } from "lucide-react";
 import type { Prisma } from "@prisma/client";
+import { CheckCircle, Clock, XCircle } from "lucide-react";
 
 type TokenWithRelations = Prisma.InviteTokenGetPayload<{
   include: {
@@ -42,9 +42,7 @@ export function InviteTokenList({ tokens }: { tokens: TokenWithRelations[] }) {
             className="flex flex-col gap-1.5 rounded-xl border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="flex flex-col gap-0.5">
-              <div
-                className={`flex items-center gap-1.5 text-sm font-medium ${config.color}`}
-              >
+              <div className={`flex items-center gap-1.5 text-sm font-medium ${config.color}`}>
                 <Icon className="h-4 w-4 shrink-0" aria-hidden />
                 {config.label}
               </div>
@@ -52,10 +50,10 @@ export function InviteTokenList({ tokens }: { tokens: TokenWithRelations[] }) {
                 Generado por {token.createdBy.name} —{" "}
                 {new Date(token.createdAt).toLocaleString("es-419")}
               </p>
-              {token.usedBy && (
+              {token.usedBy && token.usedAt && (
                 <p className="text-xs text-muted-foreground">
                   Usado por <strong>{token.usedBy.name}</strong> en{" "}
-                  {new Date(token.usedAt!).toLocaleString("es-419")}
+                  {new Date(token.usedAt).toLocaleString("es-419")}
                 </p>
               )}
               {status === "active" && (

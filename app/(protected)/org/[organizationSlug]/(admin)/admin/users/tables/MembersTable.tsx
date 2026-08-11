@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { Role } from "@/domains/member/types/role.types";
 import MembersTableAction from "./MemberTableAction";
 import MemberTableAdmin from "./MemberTableAdmin";
-import type { Role } from "@/domains/member/types/role.types";
 
 interface MembersTableProps {
   members: Array<{
@@ -30,22 +30,15 @@ export default function MembersTable({ members }: MembersTableProps) {
       {/* MOBILE */}
       <ul className="flex flex-col gap-3 lg:hidden">
         {members.map((member) => (
-          <li
-            key={member.id}
-            className="flex items-center gap-3 rounded-xl border bg-card p-3"
-          >
+          <li key={member.id} className="flex items-center gap-3 rounded-xl border bg-card p-3">
             <Avatar className="size-10 shrink-0">
               <AvatarImage src={member.user.image ?? undefined} />
-              <AvatarFallback>
-                {member.user.name.charAt(0).toUpperCase()}
-              </AvatarFallback>
+              <AvatarFallback>{member.user.name.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
 
             <div className="flex-1 overflow-hidden">
               <p className="truncate text-sm font-medium">{member.user.name}</p>
-              <p className="truncate text-xs text-muted-foreground">
-                {member.user.email}
-              </p>
+              <p className="truncate text-xs text-muted-foreground">{member.user.email}</p>
               <span className="mt-1 inline-block rounded-full bg-muted px-2 py-0.5 text-[10px] uppercase">
                 {member.role ?? "member"}
               </span>
@@ -56,9 +49,7 @@ export default function MembersTable({ members }: MembersTableProps) {
                 <MemberTableAdmin
                   organizationId={member.organizationId}
                   memberId={member.id}
-                  memberRole={
-                    (member.role ?? "member") as Exclude<Role, "owner">
-                  }
+                  memberRole={(member.role ?? "member") as Exclude<Role, "owner">}
                 />
               )}
               {member.role !== "owner" && (
@@ -89,26 +80,18 @@ export default function MembersTable({ members }: MembersTableProps) {
                 <td className="flex items-center gap-3 py-3">
                   <Avatar className="size-8">
                     <AvatarImage src={member.user.image ?? undefined} />
-                    <AvatarFallback>
-                      {member.user.name.charAt(0)}
-                    </AvatarFallback>
+                    <AvatarFallback>{member.user.name.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium">
-                    {member.user.name}
-                  </span>
+                  <span className="text-sm font-medium">{member.user.name}</span>
                 </td>
-                <td className="max-w-60 truncate text-sm">
-                  {member.user.email}
-                </td>
+                <td className="max-w-60 truncate text-sm">{member.user.email}</td>
                 <td className="text-sm">{member.role ?? "member"}</td>
                 <td className="space-x-2 text-right">
                   {member.role !== "owner" && (
                     <MemberTableAdmin
                       organizationId={member.organizationId}
                       memberId={member.user.id}
-                      memberRole={
-                        (member.role ?? "member") as Exclude<Role, "owner">
-                      }
+                      memberRole={(member.role ?? "member") as Exclude<Role, "owner">}
                     />
                   )}
                   {member.role !== "owner" && (

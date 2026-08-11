@@ -3,14 +3,14 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Clock, User, Info } from "lucide-react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { AgendaEventItem } from "../../types/agenda.types";
+import { Clock, Info, User } from "lucide-react";
+import Image from "next/image";
+import type { AgendaEventItem } from "../../types/agenda.types";
 
 const MONTHS_ES = [
   "Enero",
@@ -26,15 +26,7 @@ const MONTHS_ES = [
   "Noviembre",
   "Diciembre",
 ];
-const WEEK_DAYS_ES = [
-  "Domingo",
-  "Lunes",
-  "Martes",
-  "Miércoles",
-  "Jueves",
-  "Viernes",
-  "Sábado",
-];
+const WEEK_DAYS_ES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
 interface Props {
   event: AgendaEventItem | null;
@@ -66,9 +58,7 @@ export function AgendaEventModal({ event, onClose }: Props) {
     >
       <DialogContent className="max-w-sm rounded-2xl">
         <DialogHeader>
-          <DialogTitle className="capitalize text-base leading-snug">
-            {dateStr}
-          </DialogTitle>
+          <DialogTitle className="capitalize text-base leading-snug">{dateStr}</DialogTitle>
           <DialogDescription className="flex items-center gap-1.5 text-sm">
             <Clock className="size-3.5" aria-hidden />
             {timeStr}hs
@@ -90,10 +80,7 @@ export function AgendaEventModal({ event, onClose }: Props) {
                   alt={event.conductor.name}
                   width={32}
                   height={32}
-                  className={cn(
-                    "rounded-full size-8 object-cover",
-                    isPast && "grayscale",
-                  )}
+                  className={cn("rounded-full size-8 object-cover", isPast && "grayscale")}
                 />
               ) : (
                 <span className="size-8 rounded-full bg-muted flex items-center justify-center shrink-0">

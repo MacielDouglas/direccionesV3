@@ -1,23 +1,17 @@
 "use server";
 
-import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { cancelPinSchema, confirmPinSchema, createPinsSchema } from "../domain/survey.schema";
+import type { SurveyPin } from "../types/survey.types";
 import {
-  createPinsSchema,
-  confirmPinSchema,
-  cancelPinSchema,
-} from "../domain/survey.schema";
-import {
-  createSurveyPins,
-  confirmSurveyPin,
   cancelSurveyPin,
+  confirmSurveyPin,
+  createSurveyPins,
   getSurveyPins,
 } from "./survey.service";
-import type { SurveyPin } from "../types/survey.types";
 
-type ActionResult<T> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+type ActionResult<T> = { success: true; data: T } | { success: false; error: string };
 
 export async function getSurveyPinsAction(
   organizationId: string,
@@ -32,15 +26,12 @@ export async function getSurveyPinsAction(
   }
 }
 
-export async function createSurveyPinsAction(
-  input: unknown,
-): Promise<ActionResult<SurveyPin[]>> {
+export async function createSurveyPinsAction(input: unknown): Promise<ActionResult<SurveyPin[]>> {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return { success: false, error: "No autorizado" };
 
   const parsed = createPinsSchema.safeParse(input);
-  if (!parsed.success)
-    return { success: false, error: parsed.error.issues[0].message };
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
   try {
     const pins = await createSurveyPins(parsed.data, session.user.id);
@@ -50,9 +41,7 @@ export async function createSurveyPinsAction(
   }
 }
 
-export async function confirmSurveyPinAction(
-  pinId: string,
-): Promise<ActionResult<SurveyPin>> {
+export async function confirmSurveyPinAction(pinId: string): Promise<ActionResult<SurveyPin>> {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return { success: false, error: "No autorizado" };
 
@@ -70,9 +59,7 @@ export async function confirmSurveyPinAction(
   }
 }
 
-export async function cancelSurveyPinAction(
-  pinId: string,
-): Promise<ActionResult<SurveyPin>> {
+export async function cancelSurveyPinAction(pinId: string): Promise<ActionResult<SurveyPin>> {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return { success: false, error: "No autorizado" };
 

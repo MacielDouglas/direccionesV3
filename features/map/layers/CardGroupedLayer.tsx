@@ -43,14 +43,14 @@ export function CardGroupedLayer({
     const markers = markersRef.current;
     const popups = popupsRef.current;
 
-    markers.forEach((m) => m.remove());
-    popups.forEach((p) => p.remove());
+    for (const marker of markers.values()) marker.remove();
+    for (const popup of popups.values()) popup.remove();
     markers.clear();
     popups.clear();
 
     const bounds = new mapboxgl.LngLatBounds();
 
-    addresses.forEach((addr) => {
+    for (const addr of addresses) {
       const el = createGroupedMarkerEl(addr.cardNumber, addr.color, true);
       const inner = el.firstElementChild as HTMLElement;
 
@@ -91,7 +91,7 @@ export function CardGroupedLayer({
       markers.set(addr.id, marker);
       popups.set(addr.id, popup);
       bounds.extend([addr.longitude, addr.latitude]);
-    });
+    }
 
     if (addresses.length === 1) {
       map.flyTo({
@@ -103,8 +103,8 @@ export function CardGroupedLayer({
     }
 
     return () => {
-      markers.forEach((m) => m.remove());
-      popups.forEach((p) => p.remove());
+      for (const marker of markers.values()) marker.remove();
+      for (const popup of popups.values()) popup.remove();
       markers.clear();
       popups.clear();
     };
@@ -114,20 +114,19 @@ export function CardGroupedLayer({
   useEffect(() => {
     if (!map || !isLoaded) return;
 
-    markersRef.current.forEach((marker, addressId) => {
+    for (const [addressId, marker] of markersRef.current) {
       const addr = addresses.find((a) => a.id === addressId);
-      if (!addr) return;
+      if (!addr) continue;
 
       const inner = marker.getElement().firstElementChild as HTMLElement | null;
-      if (!inner) return;
+      if (!inner) continue;
 
-      const isCardSelected =
-        selectedCardId === null || addr.cardId === selectedCardId;
+      const isCardSelected = selectedCardId === null || addr.cardId === selectedCardId;
 
       inner.style.opacity = isCardSelected ? "1" : "0.25";
       inner.style.transition =
         "opacity 200ms ease, transform 200ms ease, background-color 150ms ease";
-    });
+    }
   }, [selectedCardId, map, isLoaded, addresses]);
 
   // Highlight preto — todos os pins do card selecionado
@@ -137,30 +136,25 @@ export function CardGroupedLayer({
     const selectedAddr = addresses.find((a) => a.id === selectedAddressId);
     const highlightedCardId = selectedAddr?.cardId ?? null;
 
-    markersRef.current.forEach((marker, addressId) => {
+    for (const [addressId, marker] of markersRef.current) {
       const addr = addresses.find((a) => a.id === addressId);
-      if (!addr) return;
+      if (!addr) continue;
 
       const inner = marker.getElement().firstElementChild as HTMLElement | null;
-      if (!inner) return;
+      if (!inner) continue;
 
-      const isHighlighted =
-        highlightedCardId !== null && addr.cardId === highlightedCardId;
+      const isHighlighted = highlightedCardId !== null && addr.cardId === highlightedCardId;
 
       inner.style.backgroundColor = isHighlighted ? "#000000" : addr.color;
       inner.style.transform = isHighlighted ? "scale(1.2)" : "scale(1)";
-    });
+    }
   }, [selectedAddressId, map, isLoaded, addresses]);
 
   return null;
 }
 
 // ← apenas UMA declaração desta função
-function createGroupedMarkerEl(
-  cardNumber: number,
-  color: string,
-  active: boolean,
-): HTMLElement {
+function createGroupedMarkerEl(cardNumber: number, color: string, active: boolean): HTMLElement {
   const wrapper = document.createElement("div");
   wrapper.style.cssText = `
     position: absolute;

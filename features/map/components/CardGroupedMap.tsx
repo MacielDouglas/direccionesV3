@@ -1,9 +1,9 @@
 "use client";
 
+import { getCardColor } from "@/features/cards/utils/cardColors";
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
 import { CardGroupedLayer, type GroupedAddress } from "../layers/CardGroupedLayer";
-import { getCardColor } from "@/features/cards/utils/cardColors";
 
 const MapboxProviderDynamic = dynamic(
   () => import("../core/MapboxProvider").then((m) => m.MapboxProvider),
@@ -26,7 +26,7 @@ export type CardForMap = {
 interface Props {
   cards: CardForMap[];
   selectedCardId: string | null;
-  selectedAddressId: string | null;       // ← novo
+  selectedAddressId: string | null; // ← novo
   onSelectCard: (cardId: string) => void;
   onSelectAddress: (addressId: string, cardId: string) => void; // ← renomeado
 }
@@ -40,12 +40,15 @@ export function CardGroupedMap({
   const groupedAddresses = useMemo<GroupedAddress[]>(() => {
     return cards.flatMap((card, cardIndex) =>
       card.addresses
-        .filter((a) => a.latitude != null && a.longitude != null)
+        .filter(
+          (a): a is typeof a & { latitude: number; longitude: number } =>
+            a.latitude != null && a.longitude != null,
+        )
         .map((a) => ({
           id: a.id,
           label: a.businessName ?? `${a.street}, ${a.number}`,
-          latitude: a.latitude!,
-          longitude: a.longitude!,
+          latitude: a.latitude,
+          longitude: a.longitude,
           cardId: card.id,
           cardNumber: card.number,
           color: getCardColor(cardIndex),

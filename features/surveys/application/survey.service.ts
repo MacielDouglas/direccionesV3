@@ -1,9 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type {
-  CreatePinsInput,
-  ConfirmPinInput,
-  CancelPinInput,
-} from "../types/survey.types";
+import type { CancelPinInput, ConfirmPinInput, CreatePinsInput } from "../types/survey.types";
 
 export async function getOrCreateSurvey(organizationId: string) {
   const existing = await prisma.survey.findFirst({ where: { organizationId } });

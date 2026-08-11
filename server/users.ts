@@ -1,11 +1,11 @@
 "use server";
 
+import { toRole } from "@/domains/member/utils/toRole";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { cache } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { toRole } from "@/domains/member/utils/toRole";
+import { cache } from "react";
 
 export const getCurrentUser = cache(async () => {
   const reqHeaders = await headers();
@@ -49,9 +49,7 @@ export const getCurrentUser = cache(async () => {
     ? { ...activeMemberRaw, role: toRole(activeMemberRaw.role) }
     : null;
 
-  const memberRole = memberRoleRaw
-    ? { ...memberRoleRaw, role: toRole(memberRoleRaw.role) }
-    : null;
+  const memberRole = memberRoleRaw ? { ...memberRoleRaw, role: toRole(memberRoleRaw.role) } : null;
 
   return {
     session,
@@ -86,8 +84,7 @@ export const getNonMemberUsers = async (organizationId: string) => {
       select: { id: true, name: true, email: true, image: true, role: true },
       orderBy: { name: "asc" },
     });
-  } catch (error) {
-    console.error("[getNonMemberUsers]", error);
+  } catch {
     return [];
   }
 };

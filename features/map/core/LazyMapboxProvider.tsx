@@ -16,12 +16,7 @@ interface Props {
   zoom?: number;
 }
 
-export function LazyMapboxProvider({
-  children,
-  className,
-  center,
-  zoom = 14,
-}: Props) {
+export function LazyMapboxProvider({ children, className, center, zoom = 14 }: Props) {
   const [active, setActive] = useState(false);
 
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;

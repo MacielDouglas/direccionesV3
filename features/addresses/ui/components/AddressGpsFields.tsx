@@ -1,26 +1,18 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { BrushCleaning, MapPin, Paperclip, Pin, SatelliteDish } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useCallback, useState } from "react"; // ← adicionar useRef
 import { useFormContext } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import {
-  BrushCleaning,
-  Paperclip,
-  Pin,
-  SatelliteDish,
-  MapPin,
-} from "lucide-react";
 import type { AddressFormData } from "../../domain/address.schema";
 import { useGeolocation } from "../../hooks/useGeolocation";
-import dynamic from "next/dynamic";
 
 const MapboxMap = dynamic(
   () => import("@/features/map/components/MapboxMap").then((m) => m.MapboxMap), // ← versão simples
   {
     ssr: false,
-    loading: () => (
-      <div className="h-80 w-full animate-pulse rounded-xl bg-muted" />
-    ),
+    loading: () => <div className="h-80 w-full animate-pulse rounded-xl bg-muted" />,
   },
 );
 
@@ -37,16 +29,12 @@ const extractCoords = (value: string) => {
 // ── Skeleton com blur quando permissão negada ────────────────────────────────
 function GeolocationBlockedOverlay({ onRequest }: { onRequest: () => void }) {
   return (
-    <div
-      role="status"
+    <output
       aria-label="Localización desactivada"
-      className="relative overflow-hidden rounded-xl"
+      className="block relative overflow-hidden rounded-xl"
     >
       {/* Mapa borrado como fundo */}
-      <div
-        className="h-80 w-full select-none rounded-xl bg-muted"
-        aria-hidden="true"
-      >
+      <div className="h-80 w-full select-none rounded-xl bg-muted" aria-hidden="true">
         {/* ← corrigido bg-gradient-to-br → bg-gradient-to-br */}
         <div className="h-full w-full animate-pulse rounded-xl bg-linear-to-br from-muted to-muted-foreground/10" />
       </div>
@@ -54,16 +42,11 @@ function GeolocationBlockedOverlay({ onRequest }: { onRequest: () => void }) {
       {/* Overlay com blur */}
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-xl bg-background/70 backdrop-blur-sm">
         <div className="flex flex-col items-center gap-2 text-center px-4">
-          <MapPin
-            className="h-10 w-10 text-muted-foreground"
-            aria-hidden="true"
-          />
-          <p className="text-sm font-semibold text-foreground">
-            Acceso a la ubicación desactivado
-          </p>
+          <MapPin className="h-10 w-10 text-muted-foreground" aria-hidden="true" />
+          <p className="text-sm font-semibold text-foreground">Acceso a la ubicación desactivado</p>
           <p className="text-xs text-muted-foreground max-w-xs">
-            Para usar el mapa y obtener tu ubicación, activa el permiso de
-            geolocalización en tu navegador.
+            Para usar el mapa y obtener tu ubicación, activa el permiso de geolocalización en tu
+            navegador.
           </p>
         </div>
         <Button type="button" onClick={onRequest}>
@@ -71,20 +54,19 @@ function GeolocationBlockedOverlay({ onRequest }: { onRequest: () => void }) {
           Activar ubicación
         </Button>
       </div>
-    </div>
+    </output>
   );
 }
 
 // ── Skeleton enquanto detecta permissão ─────────────────────────────────────
 function GeolocationIdleSkeleton() {
   return (
-    <div
-      role="status"
+    <output
       aria-label="Verificando permisos de ubicación"
-      className="h-80 w-full animate-pulse rounded-xl bg-muted"
+      className="block h-80 w-full animate-pulse rounded-xl bg-muted"
     >
       <span className="sr-only">Verificando permisos…</span>
-    </div>
+    </output>
   );
 }
 
@@ -104,16 +86,10 @@ function GeolocationPrompt({
           Activa tu ubicación para usar el mapa
         </p>
         <p className="text-xs text-muted-foreground max-w-xs">
-          Tu ubicación se usará para centrar el mapa y facilitar la marcación
-          GPS.
+          Tu ubicación se usará para centrar el mapa y facilitar la marcación GPS.
         </p>
       </div>
-      <Button
-        type="button"
-        onClick={onRequest}
-        disabled={loading}
-        aria-busy={loading}
-      >
+      <Button type="button" onClick={onRequest} disabled={loading} aria-busy={loading}>
         <Pin aria-hidden="true" />
         {loading ? "Solicitando permiso…" : "Activar GPS"}
       </Button>
@@ -179,21 +155,13 @@ export default function AddressGpsFields() {
     if (state === "idle") return <GeolocationIdleSkeleton />;
     if (state === "unsupported") return <GeolocationIdleSkeleton />;
     if (state === "prompt")
-      return (
-        <GeolocationPrompt
-          onRequest={handleGetUserLocation}
-          loading={isFetchingGps}
-        />
-      );
-    if (state === "denied")
-      return <GeolocationBlockedOverlay onRequest={handleGetUserLocation} />;
+      return <GeolocationPrompt onRequest={handleGetUserLocation} loading={isFetchingGps} />;
+    if (state === "denied") return <GeolocationBlockedOverlay onRequest={handleGetUserLocation} />;
 
     // ← Removido ref, onMapReady — MapboxMap limpa pin quando value=null
     return (
       <MapboxMap
-        value={
-          latitude != null && longitude != null ? { latitude, longitude } : null
-        }
+        value={latitude != null && longitude != null ? { latitude, longitude } : null}
         onChange={(coords) => {
           setValue("latitude", coords.latitude);
           setValue("longitude", coords.longitude);
@@ -222,19 +190,16 @@ export default function AddressGpsFields() {
 
       <div className="rounded-lg bg-surface-subtle-light text-lg text-center p-3  dark:bg-surface-subtle-dark dark:text-slate-400">
         <p>
-          Seleccione directamente en el mapa, o utilice su ubicación o pegue las
-          coordenadas GPS.
+          Seleccione directamente en el mapa, o utilice su ubicación o pegue las coordenadas GPS.
         </p>
       </div>
 
       <div className="flex items-center justify-around gap-10">
         <p className="text-sm">
-          Latitud:{" "}
-          <span className="font-mono text-blue-500">{latitude ?? "—"}</span>
+          Latitud: <span className="font-mono text-blue-500">{latitude ?? "—"}</span>
         </p>
         <p className="text-sm">
-          Longitud:{" "}
-          <span className="font-mono text-blue-500">{longitude ?? "—"}</span>
+          Longitud: <span className="font-mono text-blue-500">{longitude ?? "—"}</span>
         </p>
       </div>
 
@@ -260,12 +225,7 @@ export default function AddressGpsFields() {
             {isFetchingGps ? "Obteniendo ubicación…" : "Mi ubicación"}
           </Button>
 
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handlePaste}
-            disabled={isFetchingGps}
-          >
+          <Button type="button" variant="outline" onClick={handlePaste} disabled={isFetchingGps}>
             <Paperclip aria-hidden="true" />
             Pegar coordenadas
           </Button>

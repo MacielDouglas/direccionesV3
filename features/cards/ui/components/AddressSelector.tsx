@@ -1,9 +1,9 @@
 "use client";
 
-import { MapPin, CheckCircle2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import type { AvailableAddress } from "../../types/card.types";
 import { useMapInstance } from "@/features/map/core/MapboxProvider";
+import { cn } from "@/lib/utils";
+import { CheckCircle2, MapPin } from "lucide-react";
+import type { AvailableAddress } from "../../types/card.types";
 
 interface Props {
   addresses: AvailableAddress[];
@@ -13,20 +13,11 @@ interface Props {
   map?: mapboxgl.Map | null; // opcional
 }
 
-export function AddressSelector({
-  addresses,
-  selected,
-  onChange,
-  error,
-}: Props) {
+export function AddressSelector({ addresses, selected, onChange, error }: Props) {
   const { map } = useMapInstance();
 
   const toggle = (id: string) => {
-    onChange(
-      selected.includes(id)
-        ? selected.filter((s) => s !== id)
-        : [...selected, id],
-    );
+    onChange(selected.includes(id) ? selected.filter((s) => s !== id) : [...selected, id]);
   };
 
   const flyTo = (addr: AvailableAddress) => {
@@ -55,25 +46,16 @@ export function AddressSelector({
         </span>
       </legend>
 
-      <ul
-        role="listbox"
-        aria-multiselectable="true"
-        aria-label="Seleccionar direcciones"
-        className="flex flex-col gap-2 min-w-0"
-      >
+      <ul aria-label="Seleccionar direcciones" className="flex flex-col gap-2 min-w-0">
         {addresses.map((addr, index) => {
           const isSelected = selected.includes(addr.id);
           const num = index + 1;
 
           return (
-            <li
-              key={addr.id}
-              role="option"
-              aria-selected={isSelected}
-              className="min-w-0"
-            >
+            <li key={addr.id} className="min-w-0">
               <button
                 type="button"
+                aria-pressed={isSelected}
                 onClick={() => {
                   toggle(addr.id);
                   flyTo(addr);
@@ -109,8 +91,7 @@ export function AddressSelector({
                   <span className="text-sm text-muted-foreground flex items-center gap-1 min-w-0">
                     <MapPin className="size-3 shrink-0" aria-hidden />
                     <span className="truncate min-w-0">
-                      {addr.street}, {addr.number} — {addr.neighborhood},{" "}
-                      {addr.city}
+                      {addr.street}, {addr.number} — {addr.neighborhood}, {addr.city}
                     </span>
                   </span>
                 </span>

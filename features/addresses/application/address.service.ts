@@ -1,9 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { cache } from "react";
 import type { AddressFormData } from "../domain/address.schema";
 import { addressFormSchema } from "../domain/address.schema";
-import { cache } from "react";
 import { sanitizeInfo } from "../utils/sanitizeInfo";
 
 export async function createAddressService(params: {

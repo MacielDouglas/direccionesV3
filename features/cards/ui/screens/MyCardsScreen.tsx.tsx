@@ -7,11 +7,7 @@ interface Props {
   userId: string;
 }
 
-export async function MyCardsScreen({
-  organizationId,
-  organizationSlug,
-  userId,
-}: Props) {
+export async function MyCardsScreen({ organizationId, organizationSlug, userId }: Props) {
   const cards = await listMyCards(organizationId, userId);
 
   return <MyCardsClient cards={cards} organizationSlug={organizationSlug} />;

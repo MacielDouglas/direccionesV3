@@ -16,11 +16,7 @@ interface Props {
   showLabels?: boolean;
 }
 
-export function CardAddressesLayer({
-  addresses,
-  onMarkerClick,
-  showLabels = false,
-}: Props) {
+export function CardAddressesLayer({ addresses, onMarkerClick, showLabels = false }: Props) {
   const { map, isLoaded } = useMapInstance();
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
   const popupsRef = useRef<Map<string, mapboxgl.Popup>>(new Map());
@@ -37,18 +33,19 @@ export function CardAddressesLayer({
     const markers = markersRef.current;
     const popups = popupsRef.current;
 
-    markers.forEach((m) => m.remove());
-    popups.forEach((p) => p.remove());
+    for (const marker of markers.values()) marker.remove();
+    for (const popup of popups.values()) popup.remove();
     markers.clear();
     popups.clear();
 
     const bounds = new mapboxgl.LngLatBounds();
 
-    addresses.forEach((addr, index) => {
+    for (const [index, addr] of addresses.entries()) {
       const el = createMarkerEl(index + 1);
 
-      if (onMarkerClickRef.current) {
-        el.addEventListener("click", () => onMarkerClickRef.current!(addr.id));
+      const onClick = onMarkerClickRef.current;
+      if (onClick) {
+        el.addEventListener("click", () => onClick(addr.id));
         el.style.cursor = "pointer";
       }
 
@@ -73,7 +70,7 @@ export function CardAddressesLayer({
       markers.set(addr.id, marker);
       popups.set(addr.id, popup);
       bounds.extend([addr.longitude, addr.latitude]);
-    });
+    }
 
     if (addresses.length === 1) {
       map.flyTo({
@@ -85,8 +82,8 @@ export function CardAddressesLayer({
     }
 
     return () => {
-      markers.forEach((m) => m.remove());
-      popups.forEach((p) => p.remove());
+      for (const marker of markers.values()) marker.remove();
+      for (const popup of popups.values()) popup.remove();
       markers.clear();
       popups.clear();
     };
@@ -96,13 +93,13 @@ export function CardAddressesLayer({
   useEffect(() => {
     if (!map || !isLoaded) return;
 
-    popupsRef.current.forEach((popup) => {
+    for (const popup of popupsRef.current.values()) {
       if (showLabels) {
         popup.addTo(map);
       } else {
         popup.remove();
       }
-    });
+    }
   }, [showLabels, map, isLoaded]);
 
   return null;

@@ -1,15 +1,15 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { useFormContext } from "react-hook-form";
-import Image from "next/image";
-import { Camera, RefreshCw, UploadCloud, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormField, FormItem } from "@/components/ui/form";
+import { Camera, RefreshCw, UploadCloud, X } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import { useFormContext } from "react-hook-form";
 import type { AddressFormData } from "../../domain/address.schema";
-import { getDefaultAddressImage } from "../../utils/getDefaultAddressImage";
-import { useSmartImageUpload } from "../../hooks/useSmartImageUpload";
 import { DEFAULT_ADDRESS_IMAGES } from "../../domain/constants/address.constants";
+import { useSmartImageUpload } from "../../hooks/useSmartImageUpload";
+import { getDefaultAddressImage } from "../../utils/getDefaultAddressImage";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -39,8 +39,7 @@ export default function AddressImageField() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
 
-  const { processImage, processingProgress, isProcessing, error } =
-    useSmartImageUpload();
+  const { processImage, processingProgress, isProcessing, error } = useSmartImageUpload();
 
   // Aplica imagem default quando não há customização
   useEffect(() => {
@@ -93,9 +92,7 @@ export default function AddressImageField() {
           <Camera className="h-5 w-5 text-brand" aria-hidden />
           Imagen del lugar
         </h2>
-        <p className="text-xs text-muted-foreground">
-          Toca para seleccionar o arrastra una foto.
-        </p>
+        <p className="text-xs text-muted-foreground">Toca para seleccionar o arrastra una foto.</p>
       </header>
 
       <FormField
@@ -103,12 +100,10 @@ export default function AddressImageField() {
         name="image.imageUrl"
         render={() => (
           <FormItem>
-            <div
-              role="button"
-              tabIndex={0}
+            <button
+              type="button"
               aria-label="Seleccionar imagen"
               onClick={() => inputRef.current?.click()}
-              onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
               onDrop={(e) => {
                 e.preventDefault();
                 setDrag(false);
@@ -120,20 +115,15 @@ export default function AddressImageField() {
               }}
               onDragLeave={() => setDrag(false)}
               className={[
-                "group relative flex aspect-square w-full cursor-pointer items-center",
+                "group relative flex aspect-square w-full cursor-pointer appearance-none items-center",
                 "justify-center overflow-hidden rounded-2xl border-2 border-dashed transition-all",
+                "bg-transparent p-0 text-left font-inherit text-foreground",
                 drag ? "border-brand bg-brand/5" : "border-muted",
               ].join(" ")}
             >
               {/* ── Imagem ── */}
-              {hasImage && (
-                <Image
-                  src={preview!}
-                  alt="Vista previa"
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
+              {hasImage && preview && (
+                <Image src={preview} alt="Vista previa" fill className="object-cover" unoptimized />
               )}
 
               {/* ── Estado vazio ── */}
@@ -181,22 +171,17 @@ export default function AddressImageField() {
 
               {/* ── Processando ── */}
               {isProcessing && (
-                <div
-                  role="status"
-                  className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 p-6 text-white"
-                >
-                  <p className="text-sm font-medium">
-                    Procesando {processingProgress}%
-                  </p>
+                <output className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 p-6 text-white">
+                  <p className="text-sm font-medium">Procesando {processingProgress}%</p>
                   <progress
                     value={processingProgress}
                     max={100}
                     className="w-full"
                     aria-label={`${processingProgress}%`}
                   />
-                </div>
+                </output>
               )}
-            </div>
+            </button>
 
             {error && (
               <p role="alert" className="mt-1 text-sm text-destructive">

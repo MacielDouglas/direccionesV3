@@ -8,11 +8,8 @@ export default function UsersLoading() {
       <div className="h-8 w-64 animate-pulse rounded-md bg-muted" />
       <section className="space-y-3">
         <div className="h-5 w-32 animate-pulse rounded bg-muted" />
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 rounded-lg border p-3"
-          >
+        {Array.from({ length: 4 }, (_, i) => i + 1).map((item) => (
+          <div key={`skeleton-${item}`} className="flex items-center gap-3 rounded-lg border p-3">
             <div className="h-9 w-9 animate-pulse rounded-full bg-muted shrink-0" />
             <div className="flex-1 space-y-1.5">
               <div className="h-4 w-32 animate-pulse rounded bg-muted" />
@@ -24,11 +21,8 @@ export default function UsersLoading() {
       </section>
       <section className="space-y-3">
         <div className="h-5 w-40 animate-pulse rounded bg-muted" />
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 rounded-lg border p-3"
-          >
+        {Array.from({ length: 3 }, (_, i) => i + 1).map((item) => (
+          <div key={`skeleton-${item}`} className="flex items-center gap-3 rounded-lg border p-3">
             <div className="h-9 w-9 animate-pulse rounded-full bg-muted shrink-0" />
             <div className="flex-1 space-y-1.5">
               <div className="h-4 w-32 animate-pulse rounded bg-muted" />

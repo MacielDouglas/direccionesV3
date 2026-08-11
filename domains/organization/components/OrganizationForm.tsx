@@ -1,9 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -13,13 +10,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import {
-  createOrganizationAction,
-  setActiveOrg,
-} from "@/server/organization/organization.actions";
 import { createOrganizationSchema } from "@/domains/organization/schemas/organization.schema";
+import { createOrganizationAction, setActiveOrg } from "@/server/organization/organization.actions";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { useEffect, useMemo } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
 import type { z } from "zod";
 
 type FormValues = z.infer<typeof createOrganizationSchema>;
@@ -27,7 +24,7 @@ type FormValues = z.infer<typeof createOrganizationSchema>;
 function createSlug(text: string): string {
   return text
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\p{M}]/gu, "")
     .toLowerCase()
     .trim()
     .replace(/[^\w\s]/g, "")
@@ -56,11 +53,7 @@ export default function OrganizationForm() {
       }
       form.reset();
     } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Error al crear la organización.",
-      );
+      toast.error(error instanceof Error ? error.message : "Error al crear la organización.");
     }
   }
 

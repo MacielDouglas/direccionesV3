@@ -22,14 +22,14 @@ export default function AgendaLoading() {
         </div>
         {/* Dias da semana */}
         <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: 7 }).map((_, i) => (
-            <Skeleton key={i} className="h-5 w-full rounded" />
+          {Array.from({ length: 7 }, (_, i) => i + 1).map((item) => (
+            <Skeleton key={`skeleton-${item}`} className="h-5 w-full rounded" />
           ))}
         </div>
         {/* Grid dias */}
         <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: 35 }).map((_, i) => (
-            <Skeleton key={i} className="mx-auto size-8 rounded-full" />
+          {Array.from({ length: 35 }, (_, i) => i + 1).map((item) => (
+            <Skeleton key={`skeleton-${item}`} className="mx-auto size-8 rounded-full" />
           ))}
         </div>
       </div>
@@ -37,9 +37,9 @@ export default function AgendaLoading() {
       {/* Lista de eventos */}
       <div className="flex flex-col gap-3">
         <Skeleton className="h-5 w-40" />
-        {Array.from({ length: 3 }).map((_, i) => (
+        {Array.from({ length: 3 }, (_, i) => i + 1).map((item) => (
           <div
-            key={i}
+            key={`skeleton-${item}`}
             className="rounded-xl border bg-card p-4 flex flex-col gap-2"
           >
             <div className="flex justify-between">

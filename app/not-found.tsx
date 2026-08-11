@@ -1,5 +1,5 @@
-import Link from "next/link";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Página no encontrada",
@@ -12,9 +12,7 @@ export default function NotFound() {
         className="mx-auto w-full max-w-xl space-y-8 text-center"
         aria-labelledby="not-found-title"
       >
-        <p className="text-sm font-medium tracking-widest uppercase text-brand">
-          Error 404
-        </p>
+        <p className="text-sm font-medium tracking-widest uppercase text-brand">Error 404</p>
 
         <h1
           id="not-found-title"
@@ -24,8 +22,8 @@ export default function NotFound() {
         </h1>
 
         <p className="mx-auto max-w-md text-base leading-relaxed text-muted-foreground sm:text-lg">
-          Puede que el enlace esté roto o que la página haya sido movida. No te
-          preocupes, puedes volver al inicio y continuar navegando.
+          Puede que el enlace esté roto o que la página haya sido movida. No te preocupes, puedes
+          volver al inicio y continuar navegando.
         </p>
 
         <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">

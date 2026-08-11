@@ -1,15 +1,15 @@
 "use server";
 
+import { deleteR2Object } from "@/infrastructure/storage/r2.service";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/server/users";
+import { revalidatePath } from "next/cache";
+import type { AddressFormData } from "../domain/address.schema";
 import {
   createAddressService,
   getAddressByIdService,
   updateAddressService,
 } from "./address.service";
-import type { AddressFormData } from "../domain/address.schema";
-import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
-import { deleteR2Object } from "@/infrastructure/storage/r2.service";
 
 // ✅ Extrai key da URL — mesma lógica do client
 function extractKeyFromUrl(imageUrl: string | null | undefined): string | null {
@@ -40,10 +40,7 @@ export async function createAddressAction(input: AddressFormData) {
   return createAddressService({ input, organizationId, userId });
 }
 
-export async function updateAddressAction(
-  addressId: string,
-  input: AddressFormData,
-) {
+export async function updateAddressAction(addressId: string, input: AddressFormData) {
   const { organizationId, userId } = await getSessionOrThrow();
   return updateAddressService({ addressId, input, organizationId, userId });
 }
@@ -53,9 +50,7 @@ export async function getAddressByIdAction(addressId: string) {
   return getAddressByIdService({ addressId, organizationId });
 }
 
-export async function requestAddressDeletionAction(
-  addressId: string,
-): Promise<{ error?: string }> {
+export async function requestAddressDeletionAction(addressId: string): Promise<{ error?: string }> {
   try {
     const data = await getCurrentUser();
     if (!data) throw new Error("No autorizado.");
@@ -78,8 +73,7 @@ export async function requestAddressDeletionAction(
     return {};
   } catch (err) {
     return {
-      error:
-        err instanceof Error ? err.message : "Error al solicitar eliminación.",
+      error: err instanceof Error ? err.message : "Error al solicitar eliminación.",
     };
   }
 }
@@ -108,10 +102,8 @@ export async function confirmAddressDeletionAction(addressId: string) {
   if (imageKey) {
     try {
       await deleteR2Object(imageKey);
-      console.log("✅ Imagen eliminada del R2:", imageKey);
-    } catch (r2Error) {
+    } catch {
       // Não falha a operação — banco já foi deletado
-      console.warn("⚠️ No se pudo eliminar imagen del R2:", r2Error);
     }
   }
 

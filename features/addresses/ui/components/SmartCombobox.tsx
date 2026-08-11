@@ -1,13 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useId } from "react";
-import {
-  CheckIcon,
-  ChevronsUpDown,
-  PlusCircle,
-  AlertTriangle,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AlertTriangle, CheckIcon, ChevronsUpDown, PlusCircle } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useAddressSuggestions } from "../../hooks/useAddressSuggestions";
 
 interface Props {
@@ -20,12 +15,7 @@ interface Props {
   inputClassName?: string;
 }
 
-const normalize = (s: string) =>
-  s
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
+const normalize = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
 
 export function SmartCombobox({
   value,
@@ -55,10 +45,7 @@ export function SmartCombobox({
   // Fecha ao clicar fora — único useEffect permitido aqui
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     }
@@ -83,10 +70,7 @@ export function SmartCombobox({
   // Aviso de similaridade — só quando fechado
   const similarButDifferent = !open
     ? existing.find(
-        (e) =>
-          normalize(e) === normalize(inputValue) &&
-          e !== inputValue &&
-          inputValue.length > 1,
+        (e) => normalize(e) === normalize(inputValue) && e !== inputValue && inputValue.length > 1,
       )
     : null;
 
@@ -141,9 +125,7 @@ export function SmartCombobox({
             <button
               type="button"
               className="font-semibold underline underline-offset-2"
-              onClick={() =>
-                handleSelect({ value: similarButDifferent, isNew: false })
-              }
+              onClick={() => handleSelect({ value: similarButDifferent, isNew: false })}
             >
               ¿Usar este?
             </button>
@@ -155,58 +137,47 @@ export function SmartCombobox({
       {open && suggestions.length > 0 && (
         <ul
           id={listboxId}
-          role="listbox"
           aria-label={label ?? "Sugerencias"}
           className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-auto rounded-md border bg-popover text-popover-foreground shadow-lg"
         >
-          {suggestions.map((s, i) => {
+          {suggestions.map((s) => {
             const isSelected = normalize(s.value) === normalize(value);
             return (
-              <li
-                key={i}
-                role="option"
-                aria-selected={isSelected}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => handleSelect(s)}
-                className={cn(
-                  "flex cursor-pointer items-center gap-2 px-3 py-2.5 text-sm transition-colors",
-                  "hover:bg-accent hover:text-accent-foreground",
-                  isSelected && "bg-accent/60",
-                )}
-              >
-                {s.isNew ? (
-                  <>
-                    <PlusCircle
-                      className="h-4 w-4 shrink-0 text-brand"
-                      aria-hidden
-                    />
-                    <span>
-                      Agregar{" "}
-                      <strong className="text-brand">
-                        &ldquo;{s.value}&rdquo;
-                      </strong>
-                    </span>
-                    <span className="ml-auto text-xs text-muted-foreground">
-                      nuevo
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <CheckIcon
-                      className={cn(
-                        "h-4 w-4 shrink-0",
-                        isSelected ? "text-brand" : "text-transparent",
-                      )}
-                      aria-hidden
-                    />
-                    <span className="flex-1">{s.value}</span>
-                    {s.score < 0.6 && (
-                      <span className="ml-auto text-xs text-amber-500">
-                        similar
+              <li key={s.value}>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => handleSelect(s)}
+                  className={cn(
+                    "flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-sm transition-colors",
+                    "hover:bg-accent hover:text-accent-foreground",
+                    isSelected && "bg-accent/60",
+                  )}
+                >
+                  {s.isNew ? (
+                    <>
+                      <PlusCircle className="h-4 w-4 shrink-0 text-brand" aria-hidden />
+                      <span>
+                        Agregar <strong className="text-brand">&ldquo;{s.value}&rdquo;</strong>
                       </span>
-                    )}
-                  </>
-                )}
+                      <span className="ml-auto text-xs text-muted-foreground">nuevo</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckIcon
+                        className={cn(
+                          "h-4 w-4 shrink-0",
+                          isSelected ? "text-brand" : "text-transparent",
+                        )}
+                        aria-hidden
+                      />
+                      <span className="flex-1">{s.value}</span>
+                      {s.score < 0.6 && (
+                        <span className="ml-auto text-xs text-amber-500">similar</span>
+                      )}
+                    </>
+                  )}
+                </button>
               </li>
             );
           })}

@@ -1,10 +1,10 @@
 import { getAddressByIdService } from "@/features/addresses/application/address.service";
 import AddressDetailsScreen from "@/features/addresses/ui/screens/AddressDetailsScreen ";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
-import { notFound } from "next/navigation";
+import { MapPinCheck, Pin } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MapPinCheck, Pin } from "lucide-react";
+import { notFound } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Dirección",
@@ -45,10 +45,7 @@ export default async function AddressPage({ params }: AddressPageProps) {
           <Pin size={16} /> Ver todas las direcciones
         </Link>
       </div>
-      <AddressDetailsScreen
-        address={address}
-        organizationSlug={organizationSlug}
-      />
+      <AddressDetailsScreen address={address} organizationSlug={organizationSlug} />
     </>
   );
 }

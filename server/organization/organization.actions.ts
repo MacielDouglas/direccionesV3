@@ -1,9 +1,9 @@
 "use server";
 
-import { createOrganizationService } from "@/domains/organization";
-import { getCurrentUser } from "@/server/users";
-import { prisma } from "@/lib/prisma";
 import { toRole } from "@/domains/member/utils/toRole";
+import { createOrganizationService } from "@/domains/organization";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/server/users";
 
 export async function createOrganizationAction(data: {
   name: string;
@@ -17,7 +17,6 @@ export async function createOrganizationAction(data: {
     role: toRole(currentUser.user.role),
   });
 }
-
 
 export const setActiveOrg = async (organizationId: string) => {
   const currentUser = await getCurrentUser();

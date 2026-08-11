@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, use } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,14 +9,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AddressViewMap } from "@/features/map/components/AddressViewMap";
-import { AddressImageViewer } from "@/features/addresses/ui/components/AddressImageViewer";
 import { ADDRESS_TYPE_OPTIONS } from "@/features/addresses/domain/constants/address.constants";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import type { AddressWithUsers } from "@/features/addresses/types/address.types";
+import { AddressImageViewer } from "@/features/addresses/ui/components/AddressImageViewer";
 import DeleteAddressButton from "@/features/addresses/ui/components/DeleteAddressButton";
-import { AddressWithUsers } from "@/features/addresses/types/address.types";
+import { AddressViewMap } from "@/features/map/components/AddressViewMap";
 import { CircleAlert } from "lucide-react";
+import Link from "next/link";
+import { Suspense, use } from "react";
 
 const ADDRESS_COLOR_MAP: Record<string, string> = {
   House: "bg-green-500",
@@ -45,11 +45,7 @@ interface Props {
   onClose: () => void;
 }
 
-export function AddressDetailModal({
-  promise,
-  onClose,
-  organizationSlug,
-}: Props) {
+export function AddressDetailModal({ promise, onClose, organizationSlug }: Props) {
   return (
     <Dialog
       open={!!promise}
@@ -59,21 +55,16 @@ export function AddressDetailModal({
     >
       <DialogContent className="flex flex-col w-full max-w-2xl max-h-[92dvh] overflow-y-auto p-0 gap-0 rounded-2xl">
         <DialogHeader className="px-4 pt-5 pb-3 text-start shrink-0">
-          <DialogTitle className="text-base font-semibold">
-            Dirección
-          </DialogTitle>
+          <DialogTitle className="text-base font-semibold">Dirección</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
-            Usa el mapa para llegar o abre Google Maps / Waze. También puedes
-            editar, confirmar o desactivar esta dirección.
+            Usa el mapa para llegar o abre Google Maps / Waze. También puedes editar, confirmar o
+            desactivar esta dirección.
           </DialogDescription>
         </DialogHeader>
 
         {promise && (
           <Suspense fallback={<AddressDetailSkeleton />}>
-            <AddressContent
-              promise={promise}
-              organizationSlug={organizationSlug}
-            />
+            <AddressContent promise={promise} organizationSlug={organizationSlug} />
           </Suspense>
         )}
       </DialogContent>
@@ -101,8 +92,8 @@ function AddressDetailSkeleton() {
         </div>
         <Skeleton className="w-full h-48 rounded-xl" />
         <div className="grid grid-cols-2 gap-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex flex-col gap-1">
+          {[0, 1, 2].map((row) => (
+            <div key={row} className="flex flex-col gap-1">
               <Skeleton className="h-3 w-16" />
               <Skeleton className="h-4 w-28" />
             </div>
@@ -174,10 +165,7 @@ function AddressContent({
         {/* Header: nome + ícone */}
         <header className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <span
-              className={`h-8 w-2 shrink-0 rounded-full ${colorClass}`}
-              aria-hidden
-            />
+            <span className={`h-8 w-2 shrink-0 rounded-full ${colorClass}`} aria-hidden />
             <h2 className="truncate text-base font-semibold uppercase tracking-wide sm:text-lg">
               {address.businessName ?? "Residencial"}
             </h2>
@@ -193,12 +181,8 @@ function AddressContent({
         </header>
 
         {/* Badges */}
-        <div
-          className="flex flex-wrap gap-2 "
-          role="group"
-          aria-label="Estado de la dirección"
-        >
-          <span
+        <ul className="flex flex-wrap gap-2 " aria-label="Estado de la dirección">
+          <li
             className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
               address.confirmed
                 ? "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
@@ -206,8 +190,8 @@ function AddressContent({
             }`}
           >
             {address.confirmed ? "✓ Confirmada" : "✗ No confirmada"}
-          </span>
-          <span
+          </li>
+          <li
             className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
               address.active
                 ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
@@ -215,8 +199,8 @@ function AddressContent({
             }`}
           >
             {address.active ? "✓ Activa" : "✗ Inactiva"}
-          </span>
-        </div>
+          </li>
+        </ul>
 
         {/* Campos */}
         <section aria-labelledby="modal-address-info">
@@ -225,34 +209,26 @@ function AddressContent({
           </h3>
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <dt className="text-xs uppercase tracking-wide text-gray-400">
-                Calle
-              </dt>
+              <dt className="text-xs uppercase tracking-wide text-gray-400">Calle</dt>
               <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200">
                 {address.street}, {address.number}
               </dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wide text-gray-400">
-                Barrio
-              </dt>
+              <dt className="text-xs uppercase tracking-wide text-gray-400">Barrio</dt>
               <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200">
                 {address.neighborhood}
               </dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wide text-gray-400">
-                Ciudad
-              </dt>
+              <dt className="text-xs uppercase tracking-wide text-gray-400">Ciudad</dt>
               <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200">
                 {address.city}
               </dd>
             </div>
             {address.businessName && (
               <div>
-                <dt className="text-xs uppercase tracking-wide text-gray-400">
-                  Negocio
-                </dt>
+                <dt className="text-xs uppercase tracking-wide text-gray-400">Negocio</dt>
                 <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200">
                   {address.businessName}
                 </dd>
@@ -263,10 +239,7 @@ function AddressContent({
 
         {!address.active && (
           <p className="text-red-500 font-semibold text-lg inline-flex gap-2">
-            <CircleAlert
-              className="size-6 shrink-0 text-red-500 animate-bounce"
-              aria-hidden
-            />{" "}
+            <CircleAlert className="size-6 shrink-0 text-red-500 animate-bounce" aria-hidden />{" "}
             Dirección desactivada. Puede haber cambiado.
             <br />
             Revise notas o contacte a quien la actualizó.

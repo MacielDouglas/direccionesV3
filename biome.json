@@ -1,0 +1,65 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "files": {
+    "ignore": [
+      "node_modules",
+      ".next",
+      ".opencode",
+      "out",
+      "build",
+      "next-env.d.ts",
+      "public/sw.js",
+      "public/workbox-*.js",
+      "public/worker-*.js"
+    ],
+    "ignoreUnknown": true
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "lineEnding": "lf"
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "always",
+      "arrowParentheses": "always",
+      "quoteProperties": "asNeeded",
+      "trailingCommas": "all"
+    }
+  },
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error"
+      },
+      "suspicious": {
+        "noApproximativeNumericConstant": "error",
+        "noConsole": "warn",
+        "noExplicitAny": "warn"
+      },
+      "style": {
+        "noDefaultExport": "off",
+        "useEnumInitializers": "off",
+        "useImportType": "error",
+        "useNodejsImportProtocol": "off",
+        "noNamespace": "error"
+      },
+      "complexity": {
+        "noBannedTypes": "error"
+      },
+      "a11y": {
+        "useKeyWithClickEvents": "warn",
+        "useValidAriaValues": "error"
+      }
+    }
+  }
+}

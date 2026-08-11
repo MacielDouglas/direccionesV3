@@ -18,11 +18,8 @@ export default function CardNewLoading() {
         {/* Lista de addresses */}
         <div className="space-y-2">
           <div className="h-4 w-28 animate-pulse rounded bg-muted" />
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-3 rounded-lg border p-3"
-            >
+          {Array.from({ length: 5 }, (_, i) => i + 1).map((item) => (
+            <div key={`skeleton-${item}`} className="flex items-center gap-3 rounded-lg border p-3">
               <div className="h-6 w-6 animate-pulse rounded-full bg-muted shrink-0" />
               <div className="flex flex-1 flex-col gap-1.5 min-w-0">
                 <div className="h-4 w-2/3 animate-pulse rounded bg-muted" />

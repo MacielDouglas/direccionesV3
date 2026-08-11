@@ -1,9 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { toast } from "sonner";
-import { Trash2, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,9 +11,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { deleteAccountAction } from "@/server/organization/delete-account.action";
+import { Loader2, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 // import { deleteAccountAction } from "@/server/delete-account.action";
 
 export function DeleteAccountButton({ userEmail }: { userEmail: string }) {
@@ -50,15 +50,13 @@ export function DeleteAccountButton({ userEmail }: { userEmail: string }) {
 
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>
-            ¿Eliminar la cuenta permanentemente?
-          </AlertDialogTitle>
+          <AlertDialogTitle>¿Eliminar la cuenta permanentemente?</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="flex flex-col gap-3">
               <p>
-                Esta acción es <strong>irreversible</strong>. Tus datos de
-                inicio de sesión, memberships y historial serán eliminados. Las
-                direcciones y tarjetas que hayas creado se conservarán.
+                Esta acción es <strong>irreversible</strong>. Tus datos de inicio de sesión,
+                memberships y historial serán eliminados. Las direcciones y tarjetas que hayas
+                creado se conservarán.
               </p>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="confirm-email" className="text-sm">
@@ -78,10 +76,7 @@ export function DeleteAccountButton({ userEmail }: { userEmail: string }) {
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel
-            disabled={isLoading}
-            onClick={() => setConfirmText("")}
-          >
+          <AlertDialogCancel disabled={isLoading} onClick={() => setConfirmText("")}>
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction

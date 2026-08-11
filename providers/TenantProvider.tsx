@@ -27,9 +27,7 @@ export function TenantProvider({
   children: ReactNode;
   value: TenantContextValue;
 }) {
-  return (
-    <TenantContext.Provider value={value}>{children}</TenantContext.Provider>
-  );
+  return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;
 }
 
 export function useTenant(): TenantContextValue {

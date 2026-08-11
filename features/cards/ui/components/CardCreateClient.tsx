@@ -1,23 +1,20 @@
 "use client";
 
-import { useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import {
-  createCardSchema,
-  type CreateCardInput,
-} from "../../domain/card.schema";
-import { createCardAction } from "../../application/card.actions";
 import { Button } from "@/components/ui/button";
-import type { AvailableAddress } from "../../types/card.types";
-import { SelectableAddressesLayer } from "@/features/map/layers/SelectableAddressesLayer";
-import { AddressSelector } from "./AddressSelector";
-import { AddressFilterBar, type AddressFilters } from "./AddressFilterBar";
-import { sortAddressesByProximity } from "../../utils/sortAddressesByProximity";
+import type { AddressType } from "@/features/addresses/types/address.types";
 import { LazyMapboxProvider } from "@/features/map/core/LazyMapboxProvider";
-import { AddressType } from "@/features/addresses/types/address.types";
+import { SelectableAddressesLayer } from "@/features/map/layers/SelectableAddressesLayer";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
+import { createCardAction } from "../../application/card.actions";
+import { type CreateCardInput, createCardSchema } from "../../domain/card.schema";
+import type { AvailableAddress } from "../../types/card.types";
+import { sortAddressesByProximity } from "../../utils/sortAddressesByProximity";
+import { AddressFilterBar, type AddressFilters } from "./AddressFilterBar";
+import { AddressSelector } from "./AddressSelector";
 
 interface Props {
   organizationId: string;
@@ -63,8 +60,7 @@ export function CardCreateClient({
   const { sortedAddresses, selectableAddresses } = useMemo(() => {
     // ✅ Filtra client-side — sem roundtrip
     const filtered = availableAddresses.filter((a) => {
-      if (filters.active !== undefined && a.active !== filters.active)
-        return false;
+      if (filters.active !== undefined && a.active !== filters.active) return false;
       if (
         filters.types?.length &&
         !filters.types.includes(a.type as AddressType) // ✅ cast aqui
@@ -74,14 +70,18 @@ export function CardCreateClient({
     });
 
     const sorted = sortAddressesByProximity(filtered);
+    const withCoords = sorted.filter(
+      (a): a is typeof a & { latitude: number; longitude: number } =>
+        a.latitude != null && a.longitude != null,
+    );
 
     return {
       sortedAddresses: sorted,
-      selectableAddresses: sorted.map((a, i) => ({
+      selectableAddresses: withCoords.map((a, i) => ({
         id: a.id,
         label: a.businessName ?? `${a.street}, ${a.number}`,
-        latitude: a.latitude!,
-        longitude: a.longitude!,
+        latitude: a.latitude,
+        longitude: a.longitude,
         index: i + 1,
       })),
     };
@@ -89,18 +89,12 @@ export function CardCreateClient({
 
   const onSubmit = (data: CreateCardInput) => {
     startTransition(async () => {
-      const result = await createCardAction(
-        organizationId,
-        organizationSlug,
-        data,
-      );
+      const result = await createCardAction(organizationId, organizationSlug, data);
       if (result.error) {
         toast.error(result.error);
         return;
       }
-      toast.success(
-        `Tarjeta #${String(result.cardNumber).padStart(2, "0")} creada con éxito.`,
-      );
+      toast.success(`Tarjeta #${String(result.cardNumber).padStart(2, "0")} creada con éxito.`);
       router.push(`/org/${organizationSlug}/admin/cards`);
     });
   };
@@ -129,9 +123,7 @@ export function CardCreateClient({
         >
           {/* Número */}
           <div className="rounded-lg border bg-muted/40 px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
-              Crear tarjeta número:
-            </span>
+            <span className="text-sm text-muted-foreground">Crear tarjeta número:</span>
             <span className="text-2xl font-bold tabular-nums">
               #{String(nextNumber).padStart(2, "0")}
             </span>
@@ -143,9 +135,7 @@ export function CardCreateClient({
             disabled={isPending || selectedIds.length === 0}
             aria-busy={isPending}
           >
-            {isPending
-              ? "Creando..."
-              : `Crear Tarjeta #${String(nextNumber).padStart(2, "0")}`}
+            {isPending ? "Creando..." : `Crear Tarjeta #${String(nextNumber).padStart(2, "0")}`}
           </Button>
           {/* )} */}
           {/* ✅ Filtros */}
@@ -159,9 +149,7 @@ export function CardCreateClient({
           <AddressSelector
             addresses={sortedAddresses}
             selected={selectedIds}
-            onChange={(ids) =>
-              setValue("addressIds", ids, { shouldValidate: true })
-            }
+            onChange={(ids) => setValue("addressIds", ids, { shouldValidate: true })}
             error={errors.addressIds?.message}
           />
 
@@ -187,9 +175,7 @@ export function CardCreateClient({
               disabled={isPending || selectedIds.length === 0}
               aria-busy={isPending}
             >
-              {isPending
-                ? "Creando..."
-                : `Crear Tarjeta #${String(nextNumber).padStart(2, "0")}`}
+              {isPending ? "Creando..." : `Crear Tarjeta #${String(nextNumber).padStart(2, "0")}`}
             </Button>
           </div>
         </form>

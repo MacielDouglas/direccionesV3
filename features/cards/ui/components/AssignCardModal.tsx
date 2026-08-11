@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { toast } from "sonner";
-import { assignCardAction } from "../../application/card.actions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { assignCardAction } from "../../application/card.actions";
 
 interface Member {
   user: { id: string; name: string; email: string; image: string | null };
@@ -40,18 +40,12 @@ export function AssignCardModal({
   const handleAssign = () => {
     if (!selectedUserId) return;
     startTransition(async () => {
-      const result = await assignCardAction(
-        cardId,
-        selectedUserId,
-        organizationSlug,
-      );
+      const result = await assignCardAction(cardId, selectedUserId, organizationSlug);
       if (result.error) {
         toast.error(result.error);
         return;
       }
-      toast.success(
-        `¡Tarjeta #${String(cardNumber).padStart(2, "0")} asignada exitosamente!`,
-      );
+      toast.success(`¡Tarjeta #${String(cardNumber).padStart(2, "0")} asignada exitosamente!`);
       onClose();
     });
   };
@@ -60,9 +54,7 @@ export function AssignCardModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-sm w-full">
         <DialogHeader>
-          <DialogTitle>
-            Atribuir Card #{String(cardNumber).padStart(2, "0")}
-          </DialogTitle>
+          <DialogTitle>Atribuir Card #{String(cardNumber).padStart(2, "0")}</DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-2 py-2 max-h-64 overflow-y-auto">
@@ -81,21 +73,15 @@ export function AssignCardModal({
             >
               <Avatar className="size-6 shrink-0">
                 <AvatarImage src={user.image ?? undefined} />
-                <AvatarFallback>
-                  {user.name?.charAt(0).toUpperCase()}
-                </AvatarFallback>
+                <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               {/* <UserCircle
                 className="size-5 shrink-0 text-muted-foreground"
                 aria-hidden
               /> */}
               <span className="flex flex-col min-w-0">
-                <span className="text-sm font-medium truncate">
-                  {user.name}
-                </span>
-                <span className="text-xs text-muted-foreground truncate">
-                  {user.email}
-                </span>
+                <span className="text-sm font-medium truncate">{user.name}</span>
+                <span className="text-xs text-muted-foreground truncate">{user.email}</span>
               </span>
             </button>
           ))}

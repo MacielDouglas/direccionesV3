@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
+import { useEffect } from "react";
 
 export function SetActiveOrg({ organizationId }: { organizationId: string }) {
   useEffect(() => {

@@ -1,19 +1,19 @@
 "use client";
 
-import { useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { MapPin, CheckCircle2 } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckCircle2, MapPin } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useMemo, useTransition } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
 
-import { editCardSchema, type EditCardInput } from "../../domain/card.schema";
-import { updateCardAction } from "../../application/card.actions";
 import { Button } from "@/components/ui/button";
-import { SelectableAddressesLayer } from "@/features/map/layers/SelectableAddressesLayer";
-import { sortAddressesByProximity } from "../../utils/sortAddressesByProximity";
 import { LazyMapboxProvider } from "@/features/map/core/LazyMapboxProvider";
+import { SelectableAddressesLayer } from "@/features/map/layers/SelectableAddressesLayer";
+import { updateCardAction } from "../../application/card.actions";
+import { type EditCardInput, editCardSchema } from "../../domain/card.schema";
+import { sortAddressesByProximity } from "../../utils/sortAddressesByProximity";
 
 type Address = {
   id: string;
@@ -70,17 +70,17 @@ export function CardEditClient({
   };
 
   const { allForMap, indexMap } = useMemo(() => {
-    const sorted = sortAddressesByProximity([
-      ...linkedAddresses,
-      ...availableAddresses,
-    ]);
+    const sorted = sortAddressesByProximity([...linkedAddresses, ...availableAddresses]);
     const forMap = sorted
-      .filter((a) => a.latitude != null && a.longitude != null)
+      .filter(
+        (a): a is typeof a & { latitude: number; longitude: number } =>
+          a.latitude != null && a.longitude != null,
+      )
       .map((a, i) => ({
         id: a.id,
         label: a.businessName ?? `${a.street}, ${a.number}`,
-        latitude: a.latitude!,
-        longitude: a.longitude!,
+        latitude: a.latitude,
+        longitude: a.longitude,
         index: i + 1,
       }));
 
@@ -94,19 +94,12 @@ export function CardEditClient({
 
   const onSubmit = (data: EditCardInput) => {
     startTransition(async () => {
-      const result = await updateCardAction(
-        cardId,
-        organizationId,
-        organizationSlug,
-        data,
-      );
+      const result = await updateCardAction(cardId, organizationId, organizationSlug, data);
       if (result.error) {
         toast.error(result.error);
         return;
       }
-      toast.success(
-        `Tarjeta #${String(cardNumber).padStart(2, "0")} actualizada.`,
-      );
+      toast.success(`Tarjeta #${String(cardNumber).padStart(2, "0")} actualizada.`);
       router.push(`/org/${organizationSlug}/admin/cards`);
     });
   };
@@ -135,9 +128,7 @@ export function CardEditClient({
         >
           {/* Header */}
           <div className="rounded-lg border bg-muted/40 px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
-              Editando tarjeta
-            </span>
+            <span className="text-sm text-muted-foreground">Editando tarjeta</span>
             <span className="text-2xl font-bold tabular-nums">
               #{String(cardNumber).padStart(2, "0")}
             </span>
@@ -145,18 +136,11 @@ export function CardEditClient({
 
           {/* Seção: vinculados */}
           <section aria-labelledby="linked-title">
-            <h2
-              id="linked-title"
-              className="text-sm font-semibold mb-2 flex items-center gap-2"
-            >
+            <h2 id="linked-title" className="text-sm font-semibold mb-2 flex items-center gap-2">
               Direcciones vinculadas
               <span className="text-xs font-normal text-muted-foreground">
-                (
-                {
-                  linkedAddresses.filter((a) => selectedIds.includes(a.id))
-                    .length
-                }{" "}
-                de {linkedAddresses.length})
+                ({linkedAddresses.filter((a) => selectedIds.includes(a.id)).length} de{" "}
+                {linkedAddresses.length})
               </span>
             </h2>
             <AddressList
@@ -177,11 +161,7 @@ export function CardEditClient({
               >
                 Direcciones disponibles
                 <span className="text-xs font-normal text-muted-foreground">
-                  (
-                  {
-                    availableAddresses.filter((a) => selectedIds.includes(a.id))
-                      .length
-                  }{" "}
+                  ({availableAddresses.filter((a) => selectedIds.includes(a.id)).length}{" "}
                   seleccionadas)
                 </span>
               </h2>
@@ -281,15 +261,12 @@ function AddressList({
 
               <span className="flex flex-col gap-0.5 min-w-0 flex-1">
                 {addr.businessName && (
-                  <span className="font-medium text-sm truncate">
-                    {addr.businessName}
-                  </span>
+                  <span className="font-medium text-sm truncate">{addr.businessName}</span>
                 )}
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
                   <MapPin className="size-3 shrink-0" aria-hidden />
                   <span className="truncate">
-                    {addr.street}, {addr.number} — {addr.neighborhood},{" "}
-                    {addr.city}
+                    {addr.street}, {addr.number} — {addr.neighborhood}, {addr.city}
                   </span>
                 </span>
               </span>

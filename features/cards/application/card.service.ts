@@ -1,11 +1,9 @@
 "use server";
 
-import { AddressType } from "@/features/addresses/types/address.types";
+import type { AddressType } from "@/features/addresses/types/address.types";
 import { prisma } from "@/lib/prisma";
 
-export async function getNextCardNumber(
-  organizationId: string,
-): Promise<number> {
+export async function getNextCardNumber(organizationId: string): Promise<number> {
   const result = await prisma.card.aggregate({
     where: { organizationId },
     _max: { number: true },
@@ -109,10 +107,7 @@ export async function getOrgMembers(organizationId: string) {
   });
 }
 
-export async function getCardWithAddresses(
-  cardId: string,
-  organizationId: string,
-) {
+export async function getCardWithAddresses(cardId: string, organizationId: string) {
   return prisma.card.findFirst({
     where: { id: cardId, organizationId },
     include: {

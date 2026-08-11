@@ -5,20 +5,22 @@ type AddressWithCoords = {
   [key: string]: unknown;
 };
 
-function haversineDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number,
-): number {
+type WithCoords<T extends AddressWithCoords = AddressWithCoords> = T & {
+  latitude: number;
+  longitude: number;
+};
+
+function hasCoords<T extends AddressWithCoords>(a: T): a is WithCoords<T> {
+  return a.latitude != null && a.longitude != null;
+}
+
+function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371; // km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2;
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -28,27 +30,19 @@ function haversineDistance(
  *
  * Começa pelo centroide do grupo para o ponto inicial ser neutro.
  */
-export function sortAddressesByProximity<T extends AddressWithCoords>(
-  addresses: T[],
-): T[] {
-  const withCoords = addresses.filter(
-    (a) => a.latitude != null && a.longitude != null,
-  );
-  const withoutCoords = addresses.filter(
-    (a) => a.latitude == null || a.longitude == null,
-  );
+export function sortAddressesByProximity<T extends AddressWithCoords>(addresses: T[]): T[] {
+  const withCoords = addresses.filter(hasCoords);
+  const withoutCoords = addresses.filter((a) => !hasCoords(a));
 
   if (withCoords.length === 0) return addresses;
   if (withCoords.length === 1) return [...withCoords, ...withoutCoords];
 
   // Calcula centroide do grupo como ponto de partida neutro
-  const centroidLat =
-    withCoords.reduce((sum, a) => sum + a.latitude!, 0) / withCoords.length;
-  const centroidLon =
-    withCoords.reduce((sum, a) => sum + a.longitude!, 0) / withCoords.length;
+  const centroidLat = withCoords.reduce((sum, a) => sum + a.latitude, 0) / withCoords.length;
+  const centroidLon = withCoords.reduce((sum, a) => sum + a.longitude, 0) / withCoords.length;
 
   const remaining = [...withCoords];
-  const sorted: T[] = [];
+  const sorted: WithCoords<T>[] = [];
 
   // Ponto atual começa no centroide
   let currentLat = centroidLat;
@@ -57,25 +51,21 @@ export function sortAddressesByProximity<T extends AddressWithCoords>(
   while (remaining.length > 0) {
     // Encontra o address mais próximo do ponto atual
     let nearestIndex = 0;
-    let nearestDist = Infinity;
+    let nearestDist = Number.POSITIVE_INFINITY;
 
-    remaining.forEach((addr, i) => {
-      const dist = haversineDistance(
-        currentLat,
-        currentLon,
-        addr.latitude!,
-        addr.longitude!,
-      );
+    for (let i = 0; i < remaining.length; i += 1) {
+      const addr = remaining[i];
+      const dist = haversineDistance(currentLat, currentLon, addr.latitude, addr.longitude);
       if (dist < nearestDist) {
         nearestDist = dist;
         nearestIndex = i;
       }
-    });
+    }
 
     const nearest = remaining[nearestIndex];
     sorted.push(nearest);
-    currentLat = nearest.latitude!;
-    currentLon = nearest.longitude!;
+    currentLat = nearest.latitude;
+    currentLon = nearest.longitude;
     remaining.splice(nearestIndex, 1);
   }
 

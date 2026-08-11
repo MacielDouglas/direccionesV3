@@ -15,8 +15,8 @@ export default function AdminLoading() {
 
       {/* Cards skeleton */}
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-hidden>
-        {Array.from({ length: 4 }).map((_, i) => (
-          <li key={i}>
+        {Array.from({ length: 4 }, (_, i) => i + 1).map((item) => (
+          <li key={`skeleton-${item}`}>
             <div className="flex flex-col gap-3 rounded-2xl border p-5">
               <div className="flex items-start gap-3">
                 <Skeleton className="size-10 rounded-xl shrink-0" />

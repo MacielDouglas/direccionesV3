@@ -1,13 +1,7 @@
-import { Address } from "@prisma/client";
+import type { Address } from "@prisma/client";
 import type { AddressFormData } from "../domain/address.schema";
 
-export const ADDRESS_TYPES = [
-  "House",
-  "Apartment",
-  "Store",
-  "Hotel",
-  "Restaurant",
-] as const;
+export const ADDRESS_TYPES = ["House", "Apartment", "Store", "Hotel", "Restaurant"] as const;
 
 export type AddressType = (typeof ADDRESS_TYPES)[number];
 

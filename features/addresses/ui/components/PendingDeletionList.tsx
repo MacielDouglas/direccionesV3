@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle, XCircle, MapPin } from "lucide-react";
-import {
-  confirmAddressDeletionAction,
-  cancelAddressDeletionAction,
-} from "../../application/address.actions";
-import { toast } from "sonner";
+import { CheckCircle, Loader2, MapPin, XCircle } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
+import { toast } from "sonner";
+import {
+  cancelAddressDeletionAction,
+  confirmAddressDeletionAction,
+} from "../../application/address.actions";
 
 type AddressItem = {
   id: string;
@@ -36,9 +36,7 @@ export function PendingDeletionList({
       await confirmAddressDeletionAction(id);
       toast.success("Dirección eliminada correctamente.");
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Error al eliminar.",
-      );
+      toast.error(error instanceof Error ? error.message : "Error al eliminar.");
     } finally {
       setLoadingId(null);
     }
@@ -50,9 +48,7 @@ export function PendingDeletionList({
       await cancelAddressDeletionAction(id);
       toast.success("Solicitud cancelada.");
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Error al cancelar.",
-      );
+      toast.error(error instanceof Error ? error.message : "Error al cancelar.");
     } finally {
       setLoadingId(null);
     }
@@ -60,9 +56,7 @@ export function PendingDeletionList({
 
   if (addresses.length === 0) {
     return (
-      <p className="mt-10 text-center text-muted-foreground">
-        No hay solicitudes pendientes.
-      </p>
+      <p className="mt-10 text-center text-muted-foreground">No hay solicitudes pendientes.</p>
     );
   }
 
@@ -86,17 +80,11 @@ export function PendingDeletionList({
           )}
           <div className="bg-black/30 absolute z-10 w-full h-full top-0 left-0 rounded-xl" />
           <div className="flex items-start gap-2 z-10">
-            <MapPin
-              className="mt-0.5 h-4 w-4 shrink-0 text-destructive"
-              aria-hidden="true"
-            />
+            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
             <div>
-              {address.businessName && (
-                <p className="font-semibold">{address.businessName}</p>
-              )}
+              {address.businessName && <p className="font-semibold">{address.businessName}</p>}
               <p className="text-sm text-muted">
-                {address.street}, {address.number} — {address.neighborhood},{" "}
-                {address.city}
+                {address.street}, {address.number} — {address.neighborhood}, {address.city}
               </p>
               {address.requestedBy && (
                 <p className="mt-1 text-xs text-muted/70">

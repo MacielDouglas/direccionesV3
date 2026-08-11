@@ -1,8 +1,4 @@
-import {
-  DeleteObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const requiredEnvVars = {
@@ -18,12 +14,8 @@ for (const [key, value] of Object.entries(requiredEnvVars)) {
   }
 }
 
-const {
-  R2_ACCOUNT_ID,
-  R2_ACCESS_KEY_ID,
-  R2_SECRET_ACCESS_KEY,
-  R2_BUCKET_NAME,
-} = requiredEnvVars as Record<keyof typeof requiredEnvVars, string>;
+const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME } =
+  requiredEnvVars as Record<keyof typeof requiredEnvVars, string>;
 
 // ✅ UM único client — mesmo para upload e delete
 const s3 = new S3Client({
@@ -35,10 +27,7 @@ const s3 = new S3Client({
   },
 });
 
-export async function generateUploadUrl(
-  key: string,
-  contentType: string,
-): Promise<string> {
+export async function generateUploadUrl(key: string, contentType: string): Promise<string> {
   const command = new PutObjectCommand({
     Bucket: R2_BUCKET_NAME,
     Key: key,

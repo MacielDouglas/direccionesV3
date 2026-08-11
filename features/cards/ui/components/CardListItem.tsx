@@ -2,15 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  CheckCircle,
-  Circle,
-  CircleAlert,
-  Clock,
-  MapPin,
-  Pencil,
-  User,
-} from "lucide-react";
+import { CheckCircle, Circle, CircleAlert, Clock, MapPin, Pencil, User } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { AssignCardModal } from "./AssignCardModal";
@@ -67,11 +59,7 @@ export function CardListItem({
   return (
     <>
       <article
-        style={
-          isSelected
-            ? { outline: `2px solid ${color}`, outlineOffset: "2px" }
-            : undefined
-        }
+        style={isSelected ? { outline: `2px solid ${color}`, outlineOffset: "2px" } : undefined}
         className={cn(
           "rounded-xl border bg-card p-4 flex flex-col gap-3 shadow-sm cursor-pointer",
           "transition-all duration-200",
@@ -125,11 +113,8 @@ export function CardListItem({
             </p>
           </div>
 
-          {/* Ações — stopPropagation para não disparar onSelect */}
-          <div
-            className="flex items-center gap-2 flex-wrap justify-end"
-            onClick={(e) => e.stopPropagation()}
-          >
+          {/* Ações */}
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             {!isAssigned && (
               <Button size="sm" onClick={() => setAssignOpen(true)}>
                 <User className="size-4 mr-1.5" aria-hidden />
@@ -144,9 +129,7 @@ export function CardListItem({
               />
             )}
             <Button asChild size="sm" variant="outline">
-              <Link
-                href={`/org/${organizationSlug}/admin/cards/${card.id}/edit`}
-              >
+              <Link href={`/org/${organizationSlug}/admin/cards/${card.id}/edit`}>
                 <Pencil className="size-4 mr-1.5" aria-hidden />
                 Editar
               </Link>
@@ -162,10 +145,7 @@ export function CardListItem({
         {/* Usuário atribuído */}
         {isAssigned && card.assignedUser && (
           <div className="flex items-center gap-2 text-sm">
-            <User
-              className="size-4 text-muted-foreground shrink-0"
-              aria-hidden
-            />
+            <User className="size-4 text-muted-foreground shrink-0" aria-hidden />
             <span>
               <span className="font-medium">{card.assignedUser.name}</span>
               {card.startDate && (
@@ -182,8 +162,7 @@ export function CardListItem({
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Clock className="size-3.5 shrink-0" aria-hidden />
             <span>
-              Último:{" "}
-              <span className="font-medium">{lastReturn.user.name}</span>
+              Último: <span className="font-medium">{lastReturn.user.name}</span>
               {" — "}
               {new Date(lastReturn.date).toLocaleDateString("es-419")}
             </span>
@@ -191,11 +170,7 @@ export function CardListItem({
         )}
 
         {/* Endereços */}
-        <ul
-          className="flex flex-col gap-1"
-          aria-label="Direcciones de la tarjeta"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <ul className="flex flex-col gap-1" aria-label="Direcciones de la tarjeta">
           {card.addresses.map((addr) => (
             <li key={addr.id}>
               <button
@@ -206,22 +181,13 @@ export function CardListItem({
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring text-left"
                 aria-label={`Ver detalles: ${addr.businessName ?? addr.street}`}
               >
-                <MapPin
-                  className="size-3.5 mt-0.5 shrink-0"
-                  style={{ color }}
-                  aria-hidden
-                />
+                <MapPin className="size-3.5 mt-0.5 shrink-0" style={{ color }} aria-hidden />
                 {!addr.active && (
-                  <CircleAlert
-                    className="size-4 shrink-0 text-red-500 animate-ping"
-                    aria-hidden
-                  />
+                  <CircleAlert className="size-4 shrink-0 text-red-500 animate-ping" aria-hidden />
                 )}
                 <span className="truncate">
                   {addr.businessName && (
-                    <span className="font-medium text-foreground">
-                      {addr.businessName} —{" "}
-                    </span>
+                    <span className="font-medium text-foreground">{addr.businessName} — </span>
                   )}
                   {addr.street}, {addr.number}, {addr.neighborhood}, {addr.city}
                 </span>

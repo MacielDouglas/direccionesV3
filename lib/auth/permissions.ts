@@ -1,9 +1,5 @@
 import { createAccessControl } from "better-auth/plugins/access";
-import {
-  defaultStatements,
-  adminAc,
-  memberAc,
-} from "better-auth/plugins/organization/access";
+import { adminAc, defaultStatements, memberAc } from "better-auth/plugins/organization/access";
 
 // ✅ Mescla statement padrão (organization, member, invitation) com o seu (project)
 const statement = {

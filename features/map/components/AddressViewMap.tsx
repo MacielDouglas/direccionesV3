@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { Car, Footprints } from "lucide-react";
-import type { Coordinates, RouteProfile } from "../types/map.types";
-import RouteLayer from "../layers/RouteLayer";
 import Link from "next/link";
+import { useState } from "react";
 import { LazyMapboxProvider } from "../core/LazyMapboxProvider";
+import RouteLayer from "../layers/RouteLayer";
+import type { Coordinates, RouteProfile } from "../types/map.types";
 
 export function AddressViewMap({ latitude, longitude }: Coordinates) {
   const [profile, setProfile] = useState<RouteProfile>("walking");

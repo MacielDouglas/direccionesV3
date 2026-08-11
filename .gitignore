@@ -37,6 +37,12 @@ yarn-error.log*
 # vercel
 .vercel
 
+# opencode
+.opencode/
+
+# arquivos temporários
+scratch-test.tsx
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

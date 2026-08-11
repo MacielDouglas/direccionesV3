@@ -1,8 +1,8 @@
-import { getCurrentUser } from "@/server/users";
-import { redirect } from "next/navigation";
 import { getAgendaEventsByMonth } from "@/features/agenda/application/agenda.service";
-import type { Metadata } from "next";
 import { AgendaPageClient } from "@/features/agenda/components/AgendaPageClient";
+import { getCurrentUser } from "@/server/users";
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = { title: "Cronograma" };
 
@@ -33,14 +33,13 @@ export default async function AgendaPage({ params, searchParams }: Props) {
   if (!session) redirect("/sign-in");
 
   const now = new Date();
-  const activeYear = year ? parseInt(year) : now.getFullYear();
-  const activeMonth = month ? parseInt(month) : now.getMonth();
+  const activeYear = year ? Number.parseInt(year) : now.getFullYear();
+  const activeMonth = month ? Number.parseInt(month) : now.getMonth();
 
-  const events = await getAgendaEventsByMonth(
-    session.activeMember!.organizationId,
-    activeYear,
-    activeMonth,
-  );
+  const activeMember = session.activeMember;
+  if (!activeMember) redirect("/organizations");
+
+  const events = await getAgendaEventsByMonth(activeMember.organizationId, activeYear, activeMonth);
 
   const monthLabel = `${MONTHS_ES[activeMonth]} ${activeYear}`;
 
@@ -48,9 +47,7 @@ export default async function AgendaPage({ params, searchParams }: Props) {
     <main className="mx-auto w-full max-w-lg px-4 py-6 flex flex-col gap-6">
       <header>
         <h1 className="text-2xl font-bold">Cronograma</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          Cronogramas y actividades del mes.
-        </p>
+        <p className="text-sm text-muted-foreground mt-0.5">Cronogramas y actividades del mes.</p>
       </header>
 
       <AgendaPageClient

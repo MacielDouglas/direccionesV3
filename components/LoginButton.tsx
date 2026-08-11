@@ -1,8 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { signIn } from "@/lib/auth-client";
 import { useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 export default function LoginButton() {
@@ -25,6 +25,8 @@ export default function LoginButton() {
             width="24"
             height="24"
             viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
           >
             <path
               fill="currentColor"

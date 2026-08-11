@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Clock, User, Info, Pencil } from "lucide-react";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
-import type { AgendaEventItem as TAgendaEventItem } from "../types/agenda.types";
-import { DeleteAgendaEventButton } from "./ui/DeleteAgendaEventButton";
-import { EditAgendaEventModal } from "./EditAgendaEventModal";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Clock, Info, Pencil, User } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
+import type { AgendaEventItem as TAgendaEventItem } from "../types/agenda.types";
+import { EditAgendaEventModal } from "./EditAgendaEventModal";
+import { DeleteAgendaEventButton } from "./ui/DeleteAgendaEventButton";
 
 interface Member {
   user: { id: string; name: string; image: string | null };
@@ -91,29 +91,21 @@ export function AgendaEventItem({
             )}
 
             {canDelete && (
-              <DeleteAgendaEventButton
-                eventId={event.id}
-                organizationSlug={organizationSlug}
-              />
+              <DeleteAgendaEventButton eventId={event.id} organizationSlug={organizationSlug} />
             )}
           </div>
         </header>
 
         {/* Conductor */}
         {event.conductor && (
-          <div
-            className={cn("flex items-center gap-2", isPast && "line-through")}
-          >
+          <div className={cn("flex items-center gap-2", isPast && "line-through")}>
             {event.conductor.image ? (
               <Image
                 src={event.conductor.image}
                 alt={event.conductor.name}
                 width={24}
                 height={24}
-                className={cn(
-                  "rounded-full size-6 object-cover",
-                  isPast && "grayscale",
-                )}
+                className={cn("rounded-full size-6 object-cover", isPast && "grayscale")}
               />
             ) : (
               <span className="size-6 rounded-full bg-muted flex items-center justify-center">
@@ -132,10 +124,7 @@ export function AgendaEventItem({
           <div className={cn("flex flex-wrap gap-2", isPast && "opacity-60")}>
             {event.saida && (
               <p className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                📍{" "}
-                <span className="text-xs font-light text-muted-foreground">
-                  Salida:
-                </span>{" "}
+                📍 <span className="text-xs font-light text-muted-foreground">Salida:</span>{" "}
                 {event.saida}
               </p>
             )}

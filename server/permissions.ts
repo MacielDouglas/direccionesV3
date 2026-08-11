@@ -13,13 +13,11 @@ export const isAdmin = async (): Promise<boolean> => {
     });
 
     if (error) {
-      console.error("[isAdmin] Error al verificar permiso:", error);
       return false;
     }
 
     return success ?? false;
-  } catch (error) {
-    console.error("[isAdmin] Excepción al verificar permiso:", error);
+  } catch {
     return false;
   }
 };

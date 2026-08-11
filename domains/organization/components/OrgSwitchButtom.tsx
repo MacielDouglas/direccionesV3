@@ -8,12 +8,7 @@ export function OrgSwitchButton({ name }: { name: string }) {
   const { pending } = useFormStatus();
 
   return (
-    <Button
-      type="submit"
-      variant="default"
-      disabled={pending}
-      className="gap-2"
-    >
+    <Button type="submit" variant="default" disabled={pending} className="gap-2">
       {pending ? (
         <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />
       ) : (

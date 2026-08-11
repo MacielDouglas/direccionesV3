@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { useEffect, useState } from "react";
 
 interface SessionTimerProps {
   expiresAt: string | Date;
@@ -53,9 +53,7 @@ export default function SessionTimer({ expiresAt }: SessionTimerProps) {
       dateTime={new Date(expiresAt).toISOString()}
       aria-live={isCritical ? "polite" : "off"}
       aria-label={
-        isCountdown
-          ? `Sesión expira en ${seconds} segundos`
-          : `Sesión expira en ${minutes} minutos`
+        isCountdown ? `Sesión expira en ${seconds} segundos` : `Sesión expira en ${minutes} minutos`
       }
       className={`font-mono text-sm font-semibold tabular-nums transition-colors ${
         isCritical ? "text-red-500" : "text-muted-foreground"

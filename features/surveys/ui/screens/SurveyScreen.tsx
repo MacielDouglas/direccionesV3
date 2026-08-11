@@ -10,10 +10,7 @@ interface Props {
 
 export default function SurveyScreen(props: Props) {
   return (
-    <main
-      aria-label="Mapa de relevamiento"
-      className="relative h-svh w-full overflow-hidden"
-    >
+    <main aria-label="Mapa de relevamiento" className="relative h-svh w-full overflow-hidden">
       <SurveyMap {...props} />
     </main>
   );

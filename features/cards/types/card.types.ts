@@ -1,4 +1,4 @@
-import { Address, Card, CardEvent, User } from "@prisma/client";
+import type { Address, Card, CardEvent, User } from "@prisma/client";
 
 export type CardWithRelations = Card & {
   address: Address[];

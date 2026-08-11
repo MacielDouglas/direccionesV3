@@ -1,6 +1,6 @@
+import Fuse from "fuse.js";
 // features/addresses/hooks/useAddressSuggestions.ts
 import { useMemo } from "react";
-import Fuse from "fuse.js";
 
 interface Options {
   existing: string[];
@@ -14,18 +14,9 @@ interface Suggestion {
   score: number;
 }
 
-const normalize = (s: string) =>
-  s
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
+const normalize = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
 
-export function useAddressSuggestions({
-  existing,
-  query,
-  threshold = 0.4,
-}: Options) {
+export function useAddressSuggestions({ existing, query, threshold = 0.4 }: Options) {
   const fuse = useMemo(
     () =>
       new Fuse(existing, {
@@ -51,9 +42,7 @@ export function useAddressSuggestions({
     }));
 
     // Adiciona "nuevo" só se não existe exato
-    const alreadyExact = existing.some(
-      (e) => normalize(e) === normalize(query),
-    );
+    const alreadyExact = existing.some((e) => normalize(e) === normalize(query));
     if (!alreadyExact) {
       matched.push({ value: query.trim(), isNew: true, score: 0 });
     }

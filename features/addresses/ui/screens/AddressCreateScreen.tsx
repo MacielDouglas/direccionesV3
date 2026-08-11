@@ -1,7 +1,7 @@
-import { MapPinPlus } from "lucide-react";
-import AddressForm from "../components/AddressForm";
 import { getCurrentUser } from "@/server/users";
+import { MapPinPlus } from "lucide-react";
 import { getExistingLocations } from "../../application/address.service";
+import AddressForm from "../components/AddressForm";
 
 export default async function AddressCreateScreen() {
   const session = await getCurrentUser();
@@ -20,18 +20,12 @@ export default async function AddressCreateScreen() {
         </div>
         <div className="mt-2 text-lg text-neutral-600 dark:text-neutral-400">
           <p>En esta página puede enviar una nueva dirección.</p>
-          <p>
-            Debes elegir el tipo de dirección, información básica, datos GPS y
-            una foto.
-          </p>
+          <p>Debes elegir el tipo de dirección, información básica, datos GPS y una foto.</p>
         </div>
       </div>
 
       {/* ✅ passa listas para o form */}
-      <AddressForm
-        existingNeighborhoods={neighborhoods}
-        existingCities={cities}
-      />
+      <AddressForm existingNeighborhoods={neighborhoods} existingCities={cities} />
     </div>
   );
 }

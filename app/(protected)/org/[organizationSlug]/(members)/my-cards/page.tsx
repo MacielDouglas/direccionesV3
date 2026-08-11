@@ -1,8 +1,8 @@
 import { MyCardsScreen } from "@/features/cards/ui/screens/MyCardsScreen.tsx";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { requireSession } from "@/server/users";
-import { redirect } from "next/navigation";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Mis Tarjetas",

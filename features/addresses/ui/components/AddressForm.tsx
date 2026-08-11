@@ -1,27 +1,24 @@
 "use client";
 
-import { useAddressForm } from "../../hooks/useAddressForm";
-import { createAddressAction } from "../../application/address.actions";
-import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import AddressFields from "./AddressFields";
-import type { AddressFormData } from "../../domain/address.schema";
+import { Form } from "@/components/ui/form";
 import { useTenant } from "@/providers/TenantProvider";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { useState } from "react";
+import { toast } from "sonner";
+import { createAddressAction } from "../../application/address.actions";
+import type { AddressFormData } from "../../domain/address.schema";
+import { useAddressForm } from "../../hooks/useAddressForm";
 import { uploadFile } from "../../utils/uploadFile";
+import AddressFields from "./AddressFields";
 
 interface Props {
   existingNeighborhoods: string[];
   existingCities: string[];
 }
 
-export default function AddressForm({
-  existingNeighborhoods,
-  existingCities,
-}: Props) {
+export default function AddressForm({ existingNeighborhoods, existingCities }: Props) {
   const form = useAddressForm();
   const { organization } = useTenant();
   const router = useRouter();
@@ -46,15 +43,13 @@ export default function AddressForm({
 
       const newAddress = await createAddressAction({
         ...values,
-        businessName:
-          values.addressType === "House" ? null : values.businessName,
+        businessName: values.addressType === "House" ? null : values.businessName,
         image: { imageUrl, imageKey, isCustomImage: true },
       });
 
       toast.success("¡Dirección creada correctamente!");
       router.push(`/org/${organization.slug}/addresses/${newAddress.id}`);
-    } catch (error) {
-      console.error("[AddressForm]", error);
+    } catch {
       toast.error("Error al crear la dirección. Intente nuevamente.");
     } finally {
       setUploadProgress(0);
@@ -62,18 +57,14 @@ export default function AddressForm({
   }
 
   const submitLabel = () => {
-    if (uploadProgress > 0 && uploadProgress < 100)
-      return `Enviando imagen ${uploadProgress}%`;
+    if (uploadProgress > 0 && uploadProgress < 100) return `Enviando imagen ${uploadProgress}%`;
     if (isSubmitting) return "Creando…";
     return "Crear dirección";
   };
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-8 pb-10"
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-8 pb-10">
         <div className="px-1 pt-1">
           {/* ✅ repassa listas para AddressFields */}
           <AddressFields
@@ -91,12 +82,7 @@ export default function AddressForm({
               aria-label={`Subiendo imagen: ${uploadProgress}%`}
             />
           )}
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            aria-busy={isSubmitting}
-            className="w-full"
-          >
+          <Button type="submit" disabled={isSubmitting} aria-busy={isSubmitting} className="w-full">
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />

@@ -1,9 +1,9 @@
 "use client";
 
 import mapboxgl from "mapbox-gl";
+import { useEffect, useRef } from "react";
 import { useMapInstance } from "../core/MapboxProvider";
 import type { Coordinates, RouteProfile } from "../types/map.types";
-import { useEffect, useRef } from "react";
 
 type Props = {
   destination: Coordinates;
@@ -96,14 +96,12 @@ export default function RouteLayer({ destination, profile }: Props) {
       } catch (err) {
         // ✅ ignora erros de abort — são esperados
         if (err instanceof Error && err.name === "AbortError") return;
-        console.warn("[RouteLayer] Error al obtener ruta:", err);
       }
     };
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => drawRoute(pos.coords),
-      (err) =>
-        console.warn("[RouteLayer] Error de geolocalización:", err.message),
+      () => undefined,
       { enableHighAccuracy: true },
     );
 

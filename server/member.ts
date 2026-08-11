@@ -1,10 +1,10 @@
 "use server";
 
+import type { Role } from "@/domains/member/types/role.types";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import type { Role } from "@/domains/member/types/role.types";
 
 export const addMember = async (
   organizationId: string,
@@ -19,8 +19,7 @@ export const addMember = async (
     });
 
     revalidatePath(`/admin/organizations/${slug}`);
-  } catch (error) {
-    console.error("[addMember]", error);
+  } catch {
     throw new Error("No se pudo agregar el miembro. Intente nuevamente.");
   }
 };
@@ -50,10 +49,7 @@ export const memberUpdateRole = async (
   if (slug) revalidatePath(`/org/${slug}/admin/users`);
 };
 
-export const removeMemberManually = async (
-  organizationId: string,
-  memberIdOrEmail: string,
-) => {
+export const removeMemberManually = async (organizationId: string, memberIdOrEmail: string) => {
   const reqHeaders = await headers();
 
   const [session] = await Promise.all([

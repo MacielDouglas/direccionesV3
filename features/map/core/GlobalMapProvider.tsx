@@ -10,12 +10,7 @@ interface Props {
 export function GlobalMapProvider({ children }: Props) {
   useEffect(() => {
     const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-    if (!token) {
-      console.error(
-        "[GlobalMapProvider] NEXT_PUBLIC_MAPBOX_TOKEN não definido.",
-      );
-      return;
-    }
+    if (!token) return;
 
     mapPool.init(token);
 

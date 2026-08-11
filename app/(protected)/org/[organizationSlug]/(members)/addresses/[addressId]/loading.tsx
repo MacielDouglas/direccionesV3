@@ -28,8 +28,8 @@ export default function AddressDetailLoading() {
 
         {/* Campos */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="space-y-1">
+          {Array.from({ length: 3 }, (_, i) => i + 1).map((item) => (
+            <div key={`skeleton-${item}`} className="space-y-1">
               <div className="h-3 w-12 animate-pulse rounded bg-muted" />
               <div className="h-5 w-40 animate-pulse rounded bg-muted" />
             </div>

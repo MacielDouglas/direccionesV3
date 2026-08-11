@@ -1,13 +1,10 @@
 "use client";
 
-import {
-  getNavigationByRole,
-  navigationMenu,
-} from "@/features/navigation/constants/navigation";
+import { getNavigationByRole, navigationMenu } from "@/features/navigation/constants/navigation";
+import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 import LogoutButton from "../LogoutButton";
 import MenuItem from "./MenuItem";
-import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface MainAppMenuProps {
   role?: "member" | "admin" | "owner" | null;
@@ -48,18 +45,10 @@ export default function MainAppMenu({ role, orgSlug }: MainAppMenuProps) {
                 return (
                   <li key={item.id}>
                     <details className="group">
-                      <summary
-                        className={cn(
-                          baseItemStyle,
-                          bgStyle,
-                          "cursor-pointer list-none",
-                        )}
-                      >
+                      <summary className={cn(baseItemStyle, bgStyle, "cursor-pointer list-none")}>
                         <span className="flex items-center gap-3">
                           <Icon className="h-7 w-7" aria-hidden="true" />
-                          <span className="text-lg font-medium">
-                            {item.name}
-                          </span>
+                          <span className="text-lg font-medium">{item.name}</span>
                         </span>
                         <ChevronDown
                           className="size-5 shrink-0 transition-transform duration-200 group-open:rotate-180"

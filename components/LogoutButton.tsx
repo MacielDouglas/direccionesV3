@@ -1,10 +1,10 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
+import { LogOut } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
-import { LogOut } from "lucide-react";
 
 export default function LogoutButton() {
   const [loading, setLoading] = useState(false);

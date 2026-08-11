@@ -9,12 +9,7 @@ type Props = {
   className?: string;
 };
 
-export default function MenuItem({
-  item,
-  onSelect,
-  orgSlug,
-  className,
-}: Props) {
+export default function MenuItem({ item, onSelect, orgSlug, className }: Props) {
   const Icon = item.icon;
 
   return (

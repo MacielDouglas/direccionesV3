@@ -1,14 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { Tag } from "lucide-react";
+import { useState } from "react";
 
-import {
-  CardAddressesLayer,
-  type CardAddress,
-} from "../layers/CardAddressesLayer";
 import { cn } from "@/lib/utils";
 import { LazyMapboxProvider } from "../core/LazyMapboxProvider";
+import { type CardAddress, CardAddressesLayer } from "../layers/CardAddressesLayer";
 
 interface Props {
   addresses: CardAddress[];
@@ -18,9 +15,7 @@ interface Props {
 export function CardViewMap({ addresses, onMarkerClick }: Props) {
   const [showLabels, setShowLabels] = useState(false);
 
-  const validAddresses = addresses.filter(
-    (a) => a.latitude != null && a.longitude != null,
-  );
+  const validAddresses = addresses.filter((a) => a.latitude != null && a.longitude != null);
 
   if (validAddresses.length === 0) {
     return (

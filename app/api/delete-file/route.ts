@@ -1,7 +1,7 @@
+import { deleteR2Object } from "@/infrastructure/storage/r2.service";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { deleteR2Object } from "@/infrastructure/storage/r2.service";
 
 export async function POST(req: Request) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -35,11 +35,7 @@ export async function POST(req: Request) {
     await deleteR2Object(key);
 
     return NextResponse.json({ success: true, deleted: key });
-  } catch (error) {
-    console.error("❌ API DELETE ERROR:", error);
-    return NextResponse.json(
-      { error: "Failed to delete file" },
-      { status: 500 },
-    );
+  } catch {
+    return NextResponse.json({ error: "Failed to delete file" }, { status: 500 });
   }
 }

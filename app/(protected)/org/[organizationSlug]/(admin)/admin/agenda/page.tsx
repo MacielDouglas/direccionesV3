@@ -1,14 +1,14 @@
-import { getCurrentUser } from "@/server/users";
-import { redirect } from "next/navigation";
 import {
   getAgendaEventsByMonth,
   getAgendaFieldOptions,
   getOrgMembersForAgenda,
 } from "@/features/agenda/application/agenda.service";
 import { AgendaAdminForm } from "@/features/agenda/components/AgendaAdminForm";
-import { AgendaEventList } from "@/features/agenda/components/AgendaEventList";
 import { AgendaCalendar } from "@/features/agenda/components/AgendaCalendat";
+import { AgendaEventList } from "@/features/agenda/components/AgendaEventList";
 import { AgendaPdfButton } from "@/features/agenda/components/AgendaPdfButton";
+import { getCurrentUser } from "@/server/users";
+import { redirect } from "next/navigation";
 
 const MONTHS_ES = [
   "Enero",
@@ -41,10 +41,13 @@ export default async function AdminAgendaPage({ params, searchParams }: Props) {
     redirect(`/org/${slug}/agenda`);
   }
 
-  const organizationId = session.activeMember!.organizationId;
+  const activeMember = session.activeMember;
+  if (!activeMember) redirect("/organizations");
+
+  const organizationId = activeMember.organizationId;
   const now = new Date();
-  const activeYear = year ? parseInt(year) : now.getFullYear();
-  const activeMonth = month ? parseInt(month) : now.getMonth();
+  const activeYear = year ? Number.parseInt(year) : now.getFullYear();
+  const activeMonth = month ? Number.parseInt(month) : now.getMonth();
 
   const [events, members, fieldOptions] = await Promise.all([
     getAgendaEventsByMonth(organizationId, activeYear, activeMonth),

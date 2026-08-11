@@ -1,7 +1,7 @@
 import { Link2 } from "lucide-react";
+import { getOrgInviteTokensAction } from "../../applications/inviteToken.action";
 import { InviteTokenGenerator } from "../components/InviteTokenGenerator";
 import { InviteTokenList } from "../components/InviteTokenList";
-import { getOrgInviteTokensAction } from "../../applications/inviteToken.action";
 
 interface Props {
   organizationId: string;
@@ -23,17 +23,11 @@ export async function InvitationsScreen({ organizationId, orgSlug }: Props) {
         </div>
       </header>
 
-      <section
-        aria-labelledby="generate-title"
-        className="rounded-xl border p-5"
-      >
+      <section aria-labelledby="generate-title" className="rounded-xl border p-5">
         <h2 id="generate-title" className="mb-4 text-base font-semibold">
           Generar enlace de invitación
         </h2>
-        <InviteTokenGenerator
-          organizationId={organizationId}
-          orgSlug={orgSlug}
-        />
+        <InviteTokenGenerator organizationId={organizationId} orgSlug={orgSlug} />
       </section>
 
       <section aria-labelledby="history-title">

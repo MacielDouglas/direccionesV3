@@ -1,12 +1,12 @@
-import type { Address } from "@prisma/client";
-import { ADDRESS_TYPE_OPTIONS } from "../../domain/constants/address.constants";
-import { getUniqueUser } from "@/server/users";
-import { AddressImageViewer } from "../components/AddressImageViewer";
-import { AddressViewMap } from "@/features/map/components/AddressViewMap";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import DeleteAddressButton from "../components/DeleteAddressButton";
+import { AddressViewMap } from "@/features/map/components/AddressViewMap";
+import { getUniqueUser } from "@/server/users";
+import type { Address } from "@prisma/client";
 import { CircleAlert } from "lucide-react";
+import Link from "next/link";
+import { ADDRESS_TYPE_OPTIONS } from "../../domain/constants/address.constants";
+import { AddressImageViewer } from "../components/AddressImageViewer";
+import DeleteAddressButton from "../components/DeleteAddressButton";
 // import { useState } from "react";
 
 type AddressDetailsScreenProps = {
@@ -52,10 +52,7 @@ export default async function AddressDetailsScreen({
   return (
     <article className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-3 py-4 sm:px-4 sm:py-6">
       {address.latitude && address.longitude && (
-        <section
-          aria-label="Mapa de la dirección"
-          className="w-full overflow-hidden rounded-2xl"
-        >
+        <section aria-label="Mapa de la dirección" className="w-full overflow-hidden rounded-2xl">
           <AddressViewMap
             latitude={Number(address.latitude)}
             longitude={Number(address.longitude)}
@@ -69,10 +66,7 @@ export default async function AddressDetailsScreen({
       >
         <header className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <span
-              className={`h-8 w-2 shrink-0 rounded-full ${colorClass}`}
-              aria-hidden="true"
-            />
+            <span className={`h-8 w-2 shrink-0 rounded-full ${colorClass}`} aria-hidden="true" />
             <h1 className="truncate text-lg font-semibold uppercase tracking-wide sm:text-2xl">
               {address.businessName ?? "Residencial"}
             </h1>
@@ -83,38 +77,26 @@ export default async function AddressDetailsScreen({
               className="shrink-0 rounded bg-black/80 p-2"
               aria-label={`Tipo: ${typeConfig?.label}`}
             >
-              <Icon
-                className={typeConfig?.color}
-                size={28}
-                aria-hidden="true"
-              />
+              <Icon className={typeConfig?.color} size={28} aria-hidden="true" />
             </div>
           )}
         </header>
-        <div
-          className="flex flex-wrap gap-3"
-          role="group"
-          aria-label="Estado de la dirección"
-        >
-          <span
+        <ul className="flex flex-wrap gap-3" aria-label="Estado de la dirección">
+          <li
             className={`rounded-full px-2 py-1 text-xs font-semibold sm:text-sm ${
-              address.confirmed
-                ? "bg-blue-100 text-blue-700"
-                : "bg-red-100 text-red-600"
+              address.confirmed ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-600"
             }`}
           >
             {address.confirmed ? "✓ Confirmada" : "✗ No confirmada"}
-          </span>
-          <span
+          </li>
+          <li
             className={`rounded-full px-2 py-1 text-xs font-semibold sm:text-sm ${
-              address.active
-                ? "bg-blue-100 text-blue-700"
-                : "bg-red-100 text-red-600"
+              address.active ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-600"
             }`}
           >
             {address.active ? "✓ Activa" : "✗ Inactiva"}
-          </span>
-        </div>
+          </li>
+        </ul>
 
         {address.image && (
           <figure className="w-full overflow-hidden rounded-xl">
@@ -131,37 +113,28 @@ export default async function AddressDetailsScreen({
           </h2>
           {!address.confirmed && (
             <div className="flex gap-2 items-center border border-red-500 py-2 px-4 rounded-xl justify-between bg-red-100 dark:bg-red-950 mb-3">
-              <CircleAlert
-                className="size-6 shrink-0 text-red-500 animate-pulse"
-                aria-hidden
-              />{" "}
+              <CircleAlert className="size-6 shrink-0 text-red-500 animate-pulse" aria-hidden />{" "}
               <p className="text-red-500 font-semibold text-xs inline-flex gap-2 ">
-                Dirección no verificada, puede tener errores. Revise la
-                información adicional o confirme con quien la envió.
+                Dirección no verificada, puede tener errores. Revise la información adicional o
+                confirme con quien la envió.
               </p>
             </div>
           )}
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             <div>
-              <dt className="text-xs uppercase tracking-wide text-gray-400">
-                Calle
-              </dt>
+              <dt className="text-xs uppercase tracking-wide text-gray-400">Calle</dt>
               <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200 sm:text-base">
                 {address.street}, {address.number}
               </dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wide text-gray-400">
-                Barrio
-              </dt>
+              <dt className="text-xs uppercase tracking-wide text-gray-400">Barrio</dt>
               <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200 sm:text-base">
                 {address.neighborhood}
               </dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wide text-gray-400">
-                Ciudad
-              </dt>
+              <dt className="text-xs uppercase tracking-wide text-gray-400">Ciudad</dt>
               <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200 sm:text-base">
                 {address.city}
               </dd>
@@ -170,10 +143,7 @@ export default async function AddressDetailsScreen({
         </section>
         {!address.active && (
           <div className="flex gap-2 items-center border border-red-500 py-2 px-4 rounded-xl justify-between bg-red-100 dark:bg-red-950">
-            <CircleAlert
-              className="size-10 shrink-0 text-red-500 animate-pulse"
-              aria-hidden
-            />{" "}
+            <CircleAlert className="size-10 shrink-0 text-red-500 animate-pulse" aria-hidden />{" "}
             <p className="text-red-500 font-semibold text-md inline-flex gap-2 text-center">
               Dirección desactivada. Puede haber cambiado.
               <br />

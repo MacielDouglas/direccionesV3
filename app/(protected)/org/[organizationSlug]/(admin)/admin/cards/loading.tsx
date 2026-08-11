@@ -14,9 +14,9 @@ export default function CardsLoading() {
       </header>
 
       <ul className="flex flex-col gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
+        {Array.from({ length: 4 }, (_, i) => i + 1).map((item) => (
           <li
-            key={i}
+            key={`skeleton-${item}`}
             className="rounded-xl border bg-card p-4 flex flex-col gap-3 shadow-sm"
           >
             <div className="flex items-center justify-between gap-2">

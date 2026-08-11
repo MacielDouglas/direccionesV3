@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, Inconsolata } from "next/font/google";
+import { Inconsolata, Outfit } from "next/font/google";
 import "@/app/globals.css";
-import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "next-themes";
 import { NavigationProvider } from "@/components/NavigationProvider";
+import { Toaster } from "@/components/ui/sonner";
 import { GlobalMapProvider } from "@/features/map/core/GlobalMapProvider";
+import { ThemeProvider } from "next-themes";
 
 const outfit = Outfit({
   subsets: ["latin"],

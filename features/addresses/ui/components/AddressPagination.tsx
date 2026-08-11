@@ -13,10 +13,7 @@ export function AddressPagination({ page, total, pageSize, onChange }: Props) {
   if (totalPages <= 1) return null;
 
   return (
-    <nav
-      aria-label="Paginación"
-      className="flex items-center justify-between gap-2 pt-2"
-    >
+    <nav aria-label="Paginación" className="flex items-center justify-between gap-2 pt-2">
       <Button
         variant="outline"
         size="sm"

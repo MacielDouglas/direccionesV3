@@ -1,10 +1,10 @@
-import { canCreateOrganization } from "../permissions/canCreateOrganizations";
-import type { CreateOrganizationInput } from "../schemas/organization.schema";
-import { createOrganizationSchema } from "../schemas/organization.schema";
 import type { Role } from "@/domains/member/types/role.types";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { canCreateOrganization } from "../permissions/canCreateOrganizations";
+import type { CreateOrganizationInput } from "../schemas/organization.schema";
+import { createOrganizationSchema } from "../schemas/organization.schema";
 
 interface CreateOrganizationContext {
   userId: string;

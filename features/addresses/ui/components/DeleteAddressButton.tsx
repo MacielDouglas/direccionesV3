@@ -1,9 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { requestAddressDeletionAction } from "../../application/address.actions";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -14,8 +11,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Loader2, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { requestAddressDeletionAction } from "../../application/address.actions";
 
 export default function DeleteAddressButton({
   addressId,
@@ -63,9 +63,8 @@ export default function DeleteAddressButton({
         <DialogHeader>
           <DialogTitle>¿Eliminar esta dirección?</DialogTitle>
           <DialogDescription>
-            Esta acción enviará una solicitud de eliminación a los
-            administradores. La dirección quedará inactiva hasta que sea
-            confirmada o cancelada.
+            Esta acción enviará una solicitud de eliminación a los administradores. La dirección
+            quedará inactiva hasta que sea confirmada o cancelada.
           </DialogDescription>
         </DialogHeader>
 
@@ -76,11 +75,7 @@ export default function DeleteAddressButton({
             </Button>
           </DialogClose>
 
-          <Button
-            variant="destructive"
-            disabled={isPending}
-            onClick={handleConfirm}
-          >
+          <Button variant="destructive" disabled={isPending} onClick={handleConfirm}>
             {isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             ) : (

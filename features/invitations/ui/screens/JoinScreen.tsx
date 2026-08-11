@@ -1,18 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { Loader2, Users, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client"; // ← client SDK do better-auth
+import { CheckCircle, Loader2, Users, XCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 import { applyInviteTokenAction } from "../../applications/inviteToken.action";
 
 export function JoinScreen({ token }: { token: string }) {
   const router = useRouter();
-  const [status, setStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [orgName, setOrgName] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -76,11 +74,7 @@ export function JoinScreen({ token }: { token: string }) {
           </p>
         </div>
 
-        <Button
-          onClick={handleJoin}
-          disabled={status === "loading"}
-          className="w-full gap-2"
-        >
+        <Button onClick={handleJoin} disabled={status === "loading"} className="w-full gap-2">
           {status === "loading" ? (
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
           ) : (

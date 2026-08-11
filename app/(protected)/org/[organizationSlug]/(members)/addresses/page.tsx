@@ -2,8 +2,8 @@ import { searchAddressesService } from "@/features/addresses/application/address
 import AddressListScreen from "@/features/addresses/ui/screens/AddressListScreen";
 import { prisma } from "@/lib/prisma";
 import { MapPinned } from "lucide-react";
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Direcciones Page",
@@ -19,10 +19,7 @@ type AddressPageProps = {
 };
 
 // Página para listar endereços e buscar endereços
-export default async function AddressPage({
-  params,
-  searchParams,
-}: AddressPageProps) {
+export default async function AddressPage({ params, searchParams }: AddressPageProps) {
   const { organizationSlug } = await params;
   const { q } = await searchParams;
 
@@ -49,9 +46,9 @@ export default async function AddressPage({
         <div className="mt-2 text-lg text-neutral-600 dark:text-neutral-400 ">
           <p>En esta página puede ver todas las direcciones registradas.</p>
           <p className="text-sm font-light text-slate-500">
-            Puedes buscar una dirección específica utilizando el campo de
-            búsqueda. Simplemente ingresa el nombre de la calle, número, barrio
-            o ciudad para encontrar la dirección que estás buscando.
+            Puedes buscar una dirección específica utilizando el campo de búsqueda. Simplemente
+            ingresa el nombre de la calle, número, barrio o ciudad para encontrar la dirección que
+            estás buscando.
           </p>
         </div>
       </div>

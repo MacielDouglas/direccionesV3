@@ -1,9 +1,9 @@
+import SurveyScreen from "@/features/surveys/ui/screens/SurveyScreen";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import SurveyScreen from "@/features/surveys/ui/screens/SurveyScreen";
-import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Relevamiento" };
 

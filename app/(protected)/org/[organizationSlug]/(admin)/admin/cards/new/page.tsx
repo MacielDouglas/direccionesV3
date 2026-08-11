@@ -21,10 +21,5 @@ export default async function CardNewPage({ params }: Props) {
   const canCreate = await canManageCards(session.user.id, org.id);
   if (!canCreate) redirect(`/org/${organizationSlug}`);
 
-  return (
-    <CardCreateScreen
-      organizationId={org.id}
-      organizationSlug={organizationSlug}
-    />
-  );
+  return <CardCreateScreen organizationId={org.id} organizationSlug={organizationSlug} />;
 }

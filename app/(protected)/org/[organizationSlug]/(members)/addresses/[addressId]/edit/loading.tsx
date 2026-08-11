@@ -17,15 +17,15 @@ export default function AddressEditLoading() {
       {/* Mesmo skeleton do new address */}
       <div className="px-6 space-y-6 py-4">
         <div className="flex gap-3 overflow-hidden">
-          {Array.from({ length: 5 }).map((_, i) => (
+          {Array.from({ length: 5 }, (_, i) => i + 1).map((item) => (
             <div
-              key={i}
+              key={`skeleton-${item}`}
               className="h-16 w-16 shrink-0 animate-pulse rounded-xl bg-muted"
             />
           ))}
         </div>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="space-y-2">
+        {Array.from({ length: 5 }, (_, i) => i + 1).map((item) => (
+          <div key={`skeleton-${item}`} className="space-y-2">
             <div className="h-4 w-24 animate-pulse rounded bg-muted" />
             <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
           </div>

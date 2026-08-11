@@ -23,34 +23,33 @@ export default function ConfirmModal({
     cancelRef.current?.focus();
   }, []);
 
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !loading) onCancel();
-    };
-    document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [loading, onCancel]);
-
   return (
-    /* Overlay — fixed cobre a tela inteira, flex centra o card */
-    <div
-      role="dialog"
+    /* Dialog nativo — captura Escape via onCancel e foca o primeiro botão */
+    <dialog
+      open
       aria-modal="true"
       aria-labelledby="modal-title"
       aria-describedby="modal-description"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-      onClick={(e) => {
-        if (e.target === e.currentTarget && !loading) onCancel();
+      onCancel={(e) => {
+        e.preventDefault();
+        if (!loading) onCancel();
       }}
+      className="fixed inset-0 z-50 m-0 flex h-full w-full items-center justify-center bg-transparent p-4"
     >
-      <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl dark:bg-zinc-900 dark:text-white">
-        <h2
-          id="modal-title"
-          className="mb-2 text-lg font-bold text-gray-900 dark:text-white"
-        >
-          {isSuggested
-            ? "Enviar sugerencias de marcación"
-            : "Confirmar marcación"}
+      {/* Backdrop — botão invisível cobre a tela e fecha ao clicar fora */}
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-hidden
+        onClick={() => {
+          if (!loading) onCancel();
+        }}
+        className="absolute inset-0 h-full w-full cursor-default bg-black/50 backdrop-blur-sm"
+      />
+
+      <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl dark:bg-zinc-900 dark:text-white">
+        <h2 id="modal-title" className="mb-2 text-lg font-bold text-gray-900 dark:text-white">
+          {isSuggested ? "Enviar sugerencias de marcación" : "Confirmar marcación"}
         </h2>
 
         <p
@@ -83,6 +82,6 @@ export default function ConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }

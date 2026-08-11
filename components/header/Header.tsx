@@ -1,11 +1,11 @@
-import { Compass } from "lucide-react";
-import MobileHeader from "./MobileHeader";
 import SessionTimer from "@/domains/auth/components/SessionTimer";
-import DarkModeButton from "../ui/DarkModeButton";
-import type { Session } from "better-auth";
 import type { Role } from "@/domains/member/types/role.types";
+import type { Session } from "better-auth";
 import type { Organization } from "better-auth/plugins";
+import { Compass } from "lucide-react";
+import DarkModeButton from "../ui/DarkModeButton";
 import { NavLink } from "../ui/NavLink";
+import MobileHeader from "./MobileHeader";
 
 interface HeaderProps {
   role?: Role | null;

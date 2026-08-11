@@ -1,20 +1,9 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition, useEffect } from "react";
-import { toast } from "sonner";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -22,8 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AgendaEventItem } from "../types/agenda.types";
+import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 import { updateAgendaEventAction } from "../application/agenda.action";
+import type { AgendaEventItem } from "../types/agenda.types";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
@@ -69,13 +64,7 @@ interface Props {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function EditAgendaEventModal({
-  event,
-  open,
-  onClose,
-  organizationSlug,
-  members,
-}: Props) {
+export function EditAgendaEventModal({ event, open, onClose, organizationSlug, members }: Props) {
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -103,11 +92,7 @@ export function EditAgendaEventModal({
   const onSubmit = (data: EditInput) => {
     if (!event) return;
     startTransition(async () => {
-      const result = await updateAgendaEventAction(
-        event.id,
-        organizationSlug,
-        data,
-      );
+      const result = await updateAgendaEventAction(event.id, organizationSlug, data);
       if (result.error) {
         toast.error(result.error);
         return;
@@ -124,11 +109,7 @@ export function EditAgendaEventModal({
           <DialogTitle>Editar evento</DialogTitle>
         </DialogHeader>
 
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-          className="flex flex-col gap-4 mt-2"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4 mt-2">
           {/* Fecha + Hora */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
@@ -140,11 +121,7 @@ export function EditAgendaEventModal({
                 aria-describedby={errors.date ? "edit-date-error" : undefined}
               />
               {errors.date && (
-                <p
-                  id="edit-date-error"
-                  role="alert"
-                  className="text-xs text-destructive"
-                >
+                <p id="edit-date-error" role="alert" className="text-xs text-destructive">
                   {errors.date.message}
                 </p>
               )}
@@ -159,11 +136,7 @@ export function EditAgendaEventModal({
                 aria-describedby={errors.time ? "edit-time-error" : undefined}
               />
               {errors.time && (
-                <p
-                  id="edit-time-error"
-                  role="alert"
-                  className="text-xs text-destructive"
-                >
+                <p id="edit-time-error" role="alert" className="text-xs text-destructive">
                   {errors.time.message}
                 </p>
               )}
@@ -173,16 +146,11 @@ export function EditAgendaEventModal({
           {/* Conductor */}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="edit-conductor">
-              Conductor{" "}
-              <span className="text-muted-foreground font-normal">
-                (opcional)
-              </span>
+              Conductor <span className="text-muted-foreground font-normal">(opcional)</span>
             </Label>
             <Select
               defaultValue={event?.conductor?.id ?? "none"}
-              onValueChange={(val) =>
-                setValue("conductorId", val === "none" ? null : val)
-              }
+              onValueChange={(val) => setValue("conductorId", val === "none" ? null : val)}
             >
               <SelectTrigger id="edit-conductor">
                 <SelectValue placeholder="Seleccionar conductor" />
@@ -201,10 +169,7 @@ export function EditAgendaEventModal({
           {/* Info */}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="edit-info">
-              Información{" "}
-              <span className="text-muted-foreground font-normal">
-                (opcional)
-              </span>
+              Información <span className="text-muted-foreground font-normal">(opcional)</span>
             </Label>
             <Textarea
               id="edit-info"
@@ -214,11 +179,7 @@ export function EditAgendaEventModal({
               aria-describedby={errors.info ? "edit-info-error" : undefined}
             />
             {errors.info && (
-              <p
-                id="edit-info-error"
-                role="alert"
-                className="text-xs text-destructive"
-              >
+              <p id="edit-info-error" role="alert" className="text-xs text-destructive">
                 {errors.info.message}
               </p>
             )}
@@ -234,12 +195,7 @@ export function EditAgendaEventModal({
             >
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isPending}
-              aria-busy={isPending}
-            >
+            <Button type="submit" className="w-full" disabled={isPending} aria-busy={isPending}>
               {isPending ? "Guardando..." : "Guardar cambios"}
             </Button>
           </div>

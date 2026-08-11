@@ -1,9 +1,9 @@
-import { getOrganizations } from "@/server/organization/organization.queries";
-import OrganizationForm from "@/domains/organization/components/OrganizationForm";
-import { Building2 } from "lucide-react";
-import { setActiveOrg } from "@/server/organization/organization.actions";
-import { redirect } from "next/navigation";
 import { OrgSwitchButton } from "@/domains/organization/components/OrgSwitchButtom";
+import OrganizationForm from "@/domains/organization/components/OrganizationForm";
+import { setActiveOrg } from "@/server/organization/organization.actions";
+import { getOrganizations } from "@/server/organization/organization.queries";
+import { Building2 } from "lucide-react";
+import { redirect } from "next/navigation";
 
 export default async function OrganizationsPage() {
   const organizations = await getOrganizations();
@@ -20,8 +20,7 @@ export default async function OrganizationsPage() {
       <section className="flex flex-col gap-4 rounded-xl bg-muted p-5">
         <div>
           <h2 className="text-xl font-semibold">
-            Organizaciones creadas:{" "}
-            <span className="text-brand">{organizations.length}</span>
+            Organizaciones creadas: <span className="text-brand">{organizations.length}</span>
           </h2>
           <p className="text-sm text-muted-foreground">
             Selecciona una organización para gestionar sus usuarios.

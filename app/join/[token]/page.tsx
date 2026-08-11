@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/server/users";
 import { JoinScreen } from "@/features/invitations/ui/screens/JoinScreen";
+import { getCurrentUser } from "@/server/users";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 interface Props {
   params: Promise<{ token: string }>;

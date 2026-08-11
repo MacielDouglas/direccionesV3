@@ -1,15 +1,7 @@
 import { getCurrentUser } from "@/server/users";
-import { redirect } from "next/navigation";
-import {
-  Users,
-  Layers,
-  CalendarCheck,
-  Link2,
-  Shield,
-  Plus,
-  Pencil,
-} from "lucide-react";
+import { CalendarCheck, Layers, Link2, Pencil, Plus, Shield, Users } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { ElementType } from "react";
 
 interface AdminCard {
@@ -30,8 +22,7 @@ const ADMIN_CARDS: AdminCard[] = [
     description: "Gestiona los miembros de la organización y sus roles.",
     href: "/admin/users",
     icon: Users,
-    color:
-      "bg-blue-100 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800",
+    color: "bg-blue-100 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800",
   },
   {
     id: "cards",
@@ -39,8 +30,7 @@ const ADMIN_CARDS: AdminCard[] = [
     description: "Administra y crea tarjetas para los publicadores.",
     href: "/admin/cards",
     icon: Layers,
-    color:
-      "bg-violet-100 border-violet-200 dark:bg-violet-950/30 dark:border-violet-800",
+    color: "bg-violet-100 border-violet-200 dark:bg-violet-950/30 dark:border-violet-800",
     children: [
       { name: "Administrar", href: "/admin/cards", icon: Pencil },
       { name: "Crear nueva", href: "/admin/cards/new", icon: Plus },
@@ -52,8 +42,7 @@ const ADMIN_CARDS: AdminCard[] = [
     description: "Crea y gestiona los eventos del cronograma mensual.",
     href: "/admin/agenda",
     icon: CalendarCheck,
-    color:
-      "bg-green-100 border-green-200 dark:bg-green-950/30 dark:border-green-800",
+    color: "bg-green-100 border-green-200 dark:bg-green-950/30 dark:border-green-800",
   },
   {
     id: "invitations",
@@ -61,8 +50,7 @@ const ADMIN_CARDS: AdminCard[] = [
     description: "Genera invitaciones para nuevos miembros de la organización.",
     href: "/admin/invitations",
     icon: Link2,
-    color:
-      "bg-amber-100 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800",
+    color: "bg-amber-100 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800",
   },
   {
     id: "organizations",
@@ -92,10 +80,7 @@ export default async function AdminPage() {
   const visibleCards = ADMIN_CARDS.filter((c) => !c.ownerOnly || isOwner);
 
   return (
-    <main
-      className="mx-auto w-full max-w-5xl px-4 py-6"
-      aria-labelledby="admin-heading"
-    >
+    <main className="mx-auto w-full max-w-5xl px-4 py-6" aria-labelledby="admin-heading">
       {/* Header */}
       <header className="mb-6">
         <h1 id="admin-heading" className="text-2xl font-bold tracking-tight">
@@ -107,10 +92,7 @@ export default async function AdminPage() {
       </header>
 
       {/* Grid de cards */}
-      <ul
-        className="grid grid-cols-1 gap-4 sm:grid-cols-2"
-        aria-label="Opciones de administración"
-      >
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-label="Opciones de administración">
         {visibleCards.map((card) => {
           const Icon = card.icon;
           return (
@@ -124,9 +106,7 @@ export default async function AdminPage() {
                     <Icon className="size-5 text-foreground" aria-hidden />
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-base font-semibold leading-tight">
-                      {card.title}
-                    </h2>
+                    <h2 className="text-base font-semibold leading-tight">{card.title}</h2>
                     <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
                       {card.description}
                     </p>

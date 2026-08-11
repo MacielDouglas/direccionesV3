@@ -1,6 +1,6 @@
 "use client";
 
-import mapboxgl from "mapbox-gl";
+import type mapboxgl from "mapbox-gl";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { mapPool } from "./mapPool";
 

@@ -48,11 +48,7 @@ const STATUS_LABEL: Record<PinStatus, string> = {
   CANCELLED: "Cancelado",
 };
 
-export default function SurveyMap({
-  organizationId,
-  userRole,
-  initialPins,
-}: Props) {
+export default function SurveyMap({ organizationId, userRole, initialPins }: Props) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const serverMarkersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
@@ -100,22 +96,19 @@ export default function SurveyMap({
     const map = mapRef.current;
     if (!map) return;
 
-    serverMarkersRef.current.forEach((m) => m.remove());
+    for (const m of serverMarkersRef.current.values()) m.remove();
     serverMarkersRef.current.clear();
 
-    serverPins.forEach((pin) => {
-      if (pin.status === "CANCELLED") return;
+    for (const pin of serverPins) {
+      if (pin.status === "CANCELLED") continue;
 
       const el = createPinElement(PIN_COLORS[pin.status]);
 
       const canConfirm = pin.status === "SUGGESTED";
       const canCancel =
-        pin.status === "CONFIRMED" ||
-        pin.status === "SUGGESTED" ||
-        pin.status === "PENDING";
+        pin.status === "CONFIRMED" || pin.status === "SUGGESTED" || pin.status === "PENDING";
 
-      const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "200px" })
-        .setHTML(`
+      const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "200px" }).setHTML(`
         <div style="font-size:13px;padding:4px 2px">
           <p style="font-weight:600;margin:0 0 2px 0;color:#111">${pin.createdBy?.name ?? "—"}</p>
           <p style="margin:0 0 8px 0;font-size:11px;color:#6b7280">${STATUS_LABEL[pin.status]}</p>
@@ -155,7 +148,7 @@ export default function SurveyMap({
         .addTo(map);
 
       serverMarkersRef.current.set(pin.id, marker);
-    });
+    }
   }, [serverPins]);
 
   // ── Ações globais para popups HTML ──────────────────────────────────────
@@ -195,8 +188,7 @@ export default function SurveyMap({
       const tmpId = crypto.randomUUID();
       const el = createPinElement("#ef4444");
 
-      const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "160px" })
-        .setHTML(`
+      const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "160px" }).setHTML(`
         <div style="font-size:13px;padding:4px 2px">
           <p style="font-weight:600;margin:0 0 6px 0;color:#111">Pin local</p>
           <button onclick="window.__removeLocalPin('${tmpId}')"
@@ -217,10 +209,7 @@ export default function SurveyMap({
         .setPopup(popup)
         .addTo(map);
 
-      setLocalPins((prev) => [
-        ...prev,
-        { tmpId, latitude: lat, longitude: lng, marker },
-      ]);
+      setLocalPins((prev) => [...prev, { tmpId, latitude: lat, longitude: lng, marker }]);
     };
 
     map.on("click", handleClick);
@@ -281,7 +270,7 @@ export default function SurveyMap({
 
       if (result.success) {
         setServerPins((prev) => [...prev, ...result.data]);
-        localPins.forEach(({ marker }) => marker.remove());
+        for (const { marker } of localPins) marker.remove();
         setLocalPins([]);
         setShowConfirmModal(false);
         setIsAddingMode(false);
@@ -292,7 +281,7 @@ export default function SurveyMap({
   };
 
   const handleClearLocalPins = () => {
-    localPins.forEach(({ marker }) => marker.remove());
+    for (const { marker } of localPins) marker.remove();
     setLocalPins([]);
   };
 

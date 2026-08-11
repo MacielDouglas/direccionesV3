@@ -1,8 +1,8 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { Home, Hotel, Store, Utensils, Building2 } from "lucide-react";
 import type { AddressType } from "@/features/addresses/types/address.types";
+import { cn } from "@/lib/utils";
+import { Building2, Home, Hotel, Store, Utensils } from "lucide-react";
 
 const TYPE_OPTIONS: {
   value: AddressType;
@@ -45,9 +45,7 @@ interface Props {
 export function AddressFilterBar({ filters, onChange, total }: Props) {
   const toggleType = (type: AddressType) => {
     const current = filters.types ?? [];
-    const next = current.includes(type)
-      ? current.filter((t) => t !== type)
-      : [...current, type];
+    const next = current.includes(type) ? current.filter((t) => t !== type) : [...current, type];
     onChange({ ...filters, types: next });
   };
 
@@ -55,9 +53,7 @@ export function AddressFilterBar({ filters, onChange, total }: Props) {
     <div className="flex flex-col gap-2 rounded-lg border bg-muted/30 p-3">
       {/* Estado */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-xs text-muted-foreground font-medium w-10 shrink-0">
-          Estado
-        </span>
+        <span className="text-xs text-muted-foreground font-medium w-10 shrink-0">Estado</span>
         {ACTIVE_OPTIONS.map((opt) => (
           <button
             key={String(opt.value)}
@@ -77,9 +73,7 @@ export function AddressFilterBar({ filters, onChange, total }: Props) {
 
       {/* Tipo */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-xs text-muted-foreground font-medium w-10 shrink-0">
-          Tipo
-        </span>
+        <span className="text-xs text-muted-foreground font-medium w-10 shrink-0">Tipo</span>
         {TYPE_OPTIONS.map((opt) => {
           const isSelected = (filters.types ?? []).includes(opt.value);
           return (

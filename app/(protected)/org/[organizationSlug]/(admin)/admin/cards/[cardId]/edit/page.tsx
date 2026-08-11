@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 
 import { canManageCards } from "@/features/cards/permissions/canManageCards";
 import { CardEditScreen } from "@/features/cards/ui/screens/CardEditScreen";
-import { requireSession } from "@/server/users";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
+import { requireSession } from "@/server/users";
 
 interface Props {
   params: Promise<{ organizationSlug: string; cardId: string }>;
@@ -24,11 +24,7 @@ export default async function CardEditPage({ params }: Props) {
 
   return (
     <div className="w-full max-w-3xl mx-auto py-2">
-      <CardEditScreen
-        cardId={cardId}
-        organizationId={org.id}
-        organizationSlug={organizationSlug}
-      />
+      <CardEditScreen cardId={cardId} organizationId={org.id} organizationSlug={organizationSlug} />
     </div>
   );
 }

@@ -17,11 +17,7 @@ interface Props {
   onToggle: (id: string) => void;
 }
 
-export function SelectableAddressesLayer({
-  addresses,
-  selectedIds,
-  onToggle,
-}: Props) {
+export function SelectableAddressesLayer({ addresses, selectedIds, onToggle }: Props) {
   const { map, isLoaded } = useMapInstance();
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
   const onToggleRef = useRef(onToggle);
@@ -35,12 +31,12 @@ export function SelectableAddressesLayer({
     if (!map || !isLoaded || addresses.length === 0) return;
 
     const markers = markersRef.current;
-    markers.forEach((m) => m.remove());
+    for (const marker of markers.values()) marker.remove();
     markers.clear();
 
     const bounds = new mapboxgl.LngLatBounds();
 
-    addresses.forEach((addr) => {
+    for (const addr of addresses) {
       const el = createMarkerEl(addr.index); // sempre inicia sem seleção
 
       el.addEventListener("click", () => onToggleRef.current(addr.id));
@@ -60,7 +56,7 @@ export function SelectableAddressesLayer({
 
       markers.set(addr.id, marker);
       bounds.extend([addr.longitude, addr.latitude]);
-    });
+    }
 
     if (addresses.length === 1) {
       map.flyTo({
@@ -72,18 +68,18 @@ export function SelectableAddressesLayer({
     }
 
     return () => {
-      markers.forEach((m) => m.remove());
+      for (const marker of markers.values()) marker.remove();
       markers.clear();
     };
   }, [map, isLoaded, addresses]);
 
   useEffect(() => {
     if (!map || !isLoaded) return;
-    addresses.forEach((addr) => {
+    for (const addr of addresses) {
       const marker = markersRef.current.get(addr.id);
-      if (!marker) return;
+      if (!marker) continue;
       applyMarkerStyle(marker.getElement(), selectedIds.includes(addr.id));
-    });
+    }
   }, [selectedIds, map, isLoaded, addresses]);
 
   return null;

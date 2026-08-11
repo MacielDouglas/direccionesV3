@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
 import { CalendarX, ChevronDown, ChevronUp } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { AgendaEventItem as TAgendaEventItem } from "../types/agenda.types";
 import { AgendaEventItem } from "./AgendaEventItem";
 import { AgendaEventModal } from "./ui/AgendaEventModal";
@@ -71,7 +71,7 @@ export function AgendaEventList({
           className="w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl
             [&[data-highlight]>article]:ring-2 [&[data-highlight]>article]:ring-primary [&[data-highlight]>article]:ring-offset-2"
           onClick={() => setModalEvent(event)}
-          aria-label={`Ver detalles del evento`}
+          aria-label="Ver detalles del evento"
         >
           <AgendaEventItem
             event={event}
@@ -107,11 +107,7 @@ export function AgendaEventList({
           Eventos — {monthLabel}
         </h2>
 
-        <ul
-          ref={listRef}
-          className="flex flex-col gap-3"
-          aria-label="Lista de eventos"
-        >
+        <ul ref={listRef} className="flex flex-col gap-3" aria-label="Lista de eventos">
           {/* ── Eventos passados colapsados ──────────────────────────────── */}
           {pastEvents.length > 0 && (
             <li>
@@ -122,8 +118,8 @@ export function AgendaEventList({
                 className="w-full flex items-center justify-between gap-2 rounded-xl border bg-muted/30 px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <span>
-                  {pastEvents.length} evento{pastEvents.length !== 1 ? "s" : ""}{" "}
-                  anterior{pastEvents.length !== 1 ? "es" : ""}
+                  {pastEvents.length} evento{pastEvents.length !== 1 ? "s" : ""} anterior
+                  {pastEvents.length !== 1 ? "es" : ""}
                 </span>
                 {pastExpanded ? (
                   <ChevronUp className="size-4 shrink-0" aria-hidden />
@@ -167,9 +163,7 @@ export function AgendaEventList({
 
               {/* Lista expandida dos passados */}
               {pastExpanded && (
-                <ul className="flex flex-col gap-3 mt-3">
-                  {pastEvents.map(renderEvent)}
-                </ul>
+                <ul className="flex flex-col gap-3 mt-3">{pastEvents.map(renderEvent)}</ul>
               )}
             </li>
           )}
@@ -189,10 +183,7 @@ export function AgendaEventList({
       </section>
 
       {/* Modal de detalhes do evento */}
-      <AgendaEventModal
-        event={modalEvent}
-        onClose={() => setModalEvent(null)}
-      />
+      <AgendaEventModal event={modalEvent} onClose={() => setModalEvent(null)} />
     </>
   );
 }
