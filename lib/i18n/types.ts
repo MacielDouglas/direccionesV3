@@ -105,6 +105,12 @@ export type I18nDictionary = {
     pendingDeletion: string;
     details: string;
     edit: string;
+    heroLabel: string;
+    heroUnitPlural: string;
+    heroUnitSingular: string;
+    heroConfirmed: string;
+    heroActive: string;
+    heroPending: string;
   };
   cards: {
     title: string;

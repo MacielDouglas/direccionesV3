@@ -104,6 +104,12 @@ const ptBR: I18nDictionary = {
     pendingDeletion: "Exclusão pendente",
     details: "Ver detalhes",
     edit: "Editar",
+    heroLabel: "Endereços registrados",
+    heroUnitPlural: "endereços",
+    heroUnitSingular: "endereço",
+    heroConfirmed: "{count} confirmadas",
+    heroActive: "{count} ativas",
+    heroPending: "{count} para confirmar",
   },
   cards: {
     title: "Meus Cards",

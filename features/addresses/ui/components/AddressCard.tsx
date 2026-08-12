@@ -1,100 +1,133 @@
+"use client";
+
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import type { Address } from "@prisma/client";
-import { MapPin } from "lucide-react";
+import { Check, ChevronRight, MapPin, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { AddressTypeIcon } from "./AddressTypeIcon";
 
 const ADDRESS_PLACEHOLDER = "/images/address-placeholder.jpg";
 
-function StatusBadge({
-  active,
-  confirmed,
+const TYPE_TILE: Record<string, string> = {
+  House: "bg-emerald-500/10",
+  Apartment: "bg-pink-500/10",
+  Store: "bg-amber-500/10",
+  Hotel: "bg-blue-500/10",
+  Restaurant: "bg-brand/10",
+};
+
+function StatusChip({
+  ok,
+  okLabel,
+  notOkLabel,
 }: {
-  active: boolean;
-  confirmed: boolean;
+  ok: boolean;
+  okLabel: string;
+  notOkLabel: string;
 }) {
   return (
-    <ul className="flex flex-wrap gap-2" aria-label="Estado de la dirección">
-      <li
-        className={cn(
-          "rounded-full px-2 py-0.5 text-xs font-semibold",
-          confirmed
-            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-            : "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300",
-        )}
-      >
-        {confirmed ? "✓ Confirmada" : "✗ No confirmada"}
-      </li>
-      <li
-        className={cn(
-          "rounded-full px-2 py-0.5 text-xs font-semibold",
-          active
-            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-            : "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300",
-        )}
-      >
-        {active ? "✓ Tarjeta activa" : "✗ Tarjeta desactivada"}
-      </li>
-    </ul>
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium",
+        ok
+          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+          : "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300",
+      )}
+    >
+      {ok ? <Check className="size-3" aria-hidden /> : <X className="size-3" aria-hidden />}
+      {ok ? okLabel : notOkLabel}
+    </span>
   );
 }
 
 interface Props {
   address: Address;
   organizationSlug: string;
-  priority?: boolean;
 }
 
-export function AddressCard({ address, organizationSlug, priority = false }: Props) {
+export function AddressCard({ address, organizationSlug }: Props) {
+  const { t } = useI18n();
   const label = `${address.businessName ?? address.street}, ${address.number} — ${address.neighborhood}, ${address.city}`;
 
   return (
     <Link
       href={`/org/${organizationSlug}/addresses/${address.id}`}
-      aria-label={`Ver detalles: ${label}`}
-      className="group block overflow-hidden rounded-2xl border border-border bg-card shadow-xs transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      aria-label={`${t.addresses.details}: ${label}`}
+      className="group block overflow-hidden rounded-2xl border border-border bg-card shadow-xs transition-all hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
-      <article className="relative aspect-video w-full bg-muted">
+      <div className="relative aspect-video w-full overflow-hidden bg-muted">
         <Image
           src={address.image ?? ADDRESS_PLACEHOLDER}
           alt=""
           aria-hidden
           fill
-          sizes="(max-width: 640px) 100vw, 50vw"
+          sizes="(max-width: 448px) 100vw, 448px"
           className="object-cover transition-transform duration-300 group-hover:scale-105"
-          priority={priority}
         />
+      </div>
 
-        <div
-          className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/5"
-          aria-hidden
-        />
-
-        <div className="absolute right-3 top-3 z-10 rounded-xl bg-black/60 p-2 backdrop-blur-sm">
-          <AddressTypeIcon type={address.type} />
-        </div>
-
-        {address.pendingDeletionAt && (
-          <div className="absolute inset-x-0 bottom-1/2 z-20">
-            <p className="bg-red-600/90 p-2 text-center text-xs font-semibold uppercase tracking-wide text-white">
-              Borrar dirección. Confirmación pendiente.
-            </p>
+      <article className="flex flex-col gap-3 p-4">
+        <header className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <span
+              className={cn(
+                "flex size-12 shrink-0 items-center justify-center rounded-xl",
+                TYPE_TILE[address.type],
+              )}
+            >
+              <AddressTypeIcon type={address.type} />
+            </span>
+            <div className="min-w-0">
+              {address.businessName ? (
+                <>
+                  <h3 className="truncate text-base font-semibold leading-tight tracking-tight text-foreground">
+                    {address.businessName}
+                  </h3>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {address.street}, {address.number}
+                  </p>
+                </>
+              ) : (
+                <h3 className="truncate text-base font-semibold leading-tight tracking-tight text-foreground">
+                  {address.street}, {address.number}
+                </h3>
+              )}
+            </div>
           </div>
+          <ChevronRight
+            className="mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+            aria-hidden
+          />
+        </header>
+
+        <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
+          <MapPin className="mt-0.5 size-3.5 shrink-0 text-brand" aria-hidden />
+          {address.neighborhood}, {address.city}
+        </p>
+
+        {address.info && (
+          <p className="line-clamp-2 text-sm text-muted-foreground">{address.info}</p>
         )}
 
-        <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-1.5 px-4 pb-4 pt-8">
-          {address.businessName && (
-            <p className="truncate text-lg font-semibold leading-tight tracking-wide text-white sm:text-base">
-              {address.businessName}
-            </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusChip
+            ok={address.confirmed}
+            okLabel={t.addresses.confirmed}
+            notOkLabel={t.addresses.notConfirmed}
+          />
+          <StatusChip
+            ok={address.active}
+            okLabel={t.addresses.cardActive}
+            notOkLabel={t.addresses.cardInactive}
+          />
+          {address.pendingDeletionAt && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-destructive px-2.5 py-1 text-xs font-medium text-white">
+              <Trash2 className="size-3" aria-hidden />
+              {t.addresses.pendingDeletion}
+            </span>
           )}
-          <p className="flex items-center gap-1 truncate text-base font-light text-white/90 sm:text-sm">
-            <MapPin className="size-3.5 shrink-0" aria-hidden />
-            {address.street}, {address.number} — {address.neighborhood}, {address.city}
-          </p>
-          {address.info && <p className="truncate text-xs text-white/70">{address.info}</p>}
-          <StatusBadge active={address.active} confirmed={address.confirmed} />
         </div>
       </article>
     </Link>

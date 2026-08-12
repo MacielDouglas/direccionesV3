@@ -39,6 +39,11 @@ typography:
     fontSize: "0.875rem"
     fontWeight: 500
     lineHeight: 1
+  micro:
+    fontFamily: "Outfit, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.625rem"
+    fontWeight: 500
+    lineHeight: 1.333
   mono:
     fontFamily: "Inconsolata, ui-monospace, monospace"
     fontSize: "1rem"
@@ -138,6 +143,7 @@ Paleta dual-theme com neutros quentes e um acento de marca que também é a aç�
 - **Heading** (600/700, 1.25rem, 1.25): subtítulos e cabeçalhos de card.
 - **Body** (400, 1rem, 1.5): texto principal.
 - **Label** (500, 0.875rem, 1): rótulos de campo; tab bar em `text-xs`.
+- **Micro** (500, 0.625rem, 1.333): micro-rótulos de resumo e rótulos de estado em caixa alta com `tracking-widest` (ex.: hero de saldo, agrupadores de filtro).
 - **Mono** (400, 1rem, 1.5): dados técnicos.
 
 ## Layout

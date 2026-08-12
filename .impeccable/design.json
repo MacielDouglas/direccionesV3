@@ -121,6 +121,10 @@
       },
       "body": { "displayName": "Body", "purpose": "Texto principal." },
       "label": { "displayName": "Label", "purpose": "Rótulos de campo; tab bar em text-xs." },
+      "micro": {
+        "displayName": "Micro",
+        "purpose": "Micro-rótulos de resumo e estado em caixa alta com tracking-widest (hero de saldo, filtros)."
+      },
       "mono": { "displayName": "Mono", "purpose": "Contraste técnico (identificadores, dados)." }
     },
     "shadows": [

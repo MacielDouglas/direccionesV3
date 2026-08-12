@@ -104,6 +104,12 @@ const es: I18nDictionary = {
     pendingDeletion: "Eliminación pendiente",
     details: "Ver detalles",
     edit: "Editar",
+    heroLabel: "Direcciones registradas",
+    heroUnitPlural: "direcciones",
+    heroUnitSingular: "dirección",
+    heroConfirmed: "{count} confirmadas",
+    heroActive: "{count} activas",
+    heroPending: "{count} por confirmar",
   },
   cards: {
     title: "Mis Tarjetas",

@@ -100,88 +100,85 @@ export default function AddressImageField() {
         name="image.imageUrl"
         render={() => (
           <FormItem>
-            <button
-              type="button"
-              aria-label="Seleccionar imagen"
-              onClick={() => inputRef.current?.click()}
-              onDrop={(e) => {
-                e.preventDefault();
-                setDrag(false);
-                handleFile(e.dataTransfer.files?.[0]);
-              }}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDrag(true);
-              }}
-              onDragLeave={() => setDrag(false)}
-              className={[
-                "group relative flex aspect-square w-full cursor-pointer appearance-none items-center",
-                "justify-center overflow-hidden rounded-2xl border-2 border-dashed transition-all",
-                "bg-transparent p-0 text-left font-inherit text-foreground",
-                drag ? "border-brand bg-brand/5" : "border-muted",
-              ].join(" ")}
-            >
-              {/* ── Imagem ── */}
-              {hasImage && preview && (
-                <Image src={preview} alt="Vista previa" fill className="object-cover" unoptimized />
-              )}
+            <div className="relative">
+              <button
+                type="button"
+                aria-label="Seleccionar imagen"
+                onClick={() => inputRef.current?.click()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDrag(false);
+                  handleFile(e.dataTransfer.files?.[0]);
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDrag(true);
+                }}
+                onDragLeave={() => setDrag(false)}
+                className={[
+                  "group relative flex aspect-square w-full cursor-pointer appearance-none items-center",
+                  "justify-center overflow-hidden rounded-2xl border-2 border-dashed transition-all",
+                  "bg-transparent p-0 text-left font-inherit text-foreground",
+                  drag ? "border-brand bg-brand/5" : "border-muted",
+                ].join(" ")}
+              >
+                {/* ── Imagem ── */}
+                {hasImage && preview && (
+                  <Image
+                    src={preview}
+                    alt="Vista previa"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                )}
 
-              {/* ── Estado vazio ── */}
-              {!hasImage && !isProcessing && (
-                <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <UploadCloud className="h-8 w-8" aria-hidden />
-                  <span className="text-sm">Subir imagen</span>
-                </div>
-              )}
+                {/* ── Estado vazio ── */}
+                {!hasImage && !isProcessing && (
+                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                    <UploadCloud className="h-8 w-8" aria-hidden />
+                    <span className="text-sm">Subir imagen</span>
+                  </div>
+                )}
 
-              {/* ── Overlay "Cambiar" — sempre visível no mobile ── */}
-              {hasImage && !isProcessing && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                  <Button
-                    type="button"
-                    size="default"
-                    className="gap-2 bg-white/90 text-black shadow-lg hover:bg-white font-semibold"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      inputRef.current?.click();
-                    }}
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    ¿Cambiar imagen?
-                  </Button>
-                </div>
-              )}
+                {/* ── Overlay "Cambiar" — puramente visual, o clique abre o seletor ── */}
+                {hasImage && !isProcessing && (
+                  <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30">
+                    <span className="inline-flex items-center gap-2 rounded-md bg-white/90 px-3 py-2 text-sm font-semibold text-black shadow-lg">
+                      <RefreshCw className="h-4 w-4" aria-hidden />
+                      ¿Cambiar imagen?
+                    </span>
+                  </span>
+                )}
 
-              {/* ── Botão remover (canto) — só para imagem customizada ── */}
+                {/* ── Processando ── */}
+                {isProcessing && (
+                  <output className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 p-6 text-white">
+                    <p className="text-sm font-medium">Procesando {processingProgress}%</p>
+                    <progress
+                      value={processingProgress}
+                      max={100}
+                      className="w-full"
+                      aria-label={`${processingProgress}%`}
+                    />
+                  </output>
+                )}
+              </button>
+
+              {/* ── Botão remover (canto) — fora do dropzone para evitar <button> aninhado ── */}
               {canRemove && !isProcessing && (
                 <Button
                   type="button"
                   size="icon"
                   variant="destructive"
                   className="absolute right-2 top-2 h-8 w-8 rounded-full shadow-lg"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemove();
-                  }}
+                  onClick={handleRemove}
                   aria-label="Quitar imagen"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               )}
-
-              {/* ── Processando ── */}
-              {isProcessing && (
-                <output className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 p-6 text-white">
-                  <p className="text-sm font-medium">Procesando {processingProgress}%</p>
-                  <progress
-                    value={processingProgress}
-                    max={100}
-                    className="w-full"
-                    aria-label={`${processingProgress}%`}
-                  />
-                </output>
-              )}
-            </button>
+            </div>
 
             {error && (
               <p role="alert" className="mt-1 text-sm text-destructive">
