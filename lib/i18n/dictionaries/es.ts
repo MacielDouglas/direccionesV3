@@ -22,6 +22,7 @@ const es: I18nDictionary = {
     all: "Todos",
     search: "Buscar",
     skipLink: "Ir al contenido principal",
+    navigate: "Navegar hasta",
   },
   navigation: {
     homeLabel: "Inicio",
@@ -123,6 +124,19 @@ const es: I18nDictionary = {
     assign: "Asignar tarjeta",
     return: "Retornar",
     assignSuccess: "¡Tarjeta asignada exitosamente!",
+    mine: "Mis Tarjetas",
+    assignedUnit: "asignadas",
+    assignedUnitSingular: "asignada",
+    since: "desde",
+    activeAddresses: "{count} activas",
+    expandSheet: "Ver más",
+    collapseSheet: "Ver menos",
+    summary: "Resumen",
+    viewDetails: "Ver detalles",
+    emptyTitle: "Sin tarjetas asignadas",
+    emptyDescription:
+      "Cuando un administrador te asigne una tarjeta, aparecerá aquí con todas sus direcciones.",
+    seeMap: "Ver mapa",
   },
   agenda: {
     title: "Cronograma",

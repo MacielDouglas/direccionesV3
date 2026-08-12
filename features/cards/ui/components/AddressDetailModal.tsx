@@ -13,21 +13,23 @@ import { ADDRESS_TYPE_OPTIONS } from "@/features/addresses/domain/constants/addr
 import type { AddressWithUsers } from "@/features/addresses/types/address.types";
 import { AddressImageViewer } from "@/features/addresses/ui/components/AddressImageViewer";
 import DeleteAddressButton from "@/features/addresses/ui/components/DeleteAddressButton";
+import { NavigateAddressButtons } from "@/features/addresses/ui/components/NavigateAddressButtons";
 import { AddressViewMap } from "@/features/map/components/AddressViewMap";
-import { CircleAlert } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { CircleAlert, MapPin, Pencil, X } from "lucide-react";
 import Link from "next/link";
 import { Suspense, use } from "react";
 
-const ADDRESS_COLOR_MAP: Record<string, string> = {
-  House: "bg-green-500",
-  Apartment: "bg-pink-500",
-  Hotel: "bg-blue-500",
-  Store: "bg-yellow-300",
-  Restaurant: "bg-brand",
+const TYPE_TILE: Record<string, string> = {
+  House: "bg-emerald-500/10",
+  Apartment: "bg-pink-500/10",
+  Store: "bg-amber-500/10",
+  Hotel: "bg-blue-500/10",
+  Restaurant: "bg-brand/10",
 };
 
-function getAddressColor(type: string) {
-  return ADDRESS_COLOR_MAP[type] ?? "bg-brand";
+function typeTileOf(type: string): string {
+  return TYPE_TILE[type] ?? "bg-muted";
 }
 
 function formatDate(date: Date | string) {
@@ -53,18 +55,30 @@ export function AddressDetailModal({ promise, onClose, organizationSlug }: Props
         if (!open) onClose();
       }}
     >
-      <DialogContent className="flex flex-col w-full max-w-2xl max-h-[92dvh] overflow-y-auto p-0 gap-0 rounded-2xl">
-        <DialogHeader className="px-4 pt-5 pb-3 text-start shrink-0">
-          <DialogTitle className="text-base font-semibold">Dirección</DialogTitle>
-          <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
-            Usa el mapa para llegar o abre Google Maps / Waze. También puedes editar, confirmar o
-            desactivar esta dirección.
-          </DialogDescription>
+      {/* Sheet mobile / diálogo central desktop */}
+      <DialogContent
+        showCloseButton={false}
+        className={cn(
+          "fixed z-50 gap-0",
+          "max-h-[92dvh] w-full max-w-full overflow-y-auto p-0",
+          "left-0! right-0! bottom-0! top-auto! rounded-t-3xl! border-0!",
+          "translate-x-0! translate-y-0!",
+          "sm:left-1/2! sm:right-auto! sm:top-1/2! sm:bottom-auto! sm:-translate-x-1/2! sm:-translate-y-1/2!",
+          "sm:max-w-2xl! sm:rounded-3xl! sm:border! sm:max-h-[90dvh]",
+        )}
+      >
+        <DialogHeader className="sr-only">
+          <DialogTitle>Dirección</DialogTitle>
+          <DialogDescription>Detalles y mapa de la dirección.</DialogDescription>
         </DialogHeader>
 
         {promise && (
           <Suspense fallback={<AddressDetailSkeleton />}>
-            <AddressContent promise={promise} organizationSlug={organizationSlug} />
+            <AddressContent
+              promise={promise}
+              organizationSlug={organizationSlug}
+              onClose={onClose}
+            />
           </Suspense>
         )}
       </DialogContent>
@@ -76,36 +90,34 @@ export function AddressDetailModal({ promise, onClose, organizationSlug }: Props
 
 function AddressDetailSkeleton() {
   return (
-    <div className="flex flex-col gap-2 px-3 py-4">
-      <Skeleton className="w-full h-52 rounded-2xl" />
-      <div className="flex flex-col gap-4 rounded-2xl bg-card p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-8 w-2 rounded-full" />
-            <Skeleton className="h-6 w-40" />
+    <div className="flex flex-col">
+      <div className="sticky top-0 z-20 flex items-center justify-end border-b border-border bg-card/95 p-3 backdrop-blur">
+        <Skeleton className="size-9 rounded-full" />
+      </div>
+      <Skeleton className="h-96 w-full" />
+      <section className="flex flex-col gap-4 border-t border-border bg-card p-4 pb-8 sm:p-6">
+        <div className="flex items-center gap-3">
+          <Skeleton className="size-12 rounded-xl" />
+          <div className="flex flex-col gap-1.5">
+            <Skeleton className="h-5 w-44" />
+            <Skeleton className="h-3.5 w-28" />
           </div>
-          <Skeleton className="h-10 w-10 rounded" />
         </div>
         <div className="flex gap-2">
-          <Skeleton className="h-5 w-24 rounded-full" />
-          <Skeleton className="h-5 w-20 rounded-full" />
+          <Skeleton className="h-6 w-24 rounded-full" />
+          <Skeleton className="h-6 w-20 rounded-full" />
         </div>
-        <Skeleton className="w-full h-48 rounded-xl" />
-        <div className="grid grid-cols-2 gap-3">
-          {[0, 1, 2].map((row) => (
+        <div className="grid grid-cols-2 gap-4 rounded-xl border p-4">
+          {[0, 1, 2, 3].map((row) => (
             <div key={row} className="flex flex-col gap-1">
               <Skeleton className="h-3 w-16" />
               <Skeleton className="h-4 w-28" />
             </div>
           ))}
         </div>
-        <Skeleton className="h-16 w-full rounded-xl" />
-        <div className="flex flex-col gap-1.5 border-t pt-3">
-          <Skeleton className="h-3 w-48" />
-          <Skeleton className="h-3 w-36" />
-        </div>
-        <Skeleton className="h-10 w-full rounded-lg" />
-      </div>
+        <Skeleton className="h-20 w-full rounded-xl" />
+        <Skeleton className="h-10 w-full rounded-xl" />
+      </section>
     </div>
   );
 }
@@ -115,42 +127,51 @@ function AddressDetailSkeleton() {
 function AddressContent({
   promise,
   organizationSlug,
+  onClose,
 }: {
   promise: Promise<AddressWithUsers | null>;
   organizationSlug: string;
+  onClose: () => void;
 }) {
   const address = use(promise);
 
   if (!address)
     return (
-      <div className="flex items-center justify-center py-16 text-sm text-destructive px-4 text-center">
+      <div className="flex items-center justify-center px-4 py-16 text-center text-sm text-destructive">
         Dirección no encontrada.
       </div>
     );
 
   const typeConfig = ADDRESS_TYPE_OPTIONS.find((t) => t.value === address.type);
   const Icon = typeConfig?.icon;
-  const colorClass = getAddressColor(address.type);
+  const fullAddress = `${address.street}, ${address.number} · ${address.neighborhood}, ${address.city}`;
 
   return (
-    <article className="flex flex-col gap-2 px-3 py-4">
-      {/* Mapa */}
-      {address.latitude && address.longitude && (
-        <section
-          aria-label="Mapa de la dirección"
-          className="relative w-full overflow-hidden rounded-2xl"
+    <article className="flex flex-col">
+      {/* Topo fixo: fechar */}
+      <div className="sticky top-0 z-20 flex items-center justify-end border-b border-border/60 bg-card/95 p-3 backdrop-blur">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Cerrar"
+          className="grid size-11 place-items-center rounded-full border border-border bg-card text-foreground shadow-sm transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <Suspense fallback={<Skeleton className="w-full h-52 rounded-2xl" />}>
-            <div className="h-115 w-full">
-              <AddressViewMap
-                latitude={Number(address.latitude)}
-                longitude={Number(address.longitude)}
-              />
-            </div>
+          <X className="size-4" aria-hidden />
+        </button>
+      </div>
+
+      {/* Mapa + rota */}
+      {address.latitude != null && address.longitude != null && (
+        <section aria-label="Mapa de la dirección" className="relative">
+          <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+            <AddressViewMap
+              latitude={Number(address.latitude)}
+              longitude={Number(address.longitude)}
+            />
           </Suspense>
 
           {address.pendingDeletionAt && (
-            <div className="absolute bottom-0 left-0 right-0 bg-black/80 text-red-400 text-xs font-semibold uppercase text-center py-2 px-3">
+            <div className="absolute inset-x-0 bottom-0 bg-black/80 px-3 py-2 text-center text-xs font-semibold uppercase tracking-wide text-red-400">
               Solicitud de borrado pendiente de confirmación
             </div>
           )}
@@ -160,150 +181,181 @@ function AddressContent({
       {/* Detalhes */}
       <section
         aria-label="Detalles de la dirección"
-        className="flex flex-col gap-4 rounded-2xl bg-white p-4 dark:bg-surface-subtle-dark"
+        className="flex flex-col gap-5 border-t border-border bg-card p-4 pb-8 sm:p-6"
       >
-        {/* Header: nome + ícone */}
-        <header className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className={`h-8 w-2 shrink-0 rounded-full ${colorClass}`} aria-hidden />
-            <h2 className="truncate text-base font-semibold uppercase tracking-wide sm:text-lg">
-              {address.businessName ?? "Residencial"}
+        {/* Cabeçalho: tipo + nome */}
+        <header className="flex items-center gap-3">
+          <span
+            className={cn(
+              "grid size-12 shrink-0 place-items-center rounded-xl",
+              typeTileOf(address.type),
+            )}
+            aria-hidden
+          >
+            {Icon && <Icon className={typeConfig?.color} size={22} />}
+          </span>
+          <div className="min-w-0">
+            <h2 className="truncate text-lg font-semibold tracking-tight text-foreground">
+              {address.businessName ?? `${address.street}, ${address.number}`}
             </h2>
+            {address.businessName && (
+              <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                {address.street}, {address.number}
+              </p>
+            )}
           </div>
-          {Icon && (
-            <div
-              className="shrink-0 rounded bg-black/80 p-2"
-              aria-label={`Tipo: ${typeConfig?.label}`}
-            >
-              <Icon className={typeConfig?.color} size={24} aria-hidden />
-            </div>
-          )}
         </header>
 
-        {/* Badges */}
-        <ul className="flex flex-wrap gap-2 " aria-label="Estado de la dirección">
+        {/* Estado */}
+        <ul className="flex flex-wrap gap-2" aria-label="Estado de la dirección">
           <li
-            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
               address.confirmed
                 ? "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
-                : "bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400"
-            }`}
+                : "bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400",
+            )}
           >
             {address.confirmed ? "✓ Confirmada" : "✗ No confirmada"}
           </li>
           <li
-            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
               address.active
                 ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
-                : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
-            }`}
+                : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
+            )}
           >
             {address.active ? "✓ Activa" : "✗ Inactiva"}
           </li>
+          {address.pendingDeletionAt && (
+            <li className="inline-flex items-center gap-1 rounded-full bg-destructive px-2.5 py-1 text-xs font-semibold text-white">
+              Borrado pendiente
+            </li>
+          )}
         </ul>
 
-        {/* Campos */}
-        <section aria-labelledby="modal-address-info">
-          <h3 id="modal-address-info" className="sr-only">
-            Información de ubicación
-          </h3>
-          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-gray-400">Calle</dt>
-              <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200">
-                {address.street}, {address.number}
+        {/* Informação de localização */}
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-4 rounded-xl border border-border bg-muted/40 p-4">
+          <div>
+            <dt className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+              Calle
+            </dt>
+            <dd className="mt-0.5 break-words text-sm font-medium text-foreground">
+              {address.street}, {address.number}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+              Barrio
+            </dt>
+            <dd className="mt-0.5 break-words text-sm font-medium text-foreground">
+              {address.neighborhood}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+              Ciudad
+            </dt>
+            <dd className="mt-0.5 break-words text-sm font-medium text-foreground">
+              {address.city}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+              Tipo
+            </dt>
+            <dd className="mt-0.5 inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
+              {Icon && <Icon className={cn("size-4", typeConfig?.color)} aria-hidden />}
+              {typeConfig?.label ?? address.type}
+            </dd>
+          </div>
+          {address.businessName && (
+            <div className="col-span-2">
+              <dt className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+                Negocio
+              </dt>
+              <dd className="mt-0.5 break-words text-sm font-medium text-foreground">
+                {address.businessName}
               </dd>
             </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-gray-400">Barrio</dt>
-              <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200">
-                {address.neighborhood}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-gray-400">Ciudad</dt>
-              <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200">
-                {address.city}
-              </dd>
-            </div>
-            {address.businessName && (
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-gray-400">Negocio</dt>
-                <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200">
-                  {address.businessName}
-                </dd>
-              </div>
-            )}
-          </dl>
-        </section>
+          )}
+        </dl>
+
+        <p className="flex items-start gap-1.5 rounded-xl bg-muted px-3 py-2 text-xs text-muted-foreground">
+          <MapPin className="mt-px size-3.5 shrink-0 text-brand" aria-hidden />
+          {fullAddress}
+        </p>
 
         {!address.active && (
-          <p className="text-red-500 font-semibold text-lg inline-flex gap-2">
-            <CircleAlert className="size-6 shrink-0 text-red-500 animate-bounce" aria-hidden />{" "}
-            Dirección desactivada. Puede haber cambiado.
-            <br />
-            Revise notas o contacte a quien la actualizó.
+          <p className="inline-flex items-start gap-2 rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600 dark:bg-red-950/40 dark:text-red-400">
+            <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+            Dirección desactivada. Puede haber cambiado. Revise notas o contacte a quien la
+            actualizó.
           </p>
         )}
 
-        {/* Info adicional */}
+        {/* Informação adicional */}
         {address.info && (
-          <section className="rounded-xl bg-gray-100 p-3 dark:bg-surface-elevated-dark">
-            <h3 className="mb-1.5 text-xs font-semibold text-gray-700 dark:text-slate-300">
+          <section className="rounded-xl bg-muted p-4">
+            <h3 className="mb-1.5 text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
               Información adicional
             </h3>
-            <p className="text-sm leading-relaxed text-gray-600 dark:text-slate-400">
-              {address.info}
-            </p>
+            <p className="text-sm leading-relaxed text-foreground/80">{address.info}</p>
           </section>
         )}
 
-        {/* Footer: auditoria + ações */}
-        <footer className="flex flex-col gap-3 border-t border-gray-100 pt-3">
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-gray-400">
-              Enviado por:{" "}
-              <span className="font-medium text-gray-600 dark:text-slate-300">
-                {address.createdUser?.name ?? "Usuario desconocido"}
-              </span>
-            </p>
-            <p className="text-xs text-gray-400">
-              Actualizado:{" "}
-              <time dateTime={new Date(address.updatedAt).toISOString()}>
-                {formatDate(address.updatedAt)}
-              </time>
-              {address.updatedUser && (
-                <>
-                  {" "}
-                  por{" "}
-                  <span className="font-medium text-gray-600 dark:text-slate-300">
-                    {address.updatedUser.name}
-                  </span>
-                </>
-              )}
-            </p>
-          </div>
+        {/* Imagem */}
+        {address.image && (
+          <figure className="w-full overflow-hidden rounded-xl">
+            <AddressImageViewer
+              src={address.image}
+              alt={`Imagen de ${address.businessName ?? "la dirección"}`}
+            />
+          </figure>
+        )}
 
-          {/* Imagem */}
-          {address.image && (
-            <figure className="w-full overflow-hidden rounded-xl">
-              <AddressImageViewer
-                src={address.image}
-                alt={`Imagen de ${address.businessName ?? "la dirección"}`}
-              />
-            </figure>
-          )}
-
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Link
-              href={`/org/${organizationSlug}/addresses/${address.id}/edit`}
-              className="w-full sm:w-auto"
-            >
-              <Button className="w-full">Editar dirección</Button>
-            </Link>
-          </div>
-          <DeleteAddressButton addressId={address.id} />
+        {/* Auditoria */}
+        <footer className="flex flex-col gap-1 border-t border-border pt-3 text-xs text-muted-foreground">
+          <p>
+            Enviado por:{" "}
+            <span className="font-medium text-foreground">
+              {address.createdUser?.name ?? "Usuario desconocido"}
+            </span>
+          </p>
+          <p>
+            Actualizado:{" "}
+            <time dateTime={new Date(address.updatedAt).toISOString()}>
+              {formatDate(address.updatedAt)}
+            </time>
+            {address.updatedUser && (
+              <>
+                {" "}
+                por <span className="font-medium text-foreground">{address.updatedUser.name}</span>
+              </>
+            )}
+          </p>
         </footer>
+
+        {/* Ações */}
+        <div className="flex flex-col gap-2">
+          {address.latitude != null && address.longitude != null && (
+            <NavigateAddressButtons
+              latitude={Number(address.latitude)}
+              longitude={Number(address.longitude)}
+            />
+          )}
+          <Link href={`/org/${organizationSlug}/addresses/${address.id}/edit`} className="w-full">
+            <Button className="w-full" variant="outline">
+              <Pencil className="size-4" aria-hidden />
+              Editar dirección
+            </Button>
+          </Link>
+          <DeleteAddressButton
+            addressId={address.id}
+            isPendingDeletion={!!address.pendingDeletionAt}
+          />
+        </div>
       </section>
     </article>
   );

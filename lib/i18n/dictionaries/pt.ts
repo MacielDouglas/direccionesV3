@@ -22,6 +22,7 @@ const ptBR: I18nDictionary = {
     all: "Todos",
     search: "Buscar",
     skipLink: "Ir para o conteúdo principal",
+    navigate: "Navegar até",
   },
   navigation: {
     homeLabel: "Início",
@@ -123,6 +124,19 @@ const ptBR: I18nDictionary = {
     assign: "Atribuir card",
     return: "Retornar",
     assignSuccess: "Card atribuído com sucesso!",
+    mine: "Meus Cards",
+    assignedUnit: "atribuídos",
+    assignedUnitSingular: "atribuído",
+    since: "desde",
+    activeAddresses: "{count} ativos",
+    expandSheet: "Ver mais",
+    collapseSheet: "Ver menos",
+    summary: "Resumo",
+    viewDetails: "Ver detalhes",
+    emptyTitle: "Nenhum card atribuído",
+    emptyDescription:
+      "Quando um administrador atribuir um card a você, ele aparecerá aqui com todos os endereços.",
+    seeMap: "Ver mapa",
   },
   agenda: {
     title: "Agenda",

@@ -24,6 +24,7 @@ export type I18nDictionary = {
     all: string;
     search: string;
     skipLink: string;
+    navigate: string;
   };
   navigation: {
     homeLabel: string;
@@ -124,6 +125,18 @@ export type I18nDictionary = {
     assign: string;
     return: string;
     assignSuccess: string;
+    mine: string;
+    assignedUnit: string;
+    assignedUnitSingular: string;
+    since: string;
+    activeAddresses: string;
+    expandSheet: string;
+    collapseSheet: string;
+    summary: string;
+    viewDetails: string;
+    emptyTitle: string;
+    emptyDescription: string;
+    seeMap: string;
   };
   agenda: {
     title: string;

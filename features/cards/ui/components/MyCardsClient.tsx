@@ -1,13 +1,13 @@
 "use client";
 
 import type { AddressWithUsers } from "@/features/addresses/types/address.types";
-import { CardViewMap } from "@/features/map/components/CardViewMap";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { fetchAddressWithUsers } from "@/server/address/address.action";
-import { CircleAlert, Clock } from "lucide-react";
+import { Map as MapIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AddressDetailModal } from "./AddressDetailModal";
-import { ReturnCardButton } from "./ReturnCardButton";
+import { MyCardsListView } from "./MyCardsListView";
+import { MyCardsMapModal } from "./MyCardsMapModal";
 
 type CardAddress = {
   id: string;
@@ -32,13 +32,15 @@ type Card = {
 interface Props {
   cards: Card[];
   organizationSlug: string;
+  totalAddresses: number;
 }
 
-export function MyCardsClient({ cards, organizationSlug }: Props) {
+export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props) {
+  const { t } = useI18n();
   const [addressPromise, setAddressPromise] = useState<Promise<AddressWithUsers | null> | null>(
     null,
   );
-  const { t } = useI18n();
+  const [mapOpen, setMapOpen] = useState(false);
 
   const { allAddresses, addressIndexMap } = useMemo(() => {
     const addresses = cards
@@ -60,116 +62,50 @@ export function MyCardsClient({ cards, organizationSlug }: Props) {
     };
   }, [cards]);
 
-  // ✅ chama o server action e armazena a promise
   const openAddress = (id: string) => {
     setAddressPromise(fetchAddressWithUsers(id));
   };
 
   return (
-    <div className="flex flex-col h-dvh">
-      {allAddresses.length > 0 && (
-        <div className="h-64 shrink-0 w-full">
-          <CardViewMap addresses={allAddresses} onMarkerClick={openAddress} />
-        </div>
-      )}
-      <main className="flex-1 overflow-y-auto px-4 py-5">
-        <header className="mb-4">
-          <h1 className="text-2xl font-semibold tracking-tight">{t.cards.title}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {cards.length} tarjeta{cards.length !== 1 ? "s" : ""} asignada
-            {cards.length !== 1 ? "s" : ""}
+    <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-4 pt-6 pb-28 sm:max-w-lg md:py-10">
+      {/* Cabeçalho */}
+      <header className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+            {t.cards.mine}
+          </h1>
+          <p className="mt-0.5 truncate text-sm text-muted-foreground">
+            <span className="tabular-nums">{cards.length}</span>{" "}
+            {cards.length === 1 ? t.cards.assignedUnitSingular : t.cards.assignedUnit} ·{" "}
+            {t.cards.addressesCount.replace("{count}", String(totalAddresses))}
           </p>
-        </header>
+        </div>
 
-        {cards.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
-            <p className="text-sm">{t.cards.noCards}</p>
-          </div>
-        ) : (
-          <ul className="flex flex-col gap-4" aria-label={t.cards.title}>
-            {cards.map((card) => (
-              <li key={card.id}>
-                <article
-                  aria-label={`Tarjeta #${String(card.number).padStart(2, "0")}`}
-                  className="rounded-2xl border bg-card p-4 flex flex-col gap-3 shadow-xs"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-lg font-bold tabular-nums">
-                      #{String(card.number).padStart(2, "0")}
-                    </span>
-                    <p className="font-bold  text-xs text-muted-foreground">
-                      {Array.from(
-                        new Set(
-                          card.addresses
-                            .map((item) => item.neighborhood?.trim())
-                            .filter((item): item is string => !!item),
-                        ),
-                      ).join(", ")}
-                    </p>
-                    <ReturnCardButton
-                      cardId={card.id}
-                      cardNumber={card.number}
-                      organizationSlug={organizationSlug}
-                    />
-                  </div>
-
-                  {card.startDate && (
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Clock className="size-3.5 shrink-0" aria-hidden />
-                      Recibido el {new Date(card.startDate).toLocaleDateString("es-419")}
-                    </div>
-                  )}
-
-                  <ul className="flex flex-col gap-1" aria-label={t.common.addresses}>
-                    {card.addresses.map((addr) => {
-                      const index = addressIndexMap.get(addr.id);
-                      return (
-                        <li key={addr.id}>
-                          <button
-                            type="button"
-                            onClick={() => openAddress(addr.id)}
-                            className="w-full flex items-center gap-2 text-sm
-                              text-blue-600 dark:text-blue-400
-                              hover:text-blue-800 dark:hover:text-blue-300
-                              hover:bg-blue-50 dark:hover:bg-blue-950/30
-                              rounded-md px-1 py-0.5 transition-colors text-left
-                              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            aria-label={`Ver detalles: ${addr.businessName ?? addr.street}`}
-                          >
-                            {index != null && (
-                              <span
-                                className="flex shrink-0 size-5 items-center justify-center
-                                  rounded-full bg-brand text-brand-foreground text-xs font-bold"
-                                aria-hidden
-                              >
-                                {index}
-                              </span>
-                            )}
-                            {!addr.active && (
-                              <CircleAlert
-                                className="size-4 shrink-0 text-red-500 animate-ping"
-                                aria-hidden
-                              />
-                            )}
-                            <span
-                              className={`truncate ${addr.pendingDeletionAt ? "line-through" : ""}`}
-                            >
-                              {addr.businessName && (
-                                <span className="font-medium">{addr.businessName} — </span>
-                              )}
-                              {addr.street}, {addr.number}, {addr.neighborhood}, {addr.city}
-                            </span>
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </article>
-              </li>
-            ))}
-          </ul>
+        {allAddresses.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setMapOpen(true)}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground shadow-xs transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <MapIcon className="size-4 text-brand" aria-hidden />
+            {t.cards.seeMap}
+          </button>
         )}
-      </main>
+      </header>
+
+      <MyCardsListView
+        cards={cards}
+        totalAddresses={totalAddresses}
+        addressIndexMap={addressIndexMap}
+        onOpenAddress={openAddress}
+      />
+
+      <MyCardsMapModal
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        addresses={allAddresses}
+        onMarkerClick={openAddress}
+      />
 
       <AddressDetailModal
         promise={addressPromise}

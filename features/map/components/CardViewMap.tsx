@@ -6,13 +6,15 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { LazyMapboxProvider } from "../core/LazyMapboxProvider";
 import { type CardAddress, CardAddressesLayer } from "../layers/CardAddressesLayer";
+import { UserLocationDotLayer } from "../layers/UserLocationDotLayer";
 
 interface Props {
   addresses: CardAddress[];
   onMarkerClick?: (id: string) => void;
+  className?: string;
 }
 
-export function CardViewMap({ addresses, onMarkerClick }: Props) {
+export function CardViewMap({ addresses, onMarkerClick, className }: Props) {
   const [showLabels, setShowLabels] = useState(false);
 
   const validAddresses = addresses.filter((a) => a.latitude != null && a.longitude != null);
@@ -26,13 +28,14 @@ export function CardViewMap({ addresses, onMarkerClick }: Props) {
   }
 
   return (
-    <div className="relative h-64 w-full overflow-hidden rounded-xl shadow-sm">
-      <LazyMapboxProvider className="h-64">
+    <div className={className ?? "relative h-64 w-full overflow-hidden rounded-xl shadow-sm"}>
+      <LazyMapboxProvider className="h-full">
         <CardAddressesLayer
           addresses={validAddresses}
           onMarkerClick={onMarkerClick}
           showLabels={showLabels}
         />
+        <UserLocationDotLayer />
       </LazyMapboxProvider>
 
       {/* Botão toggle labels */}

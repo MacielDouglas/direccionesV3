@@ -22,7 +22,7 @@ export default async function MyCardsPage({ params }: Props) {
   if (!org) redirect("/organizations");
 
   return (
-    <div className="w-full max-w-5xl mx-auto py-2">
+    <div className="flex w-full justify-center">
       <MyCardsScreen
         organizationId={org.id}
         organizationSlug={organizationSlug}
