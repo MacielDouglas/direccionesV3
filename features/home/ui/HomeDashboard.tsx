@@ -1,0 +1,137 @@
+import { PendingDeletionBadge } from "@/features/addresses/ui/components/PendingDeletionBadge";
+import { getAgendaEventsByDay } from "@/features/agenda/application/agenda.service";
+import { countMyCards, countMyTotalAddresses } from "@/features/cards/application/card.service";
+import { getServerDictionary } from "@/lib/i18n/server";
+import { CalendarDays, ChevronRight, CreditCard } from "lucide-react";
+import Link from "next/link";
+
+interface HomeDashboardProps {
+  organizationId: string;
+  organizationSlug: string;
+  userId: string;
+  userName: string;
+  isAdminOrOwner: boolean;
+}
+
+function formatTime(date: Date, time: string | null): string {
+  if (time) return time;
+  return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(date);
+}
+
+export async function HomeDashboard({
+  organizationId,
+  organizationSlug,
+  userId,
+  userName,
+  isAdminOrOwner,
+}: HomeDashboardProps) {
+  const [t, cardCount, totalAddresses, todayEvents] = await Promise.all([
+    getServerDictionary(),
+    countMyCards(organizationId, userId),
+    countMyTotalAddresses(organizationId, userId),
+    getAgendaEventsByDay(organizationId, new Date()),
+  ]);
+
+  const hasEvents = todayEvents.length > 0;
+
+  return (
+    <div className="mx-auto w-full max-w-md px-4 py-7 md:py-10">
+      <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+        {t.home.welcome} <span className="text-foreground">{userName}</span>
+      </h1>
+
+      <div className="mt-6 space-y-6">
+        {/* Hero — Saldo de Cards */}
+        <Link
+          href={`/org/${organizationSlug}/my-cards`}
+          className="group flex items-center justify-between gap-4 rounded-xl bg-black p-6 text-white shadow-md shadow-black/20 transition-transform active:scale-[0.99]"
+        >
+          <div>
+            <span className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-neutral-400">
+              <CreditCard className="size-4" aria-hidden="true" />
+              {t.home.cardsTitle}
+            </span>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-5xl font-bold leading-none tabular-nums">{cardCount}</span>
+              <span className="text-sm font-medium text-neutral-300">
+                {cardCount === 1 ? t.home.cardsUnitSingular : t.home.cardsUnit}
+              </span>
+            </div>
+            <p className="mt-2 text-xs text-neutral-400">
+              {t.home.addressesBadge.replace("{count}", String(totalAddresses))}
+            </p>
+          </div>
+          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-transform group-hover:translate-x-0.5">
+            <ChevronRight className="size-5" aria-hidden="true" />
+          </span>
+        </Link>
+
+        {/* Programação de hoje */}
+        <section aria-labelledby="today-agenda">
+          <div className="flex items-center justify-between">
+            <h2
+              id="today-agenda"
+              className="flex items-center gap-2 text-base font-semibold text-foreground"
+            >
+              <CalendarDays className="size-4 text-brand" aria-hidden="true" />
+              {t.home.todayAgenda}
+            </h2>
+            <Link
+              href={`/org/${organizationSlug}/agenda`}
+              className="text-sm font-medium text-brand transition-colors hover:text-brand-muted"
+            >
+              {t.agenda.title}
+            </Link>
+          </div>
+
+          {hasEvents ? (
+            <ul className="mt-3 space-y-2">
+              {todayEvents.map((event) => (
+                <li key={event.id}>
+                  <Link
+                    href={`/org/${organizationSlug}/agenda`}
+                    className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-surface-subtle-light dark:hover:bg-surface-subtle-dark"
+                  >
+                    <div className="flex h-11 min-w-11 flex-col items-center justify-center rounded-lg bg-black px-2 text-white">
+                      <span className="text-[0.625rem] font-medium uppercase leading-none tracking-wide text-neutral-300">
+                        {t.agenda.hour}
+                      </span>
+                      <span className="mt-0.5 text-sm font-semibold tabular-nums leading-none">
+                        {formatTime(event.date, event.time)}
+                      </span>
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {event.tipo ?? event.territorio ?? event.saida ?? t.agenda.title}
+                      </p>
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                        {[event.territorio, event.saida, event.conductor?.name]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="mt-3 rounded-xl border border-border bg-card p-5 text-center">
+              <p className="text-sm text-muted-foreground">{t.home.noEventsToday}</p>
+              <Link
+                href={`/org/${organizationSlug}/agenda`}
+                className="mt-2 inline-block text-sm font-medium text-brand transition-colors hover:text-brand-muted"
+              >
+                {t.home.viewAgenda}
+              </Link>
+            </div>
+          )}
+        </section>
+
+        {isAdminOrOwner && (
+          <PendingDeletionBadge organizationId={organizationId} orgSlug={organizationSlug} />
+        )}
+      </div>
+    </div>
+  );
+}

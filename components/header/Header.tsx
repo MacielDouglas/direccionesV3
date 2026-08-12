@@ -25,7 +25,7 @@ function Logo() {
 
 export default function Header({ session, role, organization }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-border bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-30 w-full border-b border-border bg-white/95 backdrop-blur-md dark:bg-[#1a1a1a]/95">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:h-20 md:px-8">
         {organization?.slug ? (
           <NavLink

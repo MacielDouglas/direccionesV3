@@ -7,19 +7,21 @@ import type { I18nDictionary, Locale } from "./types";
 export const LOCALE_STORAGE_KEY = "direcciones.locale";
 export const LOCALE_COOKIE_NAME = "direcciones.locale";
 
-const LOCALE_REGEX = /^(pt|es)(?:[-_]|$)/i;
+export function isLocale(value: string | null): value is Locale {
+  return value === "pt" || value === "es";
+}
 
 export function detectBrowserLocale(): Locale {
   const raw =
     typeof navigator !== "undefined" ? navigator.language || navigator.languages?.[0] : "";
-  return LOCALE_REGEX.test(raw) ? (raw.slice(0, 2).toLowerCase() as Locale) : "pt";
+  return isLocale(raw.slice(0, 2).toLowerCase()) ? (raw.slice(0, 2).toLowerCase() as Locale) : "pt";
 }
 
 export function getStoredLocale(): Locale {
   if (typeof window === "undefined") return "pt";
   try {
     const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (stored === "pt" || stored === "es") return stored;
+    if (isLocale(stored)) return stored;
   } catch {
     /* localStorage indisponível — usa fallback */
   }
@@ -34,8 +36,13 @@ interface I18nContextValue {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => getStoredLocale());
+interface I18nProviderProps {
+  children: React.ReactNode;
+  initialLocale?: Locale;
+}
+
+export function I18nProvider({ children, initialLocale = "pt" }: I18nProviderProps) {
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);

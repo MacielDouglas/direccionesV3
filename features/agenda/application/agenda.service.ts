@@ -13,6 +13,19 @@ export async function getAgendaEventsByMonth(organizationId: string, year: numbe
   });
 }
 
+export async function getAgendaEventsByDay(organizationId: string, date: Date) {
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
+  const end = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59);
+
+  return prisma.agendaEvent.findMany({
+    where: { organizationId, date: { gte: start, lte: end } },
+    include: {
+      conductor: { select: { id: true, name: true, image: true } },
+    },
+    orderBy: { date: "asc" },
+  });
+}
+
 export async function getAgendaFieldOptions(organizationId: string) {
   const options = await prisma.agendaFieldOption.findMany({
     where: { organizationId },

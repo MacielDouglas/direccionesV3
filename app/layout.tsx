@@ -1,16 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Inconsolata, Outfit } from "next/font/google";
+import { Inconsolata, Inter } from "next/font/google";
 import "@/app/globals.css";
 import { NavigationProvider } from "@/components/NavigationProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalMapProvider } from "@/features/map/core/GlobalMapProvider";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
+import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
 import { ThemeProvider } from "next-themes";
 
-const outfit = Outfit({
+const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-outfit",
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -59,25 +60,28 @@ export const viewport: Viewport = {
   // userScalable: false, // junto com maximumScale — padrão para app-like
   viewportFit: "cover", // safe area para notch/dynamic island
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f1f2f4" },
-    { media: "(prefers-color-scheme: dark)", color: "#101010" },
+    { media: "(prefers-color-scheme: light)", color: "#f3f3f3" },
+    { media: "(prefers-color-scheme: dark)", color: "#111111" },
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const t = await getServerDictionary();
+  const serverLocale = await getServerLocale();
+
   return (
-    <html lang="pt" suppressHydrationWarning>
+    <html lang={serverLocale} suppressHydrationWarning>
       <head>
         {/* Previne flash de conteúdo não estilizado no iOS PWA */}
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body
         className={`
-          ${outfit.variable} ${inconsolata.variable}
+          ${inter.variable} ${inconsolata.variable}
           font-sans antialiased
           overflow-x-hidden
           bg-background text-foreground
@@ -89,7 +93,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <I18nProvider>
+          <I18nProvider initialLocale={serverLocale}>
             {/* Skip to content — acessibilidade para teclado/screen reader */}
             <a
               href="#main-content"
@@ -102,7 +106,7 @@ export default function RootLayout({
               focus:outline-none
             "
             >
-              Ir al contenido principal
+              {t.common.skipLink}
             </a>
 
             <Toaster position="top-center" richColors closeButton />

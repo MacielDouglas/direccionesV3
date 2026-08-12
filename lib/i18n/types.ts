@@ -23,6 +23,7 @@ export type I18nDictionary = {
     language: string;
     all: string;
     search: string;
+    skipLink: string;
   };
   navigation: {
     homeLabel: string;
@@ -64,6 +65,24 @@ export type I18nDictionary = {
     notInGroup: string;
     talkToAdmin: string;
     thanks: string;
+    cardsTitle: string;
+    cardsUnit: string;
+    cardsUnitSingular: string;
+    addressesBadge: string;
+    todayAgenda: string;
+    noEventsToday: string;
+    viewAgenda: string;
+    yourSummary: string;
+    totalAddresses: string;
+    quickActions: string;
+    cardsAccess: string;
+    noCardsYet: string;
+    viewAllCards: string;
+    updates: string;
+    noUpdates: string;
+    todaySchedule: string;
+    eventsToday: string;
+    cardsAddresses: string;
   };
   addresses: {
     allTitle: string;
@@ -103,6 +122,7 @@ export type I18nDictionary = {
   agenda: {
     title: string;
     today: string;
+    hour: string;
     loading: string;
     noEvents: string;
     createEvent: string;

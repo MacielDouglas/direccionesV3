@@ -57,11 +57,11 @@ export function BottomTabBar({ orgSlug }: BottomTabBarProps) {
                 className={cn(
                   "flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-xl px-1 transition-colors",
                   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
-                  active ? "text-brand" : "text-muted-foreground hover:text-foreground",
+                  active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Icon
-                  className={cn("size-5 transition-transform", active && "scale-110")}
+                  className={cn("size-5 transition-transform", active && "scale-110 stroke-[2.5]")}
                   aria-hidden="true"
                 />
                 <span className="text-xs font-medium leading-none">{label}</span>

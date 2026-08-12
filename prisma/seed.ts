@@ -15,6 +15,7 @@ async function main() {
   const superUserEmail = process.env.SUPER_USER_EMAIL;
 
   if (!superUserEmail) {
+    // biome-ignore lint/suspicious/noConsole: log intencional do seed
     console.warn("[seed] SUPER_USER_EMAIL no definido — saltando Super User.");
     return;
   }
@@ -30,11 +31,13 @@ async function main() {
     },
   });
 
+  // biome-ignore lint/suspicious/noConsole: log intencional do seed
   console.log(`[seed] Super User listo: ${user.email}`);
 }
 
 main()
   .catch((error) => {
+    // biome-ignore lint/suspicious/noConsole: log intencional do seed
     console.error("[seed] Error:", error);
     process.exit(1);
   })

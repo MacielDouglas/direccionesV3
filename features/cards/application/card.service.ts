@@ -97,6 +97,22 @@ export async function listMyCards(organizationId: string, userId: string) {
   });
 }
 
+export async function countMyCards(organizationId: string, userId: string) {
+  return prisma.card.count({
+    where: { organizationId, assignedUserId: userId },
+  });
+}
+
+export async function countMyTotalAddresses(organizationId: string, userId: string) {
+  const result = await prisma.address.count({
+    where: {
+      organizationId,
+      card: { assignedUserId: userId },
+    },
+  });
+  return result;
+}
+
 export async function getOrgMembers(organizationId: string) {
   return prisma.member.findMany({
     where: { organizationId },
