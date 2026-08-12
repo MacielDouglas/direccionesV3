@@ -19,20 +19,18 @@ export default async function TenantLayout({ children, params }: Props) {
   const organization = await getOrganizationBySlug(organizationSlug);
   if (!organization) notFound();
 
-  // Verifica se o usuário é membro desta org
-  if (!data.activeMember) redirect("/organizations");
+  const isSuperUser = data.isSuperUser;
 
-  if (data.activeMember?.organizationId !== organization.id) {
-    await setActiveOrg(organization.id);
+  if (!isSuperUser) {
+    if (!data.activeMember) redirect("/");
+
+    if (data.activeMember.organizationId !== organization.id) {
+      await setActiveOrg(organization.id);
+    }
   }
 
-  const needsOrgSwitch = data.activeMember?.organizationId !== organization.id;
-
-  if (needsOrgSwitch) {
-    await setActiveOrg(organization.id);
-  }
-
-  const role = data.memberRole?.role ?? null;
+  const needsOrgSwitch = !isSuperUser && data.activeMember?.organizationId !== organization.id;
+  const role = isSuperUser ? "superuser" : (data.memberRole?.role ?? null);
 
   return (
     <TenantProvider

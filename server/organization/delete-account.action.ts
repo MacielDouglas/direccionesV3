@@ -13,6 +13,15 @@ export async function deleteAccountAction() {
 
   const userId = session.user.id;
 
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { isSuperUser: true },
+  });
+
+  if (user?.isSuperUser) {
+    throw new Error("A conta do Super Usuário não pode ser excluída.");
+  }
+
   // Busca todos os memberships do usuário
   const memberships = await prisma.member.findMany({
     where: { userId },

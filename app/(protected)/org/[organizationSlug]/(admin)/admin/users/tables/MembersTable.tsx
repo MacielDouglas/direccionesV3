@@ -1,23 +1,59 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Role } from "@/domains/member/types/role.types";
+import MemberOwnerButton from "./MemberOwnerButton";
 import MembersTableAction from "./MemberTableAction";
 import MemberTableAdmin from "./MemberTableAdmin";
 
-interface MembersTableProps {
-  members: Array<{
+interface MemberItem {
+  id: string;
+  role: string | null;
+  organizationId: string;
+  user: {
     id: string;
-    role: string | null;
-    organizationId: string;
-    user: {
-      id: string;
-      name: string;
-      email: string;
-      image: string | null;
-    };
-  }>;
+    name: string;
+    email: string;
+    image: string | null;
+  };
 }
 
-export default function MembersTable({ members }: MembersTableProps) {
+interface MembersTableProps {
+  members: MemberItem[];
+  currentRole: string | null;
+  currentUserId: string;
+}
+
+export default function MembersTable({ members, currentRole, currentUserId }: MembersTableProps) {
+  const canManageOwners = currentRole === "owner" || currentRole === "superuser";
+
+  const renderActions = (member: MemberItem) => {
+    const isSelf = member.user.id === currentUserId;
+
+    return (
+      <div className="flex gap-1">
+        {member.role !== "owner" && (
+          <MemberTableAdmin
+            organizationId={member.organizationId}
+            memberId={member.id}
+            memberRole={(member.role ?? "member") as Exclude<Role, "owner">}
+          />
+        )}
+        {canManageOwners && !isSelf && (
+          <MemberOwnerButton
+            organizationId={member.organizationId}
+            memberId={member.id}
+            isOwner={member.role === "owner"}
+          />
+        )}
+        {member.role !== "owner" && !isSelf && (
+          <MembersTableAction
+            organizationId={member.organizationId}
+            memberIdOrEmail={member.user.id}
+          />
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="mt-5 space-y-3 border-t pt-5">
       <div>
@@ -44,21 +80,7 @@ export default function MembersTable({ members }: MembersTableProps) {
               </span>
             </div>
 
-            <div className="flex gap-1">
-              {member.role !== "owner" && (
-                <MemberTableAdmin
-                  organizationId={member.organizationId}
-                  memberId={member.id}
-                  memberRole={(member.role ?? "member") as Exclude<Role, "owner">}
-                />
-              )}
-              {member.role !== "owner" && (
-                <MembersTableAction
-                  organizationId={member.organizationId}
-                  memberIdOrEmail={member.user.id}
-                />
-              )}
-            </div>
+            {renderActions(member)}
           </li>
         ))}
       </ul>
@@ -86,21 +108,7 @@ export default function MembersTable({ members }: MembersTableProps) {
                 </td>
                 <td className="max-w-60 truncate text-sm">{member.user.email}</td>
                 <td className="text-sm">{member.role ?? "member"}</td>
-                <td className="space-x-2 text-right">
-                  {member.role !== "owner" && (
-                    <MemberTableAdmin
-                      organizationId={member.organizationId}
-                      memberId={member.user.id}
-                      memberRole={(member.role ?? "member") as Exclude<Role, "owner">}
-                    />
-                  )}
-                  {member.role !== "owner" && (
-                    <MembersTableAction
-                      organizationId={member.organizationId}
-                      memberIdOrEmail={member.user.id}
-                    />
-                  )}
-                </td>
+                <td className="text-right">{renderActions(member)}</td>
               </tr>
             ))}
           </tbody>

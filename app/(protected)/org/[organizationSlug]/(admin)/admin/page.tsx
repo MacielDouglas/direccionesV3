@@ -4,6 +4,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ElementType } from "react";
 
+interface Props {
+  params: Promise<{ organizationSlug: string }>;
+}
+
 interface AdminCard {
   id: string;
   title: string;
@@ -63,20 +67,19 @@ const ADMIN_CARDS: AdminCard[] = [
   },
 ];
 
-export default async function AdminPage() {
-  // const { slug } = await params;
+export default async function AdminPage({ params }: Props) {
+  const { organizationSlug } = await params;
   const session = await getCurrentUser();
-  const slug = session?.activeOrganization?.slug;
-  // console.log(session?.activeOrganization?.slug);
 
   if (!session) redirect("/login");
 
   const role = session.memberRole?.role;
-  if (!role || !["admin", "owner"].includes(role)) {
-    redirect(`/org/${slug}`);
+  if (!session.isSuperUser && (!role || !["admin", "owner"].includes(role))) {
+    redirect(`/org/${organizationSlug}`);
   }
 
-  const isOwner = role === "owner";
+  const isOwner = role === "owner" || session.isSuperUser;
+  const slug = session.activeOrganization?.slug ?? organizationSlug;
   const visibleCards = ADMIN_CARDS.filter((c) => !c.ownerOnly || isOwner);
 
   return (

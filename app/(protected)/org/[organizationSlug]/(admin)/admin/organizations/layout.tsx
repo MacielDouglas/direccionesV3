@@ -7,7 +7,7 @@ export default async function SecurityLayout({
   children: React.ReactNode;
 }) {
   const data = await getCurrentUser();
-  const role = data?.memberRole?.role ?? null;
+  const role = data?.isSuperUser ? "superuser" : (data?.memberRole?.role ?? null);
 
   return (
     <RoleGuard minRole="admin" role={role}>

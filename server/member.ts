@@ -12,38 +12,92 @@ export const addMember = async (
   slug: string,
   role: Role,
 ) => {
-  try {
-    await auth.api.addMember({
-      body: { userId, organizationId, role },
-      headers: await headers(),
-    });
+  const reqHeaders = await headers();
+  const session = await auth.api.getSession({ headers: reqHeaders });
+  if (!session) throw new Error("No autenticado.");
 
-    revalidatePath(`/admin/organizations/${slug}`);
-  } catch {
-    throw new Error("No se pudo agregar el miembro. Intente nuevamente.");
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { isSuperUser: true },
+  });
+  const isSuperUser = currentUser?.isSuperUser ?? false;
+
+  if (!isSuperUser) {
+    const requester = await prisma.member.findFirst({
+      where: { organizationId, userId: session.user.id },
+      select: { role: true },
+    });
+    if (!requester || !["owner", "admin"].includes(requester.role)) {
+      throw new Error("Sin permiso.");
+    }
   }
+
+  const existingMembership = await prisma.member.count({ where: { userId } });
+  if (existingMembership > 0) {
+    throw new Error("El usuario ya pertenece a una organización.");
+  }
+
+  await prisma.member.create({
+    data: {
+      id: crypto.randomUUID(),
+      organizationId,
+      userId,
+      role,
+      lastActiveAt: new Date(),
+    },
+  });
+
+  revalidatePath(`/org/${slug}/admin/users`);
 };
 
 export const memberUpdateRole = async (
   organizationId: string,
   memberId: string,
-  role: Exclude<Role, "owner">,
+  role: Role,
   slug?: string,
 ) => {
   const reqHeaders = await headers();
-  const activeMember = await auth.api.getActiveMember({ headers: reqHeaders });
+  const session = await auth.api.getSession({ headers: reqHeaders });
+  if (!session) throw new Error("No autenticado.");
 
-  if (!activeMember) {
-    throw new Error("El usuario no pertenece a la organización activa.");
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { isSuperUser: true },
+  });
+  const isSuperUser = currentUser?.isSuperUser ?? false;
+
+  const target = await prisma.member.findFirst({
+    where: { id: memberId, organizationId },
+    select: { id: true, role: true, userId: true },
+  });
+  if (!target) throw new Error("Miembro no encontrado.");
+
+  if (!isSuperUser) {
+    const requester = await prisma.member.findFirst({
+      where: { organizationId, userId: session.user.id },
+      select: { role: true },
+    });
+    if (!requester || !["owner", "admin"].includes(requester.role)) {
+      throw new Error("Sin permiso para modificar roles.");
+    }
+
+    if (requester.role === "admin") {
+      if (target.role === "owner" || role === "owner") {
+        throw new Error("Solo el owner puede gestionar owners.");
+      }
+    }
+
+    if (target.role === "owner" && role !== "owner") {
+      const ownerCount = await prisma.member.count({
+        where: { organizationId, role: "owner" },
+      });
+      if (ownerCount <= 1) throw new Error("No puedes quitar el único owner.");
+    }
   }
 
-  if (!["owner", "admin"].includes(activeMember.role)) {
-    throw new Error("Sin permiso para modificar roles.");
-  }
-
-  await auth.api.updateMemberRole({
-    body: { role, memberId, organizationId },
-    headers: reqHeaders,
+  await prisma.member.update({
+    where: { id: target.id },
+    data: { role },
   });
 
   if (slug) revalidatePath(`/org/${slug}/admin/users`);
@@ -51,33 +105,28 @@ export const memberUpdateRole = async (
 
 export const removeMemberManually = async (organizationId: string, memberIdOrEmail: string) => {
   const reqHeaders = await headers();
-
-  const [session] = await Promise.all([
-    auth.api.getSession({ headers: reqHeaders }),
-    prisma.member.findFirst({
-      where: {
-        organizationId,
-        user: { OR: [{ id: memberIdOrEmail }, { email: memberIdOrEmail }] },
-      },
-      select: { id: true, role: true, userId: true },
-    }),
-  ]);
-
+  const session = await auth.api.getSession({ headers: reqHeaders });
   if (!session) throw new Error("No autenticado.");
 
   const currentUserId = session.user.id;
 
-  const requester = await prisma.member.findFirst({
-    where: { organizationId, userId: currentUserId },
-    select: { role: true },
+  const currentUser = await prisma.user.findUnique({
+    where: { id: currentUserId },
+    select: { isSuperUser: true },
   });
+  const isSuperUser = currentUser?.isSuperUser ?? false;
 
-  if (!requester) {
-    throw new Error("No perteneces a esta organización.");
-  }
-
-  if (requester.role === "member") {
-    throw new Error("Los miembros no pueden eliminar a otros miembros.");
+  if (!isSuperUser) {
+    const requester = await prisma.member.findFirst({
+      where: { organizationId, userId: currentUserId },
+      select: { role: true },
+    });
+    if (!requester) {
+      throw new Error("No perteneces a esta organización.");
+    }
+    if (requester.role === "member") {
+      throw new Error("Los miembros no pueden eliminar a otros miembros.");
+    }
   }
 
   const target = await prisma.member.findFirst({
@@ -92,7 +141,7 @@ export const removeMemberManually = async (organizationId: string, memberIdOrEma
     throw new Error("Miembro no encontrado en la organización.");
   }
 
-  if (target.role === "owner") {
+  if (!isSuperUser && target.role === "owner") {
     throw new Error("Los Owners no pueden ser eliminados.");
   }
 

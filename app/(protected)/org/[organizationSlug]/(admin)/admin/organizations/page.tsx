@@ -1,12 +1,23 @@
-import { OrgSwitchButton } from "@/domains/organization/components/OrgSwitchButtom";
-import OrganizationForm from "@/domains/organization/components/OrganizationForm";
-import { setActiveOrg } from "@/server/organization/organization.actions";
-import { getOrganizations } from "@/server/organization/organization.queries";
-import { Building2 } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/server/users";
+import { Building2, Users } from "lucide-react";
 import { redirect } from "next/navigation";
 
-export default async function OrganizationsPage() {
-  const organizations = await getOrganizations();
+interface Props {
+  params: Promise<{ organizationSlug: string }>;
+}
+
+export default async function OrganizationsPage({ params }: Props) {
+  const { organizationSlug } = await params;
+  const data = await getCurrentUser();
+  if (!data) redirect("/login");
+
+  const organization = await prisma.organization.findUnique({
+    where: { slug: organizationSlug },
+    include: { _count: { select: { members: true } } },
+  });
+
+  if (!organization) redirect("/");
 
   return (
     <div className="mx-auto mt-4 flex w-full max-w-6xl flex-col gap-6 px-4">
@@ -15,38 +26,21 @@ export default async function OrganizationsPage() {
         <h1 className="text-3xl font-bold uppercase">Organizaciones</h1>
       </header>
 
-      <OrganizationForm />
-
       <section className="flex flex-col gap-4 rounded-xl bg-muted p-5">
-        <div>
-          <h2 className="text-xl font-semibold">
-            Organizaciones creadas: <span className="text-brand">{organizations.length}</span>
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Selecciona una organización para gestionar sus usuarios.
-          </p>
-        </div>
-
-        {organizations.length > 0 ? (
-          <div className="flex flex-wrap gap-3">
-            {organizations.map((org) => (
-              <form
-                key={org.id}
-                action={async () => {
-                  "use server";
-                  await setActiveOrg(org.id);
-                  redirect(`/org/${org.slug}/addresses`);
-                }}
-              >
-                <OrgSwitchButton name={org.name} />
-              </form>
-            ))}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold">{organization.name}</h2>
+            <p className="text-sm text-muted-foreground">/{organization.slug}</p>
           </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            Aún no hay organizaciones. Crea una con el formulario de arriba.
-          </p>
-        )}
+          <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Users className="h-4 w-4" aria-hidden="true" />
+            {organization._count.members} miembros
+          </span>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Cada usuario pertenece a una única organización. Gestiona los miembros desde la sección de
+          usuarios.
+        </p>
       </section>
     </div>
   );

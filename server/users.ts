@@ -14,43 +14,52 @@ export const getCurrentUser = cache(async () => {
   const session = await auth.api.getSession({ headers: reqHeaders });
   if (!session) return null;
 
-  let activeMemberRaw = null;
-  try {
-    activeMemberRaw = await auth.api.getActiveMember({ headers: reqHeaders });
-  } catch {
-    activeMemberRaw = null;
-  }
-
   const currentUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, email: true, role: true, createdAt: true },
+    select: { id: true, email: true, role: true, isSuperUser: true, createdAt: true },
   });
 
   if (!currentUser) return null;
 
-  const [memberRoleRaw, activeOrganization] = await Promise.all([
-    activeMemberRaw
-      ? auth.api.getActiveMemberRole({ headers: reqHeaders }).catch(() => null)
-      : Promise.resolve(null),
-    activeMemberRaw
-      ? prisma.organization.findUnique({
-          where: { id: activeMemberRaw.organizationId },
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            createdAt: true,
-            logo: true,
-          },
-        })
-      : Promise.resolve(null),
-  ]);
+  if (currentUser.isSuperUser) {
+    return {
+      session,
+      user: currentUser,
+      activeMember: null,
+      memberRole: null,
+      activeOrganization: null,
+      isSuperUser: true,
+    };
+  }
 
-  const activeMember = activeMemberRaw
-    ? { ...activeMemberRaw, role: toRole(activeMemberRaw.role) }
+  const membership = await prisma.member.findFirst({
+    where: { userId: currentUser.id },
+    orderBy: { lastActiveAt: "desc" },
+    select: { id: true, organizationId: true, role: true },
+  });
+
+  const activeMember = membership
+    ? {
+        id: membership.id,
+        organizationId: membership.organizationId,
+        role: toRole(membership.role),
+      }
     : null;
 
-  const memberRole = memberRoleRaw ? { ...memberRoleRaw, role: toRole(memberRoleRaw.role) } : null;
+  const activeOrganization = activeMember
+    ? await prisma.organization.findUnique({
+        where: { id: activeMember.organizationId },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          createdAt: true,
+          logo: true,
+        },
+      })
+    : null;
+
+  const memberRole = activeMember ? { role: activeMember.role } : null;
 
   return {
     session,
@@ -58,6 +67,7 @@ export const getCurrentUser = cache(async () => {
     activeMember,
     memberRole,
     activeOrganization,
+    isSuperUser: false,
   };
 });
 
@@ -98,28 +108,31 @@ export const requireSession = async () => {
 
 type AuthContext = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
 
-// ✅ Helper central — exige sessão autenticada com organização ativa
+// ✅ Helper central — exige sessão autenticada com organização ativa (Super User fica isento)
 export async function requireAuthContext(): Promise<AuthContext> {
   const data = await getCurrentUser();
   if (!data) throw new Error("No autenticado.");
-  if (!data.activeMember?.organizationId) {
+  if (!data.isSuperUser && !data.activeMember?.organizationId) {
     throw new Error("Sin organización activa.");
   }
   return data;
 }
 
-// ✅ Helper central — exige role admin/owner na organização ativa
+// ✅ Helper central — exige role admin/owner na organização ativa (Super User fica isento)
 export async function requireAdminOrOwner(): Promise<AuthContext> {
   const data = await requireAuthContext();
+  if (data.isSuperUser) return data;
   const role = data.memberRole?.role;
   if (!role || !canAccess(role, "admin")) throw new Error("Sin permiso.");
   return data;
 }
 
-// ✅ Helper central — exige membro da organização (por organizationId)
+// ✅ Helper central — exige membro da organização (por organizationId); Super User acessa tudo
 export async function requireOrgMember(organizationId: string): Promise<AuthContext> {
   const data = await getCurrentUser();
   if (!data) throw new Error("No autenticado.");
+
+  if (data.isSuperUser) return data;
 
   const member = await prisma.member.findFirst({
     where: { organizationId, userId: data.user.id },
@@ -130,9 +143,10 @@ export async function requireOrgMember(organizationId: string): Promise<AuthCont
   return data;
 }
 
-// ✅ Helper central — exige role admin/owner na organização informada
+// ✅ Helper central — exige role admin/owner na organização informada (Super User fica isento)
 export async function requireOrgAdminOrOwner(organizationId: string): Promise<AuthContext> {
   const data = await requireOrgMember(organizationId);
+  if (data.isSuperUser) return data;
 
   const member = await prisma.member.findFirst({
     where: { organizationId, userId: data.user.id },
@@ -145,9 +159,10 @@ export async function requireOrgAdminOrOwner(organizationId: string): Promise<Au
   return data;
 }
 
-// ✅ Helper central — exige role mínimo na organização ativa
+// ✅ Helper central — exige role mínimo na organização ativa (Super User fica isento)
 export async function requireRole(required: AppRole): Promise<AuthContext> {
   const data = await requireAuthContext();
+  if (data.isSuperUser) return data;
   const role = data.memberRole?.role;
   if (!role || !canAccess(role, required)) throw new Error("Sin permiso.");
   return data;

@@ -30,7 +30,7 @@ export default async function UserPage({ params }: Props) {
   if (!data) redirect("/login");
 
   const { session, activeOrganization } = data;
-  if (!session || !activeOrganization) return;
+  if (!session) return;
 
   const user = session.user;
 
@@ -88,89 +88,91 @@ export default async function UserPage({ params }: Props) {
       </section>
 
       {/* Cards atribuídos */}
-      <section aria-labelledby="cards-title">
-        <div className="flex items-center justify-between mb-3">
-          <h2
-            id="cards-title"
-            className="text-sm font-semibold uppercase tracking-widest text-muted-foreground"
-          >
-            Mis tarjetas
-          </h2>
-          <span className="text-xs text-muted-foreground">
-            {cards.length} asignada{cards.length !== 1 ? "s" : ""}
-          </span>
-        </div>
-
-        {cards.length === 0 ? (
-          <div className="rounded-xl border bg-muted/40 px-4 py-8 text-center text-sm text-muted-foreground">
-            No tienes tarjetas asignadas.
+      {activeOrganization && (
+        <section aria-labelledby="cards-title">
+          <div className="flex items-center justify-between mb-3">
+            <h2
+              id="cards-title"
+              className="text-sm font-semibold uppercase tracking-widest text-muted-foreground"
+            >
+              Mis tarjetas
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              {cards.length} asignada{cards.length !== 1 ? "s" : ""}
+            </span>
           </div>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {cards.map((card) => (
-              <li key={card.id}>
-                <Link
-                  href={`/org/${organizationSlug}/my-cards`}
-                  className="
+
+          {cards.length === 0 ? (
+            <div className="rounded-xl border bg-muted/40 px-4 py-8 text-center text-sm text-muted-foreground">
+              No tienes tarjetas asignadas.
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {cards.map((card) => (
+                <li key={card.id}>
+                  <Link
+                    href={`/org/${organizationSlug}/my-cards`}
+                    className="
                     flex items-center gap-3
                     rounded-xl border bg-card px-4 py-3
                     transition-colors hover:bg-muted/50
                     focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand
                   "
-                  aria-label={`Tarjeta #${String(card.number).padStart(2, "0")}`}
-                >
-                  <CreditCard
-                    className="h-5 w-5 shrink-0 text-muted-foreground"
-                    aria-hidden="true"
-                  />
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-sm font-semibold tabular-nums">
-                      Tarjeta #{String(card.number).padStart(2, "0")}
-                    </span>
-                    {card.addresses.length > 0 && (
-                      <span className="text-xs text-muted-foreground truncate">
-                        {card.addresses
-                          .map((a) => a.businessName ?? `${a.street}, ${a.number}`)
-                          .join(" · ")}
+                    aria-label={`Tarjeta #${String(card.number).padStart(2, "0")}`}
+                  >
+                    <CreditCard
+                      className="h-5 w-5 shrink-0 text-muted-foreground"
+                      aria-hidden="true"
+                    />
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-sm font-semibold tabular-nums">
+                        Tarjeta #{String(card.number).padStart(2, "0")}
                       </span>
-                    )}
-                  </div>
-                  <span className="ml-auto text-xs text-muted-foreground shrink-0">
-                    {card.addresses.length} dir.
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-        <div className="border-t pt-6 flex flex-col gap-4">
-          <h2 className="text-sm font-medium text-destructive">Zona de peligro</h2>
+                      {card.addresses.length > 0 && (
+                        <span className="text-xs text-muted-foreground truncate">
+                          {card.addresses
+                            .map((a) => a.businessName ?? `${a.street}, ${a.number}`)
+                            .join(" · ")}
+                        </span>
+                      )}
+                    </div>
+                    <span className="ml-auto text-xs text-muted-foreground shrink-0">
+                      {card.addresses.length} dir.
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="border-t pt-6 flex flex-col gap-4">
+            <h2 className="text-sm font-medium text-destructive">Zona de peligro</h2>
 
-          <div className="flex flex-col gap-1.5">
-            <p className="text-sm font-medium">Abandonar la organización</p>
-            <p className="text-xs text-muted-foreground">
-              Perderás el acceso a esta organización. Tu cuenta permanecerá activa.
-            </p>
-            <div className="mt-1">
-              <LeaveOrganizationButton
-                organizationId={activeOrganization.id}
-                organizationName={activeOrganization.name}
-                role={data.memberRole?.role as Role}
-              />
+            <div className="flex flex-col gap-1.5">
+              <p className="text-sm font-medium">Abandonar la organización</p>
+              <p className="text-xs text-muted-foreground">
+                Perderás el acceso a esta organización. Tu cuenta permanecerá activa.
+              </p>
+              <div className="mt-1">
+                <LeaveOrganizationButton
+                  organizationId={activeOrganization.id}
+                  organizationName={activeOrganization.name}
+                  role={data.memberRole?.role as Role}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <p className="text-sm font-medium">Eliminar cuenta</p>
+              <p className="text-xs text-muted-foreground">
+                Eliminar permanentemente tu cuenta de todas las organizaciones y de la aplicación.
+              </p>
+              <div className="mt-1">
+                <DeleteAccountButton userEmail={session.user.email} />
+              </div>
             </div>
           </div>
-
-          <div className="flex flex-col gap-1.5">
-            <p className="text-sm font-medium">Eliminar cuenta</p>
-            <p className="text-xs text-muted-foreground">
-              Eliminar permanentemente tu cuenta de todas las organizaciones y de la aplicación.
-            </p>
-            <div className="mt-1">
-              <DeleteAccountButton userEmail={session.user.email} />
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
     </main>
   );
 }

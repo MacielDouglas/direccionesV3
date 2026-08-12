@@ -1,4 +1,4 @@
-import { Link2 } from "lucide-react";
+import { KeyRound } from "lucide-react";
 import { getOrgInviteTokensAction } from "../../applications/inviteToken.action";
 import { InviteTokenGenerator } from "../components/InviteTokenGenerator";
 import { InviteTokenList } from "../components/InviteTokenList";
@@ -14,18 +14,18 @@ export async function InvitationsScreen({ organizationId, orgSlug }: Props) {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-6">
       <header className="flex items-center gap-3">
-        <Link2 className="h-8 w-8 text-brand" aria-hidden="true" />
+        <KeyRound className="h-8 w-8 text-brand" aria-hidden="true" />
         <div>
           <h1 className="text-2xl font-semibold">Invitaciones</h1>
           <p className="text-sm text-muted-foreground">
-            Genera un enlace y compártelo — válido 24 horas, un solo uso.
+            Genera un token y compártelo como quieras — válido 24 horas, un solo uso.
           </p>
         </div>
       </header>
 
       <section aria-labelledby="generate-title" className="rounded-xl border p-5">
         <h2 id="generate-title" className="mb-4 text-base font-semibold">
-          Generar enlace de invitación
+          Generar token de invitación
         </h2>
         <InviteTokenGenerator organizationId={organizationId} orgSlug={orgSlug} />
       </section>

@@ -26,6 +26,7 @@ model User {
   emailVerified Boolean @default(false)
 
   role       String?
+  isSuperUser Boolean  @default(false)
   banned     Boolean   @default(false)
   banReason  String?
   banExpires DateTime?
@@ -408,22 +409,29 @@ model AgendaFieldOption {
 //////////////////////////////////////////////////////
 
 model InviteToken {
-  id             String   @id @default(cuid())
-  token          String   @unique @default(cuid())
-  organizationId String
-  role           String   @default("member")
+  id             String    @id @default(cuid())
+  token          String    @unique @default(cuid())
+  type           TokenType @default(INVITE)
+  organizationId String?
+  role           String    @default("member")
   createdById    String
   expiresAt      DateTime
   usedAt         DateTime?
   usedByUserId   String?
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  createdBy    User         @relation("InviteTokensCreated", fields: [createdById], references: [id], onDelete: Cascade)
-  usedBy       User?        @relation("InviteTokensUsed", fields: [usedByUserId], references: [id], onDelete: SetNull)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User          @relation("InviteTokensCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  usedBy       User?         @relation("InviteTokensUsed", fields: [usedByUserId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
 
   @@index([token])
   @@index([organizationId])
+  @@index([type])
   @@map("invite_token")
+}
+
+enum TokenType {
+  OWNER_ONBOARDING
+  INVITE
 }

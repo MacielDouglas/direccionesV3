@@ -19,7 +19,7 @@ export default async function InvitationsPage({ params }: Props) {
   if (!org) redirect("/organizations");
 
   const role = userData.memberRole?.role;
-  if (!role || !["admin", "owner"].includes(role)) {
+  if (!userData.isSuperUser && (!role || !["admin", "owner"].includes(role))) {
     redirect(`/org/${organizationSlug}`);
   }
 

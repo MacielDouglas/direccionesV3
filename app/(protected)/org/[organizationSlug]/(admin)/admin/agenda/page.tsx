@@ -7,6 +7,7 @@ import { AgendaAdminForm } from "@/features/agenda/components/AgendaAdminForm";
 import { AgendaCalendar } from "@/features/agenda/components/AgendaCalendat";
 import { AgendaEventList } from "@/features/agenda/components/AgendaEventList";
 import { AgendaPdfButton } from "@/features/agenda/components/AgendaPdfButton";
+import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
 import { redirect } from "next/navigation";
 
@@ -26,25 +27,25 @@ const MONTHS_ES = [
 ];
 
 interface Props {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ organizationSlug: string }>;
   searchParams: Promise<{ year?: string; month?: string }>;
 }
 
 export default async function AdminAgendaPage({ params, searchParams }: Props) {
-  const { slug } = await params;
+  const { organizationSlug } = await params;
   const { year, month } = await searchParams;
   const session = await getCurrentUser();
   if (!session) redirect("/sign-in");
 
   const role = session.memberRole?.role;
-  if (!role || !["admin", "owner"].includes(role)) {
-    redirect(`/org/${slug}/agenda`);
+  if (!session.isSuperUser && (!role || !["admin", "owner"].includes(role))) {
+    redirect(`/org/${organizationSlug}/agenda`);
   }
 
-  const activeMember = session.activeMember;
-  if (!activeMember) redirect("/organizations");
+  const organization = await getOrganizationBySlug(organizationSlug);
+  if (!organization) redirect("/");
 
-  const organizationId = activeMember.organizationId;
+  const organizationId = organization.id;
   const now = new Date();
   const activeYear = year ? Number.parseInt(year) : now.getFullYear();
   const activeMonth = month ? Number.parseInt(month) : now.getMonth();
@@ -70,7 +71,7 @@ export default async function AdminAgendaPage({ params, searchParams }: Props) {
 
       <AgendaAdminForm
         organizationId={organizationId}
-        organizationSlug={slug}
+        organizationSlug={organizationSlug}
         members={members}
         fieldOptions={fieldOptions} // ✅ novo
       />
@@ -78,7 +79,7 @@ export default async function AdminAgendaPage({ params, searchParams }: Props) {
       <AgendaEventList
         events={events}
         monthLabel={monthLabel}
-        organizationSlug={slug}
+        organizationSlug={organizationSlug}
         canDelete={true}
         canEdit={true}
         members={members}

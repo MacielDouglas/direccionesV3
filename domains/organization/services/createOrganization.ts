@@ -1,36 +1,59 @@
-import type { Role } from "@/domains/member/types/role.types";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { canCreateOrganization } from "../permissions/canCreateOrganizations";
-import type { CreateOrganizationInput } from "../schemas/organization.schema";
-import { createOrganizationSchema } from "../schemas/organization.schema";
+import { z } from "zod";
+import { createOrganizationByNameSchema } from "../schemas/organization.schema";
+import { createSlug } from "../utils/createSlug";
+
+const createOrganizationInputSchema = createOrganizationByNameSchema.extend({
+  token: z.string().min(1, "Se requiere un token de acceso."),
+});
 
 interface CreateOrganizationContext {
   userId: string;
-  role: Role | null;
 }
 
 export async function createOrganizationService(
   input: unknown,
   context: CreateOrganizationContext,
 ) {
-  if (!context.role) {
-    throw new Error("El usuario no pertenece a ninguna organización activa.");
+  const data = createOrganizationInputSchema.parse(input);
+  const slug = createSlug(data.name);
+
+  const invite = await prisma.inviteToken.findUnique({
+    where: { token: data.token },
+  });
+
+  if (!invite || invite.type !== "OWNER_ONBOARDING") {
+    throw new Error("Token no válido.");
+  }
+  if (invite.usedAt) {
+    throw new Error("Este token ya fue utilizado.");
+  }
+  if (invite.expiresAt < new Date()) {
+    throw new Error("Este token expiró.");
   }
 
-  if (!canCreateOrganization(context.role)) {
-    throw new Error("No tiene autorización para crear una organización.");
-  }
+  const membershipCount = await prisma.member.count({
+    where: { userId: context.userId },
+  });
 
-  const data: CreateOrganizationInput = createOrganizationSchema.parse(input);
+  if (membershipCount > 0) {
+    throw new Error("Ya perteneces a una organización.");
+  }
 
   const result = await auth.api.createOrganization({
-    body: { name: data.name, slug: data.slug },
+    body: { name: data.name, slug },
     headers: await headers(),
   });
 
-  revalidatePath("/admin/organizations");
+  await prisma.inviteToken.update({
+    where: { token: data.token },
+    data: { usedAt: new Date(), usedByUserId: context.userId },
+  });
+
+  revalidatePath("/");
 
   return result;
 }

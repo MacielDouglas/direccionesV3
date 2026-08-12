@@ -1,6 +1,13 @@
 import { prisma } from "@/lib/prisma";
 
 export async function canManageCards(userId: string, organizationId: string): Promise<boolean> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { isSuperUser: true },
+  });
+
+  if (user?.isSuperUser) return true;
+
   const member = await prisma.member.findUnique({
     where: { organizationId_userId: { organizationId, userId } },
     select: { role: true },

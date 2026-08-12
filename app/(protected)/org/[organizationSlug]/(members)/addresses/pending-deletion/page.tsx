@@ -14,7 +14,7 @@ export default async function PendingDeletionPage({ params }: Props) {
   if (!data) redirect("/login");
 
   const role = data.memberRole?.role;
-  if (!role || !["admin", "owner"].includes(role)) redirect("/");
+  if (!data.isSuperUser && (!role || !["admin", "owner"].includes(role))) redirect("/");
 
   const organization = await getOrganizationBySlug(organizationSlug);
   if (!organization) notFound();

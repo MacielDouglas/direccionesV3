@@ -1,11 +1,11 @@
-import LogoutButton from "@/components/LogoutButton";
 import MainAppMenu from "@/components/menu/MainAppMenu";
 import { PendingDeletionBadge } from "@/features/addresses/ui/components/PendingDeletionBadge";
+import { WelcomeScreen } from "@/features/invitations/ui/screens/WelcomeScreen";
+import SuperUserPanel from "@/features/superuser/ui/SuperUserPanel";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCurrentUser } from "@/server/users";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { DeleteAccountButton } from "./org/[organizationSlug]/(members)/user/_components/DeleteAccountButton";
 
 export const metadata: Metadata = {
   title: "Página Home",
@@ -17,6 +17,10 @@ export default async function Home() {
 
   if (!data) {
     redirect("/login");
+  }
+
+  if (data.isSuperUser) {
+    return <SuperUserPanel email={data.user.email} />;
   }
 
   const { session, activeOrganization: organization, memberRole } = data;
@@ -40,12 +44,9 @@ export default async function Home() {
             )}
           </div>
         ) : (
-          <div className="space-y-4 text-muted-foreground">
-            <p>{t.home.thanks}</p>
-            <p>{t.home.notInGroup}</p>
-            <p>{t.home.talkToAdmin}</p>
-            <LogoutButton />
-            <DeleteAccountButton userEmail={session.user.email} />
+          <div className="mt-4 space-y-4">
+            <p className="text-muted-foreground">{t.home.notInGroup}</p>
+            <WelcomeScreen userEmail={session.user.email} />
           </div>
         )}
       </div>

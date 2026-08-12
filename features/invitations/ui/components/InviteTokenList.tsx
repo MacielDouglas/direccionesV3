@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { CheckCircle, Clock, XCircle } from "lucide-react";
+import { CopyTokenButton } from "./CopyTokenButton";
 
 type TokenWithRelations = Prisma.InviteTokenGetPayload<{
   include: {
@@ -62,6 +63,14 @@ export function InviteTokenList({ tokens }: { tokens: TokenWithRelations[] }) {
                 </p>
               )}
             </div>
+            {status === "active" && (
+              <div className="flex items-center gap-2">
+                <code className="max-w-36 truncate rounded bg-muted/60 px-2 py-1 font-mono text-xs">
+                  {token.token}
+                </code>
+                <CopyTokenButton token={token.token} />
+              </div>
+            )}
           </li>
         );
       })}
