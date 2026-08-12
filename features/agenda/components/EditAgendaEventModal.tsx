@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
@@ -19,8 +20,8 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { updateAgendaEventAction } from "../application/agenda.action";
 import type { AgendaEventItem } from "../types/agenda.types";
-
-// ─── Schema ───────────────────────────────────────────────────────────────────
+import { eventTime } from "../utils/agenda-time";
+import { formatDateInput } from "../utils/calendar-locale";
 
 const editSchema = z.object({
   date: z.string().min(1, "La fecha es obligatoria."),
@@ -30,25 +31,6 @@ const editSchema = z.object({
 });
 
 type EditInput = z.infer<typeof editSchema>;
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function toDateInputValue(date: Date): string {
-  const d = new Date(date);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${dd}`;
-}
-
-function toTimeInputValue(date: Date): string {
-  const d = new Date(date);
-  const h = String(d.getHours()).padStart(2, "0");
-  const min = String(d.getMinutes()).padStart(2, "0");
-  return `${h}:${min}`;
-}
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Member {
   user: { id: string; name: string; image: string | null };
@@ -62,9 +44,8 @@ interface Props {
   members: Member[];
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export function EditAgendaEventModal({ event, open, onClose, organizationSlug, members }: Props) {
+  const { t } = useI18n();
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -77,13 +58,11 @@ export function EditAgendaEventModal({ event, open, onClose, organizationSlug, m
     resolver: zodResolver(editSchema),
   });
 
-  // ✅ Preenche form ao abrir com dados do evento
   useEffect(() => {
     if (!event) return;
-    const date = new Date(event.date);
     reset({
-      date: toDateInputValue(date),
-      time: toTimeInputValue(date),
+      date: formatDateInput(event.date),
+      time: eventTime(event),
       conductorId: event.conductor?.id ?? null,
       info: event.info ?? "",
     });
@@ -97,7 +76,7 @@ export function EditAgendaEventModal({ event, open, onClose, organizationSlug, m
         toast.error(result.error);
         return;
       }
-      toast.success("Evento actualizado correctamente.");
+      toast.success(t.agenda.updatedSuccess);
       onClose();
     });
   };
@@ -106,14 +85,13 @@ export function EditAgendaEventModal({ event, open, onClose, organizationSlug, m
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md w-full">
         <DialogHeader>
-          <DialogTitle>Editar evento</DialogTitle>
+          <DialogTitle>{t.agenda.editEvent}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4 mt-2">
-          {/* Fecha + Hora */}
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-2 flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="edit-date">Fecha</Label>
+              <Label htmlFor="edit-date">{t.agenda.date}</Label>
               <Input
                 id="edit-date"
                 type="date"
@@ -128,7 +106,7 @@ export function EditAgendaEventModal({ event, open, onClose, organizationSlug, m
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="edit-time">Hora</Label>
+              <Label htmlFor="edit-time">{t.agenda.time}</Label>
               <Input
                 id="edit-time"
                 type="time"
@@ -143,20 +121,20 @@ export function EditAgendaEventModal({ event, open, onClose, organizationSlug, m
             </div>
           </div>
 
-          {/* Conductor */}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="edit-conductor">
-              Conductor <span className="text-muted-foreground font-normal">(opcional)</span>
+              {t.agenda.conductor}{" "}
+              <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
             </Label>
             <Select
               defaultValue={event?.conductor?.id ?? "none"}
               onValueChange={(val) => setValue("conductorId", val === "none" ? null : val)}
             >
               <SelectTrigger id="edit-conductor">
-                <SelectValue placeholder="Seleccionar conductor" />
+                <SelectValue placeholder={t.agenda.selectConductor} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">— Ninguno —</SelectItem>
+                <SelectItem value="none">{t.agenda.none}</SelectItem>
                 {members.map((m) => (
                   <SelectItem key={m.user.id} value={m.user.id}>
                     {m.user.name}
@@ -166,15 +144,15 @@ export function EditAgendaEventModal({ event, open, onClose, organizationSlug, m
             </Select>
           </div>
 
-          {/* Info */}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="edit-info">
-              Información <span className="text-muted-foreground font-normal">(opcional)</span>
+              {t.agenda.infoField}{" "}
+              <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
             </Label>
             <Textarea
               id="edit-info"
               rows={3}
-              placeholder="Agrega cualquier información relevante..."
+              placeholder={t.agenda.infoPlaceholder}
               {...register("info")}
               aria-describedby={errors.info ? "edit-info-error" : undefined}
             />
@@ -185,7 +163,7 @@ export function EditAgendaEventModal({ event, open, onClose, organizationSlug, m
             )}
           </div>
 
-          <div className="flex gap-3 flex-col-reverse sm:flex-row">
+          <div className="flex flex-col-reverse gap-3 sm:flex-row">
             <Button
               type="button"
               variant="outline"
@@ -193,10 +171,10 @@ export function EditAgendaEventModal({ event, open, onClose, organizationSlug, m
               onClick={onClose}
               disabled={isPending}
             >
-              Cancelar
+              {t.common.cancel}
             </Button>
             <Button type="submit" className="w-full" disabled={isPending} aria-busy={isPending}>
-              {isPending ? "Guardando..." : "Guardar cambios"}
+              {isPending ? t.agenda.saving : t.common.save}
             </Button>
           </div>
         </form>

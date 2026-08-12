@@ -1,26 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { FileDown, Loader2 } from "lucide-react";
 import { useState } from "react";
 import type { AgendaEventItem } from "../types/agenda.types";
-
-const MONTHS_ES = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
-];
-
-const WEEK_DAYS_ES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+import { eventDateParts } from "../utils/agenda-time";
+import { monthName, weekdayLong } from "../utils/calendar-locale";
 
 const DAY_COLORS: Record<number, [number, number, number]> = {
   0: [255, 220, 210],
@@ -42,7 +28,6 @@ const DAY_HEADER_COLORS: Record<number, [number, number, number]> = {
   6: [50, 180, 180],
 };
 
-// Fonte e espaçamento por número de eventos na célula
 const FONT_SCALE: Record<number, { fontSize: number; lineH: number; sepH: number }> = {
   1: { fontSize: 6.2, lineH: 3.5, sepH: 4.5 },
   2: { fontSize: 5.6, lineH: 3.0, sepH: 3.0 },
@@ -63,20 +48,23 @@ interface Props {
 }
 
 function buildCalendarMatrix(events: AgendaEventItem[], month: number, year: number) {
-  const lastDay = new Date(year, month + 1, 0);
+  const lastDay = new Date(Date.UTC(year, month + 1, 0));
   const weeks: Record<number, Record<number, AgendaEventItem[]>> = {};
   let currentWeek = 0;
 
-  for (let d = 1; d <= lastDay.getDate(); d++) {
-    const date = new Date(year, month, d);
-    const weekday = date.getDay();
+  for (let d = 1; d <= lastDay.getUTCDate(); d++) {
+    const date = new Date(Date.UTC(year, month, d));
+    const weekday = date.getUTCDay();
 
     if (weekday === 0 && d !== 1) currentWeek++;
 
     if (!weeks[currentWeek]) weeks[currentWeek] = {};
     if (!weeks[currentWeek][weekday]) weeks[currentWeek][weekday] = [];
 
-    const dayEvents = events.filter((e) => new Date(e.date).toDateString() === date.toDateString());
+    const dayEvents = events.filter((e) => {
+      const p = eventDateParts(e.date);
+      return p.year === year && p.month === month && p.day === d;
+    });
     weeks[currentWeek][weekday].push(...dayEvents);
   }
 
@@ -84,14 +72,11 @@ function buildCalendarMatrix(events: AgendaEventItem[], month: number, year: num
 }
 
 function formatDateShort(date: Date): string {
-  const day = String(date.getDate()).padStart(2, "0");
-  const monthNum = String(date.getMonth() + 1).padStart(2, "0");
-  return `${day}/${monthNum}`;
+  return `${String(date.getUTCDate()).padStart(2, "0")}/${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
-// Conta quantas linhas um evento vai ocupar
 function countEventLines(event: AgendaEventItem): number {
-  let lines = 1; // Fecha + Hora — sempre presente
+  let lines = 1;
   if (event.saida) lines++;
   if (event.conductor?.name) lines++;
   if (event.territorio) lines++;
@@ -99,7 +84,8 @@ function countEventLines(event: AgendaEventItem): number {
   return lines;
 }
 
-export function AgendaPdfButton({ events, monthLabel, month, year }: Props) {
+export function AgendaPdfButton({ events, monthLabel: monthLabelProp, month, year }: Props) {
+  const { t, locale } = useI18n();
   const [loading, setLoading] = useState(false);
 
   async function handleGeneratePdf() {
@@ -125,7 +111,7 @@ export function AgendaPdfButton({ events, monthLabel, month, year }: Props) {
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(13);
       doc.setFont("helvetica", "bold");
-      doc.text(`Salidas para Predicación — ${monthLabel}`, pageW / 2, 13, {
+      doc.text(t.agenda.pdfTitle.replace("{month}", monthLabelProp), pageW / 2, 13, {
         align: "center",
       });
 
@@ -136,7 +122,6 @@ export function AgendaPdfButton({ events, monthLabel, month, year }: Props) {
       const startY = 24;
       const cellW = (pageW - margin * 2) / totalWeeks;
 
-      // ── Header semanas ────────────────────
       for (let w = 0; w < totalWeeks; w++) {
         const x = margin + w * cellW;
 
@@ -145,19 +130,18 @@ export function AgendaPdfButton({ events, monthLabel, month, year }: Props) {
 
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(8);
-        doc.text(`Semana ${w + 1}`, x + cellW / 2, startY + 4.5, {
+        doc.text(t.agenda.pdfWeek.replace("{week}", String(w + 1)), x + cellW / 2, startY + 4.5, {
           align: "center",
         });
       }
 
       // ── Dias ativos ────────────────────────
-      const activeWeekdays = Array.from(new Set(events.map((e) => new Date(e.date).getDay()))).sort(
+      const activeWeekdays = Array.from(new Set(events.map((e) => e.date.getUTCDay()))).sort(
         (a, b) => a - b,
       );
 
       const cellH = (pageH - startY - margin) / activeWeekdays.length;
 
-      // ── Grid de células ────────────────────
       for (let row = 0; row < activeWeekdays.length; row++) {
         const wd = activeWeekdays[row];
 
@@ -168,7 +152,6 @@ export function AgendaPdfButton({ events, monthLabel, month, year }: Props) {
           const bg = DAY_COLORS[wd] ?? [240, 240, 240];
           const header = DAY_HEADER_COLORS[wd] ?? [100, 100, 100];
 
-          // Fundo + header
           doc.setFillColor(...bg);
           doc.rect(x, y, cellW, cellH, "F");
           doc.setFillColor(...header);
@@ -176,7 +159,7 @@ export function AgendaPdfButton({ events, monthLabel, month, year }: Props) {
           doc.setTextColor(255, 255, 255);
           doc.setFontSize(7);
           doc.setFont("helvetica", "bold");
-          doc.text(WEEK_DAYS_ES[wd], x + 2, y + 4);
+          doc.text(weekdayLong(locale, wd), x + 2, y + 4);
 
           const contentStartY = y + 6 + cellPadding;
           const contentEndY = y + cellH - cellPadding;
@@ -185,17 +168,12 @@ export function AgendaPdfButton({ events, monthLabel, month, year }: Props) {
           const dayEvents = weeks[w]?.[wd] ?? [];
           if (dayEvents.length === 0) continue;
 
-          // ── Calcula escala dinâmica ─────────────────────────────────
-          // Total de linhas de texto que precisam caber
           const totalLines = dayEvents.reduce((acc, e) => acc + countEventLines(e), 0);
-          // Separadores entre eventos
           const totalSeps = dayEvents.length - 1;
 
-          // Começa pela escala do número de eventos, e reduz até caber
           let scale = getFontScale(dayEvents.length);
           let requiredH = totalLines * scale.lineH + totalSeps * scale.sepH;
 
-          // Reduz gradualmente até caber (mínimo fontSize 4)
           while (requiredH > availableH && scale.fontSize > 4) {
             scale = {
               fontSize: scale.fontSize - 0.2,
@@ -205,30 +183,25 @@ export function AgendaPdfButton({ events, monthLabel, month, year }: Props) {
             requiredH = totalLines * scale.lineH + totalSeps * scale.sepH;
           }
 
-          // ── Renderiza eventos com escala calculada ──────────────────
           let lineY = contentStartY;
 
           dayEvents.forEach((event, eventIndex) => {
-            const date = new Date(event.date);
-            const dateStr = formatDateShort(date);
+            const dateStr = formatDateShort(event.date);
             const timeStr = event.time ? ` ${event.time}` : "";
 
-            // Fecha + Hora
             doc.setFontSize(scale.fontSize);
             doc.setFont("helvetica", "bold");
             doc.setTextColor(30, 30, 30);
-            doc.text(`Fecha: ${dateStr}, Hora:${timeStr}`, x + 2, lineY);
+            doc.text(`${t.agenda.date}: ${dateStr}, ${t.agenda.time}:${timeStr}`, x + 2, lineY);
             lineY += scale.lineH;
 
-            // Salida
             if (event.saida) {
               doc.setFont("helvetica", "normal");
               doc.setTextColor(80, 80, 80);
-              doc.text(`Salida: ${event.saida}`, x + 2, lineY);
+              doc.text(`${t.agenda.exit}: ${event.saida}`, x + 2, lineY);
               lineY += scale.lineH;
             }
 
-            // Conductor
             if (event.conductor?.name) {
               doc.setFont("helvetica", "italic");
               doc.setTextColor(60, 60, 120);
@@ -236,23 +209,20 @@ export function AgendaPdfButton({ events, monthLabel, month, year }: Props) {
               lineY += scale.lineH;
             }
 
-            // Territorio
             if (event.territorio) {
               doc.setFont("helvetica", "normal");
               doc.setTextColor(30, 30, 30);
-              doc.text(`Territorio: ${event.territorio}`, x + 2, lineY);
+              doc.text(`${t.agenda.territory}: ${event.territorio}`, x + 2, lineY);
               lineY += scale.lineH;
             }
 
-            // Modalidad
             if (event.tipo) {
               doc.setFont("helvetica", "normal");
               doc.setTextColor(30, 30, 30);
-              doc.text(`Modalidad: ${event.tipo}`, x + 2, lineY);
+              doc.text(`${t.agenda.type}: ${event.tipo}`, x + 2, lineY);
               lineY += scale.lineH;
             }
 
-            // Separador entre eventos
             if (eventIndex < dayEvents.length - 1) {
               lineY += scale.sepH * 0.4;
               doc.setDrawColor(180, 180, 180);
@@ -271,12 +241,18 @@ export function AgendaPdfButton({ events, monthLabel, month, year }: Props) {
         doc.setPage(i);
         doc.setFontSize(7);
         doc.setTextColor(150, 150, 150);
-        doc.text(`Predicación ${monthLabel} — Página ${i} de ${totalPages}`, pageW / 2, pageH - 5, {
-          align: "center",
-        });
+        doc.text(
+          t.agenda.pdfFooter
+            .replace("{month}", monthLabelProp)
+            .replace("{page}", String(i))
+            .replace("{total}", String(totalPages)),
+          pageW / 2,
+          pageH - 5,
+          { align: "center" },
+        );
       }
 
-      doc.save(`Predicacion_${MONTHS_ES[month]}_${year}.pdf`);
+      doc.save(`Predicacion_${monthName(locale, month)}_${year}.pdf`);
     } finally {
       setLoading(false);
     }
@@ -295,7 +271,7 @@ export function AgendaPdfButton({ events, monthLabel, month, year }: Props) {
       ) : (
         <FileDown className="size-4" aria-hidden />
       )}
-      Crear PDF
+      {t.agenda.exportPdf}
     </Button>
   );
 }

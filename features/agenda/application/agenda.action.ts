@@ -7,7 +7,7 @@ import { z } from "zod";
 import { type AgendaEventInput, agendaEventSchema } from "../domain/agenda.schema";
 
 const eventIdSchema = z.string().cuid();
-const organizationIdSchema = z.string().uuid();
+const organizationIdSchema = z.string().min(1);
 
 // ✅ Salva valor como opção se ainda não existir
 async function saveFieldOption(
@@ -33,8 +33,9 @@ async function createEvent(organizationId: string, input: AgendaEventInput) {
   const { date, time, conductorId, saida, tipo, territorio, info } = input;
 
   const [year, month, day] = date.split("-").map(Number);
-  const [hours, minutes] = (time ?? "00:00").split(":").map(Number);
-  const localDate = new Date(year, month - 1, day, hours, minutes);
+  // Meio-dia UTC: mantém o dia civil estável em qualquer fuso do servidor e do cliente.
+  // A hora exibida vem do campo `time` (string "HH:MM"), nunca do DateTime.
+  const localDate = new Date(Date.UTC(year, month - 1, day, 12, 0));
 
   await prisma.agendaEvent.create({
     data: {
@@ -100,8 +101,8 @@ export async function updateAgendaEventAction(
 
     const { date, time, conductorId, saida, tipo, territorio, info } = parsed.data;
     const [year, month, day] = date.split("-").map(Number);
-    const [hours, minutes] = (time ?? "00:00").split(":").map(Number);
-    const localDate = new Date(year, month - 1, day, hours, minutes);
+    // Meio-dia UTC: mantém o dia civil estável em qualquer fuso.
+    const localDate = new Date(Date.UTC(year, month - 1, day, 12, 0));
 
     const event = await prisma.agendaEvent.findFirst({
       where: { id: eventId, organizationId },

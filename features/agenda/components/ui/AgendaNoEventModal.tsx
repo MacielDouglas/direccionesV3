@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CalendarX } from "lucide-react";
 
 interface Props {
@@ -16,6 +17,8 @@ interface Props {
 }
 
 export function AgendaNoEventModal({ open, dateLabel, onClose }: Props) {
+  const { t } = useI18n();
+
   return (
     <Dialog
       open={open}
@@ -28,10 +31,9 @@ export function AgendaNoEventModal({ open, dateLabel, onClose }: Props) {
           <div className="mx-auto mb-2 flex size-12 items-center justify-center rounded-full bg-muted">
             <CalendarX className="size-6 text-muted-foreground" aria-hidden />
           </div>
-          <DialogTitle>Sin eventos</DialogTitle>
+          <DialogTitle>{t.agenda.noEventTitle}</DialogTitle>
           <DialogDescription>
-            No hay actividades programadas para el{" "}
-            <span className="font-medium text-foreground">{dateLabel}</span>.
+            {t.agenda.noEventDescription.replace("{date}", dateLabel)}
           </DialogDescription>
         </DialogHeader>
       </DialogContent>

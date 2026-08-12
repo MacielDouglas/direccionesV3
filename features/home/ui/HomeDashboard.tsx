@@ -1,5 +1,6 @@
 import { PendingDeletionBadge } from "@/features/addresses/ui/components/PendingDeletionBadge";
 import { getAgendaEventsByDay } from "@/features/agenda/application/agenda.service";
+import { eventTime, todayInBrasiliaDateOnly } from "@/features/agenda/utils/agenda-time";
 import { countMyCards, countMyTotalAddresses } from "@/features/cards/application/card.service";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { CalendarDays, ChevronRight, CreditCard } from "lucide-react";
@@ -13,11 +14,6 @@ interface HomeDashboardProps {
   isAdminOrOwner: boolean;
 }
 
-function formatTime(date: Date, time: string | null): string {
-  if (time) return time;
-  return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(date);
-}
-
 export async function HomeDashboard({
   organizationId,
   organizationSlug,
@@ -29,7 +25,7 @@ export async function HomeDashboard({
     getServerDictionary(),
     countMyCards(organizationId, userId),
     countMyTotalAddresses(organizationId, userId),
-    getAgendaEventsByDay(organizationId, new Date()),
+    getAgendaEventsByDay(organizationId, todayInBrasiliaDateOnly()),
   ]);
 
   const hasEvents = todayEvents.length > 0;
@@ -97,7 +93,7 @@ export async function HomeDashboard({
                         {t.agenda.hour}
                       </span>
                       <span className="mt-0.5 text-sm font-semibold tabular-nums leading-none">
-                        {formatTime(event.date, event.time)}
+                        {eventTime(event)}
                       </span>
                     </div>
 

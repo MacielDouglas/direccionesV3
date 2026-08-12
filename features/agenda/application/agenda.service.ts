@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
+// Os eventos gravam o dia civil como 12:00 UTC; os filtros usam UTC puro para
+// não depender do fuso do servidor (padrão fixo: Brasília GMT-3).
 export async function getAgendaEventsByMonth(organizationId: string, year: number, month: number) {
-  const start = new Date(year, month, 1);
-  const end = new Date(year, month + 1, 0, 23, 59, 59);
+  const start = new Date(Date.UTC(year, month, 1, 0, 0, 0));
+  const end = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999));
 
   return prisma.agendaEvent.findMany({
     where: { organizationId, date: { gte: start, lte: end } },
@@ -14,8 +16,12 @@ export async function getAgendaEventsByMonth(organizationId: string, year: numbe
 }
 
 export async function getAgendaEventsByDay(organizationId: string, date: Date) {
-  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
-  const end = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59);
+  const start = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0),
+  );
+  const end = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 23, 59, 59, 999),
+  );
 
   return prisma.agendaEvent.findMany({
     where: { organizationId, date: { gte: start, lte: end } },

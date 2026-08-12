@@ -1,26 +1,14 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useCallback, useState } from "react";
 import type { AgendaEventItem } from "../types/agenda.types";
+import { eventDateParts } from "../utils/agenda-time";
+import { monthName, weekdayLong } from "../utils/calendar-locale";
 import { AgendaCalendar } from "./AgendaCalendat";
 import { AgendaEventList } from "./AgendaEventList";
+import { AgendaHero } from "./AgendaHero";
 import { AgendaNoEventModal } from "./ui/AgendaNoEventModal";
-
-const MONTHS_ES = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
-];
-const WEEK_DAYS_ES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
 interface Props {
   events: AgendaEventItem[];
@@ -30,6 +18,9 @@ interface Props {
   organizationSlug: string;
   canDelete?: boolean;
   canEdit?: boolean;
+  members?: Array<{ user: { id: string; name: string; image: string | null } }>;
+  adminContent?: React.ReactNode;
+  footerContent?: React.ReactNode;
 }
 
 export function AgendaPageClient({
@@ -40,36 +31,42 @@ export function AgendaPageClient({
   organizationSlug,
   canDelete,
   canEdit,
+  members,
+  adminContent,
+  footerContent,
 }: Props) {
+  const { locale } = useI18n();
   const [highlightEventId, setHighlightEventId] = useState<string | null>(null);
   const [noEventDate, setNoEventDate] = useState<string | null>(null);
 
   const handleDayClick = useCallback(
     (day: number) => {
-      // Encontra evento nesse dia
       const match = events.find((e) => {
-        const d = new Date(e.date);
-        return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day;
+        const { year: ey, month: em, day: ed } = eventDateParts(e.date);
+        return ey === year && em === month && ed === day;
       });
 
       if (match) {
         setHighlightEventId(match.id);
-        // Scroll para a seção de eventos
         document
           .getElementById(`event-${match.id}`)
           ?.scrollIntoView({ behavior: "smooth", block: "center" });
       } else {
-        const d = new Date(year, month, day);
-        const label = `${WEEK_DAYS_ES[d.getDay()]} ${day} de ${MONTHS_ES[month]}`;
+        const d = new Date(Date.UTC(year, month, day));
+        const label = `${weekdayLong(locale, d.getUTCDay())} ${day} de ${monthName(locale, month)}`;
         setNoEventDate(label);
       }
     },
-    [events, year, month],
+    [events, year, month, locale],
   );
 
   return (
-    <>
+    <div className="flex flex-col gap-6">
+      <AgendaHero events={events} monthLabel={monthLabel} />
+
       <AgendaCalendar events={events} year={year} month={month} onDayClick={handleDayClick} />
+
+      {adminContent}
 
       <AgendaEventList
         events={events}
@@ -77,15 +74,18 @@ export function AgendaPageClient({
         organizationSlug={organizationSlug}
         canDelete={canDelete}
         canEdit={canEdit}
+        members={members}
         highlightEventId={highlightEventId}
         onHighlightConsumed={() => setHighlightEventId(null)}
       />
+
+      {footerContent}
 
       <AgendaNoEventModal
         open={!!noEventDate}
         dateLabel={noEventDate ?? ""}
         onClose={() => setNoEventDate(null)}
       />
-    </>
+    </div>
   );
 }

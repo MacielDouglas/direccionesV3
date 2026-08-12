@@ -4,27 +4,14 @@ import {
   getOrgMembersForAgenda,
 } from "@/features/agenda/application/agenda.service";
 import { AgendaAdminForm } from "@/features/agenda/components/AgendaAdminForm";
-import { AgendaCalendar } from "@/features/agenda/components/AgendaCalendat";
-import { AgendaEventList } from "@/features/agenda/components/AgendaEventList";
+import { AgendaPageClient } from "@/features/agenda/components/AgendaPageClient";
 import { AgendaPdfButton } from "@/features/agenda/components/AgendaPdfButton";
+import { todayInBrasilia } from "@/features/agenda/utils/agenda-time";
+import { monthLabel as monthLabelLocalized } from "@/features/agenda/utils/calendar-locale";
+import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
 import { redirect } from "next/navigation";
-
-const MONTHS_ES = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
-];
 
 interface Props {
   params: Promise<{ organizationSlug: string }>;
@@ -34,7 +21,11 @@ interface Props {
 export default async function AdminAgendaPage({ params, searchParams }: Props) {
   const { organizationSlug } = await params;
   const { year, month } = await searchParams;
-  const session = await getCurrentUser();
+  const [session, t, locale] = await Promise.all([
+    getCurrentUser(),
+    getServerDictionary(),
+    getServerLocale(),
+  ]);
   if (!session) redirect("/sign-in");
 
   const role = session.memberRole?.role;
@@ -46,50 +37,52 @@ export default async function AdminAgendaPage({ params, searchParams }: Props) {
   if (!organization) redirect("/");
 
   const organizationId = organization.id;
-  const now = new Date();
-  const activeYear = year ? Number.parseInt(year) : now.getFullYear();
-  const activeMonth = month ? Number.parseInt(month) : now.getMonth();
+  const today = todayInBrasilia();
+  const activeYear = year ? Number.parseInt(year) : today.year;
+  const activeMonth = month ? Number.parseInt(month) : today.month;
 
   const [events, members, fieldOptions] = await Promise.all([
     getAgendaEventsByMonth(organizationId, activeYear, activeMonth),
     getOrgMembersForAgenda(organizationId),
-    getAgendaFieldOptions(organizationId), // ✅ novo
+    getAgendaFieldOptions(organizationId),
   ]);
 
-  const monthLabel = `${MONTHS_ES[activeMonth]} ${activeYear}`;
+  const monthLabel = monthLabelLocalized(locale, activeMonth, activeYear);
 
   return (
-    <main className="mx-auto w-full max-w-lg px-4 py-6 flex flex-col gap-6">
-      <header>
-        <h1 className="text-2xl font-bold">Gestión de Agenda</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          Crea y administra eventos del calendario.
-        </p>
+    <main className="mx-auto w-full max-w-md px-4 py-7 md:py-10">
+      <header className="mb-6">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t.admin.agenda}</h1>
+        <p className="mt-0.5 text-sm text-muted-foreground">{t.agenda.adminDescription}</p>
       </header>
 
-      <AgendaCalendar events={events} year={activeYear} month={activeMonth} />
-
-      <AgendaAdminForm
-        organizationId={organizationId}
-        organizationSlug={organizationSlug}
-        members={members}
-        fieldOptions={fieldOptions} // ✅ novo
-      />
-
-      <AgendaEventList
+      <AgendaPageClient
         events={events}
+        year={activeYear}
+        month={activeMonth}
         monthLabel={monthLabel}
         organizationSlug={organizationSlug}
         canDelete={true}
         canEdit={true}
         members={members}
-      />
-
-      <AgendaPdfButton
-        events={events}
-        monthLabel={monthLabel}
-        month={activeMonth}
-        year={activeYear}
+        adminContent={
+          <AgendaAdminForm
+            organizationId={organizationId}
+            organizationSlug={organizationSlug}
+            members={members}
+            fieldOptions={fieldOptions}
+          />
+        }
+        footerContent={
+          <div className="flex items-center justify-center">
+            <AgendaPdfButton
+              events={events}
+              monthLabel={monthLabel}
+              month={activeMonth}
+              year={activeYear}
+            />
+          </div>
+        }
       />
     </main>
   );

@@ -1,26 +1,13 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useTransition } from "react";
 import type { AgendaEventItem } from "../types/agenda.types";
-
-const WEEK_DAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-const MONTHS_ES = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
-];
+import { brasiliaNow, eventDateParts } from "../utils/agenda-time";
+import { monthLabel, monthName, weekdayLong, weekdayShort } from "../utils/calendar-locale";
 
 interface Props {
   events: AgendaEventItem[];
@@ -30,10 +17,11 @@ interface Props {
 }
 
 export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
+  const { t, locale } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
-  const today = new Date();
-  const [isPending, startTransition] = useTransition(); // ✅
+  const today = brasiliaNow();
+  const [isPending, startTransition] = useTransition();
 
   const navigate = (dir: -1 | 1) => {
     const d = new Date(year, month + dir, 1);
@@ -42,7 +30,6 @@ export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
       month: String(d.getMonth()),
     });
     startTransition(() => {
-      // ✅
       router.push(`${pathname}?${params.toString()}`);
     });
   };
@@ -50,155 +37,176 @@ export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
   const eventDays = useMemo(() => {
     return new Set(
       events.map((e) => {
-        const d = new Date(e.date);
-        return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+        const { year: ey, month: em, day: ed } = eventDateParts(e.date);
+        return `${ey}-${em}-${ed}`;
       }),
     );
   }, [events]);
 
   const { firstDay, daysInMonth } = useMemo(
     () => ({
-      firstDay: new Date(year, month, 1).getDay(),
-      daysInMonth: new Date(year, month + 1, 0).getDate(),
+      firstDay: new Date(Date.UTC(year, month, 1)).getUTCDay(),
+      daysInMonth: new Date(Date.UTC(year, month + 1, 0)).getUTCDate(),
     }),
     [year, month],
   );
 
   const isToday = (day: number) =>
-    day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+    day === today.getUTCDate() && month === today.getUTCMonth() && year === today.getUTCFullYear();
 
   const hasEvent = (day: number) => eventDays.has(`${year}-${month}-${day}`);
-  const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
+  const isCurrentMonth = year === today.getUTCFullYear() && month === today.getUTCMonth();
+
+  const weeks = useMemo(() => {
+    const cells: Array<{ day: number | null; key: string }> = [];
+    for (let i = 0; i < firstDay; i++) {
+      cells.push({ day: null, key: `pad-${i}` });
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      cells.push({ day: d, key: `day-${d}` });
+    }
+    while (cells.length % 7 !== 0) {
+      cells.push({ day: null, key: `pad-end-${cells.length}` });
+    }
+
+    const rows: Array<Array<{ day: number | null; key: string }>> = [];
+    for (let i = 0; i < cells.length; i += 7) rows.push(cells.slice(i, i + 7));
+    return rows;
+  }, [firstDay, daysInMonth]);
 
   return (
-    <div className="rounded-2xl border bg-card p-4 shadow-xs">
-      {/* Header nav */}
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-xs">
+      <div className="mb-4 flex items-center justify-between">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          disabled={isPending} // ✅
-          aria-label="Mes anterior"
-          className="rounded-full p-2 hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isPending}
+          aria-label={t.agenda.previousMonth}
+          className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
         >
           <ChevronLeft className="size-5" aria-hidden />
         </button>
 
-        {/* ✅ Título com spinner inline */}
         <div className="text-center">
-          <h2 className="text-lg font-semibold tracking-tight flex items-center justify-center gap-2">
+          <h2 className="flex items-center justify-center gap-2 text-base font-semibold tracking-tight">
             {isPending && (
               <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden />
             )}
-            {MONTHS_ES[month]} {year}
+            {monthLabel(locale, month, year)}
           </h2>
           {isCurrentMonth && !isPending && (
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Hoy es {WEEK_DAYS[today.getDay()]}, {today.getDate()} de {MONTHS_ES[today.getMonth()]}{" "}
-              de {year}.
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {t.agenda.todayHint
+                .replace("{weekday}", weekdayLong(locale, today.getUTCDay()))
+                .replace("{day}", String(today.getUTCDate()))
+                .replace("{month}", monthName(locale, today.getUTCMonth()))
+                .replace("{year}", String(year))}
             </p>
           )}
           {isPending && (
-            <p className="text-xs text-muted-foreground mt-0.5 animate-pulse">Cargando eventos…</p>
+            <p className="mt-0.5 animate-pulse text-xs text-muted-foreground">{t.agenda.loading}</p>
           )}
         </div>
 
         <button
           type="button"
           onClick={() => navigate(1)}
-          disabled={isPending} // ✅
-          aria-label="Próximo mes"
-          className="rounded-full p-2 hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isPending}
+          aria-label={t.agenda.nextMonth}
+          className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
         >
           <ChevronRight className="size-5" aria-hidden />
         </button>
       </div>
 
-      {/* ✅ Grid com overlay de loading */}
       <div
         className={cn(
           "transition-opacity duration-200",
-          isPending && "opacity-40 pointer-events-none",
+          isPending && "pointer-events-none opacity-40",
         )}
       >
         <table
-          aria-label={`${MONTHS_ES[month]} ${year}`}
-          aria-busy={isPending} // ✅ acessibilidade
+          aria-label={monthLabel(locale, month, year)}
+          aria-busy={isPending}
           className="w-full border-collapse"
         >
           <thead>
             <tr>
-              {WEEK_DAYS.map((d) => (
+              {Array.from({ length: 7 }, (_, i) => i).map((d) => (
                 <th
                   key={d}
                   scope="col"
-                  className="text-center text-xs font-semibold text-muted-foreground py-1"
+                  className="py-1 text-center text-xs font-semibold text-muted-foreground"
                 >
-                  {d}
+                  {weekdayShort(locale, d)}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            <tr>
-              {Array.from({ length: firstDay }, (_, i) => i).map((offset) => (
-                <td key={`empty-${offset}`} aria-hidden />
-              ))}
+            {weeks.map((week) => (
+              <tr key={week[0].key}>
+                {week.map((cell) => {
+                  if (cell.day === null) {
+                    return <td key={cell.key} aria-hidden />;
+                  }
 
-              {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
-                const todayDay = isToday(day);
-                const eventDay = hasEvent(day);
-                const isClickable = !!onDayClick;
+                  const day = cell.day;
+                  const todayDay = isToday(day);
+                  const eventDay = hasEvent(day);
+                  const isClickable = !!onDayClick;
 
-                return (
-                  <td key={day} className="text-center py-0.5">
-                    <button
-                      type="button"
-                      disabled={!isClickable || isPending} // ✅
-                      onClick={() => onDayClick?.(day)}
-                      aria-label={`${day} de ${MONTHS_ES[month]}${todayDay ? ", hoy" : ""}${eventDay ? ", tiene eventos" : ", sin eventos"}`}
-                      className={cn(
-                        "flex size-8 items-center justify-center rounded-full text-sm font-medium transition-all",
-                        isClickable && !isPending && "cursor-pointer",
-                        isClickable &&
-                          !isPending &&
-                          eventDay &&
-                          "hover:ring-2 hover:ring-primary hover:ring-offset-1",
-                        isClickable && !isPending && !eventDay && "hover:bg-muted",
-                        todayDay && "bg-brand text-brand-foreground font-bold",
-                        !todayDay && eventDay && "bg-primary/10 text-primary font-semibold",
-                        !todayDay && !eventDay && "text-muted-foreground",
-                        (!isClickable || isPending) && "cursor-default",
-                      )}
-                    >
-                      {day}
-                    </button>
-                    {eventDay && (
-                      <span
+                  return (
+                    <td key={cell.key} className="py-0.5 text-center">
+                      <button
+                        type="button"
+                        disabled={!isClickable || isPending}
+                        onClick={() => onDayClick?.(day)}
+                        aria-label={t.agenda[eventDay ? "dayHasEvents" : "dayNoEvents"]
+                          .replace("{day}", String(day))
+                          .replace("{month}", monthName(locale, month))}
                         className={cn(
-                          "mt-0.5 size-1.5 rounded-full",
-                          todayDay ? "bg-brand-foreground/50" : "bg-primary",
+                          "flex size-8 items-center justify-center rounded-full text-sm font-medium transition-all",
+                          isClickable && !isPending && "cursor-pointer",
+                          isClickable &&
+                            !isPending &&
+                            eventDay &&
+                            "hover:ring-2 hover:ring-primary hover:ring-offset-1",
+                          isClickable && !isPending && !eventDay && "hover:bg-muted",
+                          todayDay && "bg-brand font-bold text-brand-foreground",
+                          !todayDay && eventDay && "bg-primary/10 font-semibold text-primary",
+                          !todayDay && !eventDay && "text-muted-foreground",
+                          (!isClickable || isPending) && "cursor-default",
                         )}
-                        aria-hidden
-                      />
-                    )}
-                  </td>
-                );
-              })}
-            </tr>
+                      >
+                        {day}
+                      </button>
+                      {eventDay && (
+                        <span
+                          className={cn(
+                            "mt-0.5 block size-1.5 rounded-full",
+                            todayDay ? "bg-brand-foreground/50" : "bg-primary",
+                          )}
+                          aria-hidden
+                        />
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
 
-      {/* Legenda */}
-      <div className="mt-4 flex items-center justify-center gap-4 flex-wrap">
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-4">
         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span className="size-3 rounded-full bg-primary inline-block" aria-hidden />
-          Evento
+          <span className="inline-block size-3 rounded-full bg-primary" aria-hidden />
+          {t.agenda.eventLegend}
         </span>
         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span className="size-3 rounded-full bg-brand inline-block" aria-hidden />
-          Hoy
+          <span className="inline-block size-3 rounded-full bg-brand" aria-hidden />
+          {t.agenda.todayLegend}
         </span>
       </div>
     </div>
