@@ -3,7 +3,7 @@ import { getAgendaEventsByDay } from "@/features/agenda/application/agenda.servi
 import { eventTime, todayInBrasiliaDateOnly } from "@/features/agenda/utils/agenda-time";
 import { countMyCards, countMyTotalAddresses } from "@/features/cards/application/card.service";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { CalendarDays, ChevronRight, CreditCard } from "lucide-react";
+import { CalendarDays, ChevronRight, CreditCard, Plus } from "lucide-react";
 import Link from "next/link";
 
 interface HomeDashboardProps {
@@ -60,6 +60,15 @@ export async function HomeDashboard({
           <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-transform group-hover:translate-x-0.5">
             <ChevronRight className="size-5" aria-hidden="true" />
           </span>
+        </Link>
+
+        {/* Enviar novo endereço */}
+        <Link
+          href={`/org/${organizationSlug}/addresses/new`}
+          className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-brand px-5 py-3.5 text-sm font-semibold text-brand-foreground shadow-sm transition-colors hover:bg-brand/90 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        >
+          <Plus className="size-4" aria-hidden="true" />
+          {t.addresses.sendNew}
         </Link>
 
         {/* Programação de hoje */}

@@ -3,8 +3,6 @@
 import { useHaptic } from "@/app/hooks/useHaptic";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useState } from "react";
-import { useNavigation } from "../NavigationProvider";
 
 // components/ui/NavLink.tsx
 interface Props {
@@ -12,20 +10,15 @@ interface Props {
   children: React.ReactNode;
   className?: string;
   label?: string;
-  onClick?: () => void; // ✅ adicione
+  onClick?: () => void;
 }
 
 export function NavLink({ href, children, className, label, onClick }: Props) {
-  const { startNavigation } = useNavigation();
   const { vibrate } = useHaptic();
-  const [clicked, setClicked] = useState(false);
 
   function handleClick() {
-    setClicked(true);
     vibrate("light");
-    startNavigation();
-    onClick?.(); // ✅ chama o onClick externo se existir
-    setTimeout(() => setClicked(false), 3000);
+    onClick?.();
   }
 
   return (
@@ -33,12 +26,7 @@ export function NavLink({ href, children, className, label, onClick }: Props) {
       href={href}
       onClick={handleClick}
       aria-label={label}
-      aria-busy={clicked}
-      className={cn(
-        "relative transition-opacity active:scale-95 duration-75",
-        clicked && "opacity-70",
-        className,
-      )}
+      className={cn("relative transition-colors active:scale-95 duration-75", className)}
     >
       {children}
     </Link>
