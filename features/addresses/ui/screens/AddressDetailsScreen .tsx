@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { AddressViewMap } from "@/features/map/components/AddressViewMap";
-import { getUniqueUser } from "@/server/users";
+import { getUniquePerson } from "@/server/users";
 import type { Address } from "@prisma/client";
 import { CircleAlert } from "lucide-react";
 import Link from "next/link";
@@ -40,8 +40,8 @@ export default async function AddressDetailsScreen({
   organizationSlug,
 }: AddressDetailsScreenProps) {
   const [createdUser, updatedUser] = await Promise.all([
-    getUniqueUser(address.createdUserId),
-    address.updatedUserId ? getUniqueUser(address.updatedUserId) : null,
+    getUniquePerson(address.createdByPersonId),
+    address.updatedByPersonId ? getUniquePerson(address.updatedByPersonId) : null,
   ]);
   // const [editing, setEditing] = useState(false)
 

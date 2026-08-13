@@ -29,7 +29,7 @@ export async function createSurveyPinsAction(input: unknown): Promise<ActionResu
 
   try {
     const data = await requireOrgMember(parsed.data.organizationId);
-    const pins = await createSurveyPins(parsed.data, data.user.id);
+    const pins = await createSurveyPins(parsed.data, data.person.id);
     return { success: true, data: pins };
   } catch (err) {
     return {
@@ -50,7 +50,7 @@ export async function confirmSurveyPinAction(
     const data = await requireOrgMember(organizationId);
     const pin = await confirmSurveyPin({
       pinId: parsed.data.pinId,
-      userId: data.user.id,
+      personId: data.person.id,
       organizationId,
     });
     return { success: true, data: pin };
@@ -73,7 +73,7 @@ export async function cancelSurveyPinAction(
     const data = await requireOrgMember(organizationId);
     const pin = await cancelSurveyPin({
       pinId: parsed.data.pinId,
-      userId: data.user.id,
+      personId: data.person.id,
       organizationId,
     });
     return { success: true, data: pin };

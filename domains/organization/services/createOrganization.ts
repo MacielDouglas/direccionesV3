@@ -1,7 +1,5 @@
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 import { z } from "zod";
 import { createOrganizationByNameSchema } from "../schemas/organization.schema";
 import { createSlug } from "../utils/createSlug";
@@ -35,25 +33,38 @@ export async function createOrganizationService(
     throw new Error("Este token expiró.");
   }
 
-  const membershipCount = await prisma.member.count({
+  // ✅ Todo usuário logado possui sua Person (1:1) — garante a criação
+  const person = await prisma.person.findUnique({
     where: { userId: context.userId },
+    select: { id: true, organizationId: true },
   });
 
-  if (membershipCount > 0) {
+  if (!person) {
+    throw new Error("No hay una persona vinculada a la cuenta.");
+  }
+  if (person.organizationId) {
     throw new Error("Ya perteneces a una organización.");
   }
 
-  const result = await auth.api.createOrganization({
-    body: { name: data.name, slug },
-    headers: await headers(),
-  });
+  const organization = await prisma.$transaction(async (tx) => {
+    const org = await tx.organization.create({
+      data: { name: data.name, slug },
+    });
 
-  await prisma.inviteToken.update({
-    where: { token: data.token },
-    data: { usedAt: new Date(), usedByUserId: context.userId },
+    await tx.person.update({
+      where: { id: person.id },
+      data: { organizationId: org.id, role: "owner", lastActiveAt: new Date() },
+    });
+
+    await tx.inviteToken.update({
+      where: { token: data.token },
+      data: { usedAt: new Date(), usedByPersonId: person.id },
+    });
+
+    return org;
   });
 
   revalidatePath("/");
 
-  return result;
+  return organization;
 }

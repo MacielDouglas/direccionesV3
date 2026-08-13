@@ -31,7 +31,7 @@ async function getSessionOrThrow() {
 }
 
 function getOrganizationId(data: Awaited<ReturnType<typeof requireAuthContext>>): string {
-  const organizationId = data.activeMember?.organizationId;
+  const organizationId = data.person?.organizationId;
   if (!organizationId) throw new Error("Sin organización activa.");
   return organizationId;
 }
@@ -41,7 +41,7 @@ export async function createAddressAction(input: AddressFormData) {
   return createAddressService({
     input,
     organizationId: getOrganizationId(data),
-    userId: data.user.id,
+    personId: data.person.id,
   });
 }
 
@@ -51,7 +51,7 @@ export async function updateAddressAction(addressId: string, input: AddressFormD
     addressId,
     input,
     organizationId: getOrganizationId(data),
-    userId: data.user.id,
+    personId: data.person.id,
   });
 }
 
@@ -81,7 +81,7 @@ export async function requestAddressDeletionAction(addressId: string): Promise<{
       data: {
         pendingDeletion: true,
         pendingDeletionAt: new Date(),
-        pendingDeletionBy: data.user.id,
+        pendingDeletionByPersonId: data.person.id,
       },
     });
 
@@ -145,7 +145,7 @@ export async function cancelAddressDeletionAction(addressId: string) {
     data: {
       pendingDeletion: false,
       pendingDeletionAt: null,
-      pendingDeletionBy: null,
+      pendingDeletionByPersonId: null,
     },
   });
 

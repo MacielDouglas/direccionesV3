@@ -1,8 +1,8 @@
 import SurveyScreen from "@/features/surveys/ui/screens/SurveyScreen";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getOrganizationBySlug } from "@/server/organization/organization.queries";
+import { getCurrentUser } from "@/server/users";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = { title: "Relevamiento" };
@@ -14,18 +14,15 @@ interface Props {
 export default async function SurveysPage({ params }: Props) {
   const { organizationSlug } = await params;
 
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) redirect("/login");
-
-  const org = await prisma.organization.findUnique({
-    where: { slug: organizationSlug },
-  });
+  const [data, org] = await Promise.all([
+    getCurrentUser(),
+    getOrganizationBySlug(organizationSlug),
+  ]);
+  if (!data) redirect("/login");
   if (!org) redirect("/");
 
-  const member = await prisma.member.findFirst({
-    where: { organizationId: org.id, userId: session.user.id },
-  });
-  if (!member) redirect("/");
+  const person = data.person;
+  if (person.organizationId !== org.id) redirect("/");
 
   const pins = await prisma.surveyPin.findMany({
     where: { survey: { organizationId: org.id } },
@@ -36,8 +33,8 @@ export default async function SurveysPage({ params }: Props) {
   return (
     <SurveyScreen
       organizationId={org.id}
-      userId={session.user.id}
-      userRole={member.role}
+      personId={person.id}
+      userRole={person.role ?? "member"}
       initialPins={pins}
     />
   );

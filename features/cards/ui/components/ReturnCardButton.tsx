@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Undo2 } from "lucide-react";
 import { useTransition } from "react";
 import { toast } from "sonner";
@@ -20,6 +21,7 @@ export function ReturnCardButton({
   variant = "outline",
 }: Props) {
   const [isPending, startTransition] = useTransition();
+  const { t } = useI18n();
 
   const handleReturn = () => {
     startTransition(async () => {
@@ -28,7 +30,7 @@ export function ReturnCardButton({
         toast.error(result.error);
         return;
       }
-      toast.success(`Tarjeta #${String(cardNumber).padStart(2, "0")} devuelta.`);
+      toast.success(t.admin.cardReturned.replace("{number}", String(cardNumber).padStart(2, "0")));
     });
   };
 
@@ -39,10 +41,10 @@ export function ReturnCardButton({
       onClick={handleReturn}
       disabled={isPending}
       aria-busy={isPending}
-      aria-label={`Retornar tarjeta #${String(cardNumber).padStart(2, "0")}`}
+      aria-label={`${t.admin.returnCard} #${String(cardNumber).padStart(2, "0")}`}
     >
       <Undo2 className="size-4 mr-1.5" aria-hidden />
-      {isPending ? "Retornando..." : "Retornar"}
+      {isPending ? t.admin.returningCard : t.admin.returnCard}
     </Button>
   );
 }

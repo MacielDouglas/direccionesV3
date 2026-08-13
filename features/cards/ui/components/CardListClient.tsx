@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import type { AddressWithUsers } from "@/features/addresses/types/address.types";
 import { CardGroupedMap } from "@/features/map/components/CardGroupedMap";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { fetchAddressWithUsers } from "@/server/address/address.action";
 import { Plus } from "lucide-react";
 import Link from "next/link";
@@ -17,17 +18,16 @@ type CardListClientCard = {
   organizationId: string;
   createdAt: Date;
   updatedAt: Date;
-  ownerId: string | null;
-  createdById: string;
-  updatedById: string | null;
-  assignedUserId: string | null;
+  ownerPersonId: string | null;
+  createdByPersonId: string;
+  updatedByPersonId: string | null;
+  assignedPersonId: string | null;
   startDate: Date | null;
   endDate: Date | null;
-  assignedUser: {
+  assignedTo: {
     id: string;
     name: string;
-    email: string;
-    image: string | null;
+    user: { id: string; email: string; image: string | null } | null;
   } | null;
   addresses: {
     id: string;
@@ -42,19 +42,24 @@ type CardListClientCard = {
   }[];
   events: {
     date: Date;
-    user: { name: string };
+    person: { id: string; name: string; user: { image: string | null } | null } | null;
   }[];
 };
 
 interface Props {
   cards: CardListClientCard[];
-  members: {
-    user: { id: string; name: string; email: string; image: string | null };
+  persons: {
+    id: string;
+    name: string;
+    role: string | null;
+    organizationId: string | null;
+    user: { id: string; name: string; email: string; image: string | null } | null;
   }[];
   organizationSlug: string;
 }
 
-export function CardListClient({ cards, members, organizationSlug }: Props) {
+export function CardListClient({ cards, persons, organizationSlug }: Props) {
+  const { t } = useI18n();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null); // ← novo
   const [addressPromise, setAddressPromise] = useState<Promise<AddressWithUsers | null> | null>(
@@ -125,7 +130,7 @@ export function CardListClient({ cards, members, organizationSlug }: Props) {
               }}
               className="absolute bottom-3 left-3 z-10 rounded-full bg-background/90 px-3 py-1.5 text-xs font-semibold shadow backdrop-blur-sm transition hover:bg-background"
             >
-              ✕ Limpiar selección
+              ✕ {t.admin.clearSelection}
             </button>
           )}
 
@@ -136,7 +141,7 @@ export function CardListClient({ cards, members, organizationSlug }: Props) {
               onClick={() => setSelectedAddressId(null)}
               className="absolute bottom-3 right-3 z-10 rounded-full bg-black/80 px-3 py-1.5 text-xs font-semibold text-white shadow backdrop-blur-sm transition hover:bg-black"
             >
-              ✕ Deseleccionar pin
+              ✕ {t.admin.deselectPin}
             </button>
           )}
         </div>
@@ -146,26 +151,25 @@ export function CardListClient({ cards, members, organizationSlug }: Props) {
       <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:py-10">
         <header className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Tarjetas</h1>
+            <h1 className="text-2xl font-bold">{t.admin.cardsTitle}</h1>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              {cards.length} tarjeta{cards.length !== 1 ? "s" : ""} registrada
-              {cards.length !== 1 ? "s" : ""}
+              {t.admin.cardsCount.replace("{count}", String(cards.length))}
             </p>
           </div>
           <Button asChild>
             <Link href={`/org/${organizationSlug}/admin/cards/new`}>
               <Plus className="mr-1.5 size-4" aria-hidden />
-              Nueva tarjeta
+              {t.admin.newCard}
             </Link>
           </Button>
         </header>
 
         {cards.length === 0 ? (
           <div className="py-16 text-center text-muted-foreground">
-            <p className="text-sm">Aún no se han creado tarjetas.</p>
+            <p className="text-sm">{t.admin.noCardsCreated}</p>
           </div>
         ) : (
-          <ul className="flex flex-col gap-4" aria-label="Lista de cards">
+          <ul className="flex flex-col gap-4" aria-label={t.admin.cardListAria}>
             {orderedCards.map((card) => {
               // ← era cards.map
               const color = colorMap.get(card.id) ?? "#ef4444";
@@ -181,7 +185,7 @@ export function CardListClient({ cards, members, organizationSlug }: Props) {
                 >
                   <CardListItem
                     card={card}
-                    members={members}
+                    persons={persons}
                     organizationSlug={organizationSlug}
                     color={color}
                     isSelected={isSelected}

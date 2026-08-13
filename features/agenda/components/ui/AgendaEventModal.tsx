@@ -53,9 +53,9 @@ export function AgendaEventModal({ event, onClose }: Props) {
         <div className="flex flex-col gap-3 pt-1">
           {event.conductor && (
             <div className="flex items-center gap-2.5">
-              {event.conductor.image ? (
+              {event.conductor?.user?.image ? (
                 <Image
-                  src={event.conductor.image}
+                  src={event.conductor.user.image}
                   alt={event.conductor.name}
                   width={32}
                   height={32}

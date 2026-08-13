@@ -1,14 +1,11 @@
 import { deleteR2Object } from "@/infrastructure/storage/r2.service";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { headers } from "next/headers";
+import { getCurrentUser } from "@/server/users";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const reqHeaders = await headers();
-  const session = await auth.api.getSession({ headers: reqHeaders });
-
-  if (!session) {
+  const data = await getCurrentUser();
+  if (!data) {
     return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   }
 
@@ -35,13 +32,13 @@ export async function POST(req: Request) {
     }
 
     // ✅ Escopo por organização — só deleta imagens da org ativa do usuário
-    const activeMember = await auth.api.getActiveMember({ headers: reqHeaders });
-    if (!activeMember?.organizationId) {
+    const organizationId = data.person?.organizationId;
+    if (!organizationId) {
       return NextResponse.json({ error: "Sin organización activa." }, { status: 403 });
     }
 
     const organization = await prisma.organization.findUnique({
-      where: { id: activeMember.organizationId },
+      where: { id: organizationId },
       select: { slug: true },
     });
     if (!organization || !key.startsWith(`organizations/${organization.slug}/`)) {

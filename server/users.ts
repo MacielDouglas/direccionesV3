@@ -16,39 +16,53 @@ export const getCurrentUser = cache(async () => {
 
   const currentUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, email: true, role: true, isSuperUser: true, createdAt: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      isSuperUser: true,
+      createdAt: true,
+      person: {
+        select: {
+          id: true,
+          organizationId: true,
+          name: true,
+          role: true,
+          lastActiveAt: true,
+        },
+      },
+    },
   });
 
   if (!currentUser) return null;
+
+  // ✅ Garantia: todo usuário autenticado possui sua Person (1:1)
+  let person = currentUser.person;
+  if (!person) {
+    person = await prisma.person.create({
+      data: {
+        name: currentUser.name,
+        role: null,
+        userId: currentUser.id,
+      },
+    });
+  }
 
   if (currentUser.isSuperUser) {
     return {
       session,
       user: currentUser,
-      activeMember: null,
+      person,
       memberRole: null,
       activeOrganization: null,
       isSuperUser: true,
     };
   }
 
-  const membership = await prisma.member.findFirst({
-    where: { userId: currentUser.id },
-    orderBy: { lastActiveAt: "desc" },
-    select: { id: true, organizationId: true, role: true },
-  });
-
-  const activeMember = membership
-    ? {
-        id: membership.id,
-        organizationId: membership.organizationId,
-        role: toRole(membership.role),
-      }
-    : null;
-
-  const activeOrganization = activeMember
+  const activeOrganization = person.organizationId
     ? await prisma.organization.findUnique({
-        where: { id: activeMember.organizationId },
+        where: { id: person.organizationId },
         select: {
           id: true,
           name: true,
@@ -59,45 +73,76 @@ export const getCurrentUser = cache(async () => {
       })
     : null;
 
-  const memberRole = activeMember ? { role: activeMember.role } : null;
+  const memberRole = person.role ? { role: toRole(person.role) } : null;
 
   return {
     session,
     user: currentUser,
-    activeMember,
+    person,
     memberRole,
     activeOrganization,
     isSuperUser: false,
   };
 });
 
-export const getUniqueUser = cache(async (userId: string) => {
-  if (!userId) return null;
-  return prisma.user.findUnique({
-    where: { id: userId },
+export const getUniquePerson = cache(async (personId: string) => {
+  if (!personId) return null;
+  return prisma.person.findUnique({
+    where: { id: personId },
     select: {
       id: true,
       name: true,
-      email: true,
-      image: true,
+      organizationId: true,
       role: true,
       createdAt: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          isSuperUser: true,
+        },
+      },
     },
   });
 });
 
-export const getNonMemberUsers = async (organizationId: string) => {
+// ✅ Pessoas disponíveis para entrar em uma organização (person sem organização vinculada)
+export const getUnlinkedPersons = async (_organizationId: string) => {
   try {
-    return prisma.user.findMany({
+    return prisma.person.findMany({
       where: {
-        members: { none: { organizationId } },
+        organizationId: null,
+        user: { isSuperUser: false },
       },
-      select: { id: true, name: true, email: true, image: true, role: true },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        organizationId: true,
+        user: { select: { id: true, name: true, email: true, image: true } },
+      },
       orderBy: { name: "asc" },
     });
   } catch {
     return [];
   }
+};
+
+// ✅ Pessoas de uma organização (com ou sem usuário vinculado)
+export const getOrgPersons = async (organizationId: string) => {
+  return prisma.person.findMany({
+    where: { organizationId },
+    select: {
+      id: true,
+      name: true,
+      role: true,
+      organizationId: true,
+      user: { select: { id: true, name: true, email: true, image: true, isSuperUser: true } },
+    },
+    orderBy: { name: "asc" },
+  });
 };
 
 export const requireSession = async () => {
@@ -112,7 +157,7 @@ type AuthContext = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
 export async function requireAuthContext(): Promise<AuthContext> {
   const data = await getCurrentUser();
   if (!data) throw new Error("No autenticado.");
-  if (!data.isSuperUser && !data.activeMember?.organizationId) {
+  if (!data.isSuperUser && !data.person?.organizationId) {
     throw new Error("Sin organización activa.");
   }
   return data;
@@ -127,18 +172,18 @@ export async function requireAdminOrOwner(): Promise<AuthContext> {
   return data;
 }
 
-// ✅ Helper central — exige membro da organização (por organizationId); Super User acessa tudo
+// ✅ Helper central — exige pessoa vinculada à organização informada (Super User acessa tudo)
 export async function requireOrgMember(organizationId: string): Promise<AuthContext> {
   const data = await getCurrentUser();
   if (!data) throw new Error("No autenticado.");
 
   if (data.isSuperUser) return data;
 
-  const member = await prisma.member.findFirst({
+  const person = await prisma.person.findFirst({
     where: { organizationId, userId: data.user.id },
     select: { id: true },
   });
-  if (!member) throw new Error("Sin permiso para esta organización.");
+  if (!person) throw new Error("Sin permiso para esta organización.");
 
   return data;
 }
@@ -148,12 +193,12 @@ export async function requireOrgAdminOrOwner(organizationId: string): Promise<Au
   const data = await requireOrgMember(organizationId);
   if (data.isSuperUser) return data;
 
-  const member = await prisma.member.findFirst({
+  const person = await prisma.person.findFirst({
     where: { organizationId, userId: data.user.id },
     select: { role: true },
   });
 
-  const role = toRole(member?.role ?? null);
+  const role = toRole(person?.role ?? null);
   if (!role || !canAccess(role, "admin")) throw new Error("Sin permiso.");
 
   return data;

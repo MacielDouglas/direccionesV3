@@ -6,7 +6,7 @@ export async function getOrganizationBySlugService(slug: string) {
   return prisma.organization.findUnique({
     where: { slug },
     include: {
-      members: {
+      persons: {
         include: {
           user: {
             select: {

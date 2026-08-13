@@ -15,7 +15,7 @@ export async function getSurveyPins(organizationId: string) {
   });
 }
 
-export async function createSurveyPins(input: CreatePinsInput, userId: string) {
+export async function createSurveyPins(input: CreatePinsInput, personId: string) {
   const survey = await getOrCreateSurvey(input.organizationId);
 
   await prisma.surveyPin.createMany({
@@ -24,12 +24,12 @@ export async function createSurveyPins(input: CreatePinsInput, userId: string) {
       latitude: pin.latitude,
       longitude: pin.longitude,
       status: input.status,
-      createdById: userId,
+      createdByPersonId: personId,
     })),
   });
 
   return prisma.surveyPin.findMany({
-    where: { surveyId: survey.id, createdById: userId },
+    where: { surveyId: survey.id, createdByPersonId: personId },
     include: { createdBy: { select: { name: true } } },
     orderBy: { createdAt: "desc" },
     take: input.pins.length,
@@ -49,7 +49,7 @@ export async function confirmSurveyPin(input: ConfirmPinInput) {
 
   return prisma.surveyPin.update({
     where: { id: input.pinId },
-    data: { status: "CONFIRMED", confirmedById: input.userId },
+    data: { status: "CONFIRMED", confirmedByPersonId: input.personId },
     include: { createdBy: { select: { name: true } } },
   });
 }

@@ -29,7 +29,7 @@ interface LocalPin {
 
 interface Props {
   organizationId: string;
-  userId: string;
+  personId: string;
   userRole: string;
   initialPins: SurveyPin[];
 }

@@ -37,6 +37,14 @@ export async function updateUserNameAction(rawData: unknown): Promise<{ error?: 
     data: { name },
   });
 
+  // Person é a identidade exibida no app — mantém o nome em sincronia.
+  if (data.person) {
+    await prisma.person.update({
+      where: { id: data.person.id },
+      data: { name },
+    });
+  }
+
   revalidatePath("/", "layout");
   return {};
 }

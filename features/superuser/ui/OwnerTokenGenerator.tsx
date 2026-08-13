@@ -78,7 +78,7 @@ export function OwnerTokenGenerator({
               <code className="font-mono">{token.token}</code>
               <p className="mt-1 text-xs text-muted-foreground">
                 {token.usedAt
-                  ? `Usado por ${token.usedBy?.name ?? token.usedBy?.email ?? "alguien"}`
+                  ? `Usado por ${token.usedBy?.name ?? token.usedBy?.user?.email ?? "alguien"}`
                   : token.expiresAt < new Date()
                     ? "Expirado"
                     : "Disponible"}

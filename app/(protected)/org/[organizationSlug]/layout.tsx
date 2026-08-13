@@ -1,4 +1,3 @@
-import { SetActiveOrg } from "@/components/SetActiveOrg";
 import { TenantProvider } from "@/providers/TenantProvider";
 import { setActiveOrg } from "@/server/organization/organization.actions";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
@@ -22,14 +21,13 @@ export default async function TenantLayout({ children, params }: Props) {
   const isSuperUser = data.isSuperUser;
 
   if (!isSuperUser) {
-    if (!data.activeMember) redirect("/");
+    if (!data.person?.organizationId) redirect("/");
 
-    if (data.activeMember.organizationId !== organization.id) {
+    if (data.person.organizationId !== organization.id) {
       await setActiveOrg(organization.id);
     }
   }
 
-  const needsOrgSwitch = !isSuperUser && data.activeMember?.organizationId !== organization.id;
   const role = isSuperUser ? "superuser" : (data.memberRole?.role ?? null);
 
   return (
@@ -43,7 +41,6 @@ export default async function TenantLayout({ children, params }: Props) {
         membership: { role },
       }}
     >
-      {needsOrgSwitch && <SetActiveOrg organizationId={organization.id} />}
       {children}
     </TenantProvider>
   );

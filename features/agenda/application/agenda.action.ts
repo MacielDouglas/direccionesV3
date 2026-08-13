@@ -42,7 +42,7 @@ async function createEvent(organizationId: string, input: AgendaEventInput) {
       organizationId,
       date: localDate,
       time: time ?? null,
-      conductorId: conductorId ?? null,
+      conductorPersonId: conductorId ?? null,
       saida: saida?.trim() ?? null,
       tipo: tipo?.trim() ?? null,
       territorio: territorio?.trim() ?? null,
@@ -93,7 +93,7 @@ export async function updateAgendaEventAction(
       return { error: "Evento inválido." };
     }
     const data = await requireAdminOrOwner();
-    const organizationId = data.activeMember?.organizationId;
+    const organizationId = data.person?.organizationId;
     if (!organizationId) return { error: "Sin organización activa." };
 
     const parsed = agendaEventSchema.safeParse(input);
@@ -114,7 +114,7 @@ export async function updateAgendaEventAction(
       data: {
         date: localDate,
         time: time ?? null,
-        conductorId: conductorId ?? null,
+        conductorPersonId: conductorId ?? null,
         saida: saida?.trim() ?? null,
         tipo: tipo?.trim() ?? null,
         territorio: territorio?.trim() ?? null,
@@ -147,7 +147,7 @@ export async function deleteAgendaEventAction(
       return { error: "Evento inválido." };
     }
     const data = await requireAdminOrOwner();
-    const organizationId = data.activeMember?.organizationId;
+    const organizationId = data.person?.organizationId;
     if (!organizationId) return { error: "Sin organización activa." };
 
     const event = await prisma.agendaEvent.findFirst({

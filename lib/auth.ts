@@ -1,8 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { organization } from "better-auth/plugins";
-import { ac, admin, member, owner } from "./auth/permissions";
 import { prisma } from "./prisma";
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
@@ -49,33 +47,26 @@ export const auth = betterAuth({
   },
 
   databaseHooks: {
-    session: {
+    user: {
+      // ✅ Todo usuário nasce com sua Person (organização só é vinculada ao entrar/criar uma org)
       create: {
-        before: async (session) => {
-          const membership = await prisma.member.findFirst({
-            where: { userId: session.userId },
-            orderBy: { lastActiveAt: "desc" }, // ← última org acessada
-            select: { organizationId: true },
-          });
-
-          return {
-            data: {
-              ...session,
-              activeOrganizationId: membership?.organizationId ?? null,
-            },
-          };
+        before: async (user) => {
+          try {
+            await prisma.person.create({
+              data: {
+                name: user.name || "Sin nombre",
+                role: null,
+                userId: user.id,
+              },
+            });
+          } catch {
+            // fallback: getCurrentUser recria a person se necessário
+          }
+          return { data: user };
         },
       },
     },
   },
 
-  plugins: [
-    organization({
-      ac,
-      roles: { owner, admin, member },
-      invitationExpiresIn: 60 * 60 * 24,
-      organizationLimit: 1,
-    }),
-    nextCookies(), // sempre por último
-  ],
+  plugins: [nextCookies()], // sempre por último
 });

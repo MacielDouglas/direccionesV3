@@ -3,7 +3,7 @@ import SurveyMap from "../components/SurveyMap";
 
 interface Props {
   organizationId: string;
-  userId: string;
+  personId: string;
   userRole: string;
   initialPins: SurveyPin[];
 }

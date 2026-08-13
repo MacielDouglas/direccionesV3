@@ -59,24 +59,28 @@ export async function listCards(organizationId: string) {
           active: true,
         },
       },
-      assignedUser: {
-        select: { id: true, name: true, email: true, image: true },
+      assignedTo: {
+        select: {
+          id: true,
+          name: true,
+          user: { select: { id: true, email: true, image: true } },
+        },
       },
       events: {
         where: { action: "RETURNED" },
         orderBy: { date: "desc" },
         take: 1,
         include: {
-          user: { select: { id: true, name: true, image: true } },
+          person: { select: { id: true, name: true, user: { select: { image: true } } } },
         },
       },
     },
   });
 }
 
-export async function listMyCards(organizationId: string, userId: string) {
+export async function listMyCards(organizationId: string, personId: string) {
   return prisma.card.findMany({
-    where: { organizationId, assignedUserId: userId },
+    where: { organizationId, assignedPersonId: personId },
     orderBy: { number: "asc" },
     include: {
       addresses: {
@@ -97,29 +101,33 @@ export async function listMyCards(organizationId: string, userId: string) {
   });
 }
 
-export async function countMyCards(organizationId: string, userId: string) {
+export async function countMyCards(organizationId: string, personId: string) {
   return prisma.card.count({
-    where: { organizationId, assignedUserId: userId },
+    where: { organizationId, assignedPersonId: personId },
   });
 }
 
-export async function countMyTotalAddresses(organizationId: string, userId: string) {
+export async function countMyTotalAddresses(organizationId: string, personId: string) {
   const result = await prisma.address.count({
     where: {
       organizationId,
-      card: { assignedUserId: userId },
+      card: { assignedPersonId: personId },
     },
   });
   return result;
 }
 
-export async function getOrgMembers(organizationId: string) {
-  return prisma.member.findMany({
+export async function getOrgPersons(organizationId: string) {
+  return prisma.person.findMany({
     where: { organizationId },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      role: true,
+      organizationId: true,
       user: { select: { id: true, name: true, email: true, image: true } },
     },
-    orderBy: { user: { name: "asc" } },
+    orderBy: { name: "asc" },
   });
 }
 

@@ -10,7 +10,7 @@ export function LoginCard() {
   const { t } = useI18n();
 
   return (
-    <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-8 rounded-xl bg-card p-8 border border-border shadow-sm sm:p-9">
+    <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-8 rounded-xl  p-8  shadow-sm sm:p-9">
       <header className="flex flex-col items-center gap-5 text-center">
         <Image
           src="/Logo.svg"
@@ -22,15 +22,13 @@ export function LoginCard() {
         />
 
         <div>
-          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+          <p className="text-xs font-medium uppercase tracking-widest text-mauve-300">
             {t.login.title}
           </p>
           <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             {t.login.welcome} <span className="font-bold text-brand">Direcciones</span>
           </h1>
-          <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
-            {t.login.withGoogle}
-          </p>
+          <p className="mt-2.5 text-sm leading-relaxed text-mauve-400">{t.login.withGoogle}</p>
         </div>
       </header>
 
@@ -41,7 +39,7 @@ export function LoginCard() {
         </Suspense>
       </div>
 
-      <div className="w-full border-t border-border pt-6">
+      <div className="w-full border-t  border-mauve-600 pt-6 flex justify-center">
         <LanguageSelector />
       </div>
     </div>

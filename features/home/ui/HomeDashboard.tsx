@@ -9,7 +9,7 @@ import Link from "next/link";
 interface HomeDashboardProps {
   organizationId: string;
   organizationSlug: string;
-  userId: string;
+  personId: string;
   userName: string;
   isAdminOrOwner: boolean;
 }
@@ -17,14 +17,14 @@ interface HomeDashboardProps {
 export async function HomeDashboard({
   organizationId,
   organizationSlug,
-  userId,
+  personId,
   userName,
   isAdminOrOwner,
 }: HomeDashboardProps) {
   const [t, cardCount, totalAddresses, todayEvents] = await Promise.all([
     getServerDictionary(),
-    countMyCards(organizationId, userId),
-    countMyTotalAddresses(organizationId, userId),
+    countMyCards(organizationId, personId),
+    countMyTotalAddresses(organizationId, personId),
     getAgendaEventsByDay(organizationId, todayInBrasiliaDateOnly()),
   ]);
 

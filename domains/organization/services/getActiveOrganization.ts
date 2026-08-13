@@ -1,13 +1,12 @@
 import { prisma } from "@/lib/prisma";
 
 export async function getActiveOrganizationService(userId: string) {
-  const member = await prisma.member.findFirst({
+  const person = await prisma.person.findFirst({
     where: { userId },
     include: {
       organization: true,
     },
-    orderBy: { createdAt: "desc" },
   });
 
-  return member?.organization ?? null;
+  return person?.organization ?? null;
 }

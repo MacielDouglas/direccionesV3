@@ -14,11 +14,12 @@ import type { AddressWithUsers } from "@/features/addresses/types/address.types"
 import { AddressImageViewer } from "@/features/addresses/ui/components/AddressImageViewer";
 import DeleteAddressButton from "@/features/addresses/ui/components/DeleteAddressButton";
 import { NavigateAddressButtons } from "@/features/addresses/ui/components/NavigateAddressButtons";
-import { AddressViewMap } from "@/features/map/components/AddressViewMap";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { CircleAlert, MapPin, Pencil, X } from "lucide-react";
+import { CircleAlert, Map as MapIcon, MapPin, Pencil, X } from "lucide-react";
 import Link from "next/link";
-import { Suspense, use } from "react";
+import { Suspense, use, useState } from "react";
+import { AddressMapModal } from "./AddressMapModal";
 
 const TYPE_TILE: Record<string, string> = {
   House: "bg-emerald-500/10",
@@ -32,8 +33,8 @@ function typeTileOf(type: string): string {
   return TYPE_TILE[type] ?? "bg-muted";
 }
 
-function formatDate(date: Date | string) {
-  return new Intl.DateTimeFormat("es-419", {
+function formatDate(date: Date | string, locale: string) {
+  return new Intl.DateTimeFormat(locale === "pt" ? "pt-BR" : "es-419", {
     timeZone: "America/Bogota",
     day: "2-digit",
     month: "2-digit",
@@ -48,6 +49,8 @@ interface Props {
 }
 
 export function AddressDetailModal({ promise, onClose, organizationSlug }: Props) {
+  const { t } = useI18n();
+
   return (
     <Dialog
       open={!!promise}
@@ -68,8 +71,8 @@ export function AddressDetailModal({ promise, onClose, organizationSlug }: Props
         )}
       >
         <DialogHeader className="sr-only">
-          <DialogTitle>Dirección</DialogTitle>
-          <DialogDescription>Detalles y mapa de la dirección.</DialogDescription>
+          <DialogTitle>{t.admin.addressDetailTitle}</DialogTitle>
+          <DialogDescription>{t.admin.addressDetailDescription}</DialogDescription>
         </DialogHeader>
 
         {promise && (
@@ -91,10 +94,10 @@ export function AddressDetailModal({ promise, onClose, organizationSlug }: Props
 function AddressDetailSkeleton() {
   return (
     <div className="flex flex-col">
-      <div className="sticky top-0 z-20 flex items-center justify-end border-b border-border bg-card/95 p-3 backdrop-blur">
-        <Skeleton className="size-9 rounded-full" />
+      <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-card/95 p-3 backdrop-blur">
+        <Skeleton className="h-11 w-28 rounded-full" />
+        <Skeleton className="size-11 rounded-full" />
       </div>
-      <Skeleton className="h-96 w-full" />
       <section className="flex flex-col gap-4 border-t border-border bg-card p-4 pb-8 sm:p-6">
         <div className="flex items-center gap-3">
           <Skeleton className="size-12 rounded-xl" />
@@ -133,54 +136,62 @@ function AddressContent({
   organizationSlug: string;
   onClose: () => void;
 }) {
+  const { t, locale } = useI18n();
   const address = use(promise);
+  const [mapOpen, setMapOpen] = useState(false);
 
   if (!address)
     return (
       <div className="flex items-center justify-center px-4 py-16 text-center text-sm text-destructive">
-        Dirección no encontrada.
+        {t.addresses.notFound}
       </div>
     );
 
-  const typeConfig = ADDRESS_TYPE_OPTIONS.find((t) => t.value === address.type);
+  const typeConfig = ADDRESS_TYPE_OPTIONS.find((opt) => opt.value === address.type);
   const Icon = typeConfig?.icon;
   const fullAddress = `${address.street}, ${address.number} · ${address.neighborhood}, ${address.city}`;
+  const hasCoordinates = address.latitude != null && address.longitude != null;
 
   return (
     <article className="flex flex-col">
-      {/* Topo fixo: fechar */}
-      <div className="sticky top-0 z-20 flex items-center justify-end border-b border-border/60 bg-card/95 p-3 backdrop-blur">
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Cerrar"
-          className="grid size-11 place-items-center rounded-full border border-border bg-card text-foreground shadow-sm transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <X className="size-4" aria-hidden />
-        </button>
-      </div>
+      {/* Topo fixo: ver mapa + navegação + fechar */}
+      <div className="sticky top-0 z-20 border-b border-border/60 bg-card/95 backdrop-blur">
+        <div className="flex items-center justify-between gap-3 p-3">
+          {hasCoordinates ? (
+            <button
+              type="button"
+              onClick={() => setMapOpen(true)}
+              className="inline-flex h-11 items-center gap-1.5 rounded-full border border-border bg-card px-4 text-sm font-semibold text-foreground shadow-xs transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <MapIcon className="size-4 text-brand" aria-hidden />
+              {t.cards.seeMap}
+            </button>
+          ) : (
+            <span aria-hidden />
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t.common.close}
+            className="grid size-11 shrink-0 place-items-center rounded-full border border-border bg-card text-foreground shadow-sm transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <X className="size-4" aria-hidden />
+          </button>
+        </div>
 
-      {/* Mapa + rota */}
-      {address.latitude != null && address.longitude != null && (
-        <section aria-label="Mapa de la dirección" className="relative">
-          <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-            <AddressViewMap
+        {hasCoordinates && (
+          <div className="px-3 pb-3">
+            <NavigateAddressButtons
               latitude={Number(address.latitude)}
               longitude={Number(address.longitude)}
             />
-          </Suspense>
-
-          {address.pendingDeletionAt && (
-            <div className="absolute inset-x-0 bottom-0 bg-black/80 px-3 py-2 text-center text-xs font-semibold uppercase tracking-wide text-red-400">
-              Solicitud de borrado pendiente de confirmación
-            </div>
-          )}
-        </section>
-      )}
+          </div>
+        )}
+      </div>
 
       {/* Detalhes */}
       <section
-        aria-label="Detalles de la dirección"
+        aria-label={t.admin.addressDetailTitle}
         className="flex flex-col gap-5 border-t border-border bg-card p-4 pb-8 sm:p-6"
       >
         {/* Cabeçalho: tipo + nome */}
@@ -207,7 +218,7 @@ function AddressContent({
         </header>
 
         {/* Estado */}
-        <ul className="flex flex-wrap gap-2" aria-label="Estado de la dirección">
+        <ul className="flex flex-wrap gap-2" aria-label={t.addresses.statusAria}>
           <li
             className={cn(
               "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
@@ -216,7 +227,7 @@ function AddressContent({
                 : "bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400",
             )}
           >
-            {address.confirmed ? "✓ Confirmada" : "✗ No confirmada"}
+            {address.confirmed ? `✓ ${t.addresses.confirmed}` : `✗ ${t.addresses.notConfirmed}`}
           </li>
           <li
             className={cn(
@@ -226,11 +237,11 @@ function AddressContent({
                 : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
             )}
           >
-            {address.active ? "✓ Activa" : "✗ Inactiva"}
+            {address.active ? `✓ ${t.addresses.activeBadge}` : `✗ ${t.addresses.inactiveBadge}`}
           </li>
           {address.pendingDeletionAt && (
             <li className="inline-flex items-center gap-1 rounded-full bg-destructive px-2.5 py-1 text-xs font-semibold text-white">
-              Borrado pendiente
+              {t.addresses.pendingDeletion}
             </li>
           )}
         </ul>
@@ -239,7 +250,7 @@ function AddressContent({
         <dl className="grid grid-cols-2 gap-x-4 gap-y-4 rounded-xl border border-border bg-muted/40 p-4">
           <div>
             <dt className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
-              Calle
+              {t.addresses.streetField}
             </dt>
             <dd className="mt-0.5 break-words text-sm font-medium text-foreground">
               {address.street}, {address.number}
@@ -247,7 +258,7 @@ function AddressContent({
           </div>
           <div>
             <dt className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
-              Barrio
+              {t.addresses.neighborhoodField}
             </dt>
             <dd className="mt-0.5 break-words text-sm font-medium text-foreground">
               {address.neighborhood}
@@ -255,7 +266,7 @@ function AddressContent({
           </div>
           <div>
             <dt className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
-              Ciudad
+              {t.addresses.cityField}
             </dt>
             <dd className="mt-0.5 break-words text-sm font-medium text-foreground">
               {address.city}
@@ -263,7 +274,7 @@ function AddressContent({
           </div>
           <div>
             <dt className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
-              Tipo
+              {t.addresses.type}
             </dt>
             <dd className="mt-0.5 inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
               {Icon && <Icon className={cn("size-4", typeConfig?.color)} aria-hidden />}
@@ -273,7 +284,7 @@ function AddressContent({
           {address.businessName && (
             <div className="col-span-2">
               <dt className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
-                Negocio
+                {t.addresses.businessField}
               </dt>
               <dd className="mt-0.5 break-words text-sm font-medium text-foreground">
                 {address.businessName}
@@ -290,8 +301,7 @@ function AddressContent({
         {!address.active && (
           <p className="inline-flex items-start gap-2 rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600 dark:bg-red-950/40 dark:text-red-400">
             <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
-            Dirección desactivada. Puede haber cambiado. Revise notas o contacte a quien la
-            actualizó.
+            {t.addresses.inactiveWarning}
           </p>
         )}
 
@@ -299,7 +309,7 @@ function AddressContent({
         {address.info && (
           <section className="rounded-xl bg-muted p-4">
             <h3 className="mb-1.5 text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
-              Información adicional
+              {t.addresses.additionalInfo}
             </h3>
             <p className="text-sm leading-relaxed text-foreground/80">{address.info}</p>
           </section>
@@ -310,7 +320,7 @@ function AddressContent({
           <figure className="w-full overflow-hidden rounded-xl">
             <AddressImageViewer
               src={address.image}
-              alt={`Imagen de ${address.businessName ?? "la dirección"}`}
+              alt={address.businessName ?? t.addresses.streetField}
             />
           </figure>
         )}
@@ -318,15 +328,15 @@ function AddressContent({
         {/* Auditoria */}
         <footer className="flex flex-col gap-1 border-t border-border pt-3 text-xs text-muted-foreground">
           <p>
-            Enviado por:{" "}
+            {t.addresses.sentBy}{" "}
             <span className="font-medium text-foreground">
-              {address.createdUser?.name ?? "Usuario desconocido"}
+              {address.createdUser?.name ?? t.addresses.unknownUser}
             </span>
           </p>
           <p>
-            Actualizado:{" "}
+            {t.addresses.updatedAtLabel}{" "}
             <time dateTime={new Date(address.updatedAt).toISOString()}>
-              {formatDate(address.updatedAt)}
+              {formatDate(address.updatedAt, locale)}
             </time>
             {address.updatedUser && (
               <>
@@ -339,16 +349,10 @@ function AddressContent({
 
         {/* Ações */}
         <div className="flex flex-col gap-2">
-          {address.latitude != null && address.longitude != null && (
-            <NavigateAddressButtons
-              latitude={Number(address.latitude)}
-              longitude={Number(address.longitude)}
-            />
-          )}
           <Link href={`/org/${organizationSlug}/addresses/${address.id}/edit`} className="w-full">
             <Button className="w-full" variant="outline">
               <Pencil className="size-4" aria-hidden />
-              Editar dirección
+              {t.addresses.editAddress}
             </Button>
           </Link>
           <DeleteAddressButton
@@ -357,6 +361,15 @@ function AddressContent({
           />
         </div>
       </section>
+
+      {hasCoordinates && (
+        <AddressMapModal
+          open={mapOpen}
+          onClose={() => setMapOpen(false)}
+          latitude={Number(address.latitude)}
+          longitude={Number(address.longitude)}
+        />
+      )}
     </article>
   );
 }

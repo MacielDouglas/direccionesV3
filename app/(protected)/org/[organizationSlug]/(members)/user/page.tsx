@@ -34,12 +34,12 @@ export default async function UserPage({ params }: Props) {
 
   const user = session.user;
 
-  // Cards atribuídos ao usuário na org atual
+  // Cards atribuídos à pessoa na org atual
   const cards = activeOrganization
     ? await prisma.card.findMany({
         where: {
           organizationId: activeOrganization.id,
-          assignedUserId: user.id,
+          assignedPersonId: data.person.id,
         },
         select: {
           id: true,

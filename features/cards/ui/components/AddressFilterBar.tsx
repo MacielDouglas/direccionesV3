@@ -1,35 +1,9 @@
 "use client";
 
 import type { AddressType } from "@/features/addresses/types/address.types";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { Building2, Home, Hotel, Store, Utensils } from "lucide-react";
-
-const TYPE_OPTIONS: {
-  value: AddressType;
-  label: string;
-  icon: React.ReactNode;
-}[] = [
-  { value: "House", label: "Casa", icon: <Home className="size-3.5" /> },
-  {
-    value: "Apartment",
-    label: "Apto",
-    icon: <Building2 className="size-3.5" />,
-  },
-  { value: "Store", label: "Negocio", icon: <Store className="size-3.5" /> },
-  { value: "Hotel", label: "Hotel", icon: <Hotel className="size-3.5" /> },
-  {
-    value: "Restaurant",
-    label: "Restaurante",
-    icon: <Utensils className="size-3.5" />,
-  },
-  // { value: "Clinic",     label: "Clínica",     icon: <Stethoscope   className="size-3.5" /> },
-];
-
-const ACTIVE_OPTIONS = [
-  { value: undefined, label: "Todos" },
-  { value: true, label: "Activos" },
-  { value: false, label: "Inactivos" },
-] as const;
 
 export type AddressFilters = {
   active?: boolean;
@@ -43,6 +17,34 @@ interface Props {
 }
 
 export function AddressFilterBar({ filters, onChange, total }: Props) {
+  const { t } = useI18n();
+
+  const typeOptions: {
+    value: AddressType;
+    label: string;
+    icon: React.ReactNode;
+  }[] = [
+    { value: "House", label: t.admin.typeHouse, icon: <Home className="size-3.5" /> },
+    {
+      value: "Apartment",
+      label: t.admin.typeApartment,
+      icon: <Building2 className="size-3.5" />,
+    },
+    { value: "Store", label: t.admin.typeStore, icon: <Store className="size-3.5" /> },
+    { value: "Hotel", label: t.admin.typeHotel, icon: <Hotel className="size-3.5" /> },
+    {
+      value: "Restaurant",
+      label: t.admin.typeRestaurant,
+      icon: <Utensils className="size-3.5" />,
+    },
+  ];
+
+  const activeOptions: { value: boolean | undefined; label: string }[] = [
+    { value: undefined, label: t.common.all },
+    { value: true, label: t.addresses.active },
+    { value: false, label: t.addresses.inactive },
+  ];
+
   const toggleType = (type: AddressType) => {
     const current = filters.types ?? [];
     const next = current.includes(type) ? current.filter((t) => t !== type) : [...current, type];
@@ -53,8 +55,10 @@ export function AddressFilterBar({ filters, onChange, total }: Props) {
     <div className="flex flex-col gap-2 rounded-lg border bg-muted/30 p-3">
       {/* Estado */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-xs text-muted-foreground font-medium w-10 shrink-0">Estado</span>
-        {ACTIVE_OPTIONS.map((opt) => (
+        <span className="text-xs text-muted-foreground font-medium w-10 shrink-0">
+          {t.admin.filterStatus}
+        </span>
+        {activeOptions.map((opt) => (
           <button
             key={String(opt.value)}
             type="button"
@@ -73,8 +77,10 @@ export function AddressFilterBar({ filters, onChange, total }: Props) {
 
       {/* Tipo */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-xs text-muted-foreground font-medium w-10 shrink-0">Tipo</span>
-        {TYPE_OPTIONS.map((opt) => {
+        <span className="text-xs text-muted-foreground font-medium w-10 shrink-0">
+          {t.admin.filterType}
+        </span>
+        {typeOptions.map((opt) => {
           const isSelected = (filters.types ?? []).includes(opt.value);
           return (
             <button
@@ -97,8 +103,7 @@ export function AddressFilterBar({ filters, onChange, total }: Props) {
 
       {/* Contador */}
       <p className="text-xs text-muted-foreground">
-        {total} dirección{total !== 1 ? "es" : ""} encontrada
-        {total !== 1 ? "s" : ""}
+        {t.admin.addressCount.replace("{count}", String(total))}
       </p>
     </div>
   );

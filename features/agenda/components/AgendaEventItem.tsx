@@ -6,22 +6,18 @@ import { cn } from "@/lib/utils";
 import { Clock, Info, MapPin, Pencil, Tag, User } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import type { AgendaEventItem as TAgendaEventItem } from "../types/agenda.types";
+import type { AgendaMember, AgendaEventItem as TAgendaEventItem } from "../types/agenda.types";
 import { eventStartUtcMs, eventTime, isEventPast } from "../utils/agenda-time";
 import { dateLabelLong } from "../utils/calendar-locale";
 import { EditAgendaEventModal } from "./EditAgendaEventModal";
 import { DeleteAgendaEventButton } from "./ui/DeleteAgendaEventButton";
-
-interface Member {
-  user: { id: string; name: string; image: string | null };
-}
 
 interface Props {
   event: TAgendaEventItem;
   organizationSlug: string;
   canDelete?: boolean;
   canEdit?: boolean;
-  members?: Member[];
+  members?: AgendaMember[];
   onOpen?: () => void;
 }
 
@@ -106,9 +102,9 @@ export function AgendaEventItem({
 
         {event.conductor && (
           <div className={cn("flex items-center gap-2", isPast && "line-through")}>
-            {event.conductor.image ? (
+            {event.conductor?.user?.image ? (
               <Image
-                src={event.conductor.image}
+                src={event.conductor.user.image}
                 alt={event.conductor.name}
                 width={24}
                 height={24}

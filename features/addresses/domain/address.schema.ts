@@ -42,9 +42,9 @@ export const addressFormSchema = z.object({
 export type AddressFormData = z.infer<typeof addressFormSchema>;
 
 export const addressPersistenceSchema = addressFormSchema.extend({
-  organizationId: z.string().uuid(),
-  createdUserId: z.string().uuid(),
-  updatedUserId: z.string().uuid().optional().nullable(),
+  organizationId: z.string().min(1),
+  createdByPersonId: z.string().min(1),
+  updatedByPersonId: z.string().min(1).optional().nullable(),
 });
 
 export type AddressPersistenceInput = z.infer<typeof addressPersistenceSchema>;

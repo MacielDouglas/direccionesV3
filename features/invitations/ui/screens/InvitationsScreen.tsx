@@ -1,3 +1,4 @@
+import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
 import { KeyRound } from "lucide-react";
 import { getOrgInviteTokensAction } from "../../applications/inviteToken.action";
 import { InviteTokenGenerator } from "../components/InviteTokenGenerator";
@@ -9,32 +10,34 @@ interface Props {
 }
 
 export async function InvitationsScreen({ organizationId, orgSlug }: Props) {
-  const tokens = await getOrgInviteTokensAction(organizationId);
+  const [tokens, t, locale] = await Promise.all([
+    getOrgInviteTokensAction(organizationId),
+    getServerDictionary(),
+    getServerLocale(),
+  ]);
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-6">
       <header className="flex items-center gap-3">
         <KeyRound className="h-8 w-8 text-brand" aria-hidden="true" />
         <div>
-          <h1 className="text-2xl font-semibold">Invitaciones</h1>
-          <p className="text-sm text-muted-foreground">
-            Genera un token y compártelo como quieras — válido 24 horas, un solo uso.
-          </p>
+          <h1 className="text-2xl font-semibold">{t.admin.invitationsTitle}</h1>
+          <p className="text-sm text-muted-foreground">{t.admin.invitationsSubtitle}</p>
         </div>
       </header>
 
       <section aria-labelledby="generate-title" className="rounded-xl border p-5">
         <h2 id="generate-title" className="mb-4 text-base font-semibold">
-          Generar token de invitación
+          {t.admin.generateTitle}
         </h2>
         <InviteTokenGenerator organizationId={organizationId} orgSlug={orgSlug} />
       </section>
 
       <section aria-labelledby="history-title">
         <h2 id="history-title" className="mb-3 text-base font-semibold">
-          Historial
+          {t.admin.historyTitle}
         </h2>
-        <InviteTokenList tokens={tokens} />
+        <InviteTokenList tokens={tokens} locale={locale} />
       </section>
     </main>
   );

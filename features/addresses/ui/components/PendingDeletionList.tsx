@@ -18,7 +18,7 @@ type AddressItem = {
   city: string;
   businessName: string | null;
   pendingDeletionAt: Date | null;
-  requestedBy?: { name: string | null; email: string } | null;
+  requestedBy?: { name: string | null; user: { email: string | null } | null } | null;
   image: string | null;
 };
 
@@ -90,7 +90,7 @@ export function PendingDeletionList({
                 <p className="mt-1 text-xs text-muted/70">
                   Solicitado por:{" "}
                   <span className="font-medium">
-                    {address.requestedBy.name ?? address.requestedBy.email}
+                    {address.requestedBy.name ?? address.requestedBy.user?.email}
                   </span>
                 </p>
               )}

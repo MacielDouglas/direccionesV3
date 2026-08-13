@@ -21,7 +21,9 @@ export default async function PendingDeletionPage({ params }: Props) {
 
   const addresses = await prisma.address.findMany({
     where: { organizationId: organization.id, pendingDeletion: true },
-    include: { requestedBy: { select: { name: true, email: true } } },
+    include: {
+      requestedBy: { select: { name: true, user: { select: { email: true } } } },
+    },
     orderBy: { pendingDeletionAt: "asc" },
   });
 

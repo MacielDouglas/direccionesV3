@@ -6,8 +6,8 @@ export interface SurveyPin {
   latitude: number;
   longitude: number;
   status: PinStatus;
-  createdById: string | null;
-  confirmedById: string | null;
+  createdByPersonId: string | null;
+  confirmedByPersonId: string | null;
   createdAt: Date;
   updatedAt: Date;
   createdBy: { name: string } | null;
@@ -21,12 +21,12 @@ export interface CreatePinsInput {
 
 export interface ConfirmPinInput {
   pinId: string;
-  userId: string;
+  personId: string;
   organizationId: string;
 }
 
 export interface CancelPinInput {
   pinId: string;
-  userId: string;
+  personId: string;
   organizationId: string;
 }

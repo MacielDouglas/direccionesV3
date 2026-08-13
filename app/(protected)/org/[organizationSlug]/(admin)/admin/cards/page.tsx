@@ -1,3 +1,4 @@
+import { BackLink } from "@/components/ui/BackLink";
 import { canManageCards } from "@/features/cards/permissions/canManageCards";
 import { CardListScreen } from "@/features/cards/ui/components/CardListScreen";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
@@ -20,5 +21,12 @@ export default async function CardsPage({ params }: Props) {
   const canManage = await canManageCards(session.user.id, org.id);
   if (!canManage) redirect(`/org/${organizationSlug}`);
 
-  return <CardListScreen organizationId={org.id} organizationSlug={organizationSlug} />;
+  return (
+    <>
+      <div className="mx-auto w-full max-w-5xl px-4 pt-4">
+        <BackLink href={`/org/${organizationSlug}/admin`} />
+      </div>
+      <CardListScreen organizationId={org.id} organizationSlug={organizationSlug} />
+    </>
+  );
 }

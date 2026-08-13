@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { BackLink } from "@/components/ui/BackLink";
 import { canManageCards } from "@/features/cards/permissions/canManageCards";
 import { CardEditScreen } from "@/features/cards/ui/screens/CardEditScreen";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
@@ -23,7 +24,10 @@ export default async function CardEditPage({ params }: Props) {
   if (!canManage) redirect(`/org/${organizationSlug}`);
 
   return (
-    <div className="w-full max-w-3xl mx-auto py-2">
+    <div className="mx-auto w-full max-w-3xl">
+      <div className="px-4 pt-4">
+        <BackLink href={`/org/${organizationSlug}/admin/cards`} />
+      </div>
       <CardEditScreen cardId={cardId} organizationId={org.id} organizationSlug={organizationSlug} />
     </div>
   );

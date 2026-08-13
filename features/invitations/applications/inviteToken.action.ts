@@ -1,14 +1,12 @@
 "use server";
 
 import { createOrganizationService } from "@/domains/organization";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, requireOrgAdminOrOwner } from "@/server/users";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 import { z } from "zod";
 
-const organizationIdSchema = z.string().uuid();
+const organizationIdSchema = z.string().min(1);
 const tokenSchema = z.string().min(1);
 
 async function requireSuperUser() {
@@ -23,6 +21,7 @@ async function requireSuperUser() {
 export async function createInviteTokenAction(data: {
   organizationId: string;
   orgSlug: string;
+  personId?: string;
 }) {
   if (!organizationIdSchema.safeParse(data.organizationId).success) {
     throw new Error("Organización inválida.");
@@ -30,33 +29,47 @@ export async function createInviteTokenAction(data: {
 
   const userData = await requireOrgAdminOrOwner(data.organizationId);
 
-  await prisma.inviteToken.updateMany({
-    where: {
-      type: "INVITE",
-      organizationId: data.organizationId,
-      usedAt: null,
-      expiresAt: { gt: new Date() },
-    },
-    data: { expiresAt: new Date() },
-  });
+  if (data.personId) {
+    const person = await prisma.person.findFirst({
+      where: { id: data.personId, organizationId: data.organizationId },
+    });
+    if (!person) throw new Error("Persona no encontrada.");
+    if (person.userId) throw new Error("Esta persona ya tiene un usuario vinculado.");
+  }
 
-  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24h
+  // Convites de pessoas são individuais — não invalidam os demais.
+  if (!data.personId) {
+    await prisma.inviteToken.updateMany({
+      where: {
+        type: "INVITE",
+        organizationId: data.organizationId,
+        personId: null,
+        usedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      data: { expiresAt: new Date() },
+    });
+  }
+
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30); // 30 dias
 
   const token = await prisma.inviteToken.create({
     data: {
       type: "INVITE",
       organizationId: data.organizationId,
       role: "member",
-      createdById: userData.user.id,
+      createdByPersonId: userData.person.id,
+      personId: data.personId ?? null,
       expiresAt,
     },
   });
 
   revalidatePath(`/org/${data.orgSlug}/admin/invitations`);
+  revalidatePath(`/org/${data.orgSlug}/admin/pessoas`);
   return token;
 }
 
-// ── Usa token de convite — qualquer usuário logado sem org ─────
+// ── Usa token de convite — qualquer usuário logado ─────────────
 export async function applyInviteTokenAction(token: string) {
   if (!tokenSchema.safeParse(token).success) throw new Error("Enlace no válido.");
 
@@ -65,7 +78,7 @@ export async function applyInviteTokenAction(token: string) {
 
   const invite = await prisma.inviteToken.findUnique({
     where: { token },
-    include: { organization: true },
+    include: { organization: true, person: true },
   });
 
   if (!invite || invite.type !== "INVITE") throw new Error("Enlace no válido.");
@@ -73,51 +86,58 @@ export async function applyInviteTokenAction(token: string) {
   if (invite.expiresAt < new Date()) throw new Error("Este enlace expiró.");
   if (!invite.organizationId || !invite.organization) throw new Error("Enlace no válido.");
 
-  const membershipCount = await prisma.member.count({
-    where: { userId: userData.user.id },
-  });
-
-  if (membershipCount > 0) {
-    throw new Error("Solo puedes pertenecer a una organización.");
+  if (userData.person.organizationId) {
+    throw new Error("Ya perteneces a una organización.");
   }
 
-  const alreadyMember = await prisma.member.findFirst({
-    where: {
-      userId: userData.user.id,
-      organizationId: invite.organizationId,
-    },
+  // Convite vinculado a uma Pessoa pré-criada: o usuário assume aquela Pessoa.
+  if (invite.personId) {
+    const person = invite.person;
+    if (!person) throw new Error("Enlace no válido.");
+    if (person.userId) throw new Error("Esta persona ya tiene un usuario vinculado.");
+
+    await prisma.$transaction(async (tx) => {
+      // Remove a Person auto-criada do usuário (sem org e sem dados).
+      if (userData.person.id !== person.id) {
+        await tx.person.deleteMany({
+          where: { id: userData.person.id, organizationId: null, userId: userData.user.id },
+        });
+      }
+
+      await tx.person.update({
+        where: { id: person.id },
+        data: {
+          userId: userData.user.id,
+          lastActiveAt: new Date(),
+        },
+      });
+
+      await tx.inviteToken.update({
+        where: { token },
+        data: { usedAt: new Date(), usedByPersonId: person.id },
+      });
+    });
+
+    return invite.organization;
+  }
+
+  // Convite genérico: a Person do próprio usuário entra na organização.
+  await prisma.$transaction(async (tx) => {
+    const updated = await tx.person.update({
+      where: { id: userData.person.id },
+      data: {
+        organizationId: invite.organizationId,
+        role: invite.role,
+        lastActiveAt: new Date(),
+      },
+    });
+
+    await tx.inviteToken.update({
+      where: { token },
+      data: { usedAt: new Date(), usedByPersonId: updated.id },
+    });
   });
-  if (alreadyMember) throw new Error("Ya eres miembro de esta organización.");
 
-  const reqHeaders = await headers();
-
-  // ✅ Adiciona como member via better-auth
-  await auth.api.addMember({
-    body: {
-      userId: userData.user.id,
-      organizationId: invite.organizationId,
-      role: "member",
-    },
-    headers: reqHeaders,
-  });
-
-  // ✅ Atualiza lastActiveAt
-  await prisma.member.updateMany({
-    where: {
-      userId: userData.user.id,
-      organizationId: invite.organizationId,
-    },
-    data: { lastActiveAt: new Date() },
-  });
-
-  // ✅ Marca token como usado
-  await prisma.inviteToken.update({
-    where: { token },
-    data: { usedAt: new Date(), usedByUserId: userData.user.id },
-  });
-
-  // ❌ setActiveOrganization REMOVIDO — não propaga cookie em Server Action
-  // Será chamado no cliente via authClient após este retorno
   return invite.organization;
 }
 
@@ -140,7 +160,7 @@ export async function createOwnerOnboardingTokenAction() {
     data: {
       type: "OWNER_ONBOARDING",
       role: "owner",
-      createdById: currentUser.user.id,
+      createdByPersonId: currentUser.person.id,
       expiresAt,
     },
   });
@@ -210,7 +230,7 @@ export async function getOwnerOnboardingTokensAction() {
     where: { type: "OWNER_ONBOARDING" },
     include: {
       createdBy: { select: { name: true } },
-      usedBy: { select: { name: true, email: true } },
+      usedBy: { select: { name: true, user: { select: { email: true } } } },
     },
     orderBy: { createdAt: "desc" },
     take: 20,

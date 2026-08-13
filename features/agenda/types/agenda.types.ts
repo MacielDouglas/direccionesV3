@@ -9,7 +9,7 @@ export type AgendaEventItem = {
   conductor: {
     id: string;
     name: string;
-    image: string | null;
+    user: { image: string | null } | null;
   } | null;
 };
 
@@ -20,5 +20,9 @@ export type AgendaFieldOptions = {
 };
 
 export interface AgendaMember {
-  user: { id: string; name: string; image: string | null };
+  id: string;
+  name: string;
+  role: string | null;
+  organizationId: string | null;
+  user: { id: string; name: string; image: string | null } | null;
 }

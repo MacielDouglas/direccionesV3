@@ -1,13 +1,11 @@
 import type { auth } from "@/lib/auth";
-import { adminClient, inferAdditionalFields, organizationClient } from "better-auth/client/plugins";
+import { inferAdditionalFields } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_URL,
   plugins: [
     inferAdditionalFields<typeof auth>(), // infere os campos reais do servidor
-    organizationClient(),
-    adminClient(),
   ],
 });
 

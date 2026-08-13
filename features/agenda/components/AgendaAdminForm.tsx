@@ -20,6 +20,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import type { Locale } from "@/lib/i18n/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarPlus } from "lucide-react";
 import { useState, useTransition } from "react";
@@ -28,7 +29,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { createAgendaEventAction } from "../application/agenda.action";
 import type { AgendaFieldOptions, AgendaMember } from "../types/agenda.types";
-import { weekdayPlural } from "../utils/calendar-locale";
+import { monthName, weekdayPlural } from "../utils/calendar-locale";
 import { ComboboxField } from "./ui/ComboboxField";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -59,13 +60,9 @@ function getSameWeekdayDates(dateStr: string): string[] {
   return dates;
 }
 
-function formatDateLabel(dateStr: string) {
-  return parseDateStr(dateStr).toLocaleDateString("es-419", {
-    timeZone: "UTC",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+function formatDateLabel(locale: Locale, dateStr: string) {
+  const d = parseDateStr(dateStr);
+  return `${String(d.getUTCDate()).padStart(2, "0")} ${monthName(locale, d.getUTCMonth())}`;
 }
 
 interface Props {
@@ -244,8 +241,8 @@ export function AgendaAdminForm({
                   <SelectContent>
                     <SelectItem value="none">{t.agenda.none}</SelectItem>
                     {members.map((m) => (
-                      <SelectItem key={m.user.id} value={m.user.id}>
-                        {m.user.name}
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -261,7 +258,7 @@ export function AgendaAdminForm({
                   {recurringDates.map((dateStr) => (
                     <div key={dateStr} className="flex items-center gap-3">
                       <span className="w-24 shrink-0 text-xs tabular-nums text-muted-foreground">
-                        {formatDateLabel(dateStr)}
+                        {formatDateLabel(locale, dateStr)}
                       </span>
                       <Select
                         onValueChange={(val) =>
@@ -278,8 +275,8 @@ export function AgendaAdminForm({
                         <SelectContent>
                           <SelectItem value="none">{t.agenda.none}</SelectItem>
                           {members.map((m) => (
-                            <SelectItem key={m.user.id} value={m.user.id}>
-                              {m.user.name}
+                            <SelectItem key={m.id} value={m.id}>
+                              {m.name}
                             </SelectItem>
                           ))}
                         </SelectContent>

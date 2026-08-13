@@ -1,60 +1,47 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { headers } from "next/headers";
+import { getCurrentUser } from "@/server/users";
 import { redirect } from "next/navigation";
 
 export async function leaveOrganizationAction(organizationId: string) {
-  const reqHeaders = await headers();
-  const session = await auth.api.getSession({ headers: reqHeaders });
+  const data = await getCurrentUser();
+  if (!data) throw new Error("Não autorizado.");
 
-  if (!session) throw new Error("Não autorizado.");
-
-  const userId = session.user.id;
-
-  const member = await prisma.member.findFirst({
-    where: { userId, organizationId },
+  const person = await prisma.person.findFirst({
+    where: { userId: data.user.id, organizationId },
     select: { id: true, role: true },
   });
 
-  if (!member) throw new Error("Você não é membro desta organização.");
+  if (!person) throw new Error("Você não é membro desta organização.");
 
-  if (member.role === "owner") {
+  if (person.role === "owner") {
     throw new Error("O owner não pode sair. Transfira a ownership antes.");
   }
 
-  // ✅ Sempre: limpa assignedUserId (cards atribuídos ficam livres)
+  // ✅ Sempre: desatribui cards (ficam livres na org)
   await prisma.card.updateMany({
-    where: { assignedUserId: userId, organizationId },
-    data: { assignedUserId: null },
+    where: { assignedPersonId: person.id, organizationId },
+    data: { assignedPersonId: null },
   });
 
-  if (member.role === "member") {
-    // ✅ Membro comum: limpa ownership dos cards
+  if (person.role === "member") {
+    // ✅ Membro comum: libera ownership dos cards e condução de eventos
     await prisma.card.updateMany({
-      where: { ownerId: userId, organizationId },
-      data: { ownerId: null },
+      where: { ownerPersonId: person.id, organizationId },
+      data: { ownerPersonId: null },
     });
-
-    // ✅ Membro comum: limpa conductor de eventos na agenda
     await prisma.agendaEvent.updateMany({
-      where: { conductorId: userId, organizationId },
-      data: { conductorId: null },
+      where: { conductorPersonId: person.id, organizationId },
+      data: { conductorPersonId: null },
     });
   }
-  // Admin: ownerId dos cards e conductorId da agenda são mantidos
+  // Admin: ownership dos cards e condução da agenda são mantidos
 
-  // Remove da org via Better Auth
-  await auth.api.removeMember({
-    body: { memberIdOrEmail: member.id, organizationId },
-    headers: reqHeaders,
-  });
-
-  // Limpa activeOrganizationId da sessão
-  await auth.api.setActiveOrganization({
-    body: { organizationId: null },
-    headers: reqHeaders,
+  // ✅ Desvincula a person da organização
+  await prisma.person.update({
+    where: { id: person.id },
+    data: { organizationId: null, role: null, lastActiveAt: new Date() },
   });
 
   redirect("/");

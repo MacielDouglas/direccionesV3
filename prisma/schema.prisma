@@ -39,30 +39,56 @@ model User {
   sessions Session[]
   accounts Account[]
 
-  // Relations
+  // Identidade de domínio (1:1)
+  person Person?
+
+  @@map("user")
+}
+
+//////////////////////////////////////////////////////
+// PERSON
+//////////////////////////////////////////////////////
+
+model Person {
+  id             String   @id @default(uuid())
+  organizationId String?
+  userId         String?  @unique
+  name           String
+  role           String? // "member" | "admin" | "owner" | null (sem org)
+  lastActiveAt   DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Card
   cardsOwned    Card[]      @relation("CardOwner")
   cardsAssigned Card[]      @relation("CardAssignedTo")
   createdCards  Card[]      @relation("CardCreatedBy")
   updatedCards  Card[]      @relation("CardUpdatedBy")
-  events        CardEvent[]
+  cardEvents    CardEvent[] @relation("CardEventActor")
 
+  // Address
   createdAddresses Address[] @relation("AddressCreatedBy")
   updatedAddresses Address[] @relation("AddressUpdatedBy")
   invitedAddresses Address[] @relation("InvitedAddresses")
+  deletionRequests Address[] @relation("AddressDeletionRequests")
 
-  members     Member[]
-  invitations Invitation[]
-
-  deletionRequests  Address[]  @relation("AddressDeletionRequests")
-
+  // Survey
   surveysCreated   SurveyPin[] @relation("SurveyCreatedPins")
   surveysConfirmed SurveyPin[] @relation("SurveyConfirmedPins")
 
+  // Agenda
   agendaConductor AgendaEvent[] @relation("AgendaEventConductor")
 
-   inviteTokensCreated InviteToken[] @relation("InviteTokensCreated")
+  // Invites
+  inviteTokensCreated InviteToken[] @relation("InviteTokensCreated")
   inviteTokensUsed    InviteToken[] @relation("InviteTokensUsed")
-  @@map("user")
+  inviteTokens        InviteToken[] @relation("InviteTokenPerson")
+
+  @@index([organizationId])
+  @@map("person")
 }
 
 //////////////////////////////////////////////////////
@@ -92,41 +118,42 @@ model Address {
   confirmed Boolean @default(false)
 
   organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Convite
 
   invited     Boolean @default(false)
-  invitedById String?
-  invitedBy   User?   @relation("InvitedAddresses", fields: [invitedById], references: [id])
+  invitedByPersonId String?
+  invitedBy   Person? @relation("InvitedAddresses", fields: [invitedByPersonId], references: [id], onDelete: SetNull)
 
 
   //  Auditoria
-  
-  createdUserId String
-  createdBy     User   @relation("AddressCreatedBy", fields: [createdUserId], references: [id])
 
-  updatedUserId String?
-  updatedBy     User?   @relation("AddressUpdatedBy", fields: [updatedUserId], references: [id])
+  createdByPersonId String
+  createdBy         Person  @relation("AddressCreatedBy", fields: [createdByPersonId], references: [id], onDelete: SetNull)
 
-  
+  updatedByPersonId String?
+  updatedBy         Person? @relation("AddressUpdatedBy", fields: [updatedByPersonId], references: [id], onDelete: SetNull)
+
+
   //  Relação com Card
-  
-  cardId String? 
+
+  cardId String?
   card   Card?   @relation(fields: [cardId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   //Delete
-  pendingDeletion   Boolean   @default(false)
-  pendingDeletionAt DateTime?
-  pendingDeletionBy String?   // userId de quem solicitou
+  pendingDeletion        Boolean   @default(false)
+  pendingDeletionAt      DateTime?
+  pendingDeletionByPersonId String?
 
-  requestedBy  User? @relation("AddressDeletionRequests", fields: [pendingDeletionBy], references: [id])
+  requestedBy Person? @relation("AddressDeletionRequests", fields: [pendingDeletionByPersonId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   @@index([latitude, longitude])
-  @@index([createdUserId])
+  @@index([createdByPersonId])
   @@map("address")
 }
 
@@ -139,35 +166,36 @@ model Card {
   number Int
 
   organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Dono do Card
-  ownerId String?
-  owner   User?   @relation("CardOwner", fields: [ownerId], references: [id])
+  ownerPersonId String?
+  owner         Person? @relation("CardOwner", fields: [ownerPersonId], references: [id], onDelete: Cascade)
 
   // Auditoria
-  createdById String
-  createdBy   User   @relation("CardCreatedBy", fields: [createdById], references: [id])
+  createdByPersonId String
+  createdBy         Person   @relation("CardCreatedBy", fields: [createdByPersonId], references: [id], onDelete: SetNull)
 
-  updatedById String?
-  updatedBy   User?   @relation("CardUpdatedBy", fields: [updatedById], references: [id])
+  updatedByPersonId String?
+  updatedBy         Person?  @relation("CardUpdatedBy", fields: [updatedByPersonId], references: [id], onDelete: SetNull)
 
   // Atribuição
-  assignedUserId String?
-  assignedUser   User?   @relation("CardAssignedTo", fields: [assignedUserId], references: [id])
+  assignedPersonId String?
+  assignedTo       Person?  @relation("CardAssignedTo", fields: [assignedPersonId], references: [id], onDelete: SetNull)
 
   // Relações
   addresses Address[]
   events    CardEvent[]
 
-  startDate DateTime?  // ← agora opcional
-  endDate   DateTime?  // ← agora opcional
+  startDate DateTime?
+  endDate   DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([organizationId, number])  // ← número único por org
-  @@index([assignedUserId])
-  @@index([ownerId])
+  @@unique([organizationId, number])
+  @@index([assignedPersonId])
+  @@index([ownerPersonId])
   @@index([organizationId])
   @@map("card")
 }
@@ -246,56 +274,16 @@ model Organization {
   metadata  String?
   createdAt DateTime @default(now())
 
-  members     Member[]
-  invitations Invitation[]
-  surveys     Survey[] 
+  persons     Person[]
+  addresses   Address[]
+  cards       Card[]
+  surveys     Survey[]
   agenda      AgendaEvent[]
   agendaOption AgendaFieldOption[]
 
    inviteTokens InviteToken[]
-  
+
   @@map("organization")
-}
-
-
-model Member {
-  id String @id
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  role      String   @default("member")
-  createdAt DateTime @default(now())
-  lastActiveAt DateTime @default(now()) 
-
-  @@unique([organizationId, userId])
-  @@index([organizationId])
-  @@index([userId])
-  @@map("member")
-}
-
-model Invitation {
-  id String @id
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  email  String
-  role   String?
-  status String  @default("pending")
-
-  inviterId String
-  inviter   User   @relation(fields: [inviterId], references: [id], onDelete: Cascade)
-
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-
-  @@index([organizationId])
-  @@index([email])
-  @@map("invitation")
 }
 
 //////////////////////////////////////////////////////
@@ -308,14 +296,14 @@ model CardEvent {
   cardId String
   card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  personId String?
+  person   Person? @relation("CardEventActor", fields: [personId], references: [id], onDelete: SetNull)
 
   action CardEventAction
   date   DateTime        @default(now())
 
   @@index([cardId])
-  @@index([userId])
+  @@index([personId])
   @@map("card_event")
 }
 
@@ -343,15 +331,15 @@ model SurveyPin {
   latitude      Float
   longitude     Float
   status        PinStatus @default(PENDING)
-  createdById   String?
-  createdBy     User?      @relation("SurveyCreatedPins", fields: [createdById], references: [id])
-  confirmedById String?
-  confirmedBy   User?     @relation("SurveyConfirmedPins", fields: [confirmedById], references: [id])
+  createdByPersonId   String?
+  createdBy     Person?      @relation("SurveyCreatedPins", fields: [createdByPersonId], references: [id], onDelete: SetNull)
+  confirmedByPersonId String?
+  confirmedBy   Person?     @relation("SurveyConfirmedPins", fields: [confirmedByPersonId], references: [id], onDelete: SetNull)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   @@index([surveyId])
-  @@index([createdById])
+  @@index([createdByPersonId])
   @@map("survey_pin")
 }
 
@@ -373,14 +361,14 @@ model AgendaEvent {
   organizationId String
   date           DateTime
   time           String?
-  conductorId    String?
+  conductorPersonId String?
   saida          String?
   tipo           String?
   territorio     String?
   info           String?
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  conductor      User?        @relation("AgendaEventConductor", fields: [conductorId], references: [id])
+  conductor      Person?        @relation("AgendaEventConductor", fields: [conductorPersonId], references: [id], onDelete: SetNull)
 
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -414,20 +402,23 @@ model InviteToken {
   type           TokenType @default(INVITE)
   organizationId String?
   role           String    @default("member")
-  createdById    String
+  createdByPersonId String
+  personId       String?
   expiresAt      DateTime
   usedAt         DateTime?
-  usedByUserId   String?
+  usedByPersonId String?
 
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  createdBy    User          @relation("InviteTokensCreated", fields: [createdById], references: [id], onDelete: Cascade)
-  usedBy       User?         @relation("InviteTokensUsed", fields: [usedByUserId], references: [id], onDelete: SetNull)
+  createdBy    Person        @relation("InviteTokensCreated", fields: [createdByPersonId], references: [id], onDelete: Cascade)
+  person       Person?       @relation("InviteTokenPerson", fields: [personId], references: [id], onDelete: Cascade)
+  usedBy       Person?       @relation("InviteTokensUsed", fields: [usedByPersonId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
 
   @@index([token])
   @@index([organizationId])
   @@index([type])
+  @@index([personId])
   @@map("invite_token")
 }
 

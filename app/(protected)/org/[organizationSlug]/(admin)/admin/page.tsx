@@ -1,155 +1,155 @@
+import { getServerDictionary } from "@/lib/i18n/server";
 import { getCurrentUser } from "@/server/users";
-import { CalendarCheck, Layers, Link2, Pencil, Plus, Shield, Users } from "lucide-react";
+import {
+  CalendarCheck,
+  ChevronRight,
+  CreditCard,
+  KeyRound,
+  Plus,
+  ShieldCheck,
+  UserPlus,
+} from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import type { ElementType } from "react";
 
 interface Props {
   params: Promise<{ organizationSlug: string }>;
 }
 
-interface AdminCard {
-  id: string;
-  title: string;
-  description: string;
-  href: string;
-  icon: ElementType;
-  color: string;
-  children?: { name: string; href: string; icon: ElementType }[];
-  ownerOnly?: boolean;
-}
-
-const ADMIN_CARDS: AdminCard[] = [
-  {
-    id: "users",
-    title: "Usuarios",
-    description: "Gestiona los miembros de la organización y sus roles.",
-    href: "/admin/users",
-    icon: Users,
-    color: "bg-blue-100/60 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800",
-  },
-  {
-    id: "cards",
-    title: "Tarjetas",
-    description: "Administra y crea tarjetas para los publicadores.",
-    href: "/admin/cards",
-    icon: Layers,
-    color: "bg-violet-100/60 border-violet-200 dark:bg-violet-950/30 dark:border-violet-800",
-    children: [
-      { name: "Administrar", href: "/admin/cards", icon: Pencil },
-      { name: "Crear nueva", href: "/admin/cards/new", icon: Plus },
-    ],
-  },
-  {
-    id: "agenda",
-    title: "Programar Cronograma",
-    description: "Crea y gestiona los eventos del cronograma mensual.",
-    href: "/admin/agenda",
-    icon: CalendarCheck,
-    color: "bg-green-100/60 border-green-200 dark:bg-green-950/30 dark:border-green-800",
-  },
-  {
-    id: "invitations",
-    title: "Invitar Usuarios",
-    description: "Genera invitaciones para nuevos miembros de la organización.",
-    href: "/admin/invitations",
-    icon: Link2,
-    color: "bg-amber-100/60 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800",
-  },
-  {
-    id: "organizations",
-    title: "Organizaciones",
-    description: "Administra todas las organizaciones del sistema.",
-    href: "/admin/organizations",
-    icon: Shield,
-    color: "bg-red-100/60 border-red-200 dark:bg-red-950/30 dark:border-red-800",
-    ownerOnly: true,
-  },
-];
-
 export default async function AdminPage({ params }: Props) {
   const { organizationSlug } = await params;
-  const session = await getCurrentUser();
+  const [data, t] = await Promise.all([getCurrentUser(), getServerDictionary()]);
 
-  if (!session) redirect("/login");
+  if (!data) redirect("/login");
 
-  const role = session.memberRole?.role;
-  if (!session.isSuperUser && (!role || !["admin", "owner"].includes(role))) {
+  const role = data.memberRole?.role;
+  if (!data.isSuperUser && (!role || !["admin", "owner"].includes(role))) {
     redirect(`/org/${organizationSlug}`);
   }
 
-  const isOwner = role === "owner" || session.isSuperUser;
-  const slug = session.activeOrganization?.slug ?? organizationSlug;
-  const visibleCards = ADMIN_CARDS.filter((c) => !c.ownerOnly || isOwner);
+  const isOwner = role === "owner" || data.isSuperUser;
+  const orgName = data.activeOrganization?.name ?? "Organización";
+  const slug = data.activeOrganization?.slug ?? organizationSlug;
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6" aria-labelledby="admin-heading">
-      {/* Header */}
+    <main className="mx-auto w-full max-w-5xl px-4 py-6 md:py-10" aria-labelledby="admin-heading">
+      {/* Cabeçalho */}
       <header className="mb-6">
-        <h1 id="admin-heading" className="text-2xl font-semibold tracking-tight">
-          Panel de administración
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Gestiona usuarios, tarjetas, cronograma e invitaciones.
+        <p className="text-xs font-semibold uppercase tracking-widest text-brand">
+          {t.admin.title}
         </p>
+        <h1 id="admin-heading" className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+          {orgName}
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t.admin.subtitle}</p>
       </header>
 
-      {/* Grid de cards */}
-      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-label="Opciones de administración">
-        {visibleCards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <li key={card.id}>
-              <div
-                className={`flex flex-col gap-3 rounded-2xl border p-5 shadow-xs transition-shadow hover:shadow-md ${card.color}`}
-              >
-                {/* Ícone + título */}
-                <div className="flex items-start gap-3">
-                  <div className="rounded-xl bg-background/70 p-2.5 dark:bg-black/20 shrink-0">
-                    <Icon className="size-5 text-foreground" aria-hidden />
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="text-base font-semibold leading-tight tracking-tight">
-                      {card.title}
-                    </h2>
-                    <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
-                      {card.description}
-                    </p>
-                  </div>
-                </div>
+      <div className="space-y-8">
+        {/* Hero — criar pessoa */}
+        <Link
+          href={`/org/${slug}/admin/pessoas`}
+          className="group flex items-center justify-between gap-4 rounded-2xl bg-black p-6 text-white shadow-md shadow-black/20 transition-transform active:scale-[0.99] sm:p-8"
+        >
+          <div>
+            <span className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-neutral-400">
+              <UserPlus className="size-4" aria-hidden="true" />
+              {t.admin.people}
+            </span>
+            <p className="mt-3 max-w-md text-lg font-semibold leading-snug sm:text-xl">
+              {t.admin.peopleDescription}
+            </p>
+            <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90">
+              <Plus className="size-4" aria-hidden="true" />
+              {t.people.createButton}
+            </span>
+          </div>
+          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-transform group-hover:translate-x-0.5">
+            <ChevronRight className="size-5" aria-hidden="true" />
+          </span>
+        </Link>
 
-                {/* Ações */}
-                {card.children ? (
-                  <div className="flex flex-wrap gap-2">
-                    {card.children.map((child) => {
-                      const ChildIcon = child.icon;
-                      return (
-                        <Link
-                          key={child.href}
-                          href={`/org/${slug}${child.href}`}
-                          className="flex items-center gap-1.5 rounded-lg bg-background/80 px-3 py-1.5 text-xs font-medium shadow-sm transition-colors hover:bg-background dark:bg-black/20 dark:hover:bg-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          aria-label={`${child.name} — ${card.title}`}
-                        >
-                          <ChildIcon className="size-3.5" aria-hidden />
-                          {child.name}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <Link
-                    href={`/org/${slug}${card.href}`}
-                    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-background/80 px-3 py-2 text-xs font-medium shadow-sm transition-colors hover:bg-background dark:bg-black/20 dark:hover:bg-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    aria-label={`Ir a ${card.title}`}
-                  >
-                    Abrir
-                  </Link>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+        {/* Gestão */}
+        <section aria-labelledby="manage-heading">
+          <h2
+            id="manage-heading"
+            className="mb-3 flex items-center gap-2 text-base font-semibold text-foreground"
+          >
+            <ShieldCheck className="size-4 text-brand" aria-hidden="true" />
+            {t.admin.dashboard}
+          </h2>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <AdminAction
+              href={`/org/${slug}/admin/cards`}
+              icon={<CreditCard className="size-5 text-brand" aria-hidden="true" />}
+              title={t.admin.cards}
+              description={t.admin.cardsDescription}
+              cta={t.admin.open}
+            />
+            <AdminAction
+              href={`/org/${slug}/admin/agenda`}
+              icon={<CalendarCheck className="size-5 text-brand" aria-hidden="true" />}
+              title={t.admin.agenda}
+              description={t.admin.agendaDescription}
+              cta={t.admin.open}
+            />
+            <AdminAction
+              href={`/org/${slug}/admin/invitations`}
+              icon={<KeyRound className="size-5 text-brand" aria-hidden="true" />}
+              title={t.admin.invitations}
+              description={t.admin.invitationsDescription}
+              cta={t.admin.open}
+            />
+            {isOwner && (
+              <AdminAction
+                href={`/org/${slug}/admin/organizations`}
+                icon={<ShieldCheck className="size-5 text-brand" aria-hidden="true" />}
+                title={t.admin.organizations}
+                description={t.admin.organizationsDescription}
+                cta={t.admin.open}
+              />
+            )}
+          </div>
+        </section>
+      </div>
     </main>
+  );
+}
+
+function AdminAction({
+  href,
+  icon,
+  title,
+  description,
+  cta,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  cta: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-5 shadow-xs transition-colors hover:bg-surface-subtle-light dark:hover:bg-surface-subtle-dark"
+    >
+      <div className="flex min-w-0 items-start gap-3">
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand/10">
+          {icon}
+        </span>
+        <div className="min-w-0">
+          <h3 className="truncate text-sm font-semibold text-foreground">{title}</h3>
+          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{description}</p>
+          <span className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-brand">
+            {cta}
+            <ChevronRight
+              className="size-3 transition-transform group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </span>
+        </div>
+      </div>
+    </Link>
   );
 }

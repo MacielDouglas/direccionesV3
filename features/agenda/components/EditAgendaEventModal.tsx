@@ -19,7 +19,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { updateAgendaEventAction } from "../application/agenda.action";
-import type { AgendaEventItem } from "../types/agenda.types";
+import type { AgendaEventItem, AgendaMember } from "../types/agenda.types";
 import { eventTime } from "../utils/agenda-time";
 import { formatDateInput } from "../utils/calendar-locale";
 
@@ -32,16 +32,12 @@ const editSchema = z.object({
 
 type EditInput = z.infer<typeof editSchema>;
 
-interface Member {
-  user: { id: string; name: string; image: string | null };
-}
-
 interface Props {
   event: AgendaEventItem | null;
   open: boolean;
   onClose: () => void;
   organizationSlug: string;
-  members: Member[];
+  members: AgendaMember[];
 }
 
 export function EditAgendaEventModal({ event, open, onClose, organizationSlug, members }: Props) {
@@ -136,8 +132,8 @@ export function EditAgendaEventModal({ event, open, onClose, organizationSlug, m
               <SelectContent>
                 <SelectItem value="none">{t.agenda.none}</SelectItem>
                 {members.map((m) => (
-                  <SelectItem key={m.user.id} value={m.user.id}>
-                    {m.user.name}
+                  <SelectItem key={m.id} value={m.id}>
+                    {m.name}
                   </SelectItem>
                 ))}
               </SelectContent>

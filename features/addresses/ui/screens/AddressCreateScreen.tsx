@@ -5,7 +5,7 @@ import AddressForm from "../components/AddressForm";
 
 export default async function AddressCreateScreen() {
   const session = await getCurrentUser();
-  const organizationId = session?.activeMember?.organizationId ?? "";
+  const organizationId = session?.person?.organizationId ?? "";
 
   const { neighborhoods, cities } = organizationId
     ? await getExistingLocations(organizationId)

@@ -41,7 +41,7 @@ export async function createCardAction(
         data: {
           number,
           organizationId,
-          createdById: data.user.id,
+          createdByPersonId: data.person.id,
           addresses: { connect: addressIds.map((id) => ({ id })) },
         },
       });
@@ -56,10 +56,10 @@ export async function createCardAction(
   }
 }
 
-export async function assignCardAction(cardId: string, userId: string, organizationSlug: string) {
+export async function assignCardAction(cardId: string, personId: string, organizationSlug: string) {
   try {
     const data = await requireAdminOrOwner();
-    const organizationId = data.activeMember?.organizationId;
+    const organizationId = data.person?.organizationId;
     if (!organizationId) throw new Error("Sin organización activa.");
 
     await prisma.$transaction(async (tx) => {
@@ -67,18 +67,18 @@ export async function assignCardAction(cardId: string, userId: string, organizat
         where: { id: cardId, organizationId },
       });
       if (!card) throw new Error("Tarjeta no encontrada.");
-      if (card.assignedUserId) throw new Error("La tarjeta ya ha sido asignada.");
+      if (card.assignedPersonId) throw new Error("La tarjeta ya ha sido asignada.");
 
-      const assignee = await tx.member.findFirst({
-        where: { organizationId, userId },
+      const assignee = await tx.person.findFirst({
+        where: { organizationId, id: personId },
         select: { id: true },
       });
-      if (!assignee) throw new Error("El usuario no pertenece a la organización.");
+      if (!assignee) throw new Error("La persona no pertenece a la organización.");
 
       await tx.card.update({
         where: { id: cardId },
         data: {
-          assignedUserId: userId,
+          assignedPersonId: personId,
           startDate: new Date(),
           endDate: null,
         },
@@ -88,7 +88,7 @@ export async function assignCardAction(cardId: string, userId: string, organizat
         data: {
           id: crypto.randomUUID(),
           cardId,
-          userId: data.user.id,
+          personId: data.person.id,
           action: "ASSIGNED",
         },
       });
@@ -106,7 +106,7 @@ export async function assignCardAction(cardId: string, userId: string, organizat
 export async function returnCardAction(cardId: string, organizationSlug: string) {
   try {
     const data = await requireAdminOrOwner();
-    const organizationId = data.activeMember?.organizationId;
+    const organizationId = data.person?.organizationId;
     if (!organizationId) throw new Error("Sin organización activa.");
 
     await prisma.$transaction(async (tx) => {
@@ -114,12 +114,12 @@ export async function returnCardAction(cardId: string, organizationSlug: string)
         where: { id: cardId, organizationId },
       });
       if (!card) throw new Error("Tarjeta no encontrada.");
-      if (!card.assignedUserId) throw new Error("La tarjeta no está asignada.");
+      if (!card.assignedPersonId) throw new Error("La tarjeta no está asignada.");
 
       await tx.card.update({
         where: { id: cardId },
         data: {
-          assignedUserId: null,
+          assignedPersonId: null,
           endDate: new Date(),
         },
       });
@@ -128,7 +128,7 @@ export async function returnCardAction(cardId: string, organizationSlug: string)
         data: {
           id: crypto.randomUUID(),
           cardId,
-          userId: data.user.id,
+          personId: data.person.id,
           action: "RETURNED",
         },
       });
@@ -147,7 +147,7 @@ export async function returnCardAction(cardId: string, organizationSlug: string)
 export async function deleteCardAction(cardId: string, organizationSlug: string) {
   try {
     const data = await requireAdminOrOwner();
-    const organizationId = data.activeMember?.organizationId;
+    const organizationId = data.person?.organizationId;
     if (!organizationId) return { error: "Sin organización activa." };
 
     const card = await prisma.card.findFirst({
@@ -220,7 +220,7 @@ export async function updateCardAction(
       await tx.card.update({
         where: { id: cardId },
         data: {
-          updatedById: data.user.id,
+          updatedByPersonId: data.person.id,
           addresses: {
             connect: toConnect.map((id) => ({ id })),
             disconnect: toDisconnect.map((id) => ({ id })),

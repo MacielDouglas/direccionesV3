@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import type { AddressType } from "@/features/addresses/types/address.types";
 import { LazyMapboxProvider } from "@/features/map/core/LazyMapboxProvider";
 import { SelectableAddressesLayer } from "@/features/map/layers/SelectableAddressesLayer";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
@@ -30,6 +31,7 @@ export function CardCreateClient({
   availableAddresses,
 }: Props) {
   const router = useRouter();
+  const { t } = useI18n();
   const [isPending, startTransition] = useTransition();
 
   // ✅ Padrão: só ativos, todos os tipos
@@ -94,7 +96,9 @@ export function CardCreateClient({
         toast.error(result.error);
         return;
       }
-      toast.success(`Tarjeta #${String(result.cardNumber).padStart(2, "0")} creada con éxito.`);
+      toast.success(
+        t.admin.cardCreated.replace("{number}", String(result.cardNumber).padStart(2, "0")),
+      );
       router.push(`/org/${organizationSlug}/admin/cards`);
     });
   };
@@ -118,12 +122,12 @@ export function CardCreateClient({
         <form
           onSubmit={handleSubmit(onSubmit)}
           noValidate
-          aria-label="Formulario de creación de tarjeta"
+          aria-label={t.admin.newCard}
           className="flex flex-col gap-4 px-4 py-4"
         >
           {/* Número */}
           <div className="rounded-lg border bg-muted/40 px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Crear tarjeta número:</span>
+            <span className="text-sm text-muted-foreground">{t.admin.createCardNumber}</span>
             <span className="text-2xl font-bold tabular-nums">
               #{String(nextNumber).padStart(2, "0")}
             </span>
@@ -135,7 +139,9 @@ export function CardCreateClient({
             disabled={isPending || selectedIds.length === 0}
             aria-busy={isPending}
           >
-            {isPending ? "Creando..." : `Crear Tarjeta #${String(nextNumber).padStart(2, "0")}`}
+            {isPending
+              ? t.admin.creatingCard
+              : t.admin.createCardButton.replace("{number}", String(nextNumber).padStart(2, "0"))}
           </Button>
           {/* )} */}
           {/* ✅ Filtros */}
@@ -167,7 +173,7 @@ export function CardCreateClient({
               disabled={isPending}
               onClick={() => router.back()}
             >
-              Cancelar
+              {t.common.cancel}
             </Button>
             <Button
               type="submit"
@@ -175,7 +181,9 @@ export function CardCreateClient({
               disabled={isPending || selectedIds.length === 0}
               aria-busy={isPending}
             >
-              {isPending ? "Creando..." : `Crear Tarjeta #${String(nextNumber).padStart(2, "0")}`}
+              {isPending
+                ? t.admin.creatingCard
+                : t.admin.createCardButton.replace("{number}", String(nextNumber).padStart(2, "0"))}
             </Button>
           </div>
         </form>

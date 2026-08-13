@@ -1,3 +1,4 @@
+import { BackLink } from "@/components/ui/BackLink";
 import { InvitationsScreen } from "@/features/invitations/ui/screens/InvitationsScreen";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
@@ -23,5 +24,12 @@ export default async function InvitationsPage({ params }: Props) {
     redirect(`/org/${organizationSlug}`);
   }
 
-  return <InvitationsScreen organizationId={org.id} orgSlug={organizationSlug} />;
+  return (
+    <div className="mx-auto w-full max-w-2xl">
+      <div className="px-4 pt-4">
+        <BackLink href={`/org/${organizationSlug}/admin`} />
+      </div>
+      <InvitationsScreen organizationId={org.id} orgSlug={organizationSlug} />
+    </div>
+  );
 }

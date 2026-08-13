@@ -34,8 +34,8 @@ export default async function Home() {
         <HomeDashboard
           organizationId={organization.id}
           organizationSlug={organization.slug}
-          userId={session.user.id}
-          userName={session.user.name}
+          personId={data.person.id}
+          userName={data.person.name}
           isAdminOrOwner={organization && ["admin", "owner"].includes(memberRole?.role ?? "")}
         />
       ) : (

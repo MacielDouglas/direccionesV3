@@ -3,15 +3,11 @@
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CalendarX, ChevronDown, ChevronUp } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { AgendaEventItem as TAgendaEventItem } from "../types/agenda.types";
+import type { AgendaMember, AgendaEventItem as TAgendaEventItem } from "../types/agenda.types";
 import { eventStartUtcMs, eventTime, isEventPast } from "../utils/agenda-time";
 import { eventDateShort } from "../utils/calendar-locale";
 import { AgendaEventItem } from "./AgendaEventItem";
 import { AgendaEventModal } from "./ui/AgendaEventModal";
-
-interface Member {
-  user: { id: string; name: string; image: string | null };
-}
 
 interface Props {
   events: TAgendaEventItem[];
@@ -19,7 +15,7 @@ interface Props {
   organizationSlug: string;
   canDelete?: boolean;
   canEdit?: boolean;
-  members?: Member[];
+  members?: AgendaMember[];
   highlightEventId?: string | null;
   onHighlightConsumed?: () => void;
 }

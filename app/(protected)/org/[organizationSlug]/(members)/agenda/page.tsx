@@ -34,15 +34,15 @@ export default async function AgendaPage({ params, searchParams }: Props) {
   const activeYear = year ? Number.parseInt(year) : today.year;
   const activeMonth = month ? Number.parseInt(month) : today.month;
 
-  const activeMember = session.activeMember;
-  if (!activeMember) redirect("/organizations");
+  const person = session.person;
+  if (!person?.organizationId) redirect("/organizations");
 
   const isAdminOrOwner = ["admin", "owner"].includes(session.memberRole?.role ?? "");
 
   const [events, members, fieldOptions] = await Promise.all([
-    getAgendaEventsByMonth(activeMember.organizationId, activeYear, activeMonth),
-    isAdminOrOwner ? getOrgMembersForAgenda(activeMember.organizationId) : Promise.resolve([]),
-    isAdminOrOwner ? getAgendaFieldOptions(activeMember.organizationId) : Promise.resolve(null),
+    getAgendaEventsByMonth(person.organizationId, activeYear, activeMonth),
+    isAdminOrOwner ? getOrgMembersForAgenda(person.organizationId) : Promise.resolve([]),
+    isAdminOrOwner ? getAgendaFieldOptions(person.organizationId) : Promise.resolve(null),
   ]);
 
   const monthLabel = monthLabelLocalized(locale, activeMonth, activeYear);
@@ -66,7 +66,7 @@ export default async function AgendaPage({ params, searchParams }: Props) {
         adminContent={
           isAdminOrOwner && fieldOptions ? (
             <AgendaAdminForm
-              organizationId={activeMember.organizationId}
+              organizationId={person.organizationId}
               organizationSlug={slug}
               members={members}
               fieldOptions={fieldOptions}

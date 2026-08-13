@@ -1,3 +1,4 @@
+import { BackLink } from "@/components/ui/BackLink";
 import {
   getAgendaEventsByMonth,
   getAgendaFieldOptions,
@@ -51,6 +52,7 @@ export default async function AdminAgendaPage({ params, searchParams }: Props) {
 
   return (
     <main className="mx-auto w-full max-w-md px-4 py-7 md:py-10">
+      <BackLink href={`/org/${organizationSlug}/admin`} className="mb-4" />
       <header className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t.admin.agenda}</h1>
         <p className="mt-0.5 text-sm text-muted-foreground">{t.agenda.adminDescription}</p>

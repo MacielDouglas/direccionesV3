@@ -5,7 +5,6 @@ import LogoutButton from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { authClient } from "@/lib/auth-client";
 import { Building2, KeyRound, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -33,10 +32,6 @@ export function WelcomeScreen({ userEmail }: WelcomeScreenProps) {
       const result = await redeemWelcomeTokenAction({
         token: token.trim(),
         name: name.trim(),
-      });
-
-      await authClient.organization.setActive({
-        organizationId: result.org.id,
       });
 
       toast.success(

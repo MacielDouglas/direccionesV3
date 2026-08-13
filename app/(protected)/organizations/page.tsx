@@ -14,7 +14,7 @@ export default async function OrganizationsPage() {
   if (!data.isSuperUser) redirect("/");
 
   const organizations = await prisma.organization.findMany({
-    include: { _count: { select: { members: true } } },
+    include: { _count: { select: { persons: true } } },
     orderBy: { createdAt: "asc" },
   });
 
@@ -39,7 +39,7 @@ export default async function OrganizationsPage() {
               </div>
               <span className="flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground">
                 <Users className="h-4 w-4" aria-hidden="true" />
-                {org._count.members}
+                {org._count.persons}
               </span>
             </div>
           ))

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Check, Copy, KeyRound, Loader2, MessageSquareText } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function InviteTokenGenerator({ organizationId, orgSlug }: Props) {
+  const { t } = useI18n();
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -21,9 +23,9 @@ export function InviteTokenGenerator({ organizationId, orgSlug }: Props) {
     try {
       const result = await createInviteTokenAction({ organizationId, orgSlug });
       setToken(result.token);
-      toast.success("¡Token generado!");
+      toast.success(t.admin.tokenGenerated);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Error al generar el token.");
+      toast.error(e instanceof Error ? e.message : t.admin.tokenGenerateError);
     } finally {
       setLoading(false);
     }
@@ -33,31 +35,31 @@ export function InviteTokenGenerator({ organizationId, orgSlug }: Props) {
     if (!token) return;
     await navigator.clipboard.writeText(token);
     setCopied(true);
-    toast.success("¡Token copiado!");
+    toast.success(t.admin.tokenCopied);
     setTimeout(() => setCopied(false), 2000);
   }
 
   async function handleCopyMessage() {
     if (!token) return;
-    const message = `Te invito a unirte a mi organización en Direcciones. Tu token de acceso es: ${token}`;
+    const message = t.admin.inviteMessage.replace("{token}", token);
     await navigator.clipboard.writeText(message);
-    toast.success("¡Mensaje copiado!");
+    toast.success(t.admin.tokenMessageCopied);
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-muted-foreground">
-        Cualquier persona con este token podrá unirse como <strong>miembro</strong>. Copia el token
-        y envíalo como quieras (WhatsApp, email…). Expira en 24 horas y es de un solo uso. Al
-        generar uno nuevo, el anterior se invalida.
-      </p>
+      <p
+        className="text-sm text-muted-foreground"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: token description contains <strong> markup
+        dangerouslySetInnerHTML={{ __html: t.admin.tokenDescription }}
+      />
 
       {token ? (
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-2 sm:flex-row">
             <div className="flex flex-1 items-center gap-2 rounded-md border bg-muted/40 px-3 py-2">
               <KeyRound className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-              <code className="truncate font-mono text-sm" aria-label="Token de invitación">
+              <code className="truncate font-mono text-sm" aria-label={t.admin.generateTitle}>
                 {token}
               </code>
             </div>
@@ -66,17 +68,17 @@ export function InviteTokenGenerator({ organizationId, orgSlug }: Props) {
               onClick={handleCopyToken}
               variant={copied ? "outline" : "default"}
               className="shrink-0 gap-2"
-              aria-label="Copiar token"
+              aria-label={t.admin.tokenCopy}
             >
               {copied ? (
                 <>
                   <Check className="h-4 w-4" aria-hidden />
-                  Copiado
+                  {t.admin.tokenCopyLabel}
                 </>
               ) : (
                 <>
                   <Copy className="h-4 w-4" aria-hidden />
-                  Copiar
+                  {t.admin.tokenCopy}
                 </>
               )}
             </Button>
@@ -88,8 +90,7 @@ export function InviteTokenGenerator({ organizationId, orgSlug }: Props) {
               aria-hidden="true"
             />
             <p className="flex-1 text-xs text-muted-foreground">
-              Te invito a unirte a mi organización en Direcciones. Tu token de acceso es:{" "}
-              <code className="font-mono">{token}</code>
+              {t.admin.inviteMessage.replace("{token}", token)}
             </p>
             <Button
               type="button"
@@ -97,10 +98,10 @@ export function InviteTokenGenerator({ organizationId, orgSlug }: Props) {
               size="sm"
               onClick={handleCopyMessage}
               className="shrink-0 gap-1.5 text-xs"
-              aria-label="Copiar mensaje de invitación"
+              aria-label={t.admin.tokenMessageLabel}
             >
               <Copy className="h-3.5 w-3.5" aria-hidden />
-              Mensaje
+              {t.admin.tokenMessageLabel}
             </Button>
           </div>
 
@@ -116,7 +117,7 @@ export function InviteTokenGenerator({ organizationId, orgSlug }: Props) {
             className="self-start gap-2 text-xs text-muted-foreground"
           >
             {loading && <Loader2 className="h-3 w-3 animate-spin" aria-hidden />}
-            Generar nuevo token
+            {t.admin.generateNewToken}
           </Button>
         </div>
       ) : (
@@ -126,7 +127,7 @@ export function InviteTokenGenerator({ organizationId, orgSlug }: Props) {
           ) : (
             <KeyRound className="h-4 w-4" aria-hidden />
           )}
-          Generar token
+          {t.admin.generateToken}
         </Button>
       )}
     </div>

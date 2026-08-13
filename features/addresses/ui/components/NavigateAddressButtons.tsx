@@ -1,7 +1,8 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { Apple, Map as MapIcon, Navigation } from "lucide-react";
+import type { IconType } from "react-icons";
+import { SiApple, SiGooglemaps, SiWaze } from "react-icons/si";
 
 interface Props {
   latitude: number;
@@ -12,7 +13,9 @@ type NavApp = {
   id: "googleMaps" | "waze" | "appleMaps";
   label: string;
   href: string;
-  Icon: typeof MapIcon;
+  bg: string;
+  color: string;
+  Icon: IconType;
 };
 
 function buildLinks(lat: number, lng: number): NavApp[] {
@@ -22,19 +25,25 @@ function buildLinks(lat: number, lng: number): NavApp[] {
       id: "googleMaps",
       label: "Google Maps",
       href: `https://www.google.com/maps/dir/?api=1&destination=${dest}`,
-      Icon: MapIcon,
+      bg: "#ffffff",
+      color: "#1a2028",
+      Icon: SiGooglemaps,
     },
     {
       id: "waze",
       label: "Waze",
       href: `https://waze.com/ul?ll=${dest}&navigate=yes`,
-      Icon: Navigation,
+      bg: "#14c6f7",
+      color: "#ffffff",
+      Icon: SiWaze,
     },
     {
       id: "appleMaps",
       label: "Apple Maps",
       href: `http://maps.apple.com/?daddr=${dest}`,
-      Icon: Apple,
+      bg: "#1a2028",
+      color: "#ffffff",
+      Icon: SiApple,
     },
   ];
 }
@@ -48,17 +57,18 @@ export function NavigateAddressButtons({ latitude, longitude }: Props) {
         {t.common.navigate}
       </h3>
       <div className="grid grid-cols-3 gap-2">
-        {buildLinks(latitude, longitude).map(({ id, label, href, Icon }) => (
+        {buildLinks(latitude, longitude).map(({ id, label, href, bg, color, Icon }) => (
           <a
             key={id}
             href={href}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`${t.common.navigate}: ${label}`}
-            className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-2 py-3 text-foreground shadow-xs transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-black/5 px-2 py-3 shadow-xs transition-transform hover:-translate-y-0.5 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring"
+            style={{ backgroundColor: bg, color }}
           >
-            <Icon className="size-5 text-brand" aria-hidden />
-            <span className="text-center text-xs font-semibold leading-tight">{label}</span>
+            <Icon size={20} aria-hidden />
+            <span className="text-center text-xs font-bold leading-tight">{label}</span>
           </a>
         ))}
       </div>

@@ -2,7 +2,7 @@
 
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useCallback, useState } from "react";
-import type { AgendaEventItem } from "../types/agenda.types";
+import type { AgendaEventItem, AgendaMember } from "../types/agenda.types";
 import { eventDateParts } from "../utils/agenda-time";
 import { monthName, weekdayLong } from "../utils/calendar-locale";
 import { AgendaCalendar } from "./AgendaCalendat";
@@ -18,7 +18,8 @@ interface Props {
   organizationSlug: string;
   canDelete?: boolean;
   canEdit?: boolean;
-  members?: Array<{ user: { id: string; name: string; image: string | null } }>;
+
+  members?: AgendaMember[];
   adminContent?: React.ReactNode;
   footerContent?: React.ReactNode;
 }

@@ -1,7 +1,6 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { cache } from "react";
 import type { AddressFormData } from "../domain/address.schema";
 import { addressFormSchema } from "../domain/address.schema";
 import { sanitizeInfo } from "../utils/sanitizeInfo";
@@ -9,7 +8,7 @@ import { sanitizeInfo } from "../utils/sanitizeInfo";
 export async function createAddressService(params: {
   input: AddressFormData;
   organizationId: string;
-  userId: string;
+  personId: string;
 }) {
   const data = addressFormSchema.parse(params.input);
 
@@ -29,8 +28,8 @@ export async function createAddressService(params: {
       confirmed: data.confirmed,
       invited: data.invited,
       organizationId: params.organizationId,
-      createdUserId: params.userId,
-      updatedUserId: params.userId,
+      createdByPersonId: params.personId,
+      updatedByPersonId: params.personId,
     },
   });
 }
@@ -39,12 +38,12 @@ export async function updateAddressService({
   addressId,
   input,
   organizationId,
-  userId,
+  personId,
 }: {
   addressId: string;
   input: AddressFormData;
   organizationId: string;
-  userId: string;
+  personId: string;
 }) {
   const address = await prisma.address.findFirst({
     where: { id: addressId, organizationId },
@@ -85,57 +84,56 @@ export async function updateAddressService({
       active,
       invited,
       image: image.imageUrl ?? null,
-      updatedUserId: userId,
+      updatedByPersonId: personId,
       updatedAt: new Date(),
     },
   });
 }
 
-export async function searchAddressesService(params: {
+export async function getAddressByIdService({
+  addressId,
+  organizationId,
+}: {
+  addressId: string;
+  organizationId: string;
+}) {
+  return prisma.address.findFirst({
+    where: { id: addressId, organizationId },
+  });
+}
+
+export async function searchAddressesService({
+  organizationId,
+  query,
+}: {
   organizationId: string;
   query?: string;
 }) {
-  const { organizationId, query } = params;
-
+  const q = query?.trim();
   return prisma.address.findMany({
     where: {
       organizationId,
-      ...(query && {
-        OR: [
-          { street: { contains: query, mode: "insensitive" } },
-          { neighborhood: { contains: query, mode: "insensitive" } },
-          { city: { contains: query, mode: "insensitive" } },
-          { businessName: { contains: query, mode: "insensitive" } },
-        ],
-      }),
+      ...(q
+        ? {
+            OR: [
+              { street: { contains: q, mode: "insensitive" } },
+              { number: { contains: q, mode: "insensitive" } },
+              { businessName: { contains: q, mode: "insensitive" } },
+              { neighborhood: { contains: q, mode: "insensitive" } },
+              { city: { contains: q, mode: "insensitive" } },
+            ],
+          }
+        : {}),
     },
     orderBy: { createdAt: "desc" },
   });
 }
 
-export async function getAddressByIdService(params: {
-  addressId: string;
-  organizationId: string;
-}) {
-  return prisma.address.findFirst({
-    where: {
-      id: params.addressId,
-      organizationId: params.organizationId,
-    },
-  });
-}
-
-export const getAddressById = cache(async (addressId: string) => {
-  return prisma.address.findUnique({ where: { id: addressId } });
-});
-
 export async function getExistingLocations(organizationId: string) {
   const addresses = await prisma.address.findMany({
     where: { organizationId },
     select: { neighborhood: true, city: true },
-    distinct: ["neighborhood", "city"],
   });
-
   return {
     neighborhoods: [...new Set(addresses.map((a) => a.neighborhood))].sort(),
     cities: [...new Set(addresses.map((a) => a.city))].sort(),

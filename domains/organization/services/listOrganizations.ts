@@ -1,8 +1,11 @@
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/server/users";
 
 export async function listOrganizationsService() {
-  return auth.api.listOrganizations({
-    headers: await headers(),
+  const data = await getCurrentUser();
+  if (!data?.isSuperUser) throw new Error("No autorizado.");
+
+  return prisma.organization.findMany({
+    orderBy: { createdAt: "asc" },
   });
 }

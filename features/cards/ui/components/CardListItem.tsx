@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { CheckCircle, Circle, CircleAlert, Clock, MapPin, Pencil, User } from "lucide-react";
 import Link from "next/link";
@@ -13,11 +14,10 @@ interface CardItemProps {
   card: {
     id: string;
     number: number;
-    assignedUser: {
+    assignedTo: {
       id: string;
       name: string;
-      email: string;
-      image: string | null;
+      user: { id: string; email: string; image: string | null } | null;
     } | null;
     startDate: Date | null;
     addresses: {
@@ -31,10 +31,17 @@ interface CardItemProps {
       longitude: number | null;
       active: boolean;
     }[];
-    events: { date: Date; user: { name: string } }[];
+    events: {
+      date: Date;
+      person: { id: string; name: string; user: { image: string | null } | null } | null;
+    }[];
   };
-  members: {
-    user: { id: string; name: string; email: string; image: string | null };
+  persons: {
+    id: string;
+    name: string;
+    role: string | null;
+    organizationId: string | null;
+    user: { id: string; name: string; email: string; image: string | null } | null;
   }[];
   organizationSlug: string;
   color: string;
@@ -45,15 +52,16 @@ interface CardItemProps {
 
 export function CardListItem({
   card,
-  members,
+  persons,
   organizationSlug,
   color,
   isSelected,
   onAddressClick,
 }: CardItemProps) {
   const [assignOpen, setAssignOpen] = useState(false);
+  const { t, locale } = useI18n();
 
-  const isAssigned = !!card.assignedUser;
+  const isAssigned = !!card.assignedTo;
   const lastReturn = card.events[0] ?? null;
 
   return (
@@ -93,12 +101,12 @@ export function CardListItem({
               {isAssigned ? (
                 <>
                   <CheckCircle className="size-3" aria-hidden />
-                  Asignado
+                  {t.cards.assigned}
                 </>
               ) : (
                 <>
                   <Circle className="size-3" aria-hidden />
-                  Libre
+                  {t.cards.free}
                 </>
               )}
             </span>
@@ -118,7 +126,7 @@ export function CardListItem({
             {!isAssigned && (
               <Button size="sm" onClick={() => setAssignOpen(true)}>
                 <User className="size-4 mr-1.5" aria-hidden />
-                Asignar
+                {t.admin.assignVerb}
               </Button>
             )}
             {isAssigned && (
@@ -131,7 +139,7 @@ export function CardListItem({
             <Button asChild size="sm" variant="outline">
               <Link href={`/org/${organizationSlug}/admin/cards/${card.id}/edit`}>
                 <Pencil className="size-4 mr-1.5" aria-hidden />
-                Editar
+                {t.admin.edit}
               </Link>
             </Button>
             <DeleteCardButton
@@ -142,15 +150,18 @@ export function CardListItem({
           </div>
         </div>
 
-        {/* Usuário atribuído */}
-        {isAssigned && card.assignedUser && (
+        {/* Pessoa atribuída */}
+        {isAssigned && card.assignedTo && (
           <div className="flex items-center gap-2 text-sm">
             <User className="size-4 text-muted-foreground shrink-0" aria-hidden />
             <span>
-              <span className="font-medium">{card.assignedUser.name}</span>
+              <span className="font-medium">{card.assignedTo.name}</span>
               {card.startDate && (
                 <span className="text-muted-foreground ml-1">
-                  desde {new Date(card.startDate).toLocaleDateString("es-419")}
+                  {t.cards.since}{" "}
+                  {new Intl.DateTimeFormat(locale === "pt" ? "pt-BR" : "es-419").format(
+                    new Date(card.startDate),
+                  )}
                 </span>
               )}
             </span>
@@ -158,19 +169,21 @@ export function CardListItem({
         )}
 
         {/* Último retorno */}
-        {!isAssigned && lastReturn && (
+        {!isAssigned && lastReturn?.person && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Clock className="size-3.5 shrink-0" aria-hidden />
             <span>
-              Último: <span className="font-medium">{lastReturn.user.name}</span>
+              {t.admin.lastReturn.replace("{name}", lastReturn.person.name)}
               {" — "}
-              {new Date(lastReturn.date).toLocaleDateString("es-419")}
+              {new Intl.DateTimeFormat(locale === "pt" ? "pt-BR" : "es-419").format(
+                new Date(lastReturn.date),
+              )}
             </span>
           </div>
         )}
 
         {/* Endereços */}
-        <ul className="flex flex-col gap-1" aria-label="Direcciones de la tarjeta">
+        <ul className="flex flex-col gap-1" aria-label={t.admin.linkedAddresses}>
           {card.addresses.map((addr) => (
             <li key={addr.id}>
               <button
@@ -179,7 +192,10 @@ export function CardListItem({
                 className="w-full flex items-start gap-1.5 text-sm text-muted-foreground
                   hover:text-foreground hover:bg-muted/50 rounded-md px-1 py-0.5 transition-colors
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring text-left"
-                aria-label={`Ver detalles: ${addr.businessName ?? addr.street}`}
+                aria-label={t.admin.addressDetails.replace(
+                  "{name}",
+                  addr.businessName ?? addr.street,
+                )}
               >
                 <MapPin className="size-3.5 mt-0.5 shrink-0" style={{ color }} aria-hidden />
                 {!addr.active && (
@@ -200,7 +216,7 @@ export function CardListItem({
       <AssignCardModal
         cardId={card.id}
         cardNumber={card.number}
-        members={members}
+        persons={persons}
         organizationSlug={organizationSlug}
         open={assignOpen}
         onClose={() => setAssignOpen(false)}

@@ -8,10 +8,10 @@ export async function canManageCards(userId: string, organizationId: string): Pr
 
   if (user?.isSuperUser) return true;
 
-  const member = await prisma.member.findUnique({
-    where: { organizationId_userId: { organizationId, userId } },
+  const person = await prisma.person.findFirst({
+    where: { userId, organizationId },
     select: { role: true },
   });
 
-  return member?.role === "admin" || member?.role === "owner";
+  return person?.role === "admin" || person?.role === "owner";
 }

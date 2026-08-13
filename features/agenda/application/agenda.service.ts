@@ -9,7 +9,7 @@ export async function getAgendaEventsByMonth(organizationId: string, year: numbe
   return prisma.agendaEvent.findMany({
     where: { organizationId, date: { gte: start, lte: end } },
     include: {
-      conductor: { select: { id: true, name: true, image: true } },
+      conductor: { select: { id: true, name: true, user: { select: { image: true } } } },
     },
     orderBy: { date: "asc" },
   });
@@ -26,7 +26,7 @@ export async function getAgendaEventsByDay(organizationId: string, date: Date) {
   return prisma.agendaEvent.findMany({
     where: { organizationId, date: { gte: start, lte: end } },
     include: {
-      conductor: { select: { id: true, name: true, image: true } },
+      conductor: { select: { id: true, name: true, user: { select: { image: true } } } },
     },
     orderBy: { date: "asc" },
   });
@@ -47,9 +47,15 @@ export async function getAgendaFieldOptions(organizationId: string) {
 }
 
 export async function getOrgMembersForAgenda(organizationId: string) {
-  return prisma.member.findMany({
+  return prisma.person.findMany({
     where: { organizationId },
-    include: { user: { select: { id: true, name: true, image: true } } },
-    orderBy: { user: { name: "asc" } },
+    select: {
+      id: true,
+      name: true,
+      role: true,
+      organizationId: true,
+      user: { select: { id: true, name: true, image: true } },
+    },
+    orderBy: { name: "asc" },
   });
 }

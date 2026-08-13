@@ -17,7 +17,7 @@ export default async function ProtectedLayout({
     <div className="flex min-h-svh flex-col overflow-hidden bg-background text-foreground">
       <Header
         session={data.session.session}
-        role={data.activeMember?.role ?? null}
+        role={data.memberRole?.role ?? null}
         organization={data.activeOrganization}
       />
       <main id="main-content" className="flex-1 min-h-0 flex flex-col overflow-hidden">

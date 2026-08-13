@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { LazyMapboxProvider } from "@/features/map/core/LazyMapboxProvider";
 import { SelectableAddressesLayer } from "@/features/map/layers/SelectableAddressesLayer";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { updateCardAction } from "../../application/card.actions";
 import { type EditCardInput, editCardSchema } from "../../domain/card.schema";
 import { sortAddressesByProximity } from "../../utils/sortAddressesByProximity";
@@ -46,6 +47,7 @@ export function CardEditClient({
   availableAddresses,
 }: Props) {
   const router = useRouter();
+  const { t } = useI18n();
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -99,7 +101,7 @@ export function CardEditClient({
         toast.error(result.error);
         return;
       }
-      toast.success(`Tarjeta #${String(cardNumber).padStart(2, "0")} actualizada.`);
+      toast.success(t.admin.cardUpdated.replace("{number}", String(cardNumber).padStart(2, "0")));
       router.push(`/org/${organizationSlug}/admin/cards`);
     });
   };
@@ -123,12 +125,12 @@ export function CardEditClient({
         <form
           onSubmit={handleSubmit(onSubmit)}
           noValidate
-          aria-label="Formulario de edición de tarjeta"
+          aria-label={t.admin.editingCard}
           className="flex flex-col gap-5 px-4 py-4"
         >
           {/* Header */}
           <div className="rounded-lg border bg-muted/40 px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Editando tarjeta</span>
+            <span className="text-sm text-muted-foreground">{t.admin.editingCard}</span>
             <span className="text-2xl font-bold tabular-nums">
               #{String(cardNumber).padStart(2, "0")}
             </span>
@@ -137,7 +139,7 @@ export function CardEditClient({
           {/* Seção: vinculados */}
           <section aria-labelledby="linked-title">
             <h2 id="linked-title" className="text-sm font-semibold mb-2 flex items-center gap-2">
-              Direcciones vinculadas
+              {t.admin.linkedAddresses}
               <span className="text-xs font-normal text-muted-foreground">
                 ({linkedAddresses.filter((a) => selectedIds.includes(a.id)).length} de{" "}
                 {linkedAddresses.length})
@@ -148,7 +150,7 @@ export function CardEditClient({
               selectedIds={selectedIds}
               indexMap={indexMap}
               onToggle={toggle}
-              emptyMessage="Sin direcciones vinculadas"
+              emptyMessage={t.admin.noLinkedAddresses}
             />
           </section>
 
@@ -159,10 +161,10 @@ export function CardEditClient({
                 id="available-title"
                 className="text-sm font-semibold mb-2 flex items-center gap-2"
               >
-                Direcciones disponibles
+                {t.admin.availableAddresses}
                 <span className="text-xs font-normal text-muted-foreground">
                   ({availableAddresses.filter((a) => selectedIds.includes(a.id)).length}{" "}
-                  seleccionadas)
+                  {t.admin.selectedCount})
                 </span>
               </h2>
               <AddressList
@@ -170,7 +172,7 @@ export function CardEditClient({
                 selectedIds={selectedIds}
                 indexMap={indexMap}
                 onToggle={toggle}
-                emptyMessage="No hay direcciones disponibles"
+                emptyMessage={t.admin.noAvailableAddresses}
               />
             </section>
           )}
@@ -190,7 +192,7 @@ export function CardEditClient({
               disabled={isPending}
               onClick={() => router.back()}
             >
-              Cancelar
+              {t.common.cancel}
             </Button>
             <Button
               type="submit"
@@ -198,7 +200,7 @@ export function CardEditClient({
               disabled={isPending || selectedIds.length === 0}
               aria-busy={isPending}
             >
-              {isPending ? "Guardando..." : "Guardar cambios"}
+              {isPending ? t.admin.savingCard : t.admin.saveCardChanges}
             </Button>
           </div>
         </form>

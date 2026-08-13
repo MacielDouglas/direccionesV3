@@ -6,7 +6,7 @@ export const pinCoordinateSchema = z.object({
 });
 
 export const createPinsSchema = z.object({
-  organizationId: z.string().uuid(),
+  organizationId: z.string().min(1),
   pins: z
     .array(pinCoordinateSchema)
     .min(1, "Debe haber al menos un pin")

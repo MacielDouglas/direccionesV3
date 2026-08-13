@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { Car, Footprints } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -7,7 +8,12 @@ import { LazyMapboxProvider } from "../core/LazyMapboxProvider";
 import RouteLayer from "../layers/RouteLayer";
 import type { Coordinates, RouteProfile } from "../types/map.types";
 
-export function AddressViewMap({ latitude, longitude }: Coordinates) {
+interface Props extends Coordinates {
+  className?: string;
+  mapClassName?: string;
+}
+
+export function AddressViewMap({ latitude, longitude, className, mapClassName }: Props) {
   const [profile, setProfile] = useState<RouteProfile>("walking");
 
   const destination = { latitude, longitude };
@@ -15,10 +21,10 @@ export function AddressViewMap({ latitude, longitude }: Coordinates) {
   const wazeUrl = `https://waze.com/ul?ll=${latitude},${longitude}&navigate=yes`;
 
   return (
-    <div className="flex w-full flex-col">
+    <div className={cn("flex w-full flex-col", className)}>
       {/* Mapa */}
-      <div className="relative h-96 w-full overflow-hidden shadow-md">
-        <LazyMapboxProvider className="h-96">
+      <div className={cn("relative w-full overflow-hidden shadow-md", mapClassName ?? "h-96")}>
+        <LazyMapboxProvider className="h-full">
           <RouteLayer destination={destination} profile={profile} />
         </LazyMapboxProvider>
 
