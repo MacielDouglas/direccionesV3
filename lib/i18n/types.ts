@@ -322,6 +322,7 @@ export type I18nDictionary = {
     typeStore: string;
     typeHotel: string;
     typeRestaurant: string;
+    usersDescription: string;
   };
   people: {
     title: string;
@@ -371,6 +372,27 @@ export type I18nDictionary = {
     roleAdmin: string;
     roleMember: string;
     youLabel: string;
+    editPerson: string;
+    editPersonTitle: string;
+    editPersonHint: string;
+    savePerson: string;
+    savingPerson: string;
+    personUpdated: string;
+    adminCardsTitle: string;
+    adminCardsHint: string;
+    ownerCards: string;
+    assignedCard: string;
+    availableCards: string;
+    selectOwnerCards: string;
+    selectAssignedCard: string;
+    noOwnerCards: string;
+    noAssignedCard: string;
+    noAvailableCards: string;
+    saveCards: string;
+    savingCards: string;
+    cardsUpdated: string;
+    mustHaveOwner: string;
+    cannotDemoteLastOwner: string;
   };
   organizations: {
     selectOrg: string;

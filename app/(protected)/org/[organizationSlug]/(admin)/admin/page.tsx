@@ -8,6 +8,7 @@ import {
   Plus,
   ShieldCheck,
   UserPlus,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -98,6 +99,13 @@ export default async function AdminPage({ params }: Props) {
               icon={<KeyRound className="size-5 text-brand" aria-hidden="true" />}
               title={t.admin.invitations}
               description={t.admin.invitationsDescription}
+              cta={t.admin.open}
+            />
+            <AdminAction
+              href={`/org/${slug}/admin/usuarios`}
+              icon={<Users className="size-5 text-brand" aria-hidden="true" />}
+              title={t.admin.users}
+              description={t.admin.usersDescription}
               cta={t.admin.open}
             />
             {isOwner && (

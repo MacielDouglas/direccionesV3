@@ -228,6 +228,12 @@ export const createOrgPersonAction = async (organizationId: string, name: string
     throw new Error("El nombre debe tener al menos 2 caracteres.");
   }
 
+  const existing = await prisma.person.findFirst({
+    where: { organizationId, name: parsedName },
+    select: { id: true },
+  });
+  if (existing) throw new Error("Ya existe una persona con este nombre en la organización.");
+
   const person = await prisma.$transaction(async (tx) => {
     const newPerson = await tx.person.create({
       data: {
@@ -513,4 +519,181 @@ export const deletePersonAction = async (
 
   revalidatePath(`/org/${slug}/admin/pessoas`);
   return { success: true };
+};
+
+// ✅ Listar usuários da organização com info de pessoa vinculada (para página Usuários)
+export const getOrgUsersWithPersons = async (organizationId: string) => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("No autenticado.");
+
+  if (!currentUser.isSuperUser) {
+    if (currentUser.person?.organizationId !== organizationId) {
+      throw new Error("Sin permiso.");
+    }
+    if (!canManageRequester(currentUser.person?.role)) {
+      throw new Error("Sin permiso.");
+    }
+  }
+
+  const persons = await prisma.person.findMany({
+    where: { organizationId },
+    select: {
+      id: true,
+      name: true,
+      role: true,
+      userId: true,
+      user: { select: { id: true, name: true, email: true, image: true, createdAt: true } },
+    },
+    orderBy: { name: "asc" },
+  });
+
+  const usersWithPerson = persons
+    .filter((p) => p.userId)
+    .map((p) => ({
+      id: p.user?.id,
+      name: p.user?.name,
+      email: p.user?.email,
+      image: p.user?.image,
+      createdAt: p.user?.createdAt.toISOString(),
+      person: { id: p.id, name: p.name, role: p.role },
+    }));
+
+  const usersWithoutPerson = persons
+    .filter((p) => !p.userId)
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      email: "",
+      image: null,
+      createdAt: new Date().toISOString(),
+      person: { id: p.id, name: p.name, role: p.role },
+    }));
+
+  return { usersWithPerson, usersWithoutPerson };
+};
+
+// ✅ Atualizar nome de uma pessoa
+export const updatePersonName = async (
+  organizationId: string,
+  personId: string,
+  name: string,
+  slug: string,
+) => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("No autenticado.");
+
+  if (!currentUser.isSuperUser) {
+    if (currentUser.person?.organizationId !== organizationId) {
+      throw new Error("Sin permiso.");
+    }
+    if (!canManageRequester(currentUser.person?.role)) {
+      throw new Error("Sin permiso.");
+    }
+  }
+
+  const parsedName = name.trim();
+  if (parsedName.length < 2) {
+    throw new Error("El nombre debe tener al menos 2 caracteres.");
+  }
+
+  const existing = await prisma.person.findFirst({
+    where: { organizationId, name: parsedName, id: { not: personId } },
+    select: { id: true },
+  });
+  if (existing) throw new Error("Ya existe una persona con este nombre en la organización.");
+
+  await prisma.person.update({
+    where: { id: personId, organizationId },
+    data: { name: parsedName },
+  });
+
+  revalidatePath(`/org/${slug}/admin/pessoas`);
+  return { success: true };
+};
+
+// ✅ Administrar cards de uma pessoa em bulk (owner + assigned)
+export const adminBulkUpdatePersonCards = async (
+  organizationId: string,
+  personId: string,
+  ownerCardIds: string[],
+  assignedCardId: string | null,
+  slug: string,
+) => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("No autenticado.");
+
+  if (!currentUser.isSuperUser) {
+    if (currentUser.person?.organizationId !== organizationId) {
+      throw new Error("Sin permiso.");
+    }
+    if (!canManageRequester(currentUser.person?.role)) {
+      throw new Error("Sin permiso.");
+    }
+  }
+
+  const person = await prisma.person.findFirst({
+    where: { id: personId, organizationId },
+    select: { id: true },
+  });
+  if (!person) throw new Error("Persona no encontrada.");
+
+  const allCardIds = [...ownerCardIds, ...(assignedCardId ? [assignedCardId] : [])];
+  const cards = await prisma.card.findMany({
+    where: { id: { in: allCardIds }, organizationId },
+    select: { id: true },
+  });
+  if (cards.length !== allCardIds.length) {
+    throw new Error("Alguns cards não pertencem a esta organização.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.card.updateMany({
+      where: { organizationId, ownerPersonId: personId },
+      data: { ownerPersonId: null },
+    });
+    await tx.card.updateMany({
+      where: { id: { in: ownerCardIds } },
+      data: { ownerPersonId: personId },
+    });
+    await tx.card.updateMany({
+      where: { organizationId, assignedPersonId: personId },
+      data: { assignedPersonId: null },
+    });
+    if (assignedCardId) {
+      await tx.card.update({
+        where: { id: assignedCardId },
+        data: { assignedPersonId: personId },
+      });
+    }
+  });
+
+  revalidatePath(`/org/${slug}/admin/pessoas`);
+  return { success: true };
+};
+
+// ✅ Obter pessoa com seus cards (owner + assigned)
+export const getPersonWithCards = async (organizationId: string, personId: string) => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("No autenticado.");
+
+  if (!currentUser.isSuperUser) {
+    if (currentUser.person?.organizationId !== organizationId) {
+      throw new Error("Sin permiso.");
+    }
+    if (!canManageRequester(currentUser.person?.role)) {
+      throw new Error("Sin permiso.");
+    }
+  }
+
+  return prisma.person.findFirst({
+    where: { id: personId, organizationId },
+    select: {
+      id: true,
+      name: true,
+      role: true,
+      userId: true,
+      cardsOwned: { select: { id: true, number: true, assignedPersonId: true } },
+      cardsAssigned: { select: { id: true, number: true, assignedPersonId: true } },
+    },
+  });
 };
