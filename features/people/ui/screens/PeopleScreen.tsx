@@ -2,23 +2,34 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import {
+  adminBulkUpdatePersonCards,
   createOrgPersonAction,
   deletePersonAction,
+  getPersonWithCards,
   linkUserToPersonAction,
   regeneratePersonInviteAction,
   removePersonFromOrganization,
   searchUsersToLinkAction,
+  updatePersonName,
+  updatePersonRole,
 } from "@/server/person";
 import {
   Link2,
   Loader2,
   Mail,
+  Pencil,
   RefreshCw,
   Search,
   Trash2,
@@ -26,6 +37,7 @@ import {
   UserPlus,
   UserRound,
   UserRoundX,
+  X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -49,6 +61,15 @@ export type LinkableUser = {
   image: string | null;
 };
 
+export type PersonWithCards = {
+  id: string;
+  name: string;
+  role: string | null;
+  userId: string | null;
+  cardsOwned: { id: string; number: number; assignedPersonId: string | null }[];
+  cardsAssigned: { id: string; number: number }[];
+};
+
 interface Props {
   persons: PeopleListItem[];
   organizationId: string;
@@ -57,6 +78,20 @@ interface Props {
   isSuperUser: boolean;
   currentUserId: string;
 }
+
+function roleLabel(t: ReturnType<typeof useI18n>["t"], role: string | null) {
+  if (role === "owner") return t.people.roleOwner;
+  if (role === "admin") return t.people.roleAdmin;
+  return t.people.roleMember;
+}
+
+const badgeClasses = (linked: boolean) =>
+  cn(
+    "inline-flex w-fit shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase",
+    linked
+      ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
+      : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+  );
 
 export function PeopleScreen({
   persons,
@@ -72,6 +107,15 @@ export function PeopleScreen({
   const [isCreating, startTransition] = useTransition();
   const [busyPersonId, setBusyPersonId] = useState<string | null>(null);
   const [linkTarget, setLinkTarget] = useState<PeopleListItem | null>(null);
+  const [editTarget, setEditTarget] = useState<PeopleListItem | null>(null);
+  const [cardsTarget, setCardsTarget] = useState<PeopleListItem | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editRole, setEditRole] = useState<string>("member");
+  const [isEditing, startEditTransition] = useTransition();
+  const [cardsData, setCardsData] = useState<PersonWithCards | null>(null);
+  const [selectedOwnerCardIds, setSelectedOwnerCardIds] = useState<string[]>([]);
+  const [selectedAssignedCardId, setSelectedAssignedCardId] = useState<string | null>(null);
+  const [isSavingCards, startSaveCardsTransition] = useTransition();
 
   const linkedUsers = persons.filter((p) => p.userId);
   const unlinkedPersons = persons.filter((p) => !p.userId);
@@ -82,6 +126,15 @@ export function PeopleScreen({
     if (currentRole === "admin" && person.role === "owner") return false;
     return currentRole === "admin" || currentRole === "owner";
   };
+
+  const canEditPerson = (person: PeopleListItem) => {
+    if (person.userId === currentUserId) return false;
+    if (isSuperUser) return true;
+    if (currentRole === "admin" && person.role === "owner") return false;
+    return currentRole === "admin" || currentRole === "owner";
+  };
+
+  const canPromoteToOwner = () => isSuperUser || currentRole === "owner";
 
   const handleCreate = () => {
     const trimmed = name.trim();
@@ -173,19 +226,137 @@ export function PeopleScreen({
     });
   };
 
-  const roleLabel = (role: string | null) => {
-    if (role === "owner") return t.people.roleOwner;
-    if (role === "admin") return t.people.roleAdmin;
-    return t.people.roleMember;
+  const openEditPerson = (person: PeopleListItem) => {
+    if (!canEditPerson(person)) {
+      toast.error(t.people.cannotRemoveOwner);
+      return;
+    }
+    setEditTarget(person);
+    setEditName(person.name);
+    setEditRole(person.role ?? "member");
   };
 
-  const badgeClasses = (linked: boolean) =>
-    cn(
-      "inline-flex w-fit shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase",
-      linked
-        ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
-        : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+  const handleEditPerson = () => {
+    const trimmed = editName.trim();
+    if (trimmed.length < 2) {
+      toast.error(t.people.namePlaceholder);
+      return;
+    }
+    if (!editTarget) return;
+
+    // Se não é owner/superuser, não pode promover a owner
+    if (editRole === "owner" && !canPromoteToOwner()) {
+      toast.error(t.people.cannotDemoteLastOwner);
+      return;
+    }
+
+    // Se está rebaixando o último owner, bloquear
+    if (editTarget.role === "owner" && editRole !== "owner") {
+      const ownerCount = persons.filter((p) => p.role === "owner").length;
+      if (ownerCount <= 1) {
+        toast.error(t.people.cannotDemoteLastOwner);
+        return;
+      }
+    }
+
+    startEditTransition(async () => {
+      try {
+        await updatePersonName(organizationId, editTarget.id, trimmed, organizationSlug);
+        if (editRole !== editTarget.role) {
+          await updatePersonRole(
+            organizationId,
+            editTarget.id,
+            editRole as "member" | "admin" | "owner",
+            organizationSlug,
+          );
+        }
+        toast.success(t.people.personUpdated);
+        setEditTarget(null);
+        router.refresh();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t.errors.generic);
+      }
+    });
+  };
+
+  const openAdminCards = async (person: PeopleListItem) => {
+    if (!canEditPerson(person)) {
+      toast.error(t.people.cannotRemoveOwner);
+      return;
+    }
+    setCardsTarget(person);
+    setBusyPersonId(person.id);
+    try {
+      const data = await getPersonWithCards(organizationId, person.id);
+      if (data) {
+        setCardsData(data);
+        setSelectedOwnerCardIds(data.cardsOwned.map((c) => c.id));
+        setSelectedAssignedCardId(data.cardsAssigned[0]?.id ?? null);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t.errors.generic);
+    } finally {
+      setBusyPersonId(null);
+    }
+  };
+
+  const handleSaveCards = () => {
+    if (!cardsTarget || !cardsData) return;
+    startSaveCardsTransition(async () => {
+      try {
+        await adminBulkUpdatePersonCards(
+          organizationId,
+          cardsTarget.id,
+          selectedOwnerCardIds,
+          selectedAssignedCardId,
+          organizationSlug,
+        );
+        toast.success(t.people.cardsUpdated);
+        setCardsTarget(null);
+        router.refresh();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t.errors.generic);
+      }
+    });
+  };
+
+  const availableOwnerCards = cardsData
+    ? (
+        cardsData.cardsOwned as { id: string; number: number; assignedPersonId: string | null }[]
+      ).filter((c) => !c.assignedPersonId || c.assignedPersonId === cardsTarget?.id)
+    : [];
+  const availableAssignedCards = cardsData
+    ? [
+        ...(
+          cardsData.cardsOwned as { id: string; number: number; assignedPersonId: string | null }[]
+        ).filter((c) => !c.assignedPersonId && !selectedOwnerCardIds.includes(c.id)),
+        ...(
+          cardsData.cardsAssigned as {
+            id: string;
+            number: number;
+            assignedPersonId: string | null;
+          }[]
+        ).filter((c) => !selectedOwnerCardIds.includes(c.id)),
+      ]
+    : [];
+
+  const handleOwnerCardToggle = (cardId: string) => {
+    setSelectedOwnerCardIds((prev) =>
+      prev.includes(cardId) ? prev.filter((id) => id !== cardId) : [...prev, cardId],
     );
+    // Se o card era o assigned, limpa assigned
+    if (selectedAssignedCardId === cardId) {
+      setSelectedAssignedCardId(null);
+    }
+  };
+
+  const handleAssignedCardChange = (cardId: string | null) => {
+    setSelectedAssignedCardId(cardId);
+    // Se o card assigned agora virou owner, remove do owner
+    if (cardId && selectedOwnerCardIds.includes(cardId)) {
+      setSelectedOwnerCardIds((prev) => prev.filter((id) => id !== cardId));
+    }
+  };
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-8 px-4 py-6">
@@ -281,26 +452,52 @@ export function PeopleScreen({
                     </div>
                   </div>
 
-                  <span className={badgeClasses(true)}>{roleLabel(person.role)}</span>
+                  <span className={badgeClasses(true)}>{roleLabel(t, person.role)}</span>
 
-                  {canRemoveUser(person) && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => removeUser(person)}
-                      disabled={isBusy}
-                      aria-busy={isBusy}
-                    >
-                      {isBusy ? (
-                        <Loader2 className="size-3.5 animate-spin" aria-hidden />
-                      ) : (
-                        <UserMinus className="size-3.5" aria-hidden />
-                      )}
-                      {t.people.removeFromOrg}
-                    </Button>
-                  )}
+                  <div className="flex flex-wrap gap-2">
+                    {canEditPerson(person) && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditPerson(person)}
+                        disabled={isBusy}
+                      >
+                        <Pencil className="size-3.5" aria-hidden />
+                        {t.people.editPerson}
+                      </Button>
+                    )}
+                    {canEditPerson(person) && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openAdminCards(person)}
+                        disabled={isBusy}
+                      >
+                        <Link2 className="size-3.5" aria-hidden />
+                        {t.people.adminCardsTitle}
+                      </Button>
+                    )}
+                    {canRemoveUser(person) && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => removeUser(person)}
+                        disabled={isBusy}
+                        aria-busy={isBusy}
+                      >
+                        {isBusy ? (
+                          <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                        ) : (
+                          <UserMinus className="size-3.5" aria-hidden />
+                        )}
+                        {t.people.removeFromOrg}
+                      </Button>
+                    )}
+                  </div>
                 </li>
               );
             })}
@@ -347,9 +544,29 @@ export function PeopleScreen({
                     </div>
                   </div>
 
-                  <span className={badgeClasses(false)}>{roleLabel(person.role)}</span>
+                  <span className={badgeClasses(false)}>{roleLabel(t, person.role)}</span>
 
                   <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditPerson(person)}
+                      disabled={isBusy}
+                    >
+                      <Pencil className="size-3.5" aria-hidden />
+                      {t.people.editPerson}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openAdminCards(person)}
+                      disabled={isBusy}
+                    >
+                      <Link2 className="size-3.5" aria-hidden />
+                      {t.people.adminCardsTitle}
+                    </Button>
                     {person.inviteToken ? (
                       <Button
                         type="button"
@@ -413,6 +630,40 @@ export function PeopleScreen({
           onClose={() => setLinkTarget(null)}
         />
       )}
+
+      {editTarget && (
+        <EditPersonDialog
+          name={editName}
+          onNameChange={setEditName}
+          role={editRole}
+          onRoleChange={setEditRole}
+          onClose={() => setEditTarget(null)}
+          onSave={handleEditPerson}
+          isSaving={isEditing}
+          canPromoteToOwner={canPromoteToOwner()}
+          allPersons={persons}
+          t={t}
+        />
+      )}
+
+      {cardsTarget && cardsData && (
+        <AdminCardsDialog
+          person={cardsTarget}
+          selectedOwnerCardIds={selectedOwnerCardIds}
+          selectedAssignedCardId={selectedAssignedCardId}
+          onOwnerCardToggle={handleOwnerCardToggle}
+          onAssignedCardChange={handleAssignedCardChange}
+          availableOwnerCards={availableOwnerCards}
+          availableAssignedCards={availableAssignedCards}
+          onClose={() => {
+            setCardsTarget(null);
+            setCardsData(null);
+          }}
+          onSave={handleSaveCards}
+          isSaving={isSavingCards}
+          t={t}
+        />
+      )}
     </main>
   );
 }
@@ -434,15 +685,16 @@ function LinkUserDialog({
   const [results, setResults] = useState<LinkableUser[]>([]);
   const [searched, setSearched] = useState(false);
   const [isSearching, startSearch] = useTransition();
-  const [, startLinking] = useTransition();
+  const [_isLinking, startLinking] = useTransition();
   const [busyUserId, setBusyUserId] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
+    },
+    [],
+  );
 
   const handleQueryChange = (value: string) => {
     setQuery(value);
@@ -482,22 +734,32 @@ function LinkUserDialog({
   };
 
   return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open) onClose();
+    <dialog
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center"
+      aria-modal="true"
+      aria-label={t.people.linkUserTitle}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onClose();
       }}
     >
-      <DialogContent className="max-w-md rounded-2xl p-5 sm:p-6">
-        <DialogHeader className="sr-only">
-          <DialogTitle>{t.people.linkUserTitle}</DialogTitle>
-        </DialogHeader>
-
-        <div>
-          <h3 className="text-base font-semibold">{t.people.linkUserTitle}</h3>
-          <p className="mt-0.5 text-xs text-muted-foreground">{t.people.linkUserHint}</p>
+      <div className="w-full max-w-md rounded-2xl border bg-card p-5 shadow-xl">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-base font-semibold">{t.people.linkUserTitle}</h3>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t.people.linkUserHint}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t.common.close}
+            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <X className="size-4" aria-hidden />
+          </button>
         </div>
-
         <div className="mt-4">
           <Label htmlFor="user-search" className="sr-only">
             {t.people.linkUserPlaceholder}
@@ -517,7 +779,6 @@ function LinkUserDialog({
             />
           </div>
         </div>
-
         <div className="mt-3 flex max-h-64 flex-col gap-2 overflow-y-auto">
           {isSearching && (
             <p className="flex items-center gap-2 px-1 py-2 text-sm text-muted-foreground">
@@ -556,7 +817,265 @@ function LinkUserDialog({
             );
           })}
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </dialog>
+  );
+}
+
+function EditPersonDialog({
+  name,
+  onNameChange,
+  role,
+  onRoleChange,
+  onClose,
+  onSave,
+  isSaving,
+  canPromoteToOwner,
+  allPersons,
+  t,
+}: {
+  name: string;
+  onNameChange: (v: string) => void;
+  role: string;
+  onRoleChange: (v: string) => void;
+  onClose: () => void;
+  onSave: () => void;
+  isSaving: boolean;
+  canPromoteToOwner: boolean;
+  allPersons: PeopleListItem[];
+  t: ReturnType<typeof useI18n>["t"];
+}) {
+  const _ownerCount = allPersons.filter((p) => p.role === "owner").length;
+
+  return (
+    <dialog
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      aria-modal="true"
+      aria-label={t.people.editPersonTitle}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onClose();
+      }}
+    >
+      <div className="w-full max-w-md rounded-2xl border bg-card p-5 shadow-xl">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-base font-semibold">{t.people.editPersonTitle}</h3>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t.people.editPersonHint}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t.common.close}
+            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <X className="size-4" aria-hidden />
+          </button>
+        </div>
+        <div className="mt-4 space-y-4">
+          <div>
+            <Label htmlFor="edit-name">{t.people.nameLabel}</Label>
+            <Input
+              id="edit-name"
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+              placeholder={t.people.namePlaceholder}
+              maxLength={80}
+              autoFocus
+            />
+          </div>
+          <div>
+            <Label htmlFor="edit-role">{t.people.roleOwner}</Label>
+            <Select value={role} onValueChange={onRoleChange}>
+              <SelectTrigger id="edit-role">
+                <SelectValue placeholder={t.people.roleMember} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="member">{t.people.roleMember}</SelectItem>
+                <SelectItem value="admin">{t.people.roleAdmin}</SelectItem>
+                {canPromoteToOwner && <SelectItem value="owner">{t.people.roleOwner}</SelectItem>}
+              </SelectContent>
+            </Select>
+            {role === "owner" && !canPromoteToOwner && (
+              <p className="mt-1 text-xs text-muted-foreground">{t.people.cannotDemoteLastOwner}</p>
+            )}
+          </div>
+        </div>
+        <div className="mt-4 flex flex-col-reverse sm:flex-row gap-2">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isSaving}
+            className="w-full sm:w-auto"
+          >
+            {t.common.cancel}
+          </Button>
+          <Button
+            onClick={onSave}
+            disabled={isSaving || name.trim().length < 2}
+            aria-busy={isSaving}
+            className="w-full sm:w-auto"
+          >
+            {isSaving ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+            ) : (
+              t.people.savePerson
+            )}
+          </Button>
+        </div>
+      </div>
+    </dialog>
+  );
+}
+
+function AdminCardsDialog({
+  person,
+  selectedOwnerCardIds,
+  selectedAssignedCardId,
+  availableOwnerCards,
+  availableAssignedCards,
+  onOwnerCardToggle,
+  onAssignedCardChange,
+  onClose,
+  onSave,
+  isSaving,
+  t,
+}: {
+  person: PeopleListItem;
+  selectedOwnerCardIds: string[];
+  onOwnerCardToggle: (cardId: string) => void;
+  selectedAssignedCardId: string | null;
+  onAssignedCardChange: (cardId: string | null) => void;
+  availableOwnerCards: { id: string; number: number; assignedPersonId: string | null }[];
+  availableAssignedCards: { id: string; number: number; assignedPersonId: string | null }[];
+  onClose: () => void;
+  onSave: () => void;
+  isSaving: boolean;
+  t: ReturnType<typeof useI18n>["t"];
+}) {
+  return (
+    <dialog
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      aria-modal="true"
+      aria-label={t.people.adminCardsTitle}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onClose();
+      }}
+    >
+      <div className="w-full max-w-2xl rounded-2xl border bg-card p-5 shadow-xl max-h-[80vh] overflow-hidden flex flex-col">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-base font-semibold">
+              {t.people.adminCardsTitle} — {person.name}
+            </h3>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t.people.adminCardsHint}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t.common.close}
+            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <X className="size-4" aria-hidden />
+          </button>
+        </div>
+        <div className="mt-4 flex-1 overflow-y-auto space-y-6">
+          {/* Owner Cards */}
+          <div>
+            <h4 className="text-sm font-semibold mb-2">
+              {t.people.ownerCards} ({selectedOwnerCardIds.length})
+            </h4>
+            {availableOwnerCards.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4">{t.people.noAvailableCards}</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {availableOwnerCards.map((card) => (
+                  <button
+                    key={card.id}
+                    type="button"
+                    onClick={() => onOwnerCardToggle(card.id)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium border transition-colors",
+                      selectedOwnerCardIds.includes(card.id)
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
+                    )}
+                  >
+                    #{String(card.number).padStart(2, "0")}
+                    {selectedOwnerCardIds.includes(card.id) && (
+                      <UserRoundX className="size-3.5" aria-hidden />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Assigned Card */}
+          <div>
+            <h4 className="text-sm font-semibold mb-2">{t.people.assignedCard}</h4>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => onAssignedCardChange(null)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium border transition-colors",
+                  !selectedAssignedCardId
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
+                )}
+              >
+                {t.people.noAssignedCard}
+              </button>
+              {availableAssignedCards.map((card) => (
+                <button
+                  key={card.id}
+                  type="button"
+                  onClick={() => onAssignedCardChange(card.id)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium border transition-colors",
+                    selectedAssignedCardId === card.id
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
+                  )}
+                >
+                  #{String(card.number).padStart(2, "0")}
+                  {selectedAssignedCardId === card.id && (
+                    <UserRoundX className="size-3.5" aria-hidden />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="mt-6 flex flex-col-reverse sm:flex-row gap-2 border-t pt-4">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isSaving}
+            className="w-full sm:w-auto"
+          >
+            {t.common.cancel}
+          </Button>
+          <Button
+            onClick={onSave}
+            disabled={isSaving}
+            aria-busy={isSaving}
+            className="w-full sm:w-auto"
+          >
+            {isSaving ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+            ) : (
+              t.people.saveCards
+            )}
+          </Button>
+        </div>
+      </div>
+    </dialog>
   );
 }
