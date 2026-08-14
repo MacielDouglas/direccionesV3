@@ -371,6 +371,7 @@ export type I18nDictionary = {
     roleOwner: string;
     roleAdmin: string;
     roleMember: string;
+    roleLabel: string;
     youLabel: string;
     editPerson: string;
     editPersonTitle: string;
@@ -393,6 +394,12 @@ export type I18nDictionary = {
     cardsUpdated: string;
     mustHaveOwner: string;
     cannotDemoteLastOwner: string;
+    cardCountOne: string;
+    cardCountMany: string;
+    allCards: string;
+    neighborhoods: string;
+    noNeighborhoods: string;
+    cardOwner: string;
   };
   organizations: {
     selectOrg: string;

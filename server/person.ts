@@ -319,6 +319,7 @@ export const getOrgPersonsWithInvites = async (organizationId: string) => {
       organizationId: true,
       userId: true,
       user: { select: { id: true, name: true, email: true, image: true } },
+      _count: { select: { cardsOwned: true, cardsAssigned: true } },
     },
     orderBy: { name: "asc" },
   });
@@ -346,6 +347,7 @@ export const getOrgPersonsWithInvites = async (organizationId: string) => {
       ...person,
       inviteToken: valid ? invite.token : null,
       inviteExpired: invite ? !valid : false,
+      cardsCount: person._count.cardsOwned + person._count.cardsAssigned,
     };
   });
 };
@@ -685,7 +687,7 @@ export const getPersonWithCards = async (organizationId: string, personId: strin
     }
   }
 
-  return prisma.person.findFirst({
+  const person = await prisma.person.findFirst({
     where: { id: personId, organizationId },
     select: {
       id: true,
@@ -696,4 +698,46 @@ export const getPersonWithCards = async (organizationId: string, personId: strin
       cardsAssigned: { select: { id: true, number: true, assignedPersonId: true } },
     },
   });
+  if (!person) return null;
+
+  const [allCards, neighborhoods] = await Promise.all([
+    prisma.card.findMany({
+      where: { organizationId },
+      orderBy: { number: "asc" },
+      select: {
+        id: true,
+        number: true,
+        ownerPersonId: true,
+        assignedPersonId: true,
+        owner: { select: { name: true } },
+        assignedTo: { select: { name: true } },
+        addresses: { select: { neighborhood: true } },
+      },
+    }),
+    prisma.address.groupBy({
+      by: ["neighborhood"],
+      where: { organizationId },
+      _count: { _all: true },
+      orderBy: { neighborhood: "asc" },
+    }),
+  ]);
+
+  return {
+    ...person,
+    allCards: allCards.map((card) => ({
+      id: card.id,
+      number: card.number,
+      ownerPersonId: card.ownerPersonId,
+      assignedPersonId: card.assignedPersonId,
+      ownerName: card.owner?.name ?? null,
+      assignedToName: card.assignedTo?.name ?? null,
+      neighborhoods: [
+        ...new Set(card.addresses.map((address) => address.neighborhood.trim()).filter(Boolean)),
+      ].sort((a, b) => a.localeCompare(b)),
+    })),
+    neighborhoods: neighborhoods.map((neighborhood) => ({
+      name: neighborhood.neighborhood,
+      count: neighborhood._count._all,
+    })),
+  };
 };

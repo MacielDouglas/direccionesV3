@@ -1,4 +1,5 @@
-import { getServerDictionary } from "@/lib/i18n/server";
+import { dictionaries } from "@/lib/i18n/dictionaries";
+import { getServerLocale } from "@/lib/i18n/server";
 import { getCurrentUser } from "@/server/users";
 import {
   CalendarCheck,
@@ -19,7 +20,7 @@ interface Props {
 
 export default async function AdminPage({ params }: Props) {
   const { organizationSlug } = await params;
-  const [data, t] = await Promise.all([getCurrentUser(), getServerDictionary()]);
+  const [data, locale] = await Promise.all([getCurrentUser(), getServerLocale()]);
 
   if (!data) redirect("/login");
 
@@ -31,6 +32,10 @@ export default async function AdminPage({ params }: Props) {
   const isOwner = role === "owner" || data.isSuperUser;
   const orgName = data.activeOrganization?.name ?? "Organización";
   const slug = data.activeOrganization?.slug ?? organizationSlug;
+
+  const t = dictionaries[locale];
+  const altLocale = locale === "pt" ? "es" : "pt";
+  const tAlt = dictionaries[altLocale];
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-6 md:py-10" aria-labelledby="admin-heading">
@@ -84,28 +89,36 @@ export default async function AdminPage({ params }: Props) {
               href={`/org/${slug}/admin/cards`}
               icon={<CreditCard className="size-5 text-brand" aria-hidden="true" />}
               title={t.admin.cards}
+              titleAlt={tAlt.admin.cards}
               description={t.admin.cardsDescription}
+              descriptionAlt={tAlt.admin.cardsDescription}
               cta={t.admin.open}
             />
             <AdminAction
               href={`/org/${slug}/admin/agenda`}
               icon={<CalendarCheck className="size-5 text-brand" aria-hidden="true" />}
               title={t.admin.agenda}
+              titleAlt={tAlt.admin.agenda}
               description={t.admin.agendaDescription}
+              descriptionAlt={tAlt.admin.agendaDescription}
               cta={t.admin.open}
             />
             <AdminAction
               href={`/org/${slug}/admin/invitations`}
               icon={<KeyRound className="size-5 text-brand" aria-hidden="true" />}
               title={t.admin.invitations}
+              titleAlt={tAlt.admin.invitations}
               description={t.admin.invitationsDescription}
+              descriptionAlt={tAlt.admin.invitationsDescription}
               cta={t.admin.open}
             />
             <AdminAction
               href={`/org/${slug}/admin/usuarios`}
               icon={<Users className="size-5 text-brand" aria-hidden="true" />}
               title={t.admin.users}
+              titleAlt={tAlt.admin.users}
               description={t.admin.usersDescription}
+              descriptionAlt={tAlt.admin.usersDescription}
               cta={t.admin.open}
             />
             {isOwner && (
@@ -113,7 +126,9 @@ export default async function AdminPage({ params }: Props) {
                 href={`/org/${slug}/admin/organizations`}
                 icon={<ShieldCheck className="size-5 text-brand" aria-hidden="true" />}
                 title={t.admin.organizations}
+                titleAlt={tAlt.admin.organizations}
                 description={t.admin.organizationsDescription}
+                descriptionAlt={tAlt.admin.organizationsDescription}
                 cta={t.admin.open}
               />
             )}
@@ -128,13 +143,17 @@ function AdminAction({
   href,
   icon,
   title,
+  titleAlt,
   description,
+  descriptionAlt,
   cta,
 }: {
   href: string;
   icon: React.ReactNode;
   title: string;
+  titleAlt?: string;
   description: string;
+  descriptionAlt?: string;
   cta: string;
 }) {
   return (
@@ -146,10 +165,20 @@ function AdminAction({
         <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand/10">
           {icon}
         </span>
-        <div className="min-w-0">
-          <h3 className="truncate text-sm font-semibold text-foreground">{title}</h3>
-          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{description}</p>
-          <span className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-brand">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-1.5">
+            <h3 className="truncate text-sm font-semibold text-foreground">{title}</h3>
+            {titleAlt && titleAlt !== title ? (
+              <span className="truncate text-xs font-normal text-muted-foreground/80">
+                / {titleAlt}
+              </span>
+            ) : null}
+          </div>
+          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{description}</p>
+          {descriptionAlt && descriptionAlt !== description ? (
+            <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground/70">{descriptionAlt}</p>
+          ) : null}
+          <span className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-brand">
             {cta}
             <ChevronRight
               className="size-3 transition-transform group-hover:translate-x-0.5"

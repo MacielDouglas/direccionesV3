@@ -1,3 +1,4 @@
+// app/(protected)/org/[organizationSlug]/(admin)/admin/pessoas/page.tsx
 import { BackLink } from "@/components/ui/BackLink";
 import { PeopleScreen } from "@/features/people/ui/screens/PeopleScreen";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
@@ -6,7 +7,7 @@ import { getCurrentUser } from "@/server/users";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "Personas" };
+export const metadata: Metadata = { title: "Pessoas" };
 
 interface Props {
   params: Promise<{ organizationSlug: string }>;
@@ -30,8 +31,8 @@ export default async function PeoplePage({ params }: Props) {
   const persons = await getOrgPersonsWithInvites(organization.id);
 
   return (
-    <main className="mx-auto w-full max-w-3xl">
-      <div className="px-4 pt-4">
+    <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mb-6">
         <BackLink href={`/org/${organizationSlug}/admin`} />
       </div>
       <PeopleScreen

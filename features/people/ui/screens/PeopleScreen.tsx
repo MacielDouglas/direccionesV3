@@ -16,32 +16,45 @@ import { cn } from "@/lib/utils";
 import {
   adminBulkUpdatePersonCards,
   createOrgPersonAction,
-  deletePersonAction,
   getPersonWithCards,
   linkUserToPersonAction,
-  regeneratePersonInviteAction,
-  removePersonFromOrganization,
   searchUsersToLinkAction,
   updatePersonName,
   updatePersonRole,
 } from "@/server/person";
 import {
-  Link2,
+  Check,
+  ChevronRight,
+  CreditCard,
   Loader2,
   Mail,
+  MapPin,
   Pencil,
-  RefreshCw,
   Search,
-  Trash2,
-  UserMinus,
+  ShieldCheck,
   UserPlus,
   UserRound,
   UserRoundX,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { toast } from "sonner";
+
+const PERSON_ROLES = ["member", "admin", "owner"] as const;
+type PersonRole = (typeof PERSON_ROLES)[number];
+
+function isPersonRole(value: string): value is PersonRole {
+  return (PERSON_ROLES as readonly string[]).includes(value);
+}
 
 export type PeopleListItem = {
   id: string;
@@ -52,6 +65,7 @@ export type PeopleListItem = {
   user: { id: string; name: string; email: string; image: string | null } | null;
   inviteToken: string | null;
   inviteExpired: boolean;
+  cardsCount: number;
 };
 
 export type LinkableUser = {
@@ -61,6 +75,21 @@ export type LinkableUser = {
   image: string | null;
 };
 
+type AdminCardOption = {
+  id: string;
+  number: number;
+  ownerPersonId: string | null;
+  assignedPersonId: string | null;
+  ownerName: string | null;
+  assignedToName: string | null;
+  neighborhoods: string[];
+};
+
+type NeighborhoodOption = {
+  name: string;
+  count: number;
+};
+
 export type PersonWithCards = {
   id: string;
   name: string;
@@ -68,6 +97,15 @@ export type PersonWithCards = {
   userId: string | null;
   cardsOwned: { id: string; number: number; assignedPersonId: string | null }[];
   cardsAssigned: { id: string; number: number }[];
+  allCards: AdminCardOption[];
+  neighborhoods: NeighborhoodOption[];
+};
+
+type CardOption = {
+  id: string;
+  number: number;
+  assignedPersonId: string | null;
+  neighborhoods: string[];
 };
 
 interface Props {
@@ -85,13 +123,74 @@ function roleLabel(t: ReturnType<typeof useI18n>["t"], role: string | null) {
   return t.people.roleMember;
 }
 
-const badgeClasses = (linked: boolean) =>
-  cn(
-    "inline-flex w-fit shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase",
-    linked
-      ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
-      : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+const roleBadgeClasses = (role: string | null) => {
+  if (role === "owner" || role === "admin") {
+    return "inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand";
+  }
+  return "inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground";
+};
+
+const unlinkedBadgeClasses =
+  "inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand";
+
+function errorMessage(err: unknown, fallback: string) {
+  return err instanceof Error && err.message.trim() ? err.message : fallback;
+}
+
+function ModalOverlay({
+  label,
+  onClose,
+  children,
+  panelClassName,
+}: {
+  label: string;
+  onClose: () => void;
+  children: ReactNode;
+  panelClassName?: string;
+}) {
+  const titleId = useId();
+
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, []);
+
+  return (
+    <dialog
+      open
+      aria-modal="true"
+      aria-labelledby={titleId}
+      aria-label={label}
+      className="fixed inset-0 z-50 m-0 flex h-full w-full items-center justify-center bg-transparent p-4"
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+    >
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-hidden
+        onClick={onClose}
+        className="absolute inset-0 h-full w-full cursor-default bg-black/50"
+      />
+      <div
+        className={cn(
+          "relative w-full max-w-md rounded-2xl border border-border bg-card p-5 shadow-xl",
+          panelClassName,
+        )}
+      >
+        <span id={titleId} className="sr-only">
+          {label}
+        </span>
+        {children}
+      </div>
+    </dialog>
   );
+}
 
 export function PeopleScreen({
   persons,
@@ -105,36 +204,32 @@ export function PeopleScreen({
   const router = useRouter();
   const [name, setName] = useState("");
   const [isCreating, startTransition] = useTransition();
-  const [busyPersonId, setBusyPersonId] = useState<string | null>(null);
   const [linkTarget, setLinkTarget] = useState<PeopleListItem | null>(null);
   const [editTarget, setEditTarget] = useState<PeopleListItem | null>(null);
   const [cardsTarget, setCardsTarget] = useState<PeopleListItem | null>(null);
   const [editName, setEditName] = useState("");
-  const [editRole, setEditRole] = useState<string>("member");
+  const [editRole, setEditRole] = useState<PersonRole>("member");
   const [isEditing, startEditTransition] = useTransition();
   const [cardsData, setCardsData] = useState<PersonWithCards | null>(null);
   const [selectedOwnerCardIds, setSelectedOwnerCardIds] = useState<string[]>([]);
   const [selectedAssignedCardId, setSelectedAssignedCardId] = useState<string | null>(null);
   const [isSavingCards, startSaveCardsTransition] = useTransition();
+  const [isLoadingCards, setIsLoadingCards] = useState(false);
 
-  const linkedUsers = persons.filter((p) => p.userId);
+  const linkedUsers = persons.filter((p) => Boolean(p.userId));
   const unlinkedPersons = persons.filter((p) => !p.userId);
 
-  const canRemoveUser = (person: PeopleListItem) => {
-    if (person.userId === currentUserId) return false;
-    if (isSuperUser) return true;
-    if (currentRole === "admin" && person.role === "owner") return false;
-    return currentRole === "admin" || currentRole === "owner";
-  };
+  const canManagePerson = useCallback(
+    (person: PeopleListItem) => {
+      if (person.userId === currentUserId) return false;
+      if (isSuperUser) return true;
+      if (currentRole === "admin" && person.role === "owner") return false;
+      return currentRole === "admin" || currentRole === "owner";
+    },
+    [currentRole, currentUserId, isSuperUser],
+  );
 
-  const canEditPerson = (person: PeopleListItem) => {
-    if (person.userId === currentUserId) return false;
-    if (isSuperUser) return true;
-    if (currentRole === "admin" && person.role === "owner") return false;
-    return currentRole === "admin" || currentRole === "owner";
-  };
-
-  const canPromoteToOwner = () => isSuperUser || currentRole === "owner";
+  const canPromoteToOwner = isSuperUser || currentRole === "owner";
 
   const handleCreate = () => {
     const trimmed = name.trim();
@@ -149,91 +244,20 @@ export function PeopleScreen({
         toast.success(t.people.createButton);
         router.refresh();
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : t.errors.generic);
-      }
-    });
-  };
-
-  const copyInvite = async (person: PeopleListItem) => {
-    const token = person.inviteToken;
-    if (!token) return;
-    const url = `${window.location.origin}/join/${token}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success(t.people.inviteCopied);
-    } catch {
-      toast.error(t.errors.generic);
-    }
-  };
-
-  const regenerate = (person: PeopleListItem) => {
-    setBusyPersonId(person.id);
-    startTransition(async () => {
-      try {
-        const token = await regeneratePersonInviteAction(
-          organizationId,
-          person.id,
-          organizationSlug,
-        );
-        await navigator.clipboard.writeText(`${window.location.origin}/join/${token.token}`);
-        toast.success(t.people.inviteCopied);
-        router.refresh();
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : t.errors.generic);
-      } finally {
-        setBusyPersonId(null);
-      }
-    });
-  };
-
-  const removeUser = (person: PeopleListItem) => {
-    if (person.userId === currentUserId) {
-      toast.error(t.people.cannotDeleteSelf);
-      return;
-    }
-    if (currentRole === "admin" && person.role === "owner") {
-      toast.error(t.people.cannotRemoveOwner);
-      return;
-    }
-    if (!window.confirm(t.people.removeFromOrgConfirm.replace("{name}", person.name))) return;
-    setBusyPersonId(person.id);
-    startTransition(async () => {
-      try {
-        await removePersonFromOrganization(organizationId, person.id);
-        toast.success(t.people.removeFromOrgSuccess);
-        router.refresh();
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : t.errors.generic);
-      } finally {
-        setBusyPersonId(null);
-      }
-    });
-  };
-
-  const deletePerson = (person: PeopleListItem) => {
-    if (!window.confirm(t.people.deletePersonConfirm.replace("{name}", person.name))) return;
-    setBusyPersonId(person.id);
-    startTransition(async () => {
-      try {
-        await deletePersonAction(organizationId, person.id, organizationSlug);
-        toast.success(t.people.deleteSuccess);
-        router.refresh();
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : t.errors.generic);
-      } finally {
-        setBusyPersonId(null);
+        toast.error(errorMessage(err, t.errors.generic));
       }
     });
   };
 
   const openEditPerson = (person: PeopleListItem) => {
-    if (!canEditPerson(person)) {
+    if (!canManagePerson(person)) {
       toast.error(t.people.cannotRemoveOwner);
       return;
     }
+    const nextRole = person.role && isPersonRole(person.role) ? person.role : "member";
     setEditTarget(person);
     setEditName(person.name);
-    setEditRole(person.role ?? "member");
+    setEditRole(nextRole);
   };
 
   const handleEditPerson = () => {
@@ -243,14 +267,14 @@ export function PeopleScreen({
       return;
     }
     if (!editTarget) return;
-
-    // Se não é owner/superuser, não pode promover a owner
-    if (editRole === "owner" && !canPromoteToOwner()) {
+    if (!canManagePerson(editTarget)) {
+      toast.error(t.people.cannotRemoveOwner);
+      return;
+    }
+    if (editRole === "owner" && !canPromoteToOwner) {
       toast.error(t.people.cannotDemoteLastOwner);
       return;
     }
-
-    // Se está rebaixando o último owner, bloquear
     if (editTarget.role === "owner" && editRole !== "owner") {
       const ownerCount = persons.filter((p) => p.role === "owner").length;
       if (ownerCount <= 1) {
@@ -263,29 +287,24 @@ export function PeopleScreen({
       try {
         await updatePersonName(organizationId, editTarget.id, trimmed, organizationSlug);
         if (editRole !== editTarget.role) {
-          await updatePersonRole(
-            organizationId,
-            editTarget.id,
-            editRole as "member" | "admin" | "owner",
-            organizationSlug,
-          );
+          await updatePersonRole(organizationId, editTarget.id, editRole, organizationSlug);
         }
         toast.success(t.people.personUpdated);
         setEditTarget(null);
         router.refresh();
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : t.errors.generic);
+        toast.error(errorMessage(err, t.errors.generic));
       }
     });
   };
 
   const openAdminCards = async (person: PeopleListItem) => {
-    if (!canEditPerson(person)) {
+    if (!canManagePerson(person)) {
       toast.error(t.people.cannotRemoveOwner);
       return;
     }
     setCardsTarget(person);
-    setBusyPersonId(person.id);
+    setIsLoadingCards(true);
     try {
       const data = await getPersonWithCards(organizationId, person.id);
       if (data) {
@@ -294,14 +313,19 @@ export function PeopleScreen({
         setSelectedAssignedCardId(data.cardsAssigned[0]?.id ?? null);
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t.errors.generic);
+      toast.error(errorMessage(err, t.errors.generic));
+      setCardsTarget(null);
     } finally {
-      setBusyPersonId(null);
+      setIsLoadingCards(false);
     }
   };
 
   const handleSaveCards = () => {
     if (!cardsTarget || !cardsData) return;
+    if (!canManagePerson(cardsTarget)) {
+      toast.error(t.people.cannotRemoveOwner);
+      return;
+    }
     startSaveCardsTransition(async () => {
       try {
         await adminBulkUpdatePersonCards(
@@ -313,38 +337,44 @@ export function PeopleScreen({
         );
         toast.success(t.people.cardsUpdated);
         setCardsTarget(null);
+        setCardsData(null);
         router.refresh();
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : t.errors.generic);
+        toast.error(errorMessage(err, t.errors.generic));
       }
     });
   };
 
-  const availableOwnerCards = cardsData
-    ? (
-        cardsData.cardsOwned as { id: string; number: number; assignedPersonId: string | null }[]
-      ).filter((c) => !c.assignedPersonId || c.assignedPersonId === cardsTarget?.id)
+  const availableOwnerCards: CardOption[] = cardsData
+    ? cardsData.allCards
+        .filter((c) => !c.ownerPersonId || c.ownerPersonId === cardsTarget?.id)
+        .map((c) => ({
+          id: c.id,
+          number: c.number,
+          assignedPersonId: c.assignedPersonId,
+          neighborhoods: c.neighborhoods,
+        }))
     : [];
-  const availableAssignedCards = cardsData
-    ? [
-        ...(
-          cardsData.cardsOwned as { id: string; number: number; assignedPersonId: string | null }[]
-        ).filter((c) => !c.assignedPersonId && !selectedOwnerCardIds.includes(c.id)),
-        ...(
-          cardsData.cardsAssigned as {
-            id: string;
-            number: number;
-            assignedPersonId: string | null;
-          }[]
-        ).filter((c) => !selectedOwnerCardIds.includes(c.id)),
-      ]
+
+  const availableAssignedCards: CardOption[] = cardsData
+    ? cardsData.allCards
+        .filter(
+          (c) =>
+            (!c.assignedPersonId || c.assignedPersonId === cardsTarget?.id) &&
+            !selectedOwnerCardIds.includes(c.id),
+        )
+        .map((c) => ({
+          id: c.id,
+          number: c.number,
+          assignedPersonId: c.assignedPersonId,
+          neighborhoods: c.neighborhoods,
+        }))
     : [];
 
   const handleOwnerCardToggle = (cardId: string) => {
     setSelectedOwnerCardIds((prev) =>
       prev.includes(cardId) ? prev.filter((id) => id !== cardId) : [...prev, cardId],
     );
-    // Se o card era o assigned, limpa assigned
     if (selectedAssignedCardId === cardId) {
       setSelectedAssignedCardId(null);
     }
@@ -352,52 +382,51 @@ export function PeopleScreen({
 
   const handleAssignedCardChange = (cardId: string | null) => {
     setSelectedAssignedCardId(cardId);
-    // Se o card assigned agora virou owner, remove do owner
     if (cardId && selectedOwnerCardIds.includes(cardId)) {
       setSelectedOwnerCardIds((prev) => prev.filter((id) => id !== cardId));
     }
   };
 
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-8 px-4 py-6">
+    <div className="mx-auto w-full space-y-8">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{t.people.title}</h1>
-        <p className="mt-0.5 text-sm text-muted-foreground">{t.people.subtitle}</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-brand">
+          {t.people.title}
+        </p>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+          {t.people.subtitle}
+        </h1>
       </header>
 
-      {/* Criar pessoa */}
       <section
         aria-label={t.people.createTitle}
-        className="rounded-2xl border bg-card p-5 shadow-xs"
+        className="rounded-2xl bg-black p-6 text-white shadow-md shadow-black/20 sm:p-8"
       >
-        <h2 className="flex items-center gap-2 text-base font-semibold">
-          <UserPlus className="size-4 text-brand" aria-hidden />
+        <span className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-neutral-400">
+          <UserPlus className="size-4" aria-hidden="true" />
           {t.people.createTitle}
-        </h2>
-        <p className="mt-1 text-xs text-muted-foreground">{t.people.createHint}</p>
-
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-          <div className="flex-1">
-            <Label htmlFor="person-name" className="sr-only">
-              {t.people.nameLabel}
-            </Label>
-            <Input
-              id="person-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t.people.namePlaceholder}
-              maxLength={80}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleCreate();
-              }}
-            />
-          </div>
+        </span>
+        <p className="mt-3 max-w-md text-lg font-semibold leading-snug sm:text-xl">
+          {t.people.createHint}
+        </p>
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t.people.namePlaceholder}
+            maxLength={80}
+            autoComplete="off"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleCreate();
+            }}
+            className="w-full border-white/20 bg-white/10 text-white placeholder:text-white/60 focus-visible:border-white/40 focus-visible:ring-2 focus-visible:ring-white/20 sm:w-64"
+          />
           <Button
             type="button"
             onClick={handleCreate}
             disabled={isCreating}
             aria-busy={isCreating}
-            className="sm:w-auto"
+            className="bg-brand text-brand-foreground hover:bg-brand/90"
           >
             {isCreating ? (
               <Loader2 className="size-4 animate-spin" aria-hidden />
@@ -409,10 +438,12 @@ export function PeopleScreen({
         </div>
       </section>
 
-      {/* Usuários */}
       <section aria-labelledby="users-list-title">
-        <h2 id="users-list-title" className="mb-1 flex items-center gap-2 text-base font-semibold">
-          <UserRoundX className="size-4 text-brand" aria-hidden />
+        <h2
+          id="users-list-title"
+          className="mb-3 flex items-center gap-2 text-base font-semibold text-foreground"
+        >
+          <UserRoundX className="size-4 text-brand" aria-hidden="true" />
           {t.people.usersSectionTitle}
         </h2>
         <p className="mb-3 text-sm text-muted-foreground">{t.people.usersSubtitle}</p>
@@ -423,81 +454,72 @@ export function PeopleScreen({
             <p>{t.people.noUsers}</p>
           </div>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {linkedUsers.map((person) => {
-              const isBusy = busyPersonId === person.id;
               const isSelf = person.userId === currentUserId;
               return (
                 <li
                   key={person.id}
-                  className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-xs sm:flex-row sm:items-center"
+                  className="flex flex-col rounded-2xl border border-border bg-card p-5 shadow-xs transition-colors hover:bg-surface-subtle-light dark:hover:bg-surface-subtle-dark"
                 >
-                  <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <Avatar className="size-10 shrink-0">
-                      <AvatarImage src={person.user?.image ?? undefined} />
-                      <AvatarFallback>{person.name.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand/10">
+                      <Avatar className="size-10">
+                        <AvatarImage src={person.user?.image ?? undefined} alt="" />
+                        <AvatarFallback className="text-xs">
+                          {person.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-sm font-semibold text-foreground">
                         {person.name}
-                        {isSelf && (
-                          <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                        {isSelf ? (
+                          <span className="ml-1.5 text-xs font-normal text-muted-foreground/80">
                             ({t.people.youLabel})
                           </span>
-                        )}
+                        ) : null}
+                      </h3>
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                        {person.user?.email}
                       </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {person.user?.email ?? t.people.linked}
-                      </p>
+                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                        <span className={roleBadgeClasses(person.role)}>
+                          <ShieldCheck className="size-3" aria-hidden="true" />
+                          {roleLabel(t, person.role)}
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          <CreditCard className="size-3" aria-hidden="true" />
+                          {person.cardsCount === 1
+                            ? t.people.cardCountOne.replace("{count}", "1")
+                            : t.people.cardCountMany.replace("{count}", String(person.cardsCount))}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <span className={badgeClasses(true)}>{roleLabel(t, person.role)}</span>
-
-                  <div className="flex flex-wrap gap-2">
-                    {canEditPerson(person) && (
-                      <Button
+                  {canManagePerson(person) ? (
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <button
                         type="button"
-                        variant="outline"
-                        size="sm"
                         onClick={() => openEditPerson(person)}
-                        disabled={isBusy}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline"
                       >
-                        <Pencil className="size-3.5" aria-hidden />
+                        <Pencil className="size-3.5" aria-hidden="true" />
                         {t.people.editPerson}
-                      </Button>
-                    )}
-                    {canEditPerson(person) && (
-                      <Button
+                        <ChevronRight className="size-3" aria-hidden="true" />
+                      </button>
+                      <button
                         type="button"
-                        variant="outline"
-                        size="sm"
                         onClick={() => openAdminCards(person)}
-                        disabled={isBusy}
+                        disabled={isLoadingCards}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:underline"
                       >
-                        <Link2 className="size-3.5" aria-hidden />
+                        <CreditCard className="size-3.5" aria-hidden="true" />
                         {t.people.adminCardsTitle}
-                      </Button>
-                    )}
-                    {canRemoveUser(person) && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => removeUser(person)}
-                        disabled={isBusy}
-                        aria-busy={isBusy}
-                      >
-                        {isBusy ? (
-                          <Loader2 className="size-3.5 animate-spin" aria-hidden />
-                        ) : (
-                          <UserMinus className="size-3.5" aria-hidden />
-                        )}
-                        {t.people.removeFromOrg}
-                      </Button>
-                    )}
-                  </div>
+                      </button>
+                    </div>
+                  ) : null}
                 </li>
               );
             })}
@@ -505,10 +527,12 @@ export function PeopleScreen({
         )}
       </section>
 
-      {/* Pessoas */}
       <section aria-labelledby="people-list-title">
-        <h2 id="people-list-title" className="mb-1 flex items-center gap-2 text-base font-semibold">
-          <UserRound className="size-4 text-brand" aria-hidden />
+        <h2
+          id="people-list-title"
+          className="mb-3 flex items-center gap-2 text-base font-semibold text-foreground"
+        >
+          <UserRound className="size-4 text-brand" aria-hidden="true" />
           {t.people.listTitle}
         </h2>
         <p className="mb-3 text-sm text-muted-foreground">
@@ -523,130 +547,102 @@ export function PeopleScreen({
             <p>{t.people.empty}</p>
           </div>
         ) : (
-          <ul className="flex flex-col gap-3">
-            {unlinkedPersons.map((person) => {
-              const isBusy = busyPersonId === person.id;
-              return (
-                <li
-                  key={person.id}
-                  className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-xs sm:flex-row sm:items-center"
-                >
-                  <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <Avatar className="size-10 shrink-0">
-                      <AvatarImage src={person.user?.image ?? undefined} />
-                      <AvatarFallback>{person.name.charAt(0).toUpperCase()}</AvatarFallback>
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {unlinkedPersons.map((person) => (
+              <li
+                key={person.id}
+                className="flex flex-col rounded-2xl border border-border bg-card p-5 shadow-xs transition-colors hover:bg-surface-subtle-light dark:hover:bg-surface-subtle-dark"
+              >
+                <div className="flex min-w-0 items-start gap-3">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand/10">
+                    <Avatar className="size-10">
+                      <AvatarImage src={person.user?.image ?? undefined} alt="" />
+                      <AvatarFallback className="text-xs">
+                        {person.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
                     </Avatar>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{person.name}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {person.inviteToken ? t.people.inviteHint : t.people.noUser}
-                      </p>
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-sm font-semibold text-foreground">
+                      {person.name}
+                    </h3>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                      {person.inviteToken ? t.people.inviteHint : t.people.noUser}
+                    </p>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                      <span className={unlinkedBadgeClasses}>
+                        <UserRound className="size-3" aria-hidden="true" />
+                        {roleLabel(t, person.role)}
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        <CreditCard className="size-3" aria-hidden="true" />
+                        {person.cardsCount === 1
+                          ? t.people.cardCountOne.replace("{count}", "1")
+                          : t.people.cardCountMany.replace("{count}", String(person.cardsCount))}
+                      </span>
                     </div>
                   </div>
+                </div>
 
-                  <span className={badgeClasses(false)}>{roleLabel(t, person.role)}</span>
-
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openEditPerson(person)}
-                      disabled={isBusy}
-                    >
-                      <Pencil className="size-3.5" aria-hidden />
-                      {t.people.editPerson}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openAdminCards(person)}
-                      disabled={isBusy}
-                    >
-                      <Link2 className="size-3.5" aria-hidden />
-                      {t.people.adminCardsTitle}
-                    </Button>
-                    {person.inviteToken ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copyInvite(person)}
-                      >
-                        <Mail className="size-3.5" aria-hidden />
-                        {t.people.invite}
-                      </Button>
-                    ) : null}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => regenerate(person)}
-                      disabled={isBusy}
-                      aria-busy={isBusy}
-                    >
-                      {isBusy ? (
-                        <Loader2 className="size-3.5 animate-spin" aria-hidden />
-                      ) : (
-                        <RefreshCw className="size-3.5" aria-hidden />
-                      )}
-                      {t.people.regenerate}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setLinkTarget(person)}
-                      disabled={isBusy}
-                    >
-                      <Link2 className="size-3.5" aria-hidden />
-                      {t.people.linkUser}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => deletePerson(person)}
-                      disabled={isBusy}
-                    >
-                      <Trash2 className="size-3.5" aria-hidden />
-                      {t.people.deletePerson}
-                    </Button>
-                  </div>
-                </li>
-              );
-            })}
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => openEditPerson(person)}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline"
+                  >
+                    <Pencil className="size-3.5" aria-hidden="true" />
+                    {t.people.editPerson}
+                    <ChevronRight className="size-3" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openAdminCards(person)}
+                    disabled={isLoadingCards}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:underline"
+                  >
+                    <CreditCard className="size-3.5" aria-hidden="true" />
+                    {t.people.adminCardsTitle}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLinkTarget(person)}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:underline"
+                  >
+                    {t.people.linkUser}
+                  </button>
+                </div>
+              </li>
+            ))}
           </ul>
         )}
       </section>
 
-      {linkTarget && (
+      {linkTarget ? (
         <LinkUserDialog
           person={linkTarget}
           organizationId={organizationId}
           organizationSlug={organizationSlug}
           onClose={() => setLinkTarget(null)}
         />
-      )}
+      ) : null}
 
-      {editTarget && (
+      {editTarget ? (
         <EditPersonDialog
           name={editName}
           onNameChange={setEditName}
           role={editRole}
-          onRoleChange={setEditRole}
+          onRoleChange={(value) => {
+            if (isPersonRole(value)) setEditRole(value);
+          }}
           onClose={() => setEditTarget(null)}
           onSave={handleEditPerson}
           isSaving={isEditing}
-          canPromoteToOwner={canPromoteToOwner()}
-          allPersons={persons}
+          canPromoteToOwner={canPromoteToOwner}
           t={t}
         />
-      )}
+      ) : null}
 
-      {cardsTarget && cardsData && (
+      {cardsTarget && cardsData ? (
         <AdminCardsDialog
           person={cardsTarget}
           selectedOwnerCardIds={selectedOwnerCardIds}
@@ -655,6 +651,8 @@ export function PeopleScreen({
           onAssignedCardChange={handleAssignedCardChange}
           availableOwnerCards={availableOwnerCards}
           availableAssignedCards={availableAssignedCards}
+          allCards={cardsData.allCards}
+          neighborhoods={cardsData.neighborhoods}
           onClose={() => {
             setCardsTarget(null);
             setCardsData(null);
@@ -663,8 +661,8 @@ export function PeopleScreen({
           isSaving={isSavingCards}
           t={t}
         />
-      )}
-    </main>
+      ) : null}
+    </div>
   );
 }
 
@@ -707,11 +705,11 @@ function LinkUserDialog({
     timerRef.current = setTimeout(() => {
       startSearch(async () => {
         try {
-          const found = await searchUsersToLinkAction(organizationId, value);
+          const found = await searchUsersToLinkAction(organizationId, value.trim());
           setResults(found);
           setSearched(true);
         } catch (err) {
-          toast.error(err instanceof Error ? err.message : t.errors.generic);
+          toast.error(errorMessage(err, t.errors.generic));
         }
       });
     }, 300);
@@ -726,7 +724,7 @@ function LinkUserDialog({
         onClose();
         router.refresh();
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : t.errors.generic);
+        toast.error(errorMessage(err, t.errors.generic));
       } finally {
         setBusyUserId(null);
       }
@@ -734,91 +732,82 @@ function LinkUserDialog({
   };
 
   return (
-    <dialog
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center"
-      aria-modal="true"
-      aria-label={t.people.linkUserTitle}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      onKeyDown={(e) => {
-        if (e.key === "Escape") onClose();
-      }}
-    >
-      <div className="w-full max-w-md rounded-2xl border bg-card p-5 shadow-xl">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h3 className="text-base font-semibold">{t.people.linkUserTitle}</h3>
-            <p className="mt-0.5 text-xs text-muted-foreground">{t.people.linkUserHint}</p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t.common.close}
-            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <X className="size-4" aria-hidden />
-          </button>
+    <ModalOverlay label={t.people.linkUserTitle} onClose={onClose}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-base font-semibold text-foreground">{t.people.linkUserTitle}</h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t.people.linkUserHint}</p>
         </div>
-        <div className="mt-4">
-          <Label htmlFor="user-search" className="sr-only">
-            {t.people.linkUserPlaceholder}
-          </Label>
-          <div className="relative">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden
-            />
-            <Input
-              id="user-search"
-              value={query}
-              onChange={(e) => handleQueryChange(e.target.value)}
-              placeholder={t.people.linkUserPlaceholder}
-              className="pl-9"
-              autoFocus
-            />
-          </div>
-        </div>
-        <div className="mt-3 flex max-h-64 flex-col gap-2 overflow-y-auto">
-          {isSearching && (
-            <p className="flex items-center gap-2 px-1 py-2 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin" aria-hidden />
-              {t.people.searchingUsers}
-            </p>
-          )}
-          {!isSearching && results.length === 0 && searched && (
-            <p className="px-1 py-2 text-sm text-muted-foreground">{t.people.userNotFound}</p>
-          )}
-          {results.map((user) => {
-            const busy = busyUserId === user.id;
-            return (
-              <button
-                key={user.id}
-                type="button"
-                onClick={() => linkUser(user)}
-                disabled={busy}
-                className="flex items-center gap-3 rounded-lg border border-border px-3 py-2 text-left transition-colors hover:bg-muted/50 disabled:opacity-60"
-              >
-                <Avatar className="size-8 shrink-0">
-                  <AvatarImage src={user.image ?? undefined} />
-                  <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <span className="flex min-w-0 flex-col">
-                  <span className="truncate text-sm font-medium">{user.name}</span>
-                  <span className="truncate text-xs text-muted-foreground">{user.email}</span>
-                </span>
-                {busy && (
-                  <Loader2
-                    className="ml-auto size-4 animate-spin text-muted-foreground"
-                    aria-hidden
-                  />
-                )}
-              </button>
-            );
-          })}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t.common.close}
+          className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <X className="size-4" aria-hidden />
+        </button>
+      </div>
+      <div className="mt-4">
+        <Label htmlFor="user-search" className="sr-only">
+          {t.people.linkUserPlaceholder}
+        </Label>
+        <div className="relative">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden
+          />
+          <Input
+            id="user-search"
+            value={query}
+            onChange={(e) => handleQueryChange(e.target.value)}
+            placeholder={t.people.linkUserPlaceholder}
+            className="pl-9"
+            autoFocus
+            autoComplete="off"
+          />
         </div>
       </div>
-    </dialog>
+      <div className="mt-3 flex max-h-64 flex-col gap-2 overflow-y-auto">
+        {isSearching ? (
+          <p className="flex items-center gap-2 px-1 py-2 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" aria-hidden />
+            {t.people.searchingUsers}
+          </p>
+        ) : null}
+        {!isSearching && results.length === 0 && searched ? (
+          <p className="px-1 py-2 text-sm text-muted-foreground">{t.people.userNotFound}</p>
+        ) : null}
+        {results.map((user) => {
+          const busy = busyUserId === user.id;
+          return (
+            <button
+              key={user.id}
+              type="button"
+              onClick={() => linkUser(user)}
+              disabled={busy}
+              className="flex w-full items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 text-left transition-colors hover:bg-surface-subtle-light disabled:opacity-60"
+            >
+              <Avatar className="size-9 shrink-0">
+                <AvatarImage src={user.image ?? undefined} alt="" />
+                <AvatarFallback className="text-xs">
+                  {user.name?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="flex min-w-0 flex-col">
+                <span className="truncate text-sm font-semibold text-foreground">{user.name}</span>
+                <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+              </span>
+              {busy ? (
+                <Loader2
+                  className="ml-auto size-4 animate-spin text-muted-foreground"
+                  aria-hidden
+                />
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+    </ModalOverlay>
   );
 }
 
@@ -831,102 +820,89 @@ function EditPersonDialog({
   onSave,
   isSaving,
   canPromoteToOwner,
-  allPersons,
   t,
 }: {
   name: string;
   onNameChange: (v: string) => void;
-  role: string;
+  role: PersonRole;
   onRoleChange: (v: string) => void;
   onClose: () => void;
   onSave: () => void;
   isSaving: boolean;
   canPromoteToOwner: boolean;
-  allPersons: PeopleListItem[];
   t: ReturnType<typeof useI18n>["t"];
 }) {
-  const _ownerCount = allPersons.filter((p) => p.role === "owner").length;
-
   return (
-    <dialog
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      aria-modal="true"
-      aria-label={t.people.editPersonTitle}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      onKeyDown={(e) => {
-        if (e.key === "Escape") onClose();
-      }}
-    >
-      <div className="w-full max-w-md rounded-2xl border bg-card p-5 shadow-xl">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h3 className="text-base font-semibold">{t.people.editPersonTitle}</h3>
-            <p className="mt-0.5 text-xs text-muted-foreground">{t.people.editPersonHint}</p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t.common.close}
-            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <X className="size-4" aria-hidden />
-          </button>
+    <ModalOverlay label={t.people.editPersonTitle} onClose={onClose}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-base font-semibold text-foreground">{t.people.editPersonTitle}</h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t.people.editPersonHint}</p>
         </div>
-        <div className="mt-4 space-y-4">
-          <div>
-            <Label htmlFor="edit-name">{t.people.nameLabel}</Label>
-            <Input
-              id="edit-name"
-              value={name}
-              onChange={(e) => onNameChange(e.target.value)}
-              placeholder={t.people.namePlaceholder}
-              maxLength={80}
-              autoFocus
-            />
-          </div>
-          <div>
-            <Label htmlFor="edit-role">{t.people.roleOwner}</Label>
-            <Select value={role} onValueChange={onRoleChange}>
-              <SelectTrigger id="edit-role">
-                <SelectValue placeholder={t.people.roleMember} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="member">{t.people.roleMember}</SelectItem>
-                <SelectItem value="admin">{t.people.roleAdmin}</SelectItem>
-                {canPromoteToOwner && <SelectItem value="owner">{t.people.roleOwner}</SelectItem>}
-              </SelectContent>
-            </Select>
-            {role === "owner" && !canPromoteToOwner && (
-              <p className="mt-1 text-xs text-muted-foreground">{t.people.cannotDemoteLastOwner}</p>
-            )}
-          </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t.common.close}
+          className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <X className="size-4" aria-hidden />
+        </button>
+      </div>
+      <div className="mt-4 space-y-4">
+        <div>
+          <Label htmlFor="edit-name">{t.people.nameLabel}</Label>
+          <Input
+            id="edit-name"
+            value={name}
+            onChange={(e) => onNameChange(e.target.value)}
+            placeholder={t.people.namePlaceholder}
+            maxLength={80}
+            autoFocus
+            autoComplete="off"
+          />
         </div>
-        <div className="mt-4 flex flex-col-reverse sm:flex-row gap-2">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={isSaving}
-            className="w-full sm:w-auto"
-          >
-            {t.common.cancel}
-          </Button>
-          <Button
-            onClick={onSave}
-            disabled={isSaving || name.trim().length < 2}
-            aria-busy={isSaving}
-            className="w-full sm:w-auto"
-          >
-            {isSaving ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
-            ) : (
-              t.people.savePerson
-            )}
-          </Button>
+        <div>
+          <Label htmlFor="edit-role">{t.people.roleLabel}</Label>
+          <Select value={role} onValueChange={onRoleChange}>
+            <SelectTrigger id="edit-role">
+              <SelectValue placeholder={t.people.roleMember} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="member">{t.people.roleMember}</SelectItem>
+              <SelectItem value="admin">{t.people.roleAdmin}</SelectItem>
+              {canPromoteToOwner ? (
+                <SelectItem value="owner">{t.people.roleOwner}</SelectItem>
+              ) : null}
+            </SelectContent>
+          </Select>
         </div>
       </div>
-    </dialog>
+      <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row">
+        <Button
+          variant="outline"
+          onClick={onClose}
+          disabled={isSaving}
+          className="w-full sm:w-auto"
+        >
+          {t.common.cancel}
+        </Button>
+        <Button
+          onClick={onSave}
+          disabled={isSaving || name.trim().length < 2}
+          aria-busy={isSaving}
+          className="w-full sm:w-auto"
+        >
+          {isSaving ? (
+            <Loader2 className="size-4 animate-spin" aria-hidden />
+          ) : (
+            <>
+              <Check className="mr-2 size-4" aria-hidden />
+              {t.people.savePerson}
+            </>
+          )}
+        </Button>
+      </div>
+    </ModalOverlay>
   );
 }
 
@@ -936,6 +912,8 @@ function AdminCardsDialog({
   selectedAssignedCardId,
   availableOwnerCards,
   availableAssignedCards,
+  allCards,
+  neighborhoods,
   onOwnerCardToggle,
   onAssignedCardChange,
   onClose,
@@ -948,134 +926,214 @@ function AdminCardsDialog({
   onOwnerCardToggle: (cardId: string) => void;
   selectedAssignedCardId: string | null;
   onAssignedCardChange: (cardId: string | null) => void;
-  availableOwnerCards: { id: string; number: number; assignedPersonId: string | null }[];
-  availableAssignedCards: { id: string; number: number; assignedPersonId: string | null }[];
+  availableOwnerCards: CardOption[];
+  availableAssignedCards: CardOption[];
+  allCards: AdminCardOption[];
+  neighborhoods: NeighborhoodOption[];
   onClose: () => void;
   onSave: () => void;
   isSaving: boolean;
   t: ReturnType<typeof useI18n>["t"];
 }) {
-  return (
-    <dialog
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      aria-modal="true"
-      aria-label={t.people.adminCardsTitle}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      onKeyDown={(e) => {
-        if (e.key === "Escape") onClose();
-      }}
-    >
-      <div className="w-full max-w-2xl rounded-2xl border bg-card p-5 shadow-xl max-h-[80vh] overflow-hidden flex flex-col">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h3 className="text-base font-semibold">
-              {t.people.adminCardsTitle} — {person.name}
-            </h3>
-            <p className="mt-0.5 text-xs text-muted-foreground">{t.people.adminCardsHint}</p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t.common.close}
-            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <X className="size-4" aria-hidden />
-          </button>
-        </div>
-        <div className="mt-4 flex-1 overflow-y-auto space-y-6">
-          {/* Owner Cards */}
-          <div>
-            <h4 className="text-sm font-semibold mb-2">
-              {t.people.ownerCards} ({selectedOwnerCardIds.length})
-            </h4>
-            {availableOwnerCards.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4">{t.people.noAvailableCards}</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {availableOwnerCards.map((card) => (
-                  <button
-                    key={card.id}
-                    type="button"
-                    onClick={() => onOwnerCardToggle(card.id)}
-                    className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium border transition-colors",
-                      selectedOwnerCardIds.includes(card.id)
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
-                    )}
-                  >
-                    #{String(card.number).padStart(2, "0")}
-                    {selectedOwnerCardIds.includes(card.id) && (
-                      <UserRoundX className="size-3.5" aria-hidden />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+  const cardStatusLabel = (card: AdminCardOption) => {
+    if (card.ownerName) return t.people.cardOwner.replace("{name}", card.ownerName);
+    if (card.assignedToName) return t.cards.assignedTo.replace("{name}", card.assignedToName);
+    return t.cards.free;
+  };
 
-          {/* Assigned Card */}
-          <div>
-            <h4 className="text-sm font-semibold mb-2">{t.people.assignedCard}</h4>
+  return (
+    <ModalOverlay label={t.people.adminCardsTitle} onClose={onClose} panelClassName="max-w-2xl">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-base font-semibold text-foreground">
+            {t.people.adminCardsTitle} — {person.name}
+          </h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t.people.adminCardsHint}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t.common.close}
+          className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <X className="size-4" aria-hidden />
+        </button>
+      </div>
+      <div className="mt-4 flex max-h-[60vh] flex-col gap-6 overflow-y-auto sm:max-h-[70vh]">
+        <div>
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+            <CreditCard className="size-5 text-brand" aria-hidden="true" />
+            {t.people.allCards} ({allCards.length})
+          </h4>
+          {allCards.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-6 text-center text-sm text-muted-foreground">
+              <CreditCard className="size-6" aria-hidden />
+              <p>{t.people.noAvailableCards}</p>
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {allCards.map((card) => (
+                <li
+                  key={card.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">
+                      #{String(card.number).padStart(2, "0")}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                      {card.neighborhoods.length > 0 ? card.neighborhoods.join(" · ") : "—"}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-xs font-medium text-muted-foreground">
+                    {cardStatusLabel(card)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div>
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+            <MapPin className="size-5 text-brand" aria-hidden="true" />
+            {t.people.neighborhoods} ({neighborhoods.length})
+          </h4>
+          {neighborhoods.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-6 text-center text-sm text-muted-foreground">
+              <MapPin className="size-6" aria-hidden />
+              <p>{t.people.noNeighborhoods}</p>
+            </div>
+          ) : (
             <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => onAssignedCardChange(null)}
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium border transition-colors",
-                  !selectedAssignedCardId
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
-                )}
-              >
-                {t.people.noAssignedCard}
-              </button>
-              {availableAssignedCards.map((card) => (
+              {neighborhoods.map((neighborhood) => (
+                <span
+                  key={neighborhood.name}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground"
+                >
+                  {neighborhood.name}
+                  <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-bold text-brand">
+                    {neighborhood.count}
+                  </span>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+            <CreditCard className="size-5 text-brand" aria-hidden="true" />
+            {t.people.ownerCards} ({selectedOwnerCardIds.length})
+          </h4>
+          {availableOwnerCards.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-6 text-center text-sm text-muted-foreground">
+              <CreditCard className="size-6" aria-hidden />
+              <p>{t.people.noAvailableCards}</p>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {availableOwnerCards.map((card) => (
                 <button
                   key={card.id}
                   type="button"
-                  onClick={() => onAssignedCardChange(card.id)}
+                  onClick={() => onOwnerCardToggle(card.id)}
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium border transition-colors",
-                    selectedAssignedCardId === card.id
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
+                    "inline-flex flex-col items-start gap-1 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors",
+                    selectedOwnerCardIds.includes(card.id)
+                      ? "border-brand bg-brand/10 text-brand"
+                      : "border-border bg-card text-muted-foreground hover:border-brand/50 hover:bg-surface-subtle-light",
                   )}
                 >
-                  #{String(card.number).padStart(2, "0")}
-                  {selectedAssignedCardId === card.id && (
-                    <UserRoundX className="size-3.5" aria-hidden />
-                  )}
+                  <span className="flex items-center gap-2">
+                    #{String(card.number).padStart(2, "0")}
+                    {selectedOwnerCardIds.includes(card.id) ? (
+                      <Check className="size-4 text-brand" aria-hidden />
+                    ) : null}
+                  </span>
+                  {card.neighborhoods.length > 0 ? (
+                    <span className="max-w-44 truncate text-[10px] font-medium text-muted-foreground">
+                      {card.neighborhoods.join(" · ")}
+                    </span>
+                  ) : null}
                 </button>
               ))}
             </div>
+          )}
+        </div>
+
+        <div>
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+            <CreditCard className="size-5 text-brand" aria-hidden="true" />
+            {t.people.assignedCard}
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => onAssignedCardChange(null)}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors",
+                !selectedAssignedCardId
+                  ? "border-brand bg-brand/10 text-brand"
+                  : "border-border bg-card text-muted-foreground hover:border-brand/50 hover:bg-surface-subtle-light",
+              )}
+            >
+              <X className="size-4" aria-hidden />
+              {t.people.noAssignedCard}
+            </button>
+            {availableAssignedCards.map((card) => (
+              <button
+                key={card.id}
+                type="button"
+                onClick={() => onAssignedCardChange(card.id)}
+                className={cn(
+                  "inline-flex flex-col items-start gap-1 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors",
+                  selectedAssignedCardId === card.id
+                    ? "border-brand bg-brand/10 text-brand"
+                    : "border-border bg-card text-muted-foreground hover:border-brand/50 hover:bg-surface-subtle-light",
+                )}
+              >
+                <span className="flex items-center gap-2">
+                  #{String(card.number).padStart(2, "0")}
+                  {selectedAssignedCardId === card.id ? (
+                    <Check className="size-4 text-brand" aria-hidden />
+                  ) : null}
+                </span>
+                {card.neighborhoods.length > 0 ? (
+                  <span className="max-w-44 truncate text-[10px] font-medium text-muted-foreground">
+                    {card.neighborhoods.join(" · ")}
+                  </span>
+                ) : null}
+              </button>
+            ))}
           </div>
         </div>
-        <div className="mt-6 flex flex-col-reverse sm:flex-row gap-2 border-t pt-4">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={isSaving}
-            className="w-full sm:w-auto"
-          >
-            {t.common.cancel}
-          </Button>
-          <Button
-            onClick={onSave}
-            disabled={isSaving}
-            aria-busy={isSaving}
-            className="w-full sm:w-auto"
-          >
-            {isSaving ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
-            ) : (
-              t.people.saveCards
-            )}
-          </Button>
-        </div>
       </div>
-    </dialog>
+      <div className="mt-6 flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row">
+        <Button
+          variant="outline"
+          onClick={onClose}
+          disabled={isSaving}
+          className="w-full sm:w-auto"
+        >
+          {t.common.cancel}
+        </Button>
+        <Button
+          onClick={onSave}
+          disabled={isSaving}
+          aria-busy={isSaving}
+          className="w-full sm:w-auto"
+        >
+          {isSaving ? (
+            <Loader2 className="size-4 animate-spin" aria-hidden />
+          ) : (
+            <>
+              <Check className="mr-2 size-4" aria-hidden />
+              {t.people.saveCards}
+            </>
+          )}
+        </Button>
+      </div>
+    </ModalOverlay>
   );
 }
