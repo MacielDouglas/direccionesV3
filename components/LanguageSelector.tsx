@@ -6,6 +6,7 @@ import { localeLabels } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/types";
 import { cn } from "@/lib/utils";
 import { Languages } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function LanguageSelector({
   className,
@@ -14,6 +15,7 @@ export function LanguageSelector({
 }) {
   const { locale, setLocale, t } = useI18n();
   const { vibrate } = useHaptic();
+  const router = useRouter();
   const locales: Locale[] = ["pt", "es"];
 
   return (
@@ -30,6 +32,7 @@ export function LanguageSelector({
             onClick={() => {
               setLocale(l);
               vibrate("light");
+              router.refresh();
             }}
             aria-pressed={locale === l}
             className={cn(
