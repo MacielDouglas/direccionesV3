@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { getCardColor } from "../../utils/cardColors";
 import { AddressDetailModal } from "./AddressDetailModal";
+import { CardEditModal } from "./CardEditModal";
 import { CardListItem } from "./CardListItem";
 
 type CardListClientCard = {
@@ -33,6 +34,7 @@ type CardListClientCard = {
   } | null;
   addresses: {
     id: string;
+    type: string;
     number: string;
     street: string;
     neighborhood: string;
@@ -48,6 +50,21 @@ type CardListClientCard = {
   }[];
 };
 
+type AllAddress = {
+  id: string;
+  type: string;
+  street: string;
+  number: string;
+  neighborhood: string;
+  city: string;
+  businessName: string | null;
+  active: boolean;
+  latitude: number | null;
+  longitude: number | null;
+  cardId: string | null;
+  card: { number: number } | null;
+};
+
 interface Props {
   cards: CardListClientCard[];
   persons: {
@@ -57,16 +74,18 @@ interface Props {
     organizationId: string | null;
     user: { id: string; name: string; email: string; image: string | null } | null;
   }[];
+  allAddresses: AllAddress[];
   organizationSlug: string;
 }
 
-export function CardListClient({ cards, persons, organizationSlug }: Props) {
+export function CardListClient({ cards, persons, allAddresses, organizationSlug }: Props) {
   const { t } = useI18n();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [addressPromise, setAddressPromise] = useState<Promise<AddressWithUsers | null> | null>(
     null,
   );
+  const [editCardId, setEditCardId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "assigned" | "available">("all");
   const [query, setQuery] = useState("");
 
@@ -109,6 +128,11 @@ export function CardListClient({ cards, persons, organizationSlug }: Props) {
   const availableCount = cards.length - assignedCount;
 
   const isFiltering = filter !== "all" || query.trim().length > 0;
+
+  const editCard = useMemo(
+    () => cards.find((c) => c.id === editCardId) ?? null,
+    [cards, editCardId],
+  );
 
   const handleSelectAddress = useCallback((addressId: string, cardId: string) => {
     setSelectedAddressId((prev) => (prev === addressId ? null : addressId)); // ← toggle
@@ -300,6 +324,7 @@ export function CardListClient({ cards, persons, organizationSlug }: Props) {
                       isSelected={isSelected}
                       onSelect={() => handleSelectCard(card.id)}
                       onAddressClick={handleAddressClick}
+                      onEditCard={setEditCardId}
                     />
                   </li>
                 );
@@ -314,6 +339,20 @@ export function CardListClient({ cards, persons, organizationSlug }: Props) {
         organizationSlug={organizationSlug}
         onClose={() => setAddressPromise(null)}
       />
+
+      {editCard && (
+        <CardEditModal
+          cardId={editCard.id}
+          cardNumber={editCard.number}
+          organizationId={editCard.organizationId}
+          organizationSlug={organizationSlug}
+          linkedAddresses={allAddresses.filter((addr) =>
+            editCard.addresses.some((c) => c.id === addr.id),
+          )}
+          allAddresses={allAddresses}
+          onClose={() => setEditCardId(null)}
+        />
+      )}
     </main>
   );
 }

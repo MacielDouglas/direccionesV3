@@ -381,6 +381,10 @@ export type I18nDictionary = {
     savingCard: string;
     saveCardChanges: string;
     cardUpdated: string;
+    showAllAddresses: string;
+    hideAllAddresses: string;
+    linkedToOtherCard: string;
+    otherCardNumber: string;
     edit: string;
     assignVerb: string;
     assignTitle: string;

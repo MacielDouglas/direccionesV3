@@ -1,11 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { ADDRESS_TYPE_OPTIONS } from "@/features/addresses/domain/constants/address.constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { CheckCircle, Circle, CircleAlert, Clock, MapPin, Pencil, User } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
 import { AssignCardModal } from "./AssignCardModal";
 import { DeleteCardButton } from "./DeleteCardButton";
@@ -23,6 +23,7 @@ interface CardItemProps {
     startDate: Date | null;
     addresses: {
       id: string;
+      type: string;
       street: string;
       number: string;
       neighborhood: string;
@@ -49,6 +50,7 @@ interface CardItemProps {
   isSelected: boolean;
   onSelect: () => void;
   onAddressClick: (addressId: string) => void;
+  onEditCard: (cardId: string) => void;
 }
 
 export function CardListItem({
@@ -58,6 +60,7 @@ export function CardListItem({
   color,
   isSelected,
   onAddressClick,
+  onEditCard,
 }: CardItemProps) {
   const [assignOpen, setAssignOpen] = useState(false);
   const { t, locale } = useI18n();
@@ -68,6 +71,12 @@ export function CardListItem({
   const dateFormat = new Intl.DateTimeFormat(locale === "pt" ? "pt-BR" : "es-419");
   const assignedImage = card.assignedTo?.user?.image ?? null;
   const assignedInitial = card.assignedTo?.name?.charAt(0).toUpperCase() ?? "?";
+
+  const neighborhoods = card.addresses.reduce<string[]>((list, addr) => {
+    const neighborhood = addr.neighborhood?.trim();
+    if (neighborhood && !list.includes(neighborhood)) list.push(neighborhood);
+    return list;
+  }, []);
 
   return (
     <>
@@ -179,45 +188,61 @@ export function CardListItem({
             </div>
           )}
 
+          {/* Bairros (únicos, sem destaque) */}
+          {neighborhoods.length > 0 && (
+            <p className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
+              <MapPin className="size-3 shrink-0" aria-hidden />
+              <span className="truncate">{neighborhoods.join(" · ")}</span>
+            </p>
+          )}
+
           {/* Endereços */}
           {card.addresses.length > 0 && (
             <ul
               className="flex flex-col divide-y divide-border/60 rounded-xl border border-border/60 bg-muted/20"
               aria-label={t.admin.linkedAddresses}
             >
-              {card.addresses.map((addr) => (
-                <li key={addr.id}>
-                  <button
-                    type="button"
-                    onClick={() => onAddressClick(addr.id)}
-                    className="flex w-full items-start gap-2.5 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                    aria-label={t.admin.addressDetails.replace(
-                      "{name}",
-                      addr.businessName ?? addr.street,
-                    )}
-                  >
-                    <MapPin className="mt-0.5 size-4 shrink-0" style={{ color }} aria-hidden />
-                    <span className="min-w-0 flex-1">
-                      {addr.businessName && (
-                        <span className="block truncate text-xs font-semibold text-foreground">
-                          {addr.businessName}
-                        </span>
+              {card.addresses.map((addr) => {
+                const typeConfig = ADDRESS_TYPE_OPTIONS.find((opt) => opt.value === addr.type);
+                const TypeIcon = typeConfig?.icon ?? MapPin;
+
+                return (
+                  <li key={addr.id}>
+                    <button
+                      type="button"
+                      onClick={() => onAddressClick(addr.id)}
+                      className="flex w-full items-start gap-2.5 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                      aria-label={t.admin.addressDetails.replace(
+                        "{name}",
+                        addr.businessName ?? addr.street,
                       )}
-                      <span className="block truncate text-muted-foreground">
-                        {addr.street}, {addr.number}
-                        {addr.neighborhood ? ` — ${addr.neighborhood}` : ""}
-                        {addr.city ? `, ${addr.city}` : ""}
-                      </span>
-                    </span>
-                    {!addr.active && (
-                      <CircleAlert
-                        className="size-4 shrink-0 animate-pulse text-red-500"
+                    >
+                      <TypeIcon
+                        className={cn("mt-0.5 size-4 shrink-0", typeConfig?.color)}
                         aria-hidden
                       />
-                    )}
-                  </button>
-                </li>
-              ))}
+                      <span className="min-w-0 flex-1">
+                        {addr.businessName && (
+                          <span className="block truncate text-xs font-semibold text-foreground">
+                            {addr.businessName}
+                          </span>
+                        )}
+                        <span className="block truncate text-muted-foreground">
+                          {addr.street}, {addr.number}
+                          {addr.neighborhood ? ` — ${addr.neighborhood}` : ""}
+                          {addr.city ? `, ${addr.city}` : ""}
+                        </span>
+                      </span>
+                      {!addr.active && (
+                        <CircleAlert
+                          className="size-4 shrink-0 animate-pulse text-red-500"
+                          aria-hidden
+                        />
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
 
@@ -237,15 +262,13 @@ export function CardListItem({
             )}
 
             <Button
-              asChild
               size="sm"
               variant="ghost"
               className="text-muted-foreground hover:text-foreground"
+              onClick={() => onEditCard(card.id)}
             >
-              <Link href={`/org/${organizationSlug}/admin/cards/${card.id}/edit`}>
-                <Pencil className="mr-1.5 size-4" aria-hidden />
-                {t.admin.edit}
-              </Link>
+              <Pencil className="mr-1.5 size-4" aria-hidden />
+              {t.admin.edit}
             </Button>
 
             <div className="ml-auto flex items-center gap-1">

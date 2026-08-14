@@ -1,4 +1,4 @@
-import { getOrgPersons, listCards } from "../../application/card.service";
+import { getAllAddresses, getOrgPersons, listCards } from "../../application/card.service";
 import { CardListClient } from "../components/CardListClient";
 
 interface Props {
@@ -7,9 +7,10 @@ interface Props {
 }
 
 export async function CardListScreen({ organizationId, organizationSlug }: Props) {
-  const [cards, persons] = await Promise.all([
+  const [cards, persons, allAddresses] = await Promise.all([
     listCards(organizationId),
     getOrgPersons(organizationId),
+    getAllAddresses(organizationId),
   ]);
 
   return (
@@ -22,6 +23,7 @@ export async function CardListScreen({ organizationId, organizationSlug }: Props
         })),
       }))}
       persons={persons}
+      allAddresses={allAddresses}
       organizationSlug={organizationSlug}
     />
   );

@@ -49,6 +49,7 @@ export async function listCards(organizationId: string) {
       addresses: {
         select: {
           id: true,
+          type: true,
           street: true,
           number: true,
           neighborhood: true,
@@ -75,6 +76,27 @@ export async function listCards(organizationId: string) {
         },
       },
     },
+  });
+}
+
+export async function getAllAddresses(organizationId: string) {
+  return prisma.address.findMany({
+    where: { organizationId, pendingDeletion: false },
+    select: {
+      id: true,
+      type: true,
+      street: true,
+      number: true,
+      neighborhood: true,
+      city: true,
+      businessName: true,
+      active: true,
+      latitude: true,
+      longitude: true,
+      cardId: true,
+      card: { select: { number: true } },
+    },
+    orderBy: { street: "asc" },
   });
 }
 
