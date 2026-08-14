@@ -18,7 +18,6 @@ interface Props {
   organizationSlug: string;
   canDelete?: boolean;
   canEdit?: boolean;
-  dimPast?: boolean;
   members?: AgendaMember[];
   fieldOptions?: AgendaFieldOptions | null;
   adminContent?: React.ReactNode;
@@ -33,7 +32,6 @@ export function AgendaPageClient({
   organizationSlug,
   canDelete,
   canEdit,
-  dimPast,
   members,
   fieldOptions,
   adminContent,
@@ -78,7 +76,6 @@ export function AgendaPageClient({
         organizationSlug={organizationSlug}
         canDelete={canDelete}
         canEdit={canEdit}
-        dimPast={dimPast}
         members={members}
         fieldOptions={fieldOptions}
         highlightEventId={highlightEventId}

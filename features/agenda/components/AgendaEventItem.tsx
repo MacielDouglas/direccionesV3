@@ -21,7 +21,6 @@ interface Props {
   organizationSlug: string;
   canDelete?: boolean;
   canEdit?: boolean;
-  dimPast?: boolean;
   members?: AgendaMember[];
   fieldOptions?: AgendaFieldOptions | null;
   onOpen?: () => void;
@@ -32,7 +31,6 @@ export function AgendaEventItem({
   organizationSlug,
   canDelete,
   canEdit,
-  dimPast,
   members = [],
   fieldOptions,
   onOpen,
@@ -57,27 +55,15 @@ export function AgendaEventItem({
           }
         }}
         className={cn(
-          "group-data-[highlight]:ring-2 group-data-[highlight]:ring-primary group-data-[highlight]:ring-offset-2 flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-xs transition-opacity",
-          dimPast && isPast && "opacity-60",
+          "group-data-[highlight]:ring-2 group-data-[highlight]:ring-primary group-data-[highlight]:ring-offset-2 flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-xs transition-[filter,opacity]",
+          isPast && "blur-[2px] opacity-80",
           onOpen && "cursor-pointer",
         )}
         aria-label={`${dateStr}, ${timeStr}`}
       >
         <div className="flex items-start gap-3">
-          <div
-            className={cn(
-              "flex min-w-14 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border px-3 py-2",
-              dimPast && isPast ? "border-border bg-muted/50" : "border-primary/20 bg-primary/5",
-            )}
-          >
-            <span
-              className={cn(
-                "text-2xl font-bold leading-none tabular-nums",
-                dimPast && isPast ? "text-muted-foreground" : "text-primary",
-              )}
-            >
-              {day}
-            </span>
+          <div className="flex min-w-14 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2">
+            <span className="text-2xl font-bold leading-none tabular-nums text-primary">{day}</span>
             <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               {monthName(locale, month).slice(0, 3)}
             </span>
@@ -86,12 +72,7 @@ export function AgendaEventItem({
           <div className="flex min-w-0 flex-1 flex-col gap-1.5">
             <time
               dateTime={new Date(eventStartUtcMs(event)).toISOString()}
-              className={cn(
-                "inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold",
-                dimPast && isPast
-                  ? "bg-muted text-muted-foreground"
-                  : "bg-primary text-primary-foreground",
-              )}
+              className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground"
             >
               <Clock className="size-3.5" aria-hidden />
               {timeStr}
@@ -134,7 +115,7 @@ export function AgendaEventItem({
                 alt={event.conductor.name}
                 width={28}
                 height={28}
-                className={cn("size-7 rounded-full object-cover", dimPast && isPast && "grayscale")}
+                className="size-7 rounded-full object-cover"
               />
             ) : (
               <span className="flex size-7 items-center justify-center rounded-full bg-muted">

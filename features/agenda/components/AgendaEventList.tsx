@@ -18,7 +18,6 @@ interface Props {
   organizationSlug: string;
   canDelete?: boolean;
   canEdit?: boolean;
-  dimPast?: boolean;
   members?: AgendaMember[];
   fieldOptions?: AgendaFieldOptions | null;
   highlightEventId?: string | null;
@@ -31,7 +30,6 @@ export function AgendaEventList({
   organizationSlug,
   canDelete,
   canEdit,
-  dimPast,
   members,
   fieldOptions,
   highlightEventId,
@@ -79,14 +77,13 @@ export function AgendaEventList({
           organizationSlug={organizationSlug}
           canDelete={canDelete}
           canEdit={canEdit}
-          dimPast={dimPast}
           members={members}
           fieldOptions={fieldOptions}
           onOpen={() => setModalEvent(event)}
         />
       </li>
     ),
-    [organizationSlug, canDelete, canEdit, dimPast, members, fieldOptions],
+    [organizationSlug, canDelete, canEdit, members, fieldOptions],
   );
 
   if (events.length === 0) {

@@ -66,7 +66,6 @@ export default async function AdminAgendaPage({ params, searchParams }: Props) {
         organizationSlug={organizationSlug}
         canDelete={true}
         canEdit={true}
-        dimPast={true}
         members={members}
         fieldOptions={fieldOptions}
         adminContent={
