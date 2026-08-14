@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useTenant } from "@/providers/TenantProvider";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -20,6 +21,7 @@ interface Props {
 
 export default function AddressForm({ existingNeighborhoods, existingCities }: Props) {
   const form = useAddressForm();
+  const { t } = useI18n();
   const { organization } = useTenant();
   const router = useRouter();
   const { isSubmitting } = form.formState;
@@ -47,51 +49,56 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
         image: { imageUrl, imageKey, isCustomImage: true },
       });
 
-      toast.success("¡Dirección creada correctamente!");
+      toast.success(t.addresses.addressCreated);
       router.push(`/org/${organization.slug}/addresses/${newAddress.id}`);
     } catch {
-      toast.error("Error al crear la dirección. Intente nuevamente.");
+      toast.error(t.addresses.addressCreateError);
     } finally {
       setUploadProgress(0);
     }
   }
 
   const submitLabel = () => {
-    if (uploadProgress > 0 && uploadProgress < 100) return `Enviando imagen ${uploadProgress}%`;
-    if (isSubmitting) return "Creando…";
-    return "Crear dirección";
+    if (uploadProgress > 0 && uploadProgress < 100)
+      return t.addresses.imageUploading.replace("{percent}", String(uploadProgress));
+    if (isSubmitting) return t.addresses.addressCreating;
+    return t.addresses.createTitle;
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-8 pb-10">
-        <div className="px-1 pt-1">
-          {/* ✅ repassa listas para AddressFields */}
-          <AddressFields
-            existingNeighborhoods={existingNeighborhoods}
-            existingCities={existingCities}
-          />
-        </div>
+        <AddressFields
+          existingNeighborhoods={existingNeighborhoods}
+          existingCities={existingCities}
+        />
 
-        <div className="sticky bottom-0 z-10 border-t bg-background px-4 py-3 shadow-md">
-          {uploadProgress > 0 && uploadProgress < 100 && (
-            <progress
-              value={uploadProgress}
-              max={100}
-              className="mb-2 w-full"
-              aria-label={`Subiendo imagen: ${uploadProgress}%`}
-            />
-          )}
-          <Button type="submit" disabled={isSubmitting} aria-busy={isSubmitting} className="w-full">
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                <span>{submitLabel()}</span>
-              </>
-            ) : (
-              "Crear dirección"
+        <div className="sticky bottom-0 z-10">
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-lg">
+            {uploadProgress > 0 && uploadProgress < 100 && (
+              <progress
+                value={uploadProgress}
+                max={100}
+                className="mb-2 w-full"
+                aria-label={t.addresses.imageUploading.replace("{percent}", String(uploadProgress))}
+              />
             )}
-          </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              aria-busy={isSubmitting}
+              className="w-full"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                  <span>{submitLabel()}</span>
+                </>
+              ) : (
+                t.addresses.createTitle
+              )}
+            </Button>
+          </div>
         </div>
       </form>
     </Form>

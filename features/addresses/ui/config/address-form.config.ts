@@ -1,15 +1,45 @@
-export const ADDRESS_FORMS_OPTIONS = [
+import type { I18nDictionary } from "@/lib/i18n/types";
+
+type AddressKey = keyof I18nDictionary["addresses"];
+
+type AddressFormField =
+  | {
+      kind: "text";
+      name: string;
+      labelKey: AddressKey;
+      placeholderKey?: AddressKey;
+    }
+  | {
+      kind: "switch";
+      name: string;
+      labelKey: AddressKey;
+    };
+
+type AddressFormOption =
+  | {
+      kind: "text";
+      name: string;
+      labelKey: AddressKey;
+      placeholderKey?: AddressKey;
+    }
+  | {
+      kind: "group";
+      id: string;
+      fields: AddressFormField[];
+    };
+
+export const ADDRESS_FORMS_OPTIONS: AddressFormOption[] = [
   {
     kind: "text",
     name: "businessName",
-    label: "Nombre del establecimiento",
-    placeholder: "Ej. Hotel Playa",
+    labelKey: "formBusinessLabel",
+    placeholderKey: "formBusinessPlaceholder",
   },
   {
     kind: "text",
     name: "street",
-    label: "Calle",
-    placeholder: "Ej. Rua Enseada dos Corais",
+    labelKey: "formStreetLabel",
+    placeholderKey: "formStreetPlaceholder",
   },
   {
     kind: "group",
@@ -18,30 +48,28 @@ export const ADDRESS_FORMS_OPTIONS = [
       {
         kind: "text",
         name: "number",
-        label: "Numero",
-        placeholder: "Ej. 123 u 123A u s/n",
+        labelKey: "formNumberLabel",
+        placeholderKey: "formNumberPlaceholder",
       },
       {
         kind: "text",
         name: "neighborhood",
-        label: "Barrio",
-        placeholder: "Ej. Porto de Galinhas",
+        labelKey: "formNeighborhoodLabel",
+        placeholderKey: "formNeighborhoodPlaceholder",
       },
     ],
   },
   {
     kind: "text",
     name: "city",
-    label: "Ciudad",
-    placeholder: "Ej. Ipojuca",
+    labelKey: "formCityLabel",
+    placeholderKey: "formCityPlaceholder",
   },
-
   {
     kind: "text",
     name: "info",
-    label: "Información adicional",
-    placeholder:
-      "Ej. Apartamento 10, dos casas más allá de la farmacia MedCar, frente al número 234.",
+    labelKey: "formInfoLabel",
+    placeholderKey: "formInfoPlaceholder",
   },
   {
     kind: "group",
@@ -50,15 +78,12 @@ export const ADDRESS_FORMS_OPTIONS = [
       {
         kind: "switch",
         name: "active",
-        label: "Dirección activa?",
-        placeholder: "Dirección activa",
+        labelKey: "formActiveLabel",
       },
-
       {
         kind: "switch",
         name: "confirmed",
-        label: "Dirección confirmada?",
-        placeholder: "Dirección confirmada.",
+        labelKey: "formConfirmedLabel",
       },
     ],
   },

@@ -5,7 +5,7 @@ import type { AddressWithUsers } from "@/features/addresses/types/address.types"
 import { CardGroupedMap } from "@/features/map/components/CardGroupedMap";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { fetchAddressWithUsers } from "@/server/address/address.action";
-import { Plus } from "lucide-react";
+import { CreditCard, Plus } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { getCardColor } from "../../utils/cardColors";
@@ -108,95 +108,116 @@ export function CardListClient({ cards, persons, organizationSlug }: Props) {
   }, []);
 
   return (
-    <>
-      {/* Mapa único — 50vh */}
-      {cards.length > 0 && (
-        <div className="sticky top-0 z-20 h-[50vh] w-full shrink-0 overflow-hidden border-b shadow-sm">
-          <CardGroupedMap
-            cards={cards}
-            selectedCardId={selectedCardId}
-            selectedAddressId={selectedAddressId}
-            onSelectCard={handleSelectCard}
-            onSelectAddress={handleSelectAddress}
-          />
-
-          {/* Botão limpar seleção de card */}
-          {selectedCardId && (
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedCardId(null);
-                setSelectedAddressId(null);
-              }}
-              className="absolute bottom-3 left-3 z-10 rounded-full bg-background/90 px-3 py-1.5 text-xs font-semibold shadow backdrop-blur-sm transition hover:bg-background"
-            >
-              ✕ {t.admin.clearSelection}
-            </button>
-          )}
-
-          {/* Botão limpar seleção de endereço — aparece quando tem endereço selecionado */}
-          {selectedAddressId && (
-            <button
-              type="button"
-              onClick={() => setSelectedAddressId(null)}
-              className="absolute bottom-3 right-3 z-10 rounded-full bg-black/80 px-3 py-1.5 text-xs font-semibold text-white shadow backdrop-blur-sm transition hover:bg-black"
-            >
-              ✕ {t.admin.deselectPin}
-            </button>
-          )}
+    <main className="mx-auto w-full max-w-5xl px-4 py-6 md:py-10" aria-labelledby="cards-heading">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand">
+            {t.admin.title}
+          </p>
+          <h1 id="cards-heading" className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+            {t.admin.cardsTitle}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t.admin.cardsDescription}</p>
         </div>
-      )}
+        <Button asChild>
+          <Link href={`/org/${organizationSlug}/admin/cards/new`}>
+            <Plus className="mr-1.5 size-4" aria-hidden />
+            {t.admin.newCard}
+          </Link>
+        </Button>
+      </header>
 
-      {/* Lista de cards */}
-      <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:py-10">
-        <header className="mb-6 flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">{t.admin.cardsTitle}</h1>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              {t.admin.cardsCount.replace("{count}", String(cards.length))}
-            </p>
-          </div>
-          <Button asChild>
-            <Link href={`/org/${organizationSlug}/admin/cards/new`}>
-              <Plus className="mr-1.5 size-4" aria-hidden />
-              {t.admin.newCard}
-            </Link>
-          </Button>
-        </header>
+      <div className="space-y-8">
+        {/* Mapa único — sticky */}
+        {cards.length > 0 && (
+          <section
+            aria-label={t.admin.cardsTitle}
+            className="sticky top-0 z-20 overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+          >
+            <div className="h-[45vh] w-full">
+              <CardGroupedMap
+                cards={cards}
+                selectedCardId={selectedCardId}
+                selectedAddressId={selectedAddressId}
+                onSelectCard={handleSelectCard}
+                onSelectAddress={handleSelectAddress}
+              />
+            </div>
 
-        {cards.length === 0 ? (
-          <div className="py-16 text-center text-muted-foreground">
-            <p className="text-sm">{t.admin.noCardsCreated}</p>
-          </div>
-        ) : (
-          <ul className="flex flex-col gap-4" aria-label={t.admin.cardListAria}>
-            {orderedCards.map((card) => {
-              // ← era cards.map
-              const color = colorMap.get(card.id) ?? "#ef4444";
-              const isSelected = selectedCardId === card.id;
+            {/* Botão limpar seleção de card */}
+            {selectedCardId && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCardId(null);
+                  setSelectedAddressId(null);
+                }}
+                className="absolute bottom-3 left-3 z-10 rounded-full bg-background/90 px-3 py-1.5 text-xs font-semibold shadow backdrop-blur-sm transition hover:bg-background"
+              >
+                ✕ {t.admin.clearSelection}
+              </button>
+            )}
 
-              return (
-                <li
-                  key={card.id}
-                  ref={(el) => {
-                    if (el) cardRefs.current.set(card.id, el);
-                    else cardRefs.current.delete(card.id);
-                  }}
-                >
-                  <CardListItem
-                    card={card}
-                    persons={persons}
-                    organizationSlug={organizationSlug}
-                    color={color}
-                    isSelected={isSelected}
-                    onSelect={() => handleSelectCard(card.id)}
-                    onAddressClick={handleAddressClick} // ← este ainda abre modal ao clicar na lista
-                  />
-                </li>
-              );
-            })}
-          </ul>
+            {/* Botão limpar seleção de endereço */}
+            {selectedAddressId && (
+              <button
+                type="button"
+                onClick={() => setSelectedAddressId(null)}
+                className="absolute bottom-3 right-3 z-10 rounded-full bg-black/80 px-3 py-1.5 text-xs font-semibold text-white shadow backdrop-blur-sm transition hover:bg-black"
+              >
+                ✕ {t.admin.deselectPin}
+              </button>
+            )}
+          </section>
         )}
+
+        {/* Lista de cards */}
+        <section aria-labelledby="cards-list-heading">
+          <h2
+            id="cards-list-heading"
+            className="mb-3 flex items-center gap-2 text-base font-semibold text-foreground"
+          >
+            <CreditCard className="size-4 text-brand" aria-hidden="true" />
+            {t.admin.cardsTitle}
+            <span className="text-xs font-normal text-muted-foreground">
+              {t.admin.cardsCount.replace("{count}", String(cards.length))}
+            </span>
+          </h2>
+
+          {cards.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-16 text-center text-sm text-muted-foreground">
+              <CreditCard className="size-6" aria-hidden />
+              <p>{t.admin.noCardsCreated}</p>
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-4" aria-label={t.admin.cardListAria}>
+              {orderedCards.map((card) => {
+                const color = colorMap.get(card.id) ?? "#ef4444";
+                const isSelected = selectedCardId === card.id;
+
+                return (
+                  <li
+                    key={card.id}
+                    ref={(el) => {
+                      if (el) cardRefs.current.set(card.id, el);
+                      else cardRefs.current.delete(card.id);
+                    }}
+                  >
+                    <CardListItem
+                      card={card}
+                      persons={persons}
+                      organizationSlug={organizationSlug}
+                      color={color}
+                      isSelected={isSelected}
+                      onSelect={() => handleSelectCard(card.id)}
+                      onAddressClick={handleAddressClick}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
       </div>
 
       <AddressDetailModal
@@ -204,6 +225,6 @@ export function CardListClient({ cards, persons, organizationSlug }: Props) {
         organizationSlug={organizationSlug}
         onClose={() => setAddressPromise(null)}
       />
-    </>
+    </main>
   );
 }

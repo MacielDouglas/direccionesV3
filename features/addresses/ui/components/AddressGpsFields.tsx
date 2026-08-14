@@ -1,15 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import type { I18nDictionary } from "@/lib/i18n/types";
 import { BrushCleaning, MapPin, Paperclip, Pin, SatelliteDish } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useCallback, useState } from "react"; // ← adicionar useRef
+import { useCallback, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import type { AddressFormData } from "../../domain/address.schema";
 import { useGeolocation } from "../../hooks/useGeolocation";
 
 const MapboxMap = dynamic(
-  () => import("@/features/map/components/MapboxMap").then((m) => m.MapboxMap), // ← versão simples
+  () => import("@/features/map/components/MapboxMap").then((m) => m.MapboxMap),
   {
     ssr: false,
     loading: () => <div className="h-80 w-full animate-pulse rounded-xl bg-muted" />,
@@ -27,15 +29,20 @@ const extractCoords = (value: string) => {
 };
 
 // ── Skeleton com blur quando permissão negada ────────────────────────────────
-function GeolocationBlockedOverlay({ onRequest }: { onRequest: () => void }) {
+function GeolocationBlockedOverlay({
+  t,
+  onRequest,
+}: {
+  t: I18nDictionary;
+  onRequest: () => void;
+}) {
   return (
     <output
-      aria-label="Localización desactivada"
+      aria-label={t.addresses.gpsLocationDisabledAria}
       className="block relative overflow-hidden rounded-xl"
     >
       {/* Mapa borrado como fundo */}
       <div className="h-80 w-full select-none rounded-xl bg-muted" aria-hidden="true">
-        {/* ← corrigido bg-gradient-to-br → bg-gradient-to-br */}
         <div className="h-full w-full animate-pulse rounded-xl bg-linear-to-br from-muted to-muted-foreground/10" />
       </div>
 
@@ -43,15 +50,12 @@ function GeolocationBlockedOverlay({ onRequest }: { onRequest: () => void }) {
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-xl bg-background/70 backdrop-blur-sm">
         <div className="flex flex-col items-center gap-2 text-center px-4">
           <MapPin className="h-10 w-10 text-muted-foreground" aria-hidden="true" />
-          <p className="text-sm font-semibold text-foreground">Acceso a la ubicación desactivado</p>
-          <p className="text-xs text-muted-foreground max-w-xs">
-            Para usar el mapa y obtener tu ubicación, activa el permiso de geolocalización en tu
-            navegador.
-          </p>
+          <p className="text-sm font-semibold text-foreground">{t.addresses.gpsBlockedTitle}</p>
+          <p className="text-xs text-muted-foreground max-w-xs">{t.addresses.gpsBlockedHint}</p>
         </div>
         <Button type="button" onClick={onRequest}>
           <Pin aria-hidden="true" />
-          Activar ubicación
+          {t.addresses.gpsEnableLocation}
         </Button>
       </div>
     </output>
@@ -59,22 +63,24 @@ function GeolocationBlockedOverlay({ onRequest }: { onRequest: () => void }) {
 }
 
 // ── Skeleton enquanto detecta permissão ─────────────────────────────────────
-function GeolocationIdleSkeleton() {
+function GeolocationIdleSkeleton({ t }: { t: I18nDictionary }) {
   return (
     <output
-      aria-label="Verificando permisos de ubicación"
+      aria-label={t.addresses.gpsVerifying}
       className="block h-80 w-full animate-pulse rounded-xl bg-muted"
     >
-      <span className="sr-only">Verificando permisos…</span>
+      <span className="sr-only">{t.addresses.gpsCheckingAria}</span>
     </output>
   );
 }
 
 // ── Prompt: permissão ainda não solicitada ───────────────────────────────────
 function GeolocationPrompt({
+  t,
   onRequest,
   loading,
 }: {
+  t: I18nDictionary;
   onRequest: () => void;
   loading: boolean;
 }) {
@@ -82,16 +88,12 @@ function GeolocationPrompt({
     <div className="flex h-80 w-full flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-muted-foreground/30 bg-muted/30 text-center px-4">
       <MapPin className="h-10 w-10 text-brand" aria-hidden="true" />
       <div className="space-y-1">
-        <p className="text-sm font-semibold text-foreground">
-          Activa tu ubicación para usar el mapa
-        </p>
-        <p className="text-xs text-muted-foreground max-w-xs">
-          Tu ubicación se usará para centrar el mapa y facilitar la marcación GPS.
-        </p>
+        <p className="text-sm font-semibold text-foreground">{t.addresses.gpsPromptTitle}</p>
+        <p className="text-xs text-muted-foreground max-w-xs">{t.addresses.gpsPromptHint}</p>
       </div>
       <Button type="button" onClick={onRequest} disabled={loading} aria-busy={loading}>
         <Pin aria-hidden="true" />
-        {loading ? "Solicitando permiso…" : "Activar GPS"}
+        {loading ? t.addresses.gpsRequesting : t.addresses.gpsEnableGps}
       </Button>
     </div>
   );
@@ -99,6 +101,7 @@ function GeolocationPrompt({
 
 // ── Componente principal ─────────────────────────────────────────────────────
 export default function AddressGpsFields() {
+  const { t } = useI18n();
   const { setValue, watch } = useFormContext<AddressFormData>();
   const latitude = watch("latitude");
   const longitude = watch("longitude");
@@ -111,14 +114,14 @@ export default function AddressGpsFields() {
   const updateGps = useCallback(
     (lat: number, lng: number) => {
       if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-        setError("Coordenadas inválidas.");
+        setError(t.addresses.gpsInvalidCoords);
         return;
       }
       setValue("latitude", lat, { shouldValidate: true });
       setValue("longitude", lng, { shouldValidate: true });
       setError("");
     },
-    [setValue],
+    [setValue, t],
   );
 
   const handleGetUserLocation = () => {
@@ -134,13 +137,12 @@ export default function AddressGpsFields() {
       const text = await navigator.clipboard.readText();
       const coords = extractCoords(text);
       if (!coords) {
-        setError("Formato inválido. Usa: lat, lng");
+        setError(t.addresses.gpsInvalidFormat);
         return;
       }
       updateGps(coords.lat, coords.lng);
     } catch {
-      // ← corrigido: removido 'controlled'
-      setError("No se pudo acceder al portapapeles.");
+      setError(t.addresses.gpsClipboardError);
     }
   };
 
@@ -152,13 +154,12 @@ export default function AddressGpsFields() {
   }, [setValue]);
 
   const renderMapArea = () => {
-    if (state === "idle") return <GeolocationIdleSkeleton />;
-    if (state === "unsupported") return <GeolocationIdleSkeleton />;
+    if (state === "idle" || state === "unsupported") return <GeolocationIdleSkeleton t={t} />;
     if (state === "prompt")
-      return <GeolocationPrompt onRequest={handleGetUserLocation} loading={isFetchingGps} />;
-    if (state === "denied") return <GeolocationBlockedOverlay onRequest={handleGetUserLocation} />;
+      return <GeolocationPrompt t={t} onRequest={handleGetUserLocation} loading={isFetchingGps} />;
+    if (state === "denied")
+      return <GeolocationBlockedOverlay t={t} onRequest={handleGetUserLocation} />;
 
-    // ← Removido ref, onMapReady — MapboxMap limpa pin quando value=null
     return (
       <MapboxMap
         value={latitude != null && longitude != null ? { latitude, longitude } : null}
@@ -171,35 +172,30 @@ export default function AddressGpsFields() {
   };
 
   return (
-    <section
-      aria-labelledby="gps-section-title"
-      className="space-y-4 border-b p-5 dark:bg-surface-elevated-dark "
-    >
+    <section aria-labelledby="gps-section-title" className="space-y-4 p-5 sm:p-6">
       <header>
         <h2
           id="gps-section-title"
           className="inline-flex items-baseline gap-1 text-xl font-semibold"
         >
           <SatelliteDish className="h-7 w-7 text-brand" aria-hidden="true" />
-          Ubicación GPS de la dirección
+          {t.addresses.gpsTitle}
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Envía información GPS con datos longitudinales.
-        </p>
+        <p className="text-sm text-muted-foreground">{t.addresses.gpsHint}</p>
       </header>
 
-      <div className="rounded-lg bg-surface-subtle-light text-lg text-center p-3  dark:bg-surface-subtle-dark dark:text-slate-400">
-        <p>
-          Seleccione directamente en el mapa, o utilice su ubicación o pegue las coordenadas GPS.
-        </p>
+      <div className="rounded-lg bg-surface-subtle-light text-lg text-center p-3 dark:bg-surface-subtle-dark dark:text-slate-400">
+        <p>{t.addresses.gpsTip}</p>
       </div>
 
       <div className="flex items-center justify-around gap-10">
         <p className="text-sm">
-          Latitud: <span className="font-mono text-blue-500">{latitude ?? "—"}</span>
+          {t.addresses.gpsLatitude}:{" "}
+          <span className="font-mono text-blue-500">{latitude ?? "—"}</span>
         </p>
         <p className="text-sm">
-          Longitud: <span className="font-mono text-blue-500">{longitude ?? "—"}</span>
+          {t.addresses.gpsLongitude}:{" "}
+          <span className="font-mono text-blue-500">{longitude ?? "—"}</span>
         </p>
       </div>
 
@@ -222,12 +218,12 @@ export default function AddressGpsFields() {
             aria-busy={isFetchingGps}
           >
             <Pin aria-hidden="true" />
-            {isFetchingGps ? "Obteniendo ubicación…" : "Mi ubicación"}
+            {isFetchingGps ? t.addresses.gpsGettingLocation : t.addresses.gpsMyLocation}
           </Button>
 
           <Button type="button" variant="outline" onClick={handlePaste} disabled={isFetchingGps}>
             <Paperclip aria-hidden="true" />
-            Pegar coordenadas
+            {t.addresses.gpsPasteCoords}
           </Button>
 
           <Button
@@ -237,7 +233,7 @@ export default function AddressGpsFields() {
             disabled={isFetchingGps}
           >
             <BrushCleaning aria-hidden="true" />
-            Limpiar
+            {t.addresses.gpsClear}
           </Button>
         </div>
       )}

@@ -1,18 +1,26 @@
 import { Bed, Home, Hotel, Store, Utensils } from "lucide-react";
 
 export const ADDRESS_TYPE_OPTIONS = [
-  { value: "House", label: "Casa", icon: Home, color: "text-green-500" },
+  { value: "House", label: "Casa", labelKey: "typeHouse", icon: Home, color: "text-green-500" },
   {
     value: "Apartment",
     label: "Apartamento",
+    labelKey: "typeApartment",
     icon: Hotel,
     color: "text-pink-500",
   },
-  { value: "Store", label: "Negocio", icon: Store, color: "text-yellow-600 dark:text-yellow-300" },
-  { value: "Hotel", label: "Hotel", icon: Bed, color: "text-blue-500" },
+  {
+    value: "Store",
+    label: "Negocio",
+    labelKey: "typeStore",
+    icon: Store,
+    color: "text-yellow-600 dark:text-yellow-300",
+  },
+  { value: "Hotel", label: "Hotel", labelKey: "typeHotel", icon: Bed, color: "text-blue-500" },
   {
     value: "Restaurant",
     label: "Restaurante",
+    labelKey: "typeRestaurant",
     icon: Utensils,
     color: "text-brand",
   },

@@ -11,17 +11,21 @@ interface Props {
 export default function AddressFields({ existingNeighborhoods, existingCities }: Props) {
   return (
     <>
-      <div className="px-5 pt-5">
-        <AddressTypeSelector />
-        <AddressFormFields
-          existingNeighborhoods={existingNeighborhoods}
-          existingCities={existingCities}
-        />
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-xs sm:p-6">
+          <AddressTypeSelector />
+          <AddressFormFields
+            existingNeighborhoods={existingNeighborhoods}
+            existingCities={existingCities}
+          />
+        </div>
+        <div className="rounded-2xl border border-border bg-card shadow-xs">
+          <AddressGpsFields />
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-xs sm:p-6">
+          <AddressImageField />
+        </div>
       </div>
-      <div className="w-full border-t bg-muted/30">
-        <AddressGpsFields />
-      </div>
-      <AddressImageField />
     </>
   );
 }

@@ -69,8 +69,8 @@ export function CardListItem({
       <article
         style={isSelected ? { outline: `2px solid ${color}`, outlineOffset: "2px" } : undefined}
         className={cn(
-          "rounded-xl border bg-card p-4 flex flex-col gap-3 shadow-sm cursor-pointer",
-          "transition-all duration-200",
+          "flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 shadow-xs transition-all duration-200",
+          "cursor-pointer",
           isSelected ? "shadow-md" : "hover:shadow-md hover:border-border/80",
         )}
       >

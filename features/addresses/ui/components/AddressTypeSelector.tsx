@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { MapPinHouse } from "lucide-react";
 import { useController, useFormContext } from "react-hook-form";
@@ -8,6 +9,7 @@ import type { AddressFormData } from "../../domain/address.schema";
 import { ADDRESS_TYPE_OPTIONS } from "../../domain/constants/address.constants";
 
 export default function AddressTypeSelector() {
+  const { t } = useI18n();
   const { control } = useFormContext<AddressFormData>();
   const {
     field: { value, onChange },
@@ -21,13 +23,13 @@ export default function AddressTypeSelector() {
       <header>
         <h2 className="inline-flex items-baseline gap-1 text-xl font-semibold">
           <MapPinHouse className="h-7 w-7 text-brand" aria-hidden="true" />
-          Tipo de dirección
+          {t.addresses.typeTitle}
         </h2>
-        <p className="text-sm text-muted-foreground">Selecciona el tipo de lugar</p>
+        <p className="text-sm text-muted-foreground">{t.addresses.typeHint}</p>
       </header>
 
       <fieldset className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <legend className="sr-only">Tipo de dirección</legend>
+        <legend className="sr-only">{t.addresses.typeTitle}</legend>
         {ADDRESS_TYPE_OPTIONS.map((type) => {
           const isActive = value === type.value;
           const Icon = type.icon;
@@ -48,7 +50,7 @@ export default function AddressTypeSelector() {
               )}
             >
               <Icon width={20} height={20} aria-hidden="true" />
-              <span className="font-medium">{type.label}</span>
+              <span className="font-medium">{t.admin[type.labelKey]}</span>
             </Button>
           );
         })}

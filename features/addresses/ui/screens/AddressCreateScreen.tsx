@@ -1,31 +1,43 @@
+import { dictionaries } from "@/lib/i18n/dictionaries";
+import { getServerLocale } from "@/lib/i18n/server";
 import { getCurrentUser } from "@/server/users";
 import { MapPinPlus } from "lucide-react";
 import { getExistingLocations } from "../../application/address.service";
 import AddressForm from "../components/AddressForm";
 
 export default async function AddressCreateScreen() {
-  const session = await getCurrentUser();
+  const [session, locale] = await Promise.all([getCurrentUser(), getServerLocale()]);
   const organizationId = session?.person?.organizationId ?? "";
 
   const { neighborhoods, cities } = organizationId
     ? await getExistingLocations(organizationId)
     : { neighborhoods: [], cities: [] };
 
-  return (
-    <div className="mx-auto h-full w-full max-w-5xl space-y-4">
-      <div className="space-y-6 border-b p-5 md:p-10">
-        <div className="flex items-center gap-4">
-          <MapPinPlus className="h-10 w-10 text-brand" aria-hidden="true" />
-          <h1 className="text-3xl font-semibold">Nueva Dirección</h1>
-        </div>
-        <div className="mt-2 text-lg text-neutral-600 dark:text-neutral-400">
-          <p>En esta página puede enviar una nueva dirección.</p>
-          <p>Debes elegir el tipo de dirección, información básica, datos GPS y una foto.</p>
-        </div>
-      </div>
+  const t = dictionaries[locale];
 
-      {/* ✅ passa listas para o form */}
+  return (
+    <main
+      className="mx-auto w-full max-w-5xl px-4 py-6 md:py-10"
+      aria-labelledby="address-create-heading"
+    >
+      <header className="mb-6">
+        <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-brand">
+          <MapPinPlus className="size-4" aria-hidden="true" />
+          {t.navigation.newAddress}
+        </p>
+        <h1
+          id="address-create-heading"
+          className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl"
+        >
+          {t.addresses.createTitle}
+        </h1>
+        <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+          {t.addresses.createDescription}
+        </p>
+        <p className="mt-1 max-w-xl text-sm text-muted-foreground">{t.addresses.createHint}</p>
+      </header>
+
       <AddressForm existingNeighborhoods={neighborhoods} existingCities={cities} />
-    </div>
+    </main>
   );
 }

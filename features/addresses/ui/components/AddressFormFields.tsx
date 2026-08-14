@@ -4,6 +4,8 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import type { I18nDictionary } from "@/lib/i18n/types";
 import { MapPinPen } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import type { AddressFormData } from "../../domain/address.schema";
@@ -22,23 +24,25 @@ interface Props {
 }
 
 export default function AddressFormFields({ existingNeighborhoods, existingCities }: Props) {
+  const { t } = useI18n();
   const { control, watch, setValue } = useFormContext<AddressFormData>();
   const addressType = watch("addressType");
   const {
     formState: { submitCount },
   } = useFormContext();
 
+  const resolveLabel = (key: keyof I18nDictionary["addresses"]) => t.addresses[key];
+  const resolvePlaceholder = (key?: keyof I18nDictionary["addresses"]) =>
+    key ? t.addresses[key] : undefined;
+
   return (
     <section className="space-y-4 py-5">
       <header>
         <h2 className="inline-flex items-baseline gap-1 text-xl font-semibold">
           <MapPinPen className="h-7 w-7 text-brand" aria-hidden="true" />
-          Información de la dirección
+          {t.addresses.formTitle}
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Por favor enviar información como: calle, número de casa, ciudad, barrio, información
-          adicional, etc.
-        </p>
+        <p className="text-sm text-muted-foreground">{t.addresses.formHint}</p>
       </header>
 
       <div className="space-y-6">
@@ -57,14 +61,13 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
                   <FormItem>
                     <SmartCombobox
                       key={`neighborhood-${submitCount}`}
-                      label={item.label}
+                      label={resolveLabel(item.labelKey)}
                       value={watch("neighborhood") ?? ""}
                       onChange={(val) => setValue("neighborhood", val, { shouldValidate: true })}
                       existing={existingNeighborhoods}
-                      placeholder={item.placeholder}
+                      placeholder={resolvePlaceholder(item.placeholderKey)}
                       error={fieldState.error?.message}
                       inputClassName={comboboxInputStyle}
-                      // inputClassName={comboboxInputStyle}
                     />
                   </FormItem>
                 )}
@@ -83,13 +86,12 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
                   <FormItem>
                     <SmartCombobox
                       key={`city-${submitCount}`}
-                      label={item.label}
+                      label={resolveLabel(item.labelKey)}
                       value={watch("city") ?? ""}
                       onChange={(val) => setValue("city", val, { shouldValidate: true })}
                       existing={existingCities}
-                      placeholder={item.placeholder}
+                      placeholder={resolvePlaceholder(item.placeholderKey)}
                       error={fieldState.error?.message}
-                      // inputClassName={comboboxInputStyle}
                       inputClassName={comboboxInputStyle}
                     />
                   </FormItem>
@@ -111,7 +113,7 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
                       name={sub.name as keyof AddressFormData}
                       render={({ field }) => (
                         <FormItem className="flex items-center gap-3">
-                          <FormLabel>{sub.label}</FormLabel>
+                          <FormLabel>{t.addresses[sub.labelKey]}</FormLabel>
                           <FormControl>
                             <Switch
                               checked={Boolean(field.value)}
@@ -131,7 +133,7 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
               <div className="flex gap-3" key={item.id}>
                 {item.fields?.map((sub) => {
                   // ✅ neighborhood dentro do grupo → SmartCombobox
-                  if (sub.name === "neighborhood") {
+                  if (sub.kind === "text" && sub.name === "neighborhood") {
                     return (
                       <FormField
                         key={sub.name}
@@ -141,7 +143,7 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
                           <FormItem className="flex-1">
                             <SmartCombobox
                               key={`neighborhood-${submitCount}`}
-                              label={sub.label}
+                              label={t.addresses[sub.labelKey]}
                               value={watch("neighborhood") ?? ""}
                               onChange={(val) =>
                                 setValue("neighborhood", val, {
@@ -149,7 +151,9 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
                                 })
                               }
                               existing={existingNeighborhoods}
-                              placeholder={sub.placeholder}
+                              placeholder={
+                                sub.placeholderKey ? t.addresses[sub.placeholderKey] : undefined
+                              }
                               error={fieldState.error?.message}
                             />
                           </FormItem>
@@ -159,6 +163,7 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
                   }
 
                   // Input normal para os demais campos do grupo (ex: number)
+                  if (sub.kind !== "text") return null;
                   return (
                     <FormField
                       key={sub.name}
@@ -166,13 +171,15 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
                       name={sub.name as keyof AddressFormData}
                       render={({ field }) => (
                         <FormItem className="flex-1">
-                          <FormLabel>{sub.label} </FormLabel>
+                          <FormLabel>{t.addresses[sub.labelKey]} </FormLabel>
                           <FormControl>
                             <Input
                               {...field}
                               value={String(field.value ?? "")}
                               className={inputStyle}
-                              placeholder={sub.placeholder}
+                              placeholder={
+                                sub.placeholderKey ? t.addresses[sub.placeholderKey] : undefined
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -197,11 +204,11 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
                   const warning = max - length <= 20;
                   return (
                     <FormItem>
-                      <FormLabel>{item.label}</FormLabel>
+                      <FormLabel>{resolveLabel(item.labelKey)}</FormLabel>
                       <FormControl>
                         <Textarea
                           {...field}
-                          placeholder={item.placeholder}
+                          placeholder={resolvePlaceholder(item.placeholderKey)}
                           maxLength={max}
                           rows={4}
                           className={inputStyle}
@@ -236,12 +243,12 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
               name={item.name as keyof AddressFormData}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{item.label}</FormLabel>
+                  <FormLabel>{resolveLabel(item.labelKey)}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       value={String(field.value ?? "")}
-                      placeholder={item.placeholder}
+                      placeholder={resolvePlaceholder(item.placeholderKey)}
                       className={inputStyle}
                     />
                   </FormControl>

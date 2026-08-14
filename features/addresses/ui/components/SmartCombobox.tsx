@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, CheckIcon, ChevronsUpDown, PlusCircle } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
@@ -21,13 +22,15 @@ export function SmartCombobox({
   value,
   onChange,
   existing,
-  placeholder = "Escribe o selecciona...",
+  placeholder,
   label,
   error,
   inputClassName,
 }: Props) {
+  const { t } = useI18n();
   const id = useId();
   const listboxId = `${id}-listbox`;
+  const resolvedPlaceholder = placeholder ?? t.addresses.comboboxPlaceholder;
 
   // ✅ inputValue é totalmente local — sem sincronização com effect
   // value inicial vem da prop (ex: edit mode), depois é controlado pelo usuário
@@ -95,7 +98,7 @@ export function SmartCombobox({
           value={inputValue}
           onChange={handleInputChange}
           onFocus={() => setOpen(true)}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           autoComplete="off"
           className={cn(
             "flex h-10 w-full bg-background px-3 py-2 pr-9 text-sm",
@@ -121,13 +124,13 @@ export function SmartCombobox({
         >
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
           <span>
-            Ya existe <strong>&ldquo;{similarButDifferent}&rdquo;</strong>.{" "}
+            {t.addresses.comboboxSimilarWarning.replace("{name}", similarButDifferent)}{" "}
             <button
               type="button"
               className="font-semibold underline underline-offset-2"
               onClick={() => handleSelect({ value: similarButDifferent, isNew: false })}
             >
-              ¿Usar este?
+              {t.addresses.comboboxSimilar}
             </button>
           </span>
         </div>
@@ -137,7 +140,7 @@ export function SmartCombobox({
       {open && suggestions.length > 0 && (
         <ul
           id={listboxId}
-          aria-label={label ?? "Sugerencias"}
+          aria-label={label ?? t.addresses.comboboxSuggestions}
           className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-auto rounded-md border bg-popover text-popover-foreground shadow-lg"
         >
           {suggestions.map((s) => {
@@ -158,9 +161,12 @@ export function SmartCombobox({
                     <>
                       <PlusCircle className="h-4 w-4 shrink-0 text-brand" aria-hidden />
                       <span>
-                        Agregar <strong className="text-brand">&ldquo;{s.value}&rdquo;</strong>
+                        {t.addresses.comboboxAdd}{" "}
+                        <strong className="text-brand">&ldquo;{s.value}&rdquo;</strong>
                       </span>
-                      <span className="ml-auto text-xs text-muted-foreground">nuevo</span>
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        {t.addresses.comboboxNew}
+                      </span>
                     </>
                   ) : (
                     <>
@@ -173,7 +179,9 @@ export function SmartCombobox({
                       />
                       <span className="flex-1">{s.value}</span>
                       {s.score < 0.6 && (
-                        <span className="ml-auto text-xs text-amber-500">similar</span>
+                        <span className="ml-auto text-xs text-amber-500">
+                          {t.addresses.comboboxSimilar}
+                        </span>
                       )}
                     </>
                   )}

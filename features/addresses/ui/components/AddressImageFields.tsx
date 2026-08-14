@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { FormField, FormItem } from "@/components/ui/form";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Camera, RefreshCw, UploadCloud, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -30,6 +31,7 @@ const isRemote = (url?: string | null) => !!url && url.startsWith("http");
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function AddressImageField() {
+  const { t } = useI18n();
   const { watch, setValue, control } = useFormContext<AddressFormData>();
 
   const addressType = watch("addressType");
@@ -86,13 +88,13 @@ export default function AddressImageField() {
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <section className="space-y-3 border-b p-4">
+    <section className="space-y-3">
       <header>
         <h2 className="flex items-center gap-2 text-lg font-semibold">
           <Camera className="h-5 w-5 text-brand" aria-hidden />
-          Imagen del lugar
+          {t.addresses.imageTitle}
         </h2>
-        <p className="text-xs text-muted-foreground">Toca para seleccionar o arrastra una foto.</p>
+        <p className="text-xs text-muted-foreground">{t.addresses.imageHint}</p>
       </header>
 
       <FormField
@@ -103,7 +105,7 @@ export default function AddressImageField() {
             <div className="relative">
               <button
                 type="button"
-                aria-label="Seleccionar imagen"
+                aria-label={t.addresses.imageSelectAria}
                 onClick={() => inputRef.current?.click()}
                 onDrop={(e) => {
                   e.preventDefault();
@@ -137,7 +139,7 @@ export default function AddressImageField() {
                 {!hasImage && !isProcessing && (
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <UploadCloud className="h-8 w-8" aria-hidden />
-                    <span className="text-sm">Subir imagen</span>
+                    <span className="text-sm">{t.addresses.imageUpload}</span>
                   </div>
                 )}
 
@@ -146,7 +148,7 @@ export default function AddressImageField() {
                   <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30">
                     <span className="inline-flex items-center gap-2 rounded-md bg-white/90 px-3 py-2 text-sm font-semibold text-black shadow-lg">
                       <RefreshCw className="h-4 w-4" aria-hidden />
-                      ¿Cambiar imagen?
+                      {t.addresses.imageChange}
                     </span>
                   </span>
                 )}
@@ -154,12 +156,17 @@ export default function AddressImageField() {
                 {/* ── Processando ── */}
                 {isProcessing && (
                   <output className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 p-6 text-white">
-                    <p className="text-sm font-medium">Procesando {processingProgress}%</p>
+                    <p className="text-sm font-medium">
+                      {t.addresses.imageProcessing.replace("{percent}", String(processingProgress))}
+                    </p>
                     <progress
                       value={processingProgress}
                       max={100}
                       className="w-full"
-                      aria-label={`${processingProgress}%`}
+                      aria-label={t.addresses.imageProcessing.replace(
+                        "{percent}",
+                        String(processingProgress),
+                      )}
                     />
                   </output>
                 )}
@@ -173,7 +180,7 @@ export default function AddressImageField() {
                   variant="destructive"
                   className="absolute right-2 top-2 h-8 w-8 rounded-full shadow-lg"
                   onClick={handleRemove}
-                  aria-label="Quitar imagen"
+                  aria-label={t.addresses.imageRemove}
                 >
                   <X className="h-4 w-4" />
                 </Button>
