@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useTenant } from "@/providers/TenantProvider";
 import type { Address } from "@prisma/client";
 import { Loader2 } from "lucide-react";
@@ -34,6 +35,7 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
   const { isSubmitting } = form.formState;
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+  const { t } = useI18n();
 
   // ✅ Captura key da imagem ATUAL do banco na montagem (imutável)
   const oldImageKey = useMemo(() => extractKeyFromUrl(address.image), [address.image]);
@@ -74,10 +76,10 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
         image: { imageUrl, imageKey, isCustomImage: !!imageKey },
       });
 
-      toast.success("¡Dirección actualizada correctamente!");
+      toast.success(t.addresses.addressUpdated);
       router.push(`/org/${organization.slug}/addresses/${address.id}`);
     } catch {
-      toast.error("Error al actualizar la dirección. Intente nuevamente.");
+      toast.error(t.addresses.addressUpdateError);
     } finally {
       setIsSaving(false);
       setUploadProgress(0);
@@ -85,33 +87,11 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
   }
 
   const submitLabel = () => {
-    if (uploadProgress > 0 && uploadProgress < 100) return `Enviando imagen ${uploadProgress}%`;
-    if (isSubmitting || isSaving) return "Guardando…";
-    return "Guardar cambios";
+    if (uploadProgress > 0 && uploadProgress < 100)
+      return t.addresses.savingImage.replace("{progress}", String(uploadProgress));
+    if (isSubmitting || isSaving) return t.addresses.savingTitle;
+    return t.addresses.saveChangesButton;
   };
-
-  if (isSaving) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-svh gap-6 px-6 py-20">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-16 w-16 animate-spin text-brand" />
-          <div className="text-center space-y-2">
-            <p className="text-2xl font-bold text-foreground">Guardando cambios...</p>
-            <p className="text-base text-muted-foreground max-w-xs">
-              Estamos procesando la imagen y guardando los datos. Esto puede tomar unos segundos.
-            </p>
-          </div>
-        </div>
-
-        {/* Skeleton cards */}
-        <div className="w-full max-w-md space-y-3 mt-4">
-          {[0, 1, 2, 3].map((card) => (
-            <div key={card} className="h-12 rounded-xl bg-muted animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <Form {...form}>
@@ -130,7 +110,7 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
             onClick={() => router.back()}
             disabled={isSubmitting || isSaving}
           >
-            Cancelar
+            {t.common.cancel}
           </Button>
 
           <div className="flex flex-col items-end gap-1">
@@ -139,7 +119,7 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
                 value={uploadProgress}
                 max={100}
                 className="w-32 h-2"
-                aria-label={`Subiendo imagen: ${uploadProgress}%`}
+                aria-label={t.addresses.savingImage.replace("{progress}", String(uploadProgress))}
               />
             )}
             <Button
@@ -154,7 +134,7 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
                   <span>{submitLabel()}</span>
                 </>
               ) : (
-                "Guardar cambios"
+                t.addresses.saveChangesButton
               )}
             </Button>
           </div>

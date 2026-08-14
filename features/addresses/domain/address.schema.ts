@@ -1,6 +1,26 @@
 import { z } from "zod";
 import { ADDRESS_TYPES } from "../types/address.types";
 
+export interface AddressFormMessages {
+  streetTooShort: string;
+  numberRequired: string;
+  neighborhoodRequired: string;
+  cityRequired: string;
+  invalidCoords: string;
+  infoTooLong: string;
+  gpsRequired: string;
+}
+
+const defaultMessages: AddressFormMessages = {
+  streetTooShort: "La calle es demasiado corta.",
+  numberRequired: "El número es obligatorio.",
+  neighborhoodRequired: "El barrio es obligatorio.",
+  cityRequired: "La ciudad es obligatoria.",
+  invalidCoords: "Latitud inválida.",
+  infoTooLong: "Máximo 300 caracteres.",
+  gpsRequired: "La ubicación GPS es obligatoria.",
+};
+
 export const addressImageSchema = z.object({
   imageUrl: z.string().nullable().optional(),
   imageFile: z.any().optional(),
@@ -8,49 +28,54 @@ export const addressImageSchema = z.object({
   isCustomImage: z.boolean().optional(),
 });
 
-export const addressFormSchema = z.object({
-  addressType: z.enum(ADDRESS_TYPES),
+export function createAddressFormSchema(messages: AddressFormMessages = defaultMessages) {
+  return z.object({
+    addressType: z.enum(ADDRESS_TYPES),
 
-  street: z.string().min(2, "La calle es demasiado corta."),
-  number: z.string().min(1, "El número es obligatorio."),
-  neighborhood: z.string().min(2, "El barrio es obligatorio."),
-  city: z.string().min(3, "La ciudad es obligatoria."),
+    street: z.string().min(2, messages.streetTooShort),
+    number: z.string().min(1, messages.numberRequired),
+    neighborhood: z.string().min(2, messages.neighborhoodRequired),
+    city: z.string().min(3, messages.cityRequired),
 
-  latitude: z
-    .number()
-    .min(-90, "Latitud inválida.")
-    .max(90, "Latitud inválida.")
-    .nullable()
-    .optional(),
-  longitude: z
-    .number()
-    .min(-180, "Longitud inválida.")
-    .max(180, "Longitud inválida.")
-    .nullable()
-    .optional(),
+    latitude: z
+      .number()
+      .min(-90, messages.invalidCoords)
+      .max(90, messages.invalidCoords)
+      .nullable()
+      .optional(),
+    longitude: z
+      .number()
+      .min(-180, messages.invalidCoords)
+      .max(180, messages.invalidCoords)
+      .nullable()
+      .optional(),
 
-  image: addressImageSchema,
+    image: addressImageSchema,
 
-  info: z.string().max(300, "Máximo 300 caracteres.").optional(),
-  businessName: z.string().nullable().optional(),
+    info: z.string().max(300, messages.infoTooLong).optional(),
+    businessName: z.string().nullable().optional(),
 
-  active: z.boolean(),
-  confirmed: z.boolean(),
-  invited: z.boolean(),
-});
-
-export type AddressFormData = z.infer<typeof addressFormSchema>;
+    active: z.boolean(),
+    confirmed: z.boolean(),
+    invited: z.boolean(),
+  });
+}
 
 // Schema de criação — GPS obrigatório (validação reforçada no envio)
-export const addressCreateSchema = addressFormSchema.superRefine((data, ctx) => {
-  if (data.latitude == null || data.longitude == null) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["latitude"],
-      message: "La ubicación GPS es obligatoria.",
-    });
-  }
-});
+export function createAddressCreateSchema(messages: AddressFormMessages = defaultMessages) {
+  return createAddressFormSchema(messages).superRefine((data, ctx) => {
+    if (data.latitude == null || data.longitude == null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["latitude"],
+        message: messages.gpsRequired,
+      });
+    }
+  });
+}
+
+export const addressFormSchema = createAddressFormSchema();
+export type AddressFormData = z.infer<typeof addressFormSchema>;
 
 export const addressPersistenceSchema = addressFormSchema.extend({
   organizationId: z.string().min(1),
@@ -61,5 +86,5 @@ export const addressPersistenceSchema = addressFormSchema.extend({
 export type AddressPersistenceInput = z.infer<typeof addressPersistenceSchema>;
 
 // Schema server-side derivado — sem duplicação
-export const createAddressSchema = addressCreateSchema;
+export const createAddressSchema = createAddressCreateSchema();
 export type CreateAddressInput = AddressFormData;

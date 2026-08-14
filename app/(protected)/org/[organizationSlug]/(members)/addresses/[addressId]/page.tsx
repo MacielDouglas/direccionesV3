@@ -1,5 +1,5 @@
 import { getAddressByIdService } from "@/features/addresses/application/address.service";
-import AddressDetailsScreen from "@/features/addresses/ui/screens/AddressDetailsScreen ";
+import AddressDetailsScreen from "@/features/addresses/ui/screens/AddressDetailsScreen";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { MapPinCheck, Pin } from "lucide-react";
 import type { Metadata } from "next";

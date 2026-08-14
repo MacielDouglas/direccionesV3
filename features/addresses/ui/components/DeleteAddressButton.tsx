@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Loader2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -27,12 +28,13 @@ export default function DeleteAddressButton({
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const { t } = useI18n();
 
   if (isPendingDeletion) {
     return (
       <div className="flex items-center gap-2 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
         <Trash2 className="h-4 w-4 shrink-0" aria-hidden="true" />
-        Eliminación pendiente de aprobación por un administrador.
+        {t.addresses.pendingDeletionNotice}
       </div>
     );
   }
@@ -44,7 +46,7 @@ export default function DeleteAddressButton({
         toast.error(result.error);
         return;
       }
-      toast.success("Solicitud de eliminación enviada.");
+      toast.success(t.addresses.deletionRequested);
       setOpen(false);
       router.back();
     });
@@ -55,23 +57,20 @@ export default function DeleteAddressButton({
       <DialogTrigger asChild>
         <Button variant="destructive" className="w-full gap-2">
           <Trash2 className="h-4 w-4" aria-hidden="true" />
-          Eliminar dirección
+          {t.addresses.deleteAddress}
         </Button>
       </DialogTrigger>
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>¿Eliminar esta dirección?</DialogTitle>
-          <DialogDescription>
-            Esta acción enviará una solicitud de eliminación a los administradores. La dirección
-            quedará inactiva hasta que sea confirmada o cancelada.
-          </DialogDescription>
+          <DialogTitle>{t.addresses.deleteAddressTitle}</DialogTitle>
+          <DialogDescription>{t.addresses.deleteAddressDescription}</DialogDescription>
         </DialogHeader>
 
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline" disabled={isPending}>
-              Cancelar
+              {t.common.cancel}
             </Button>
           </DialogClose>
 
@@ -79,7 +78,7 @@ export default function DeleteAddressButton({
             {isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             ) : (
-              "Sí, solicitar eliminación"
+              t.addresses.requestDeletion
             )}
           </Button>
         </DialogFooter>

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import type { Role } from "@/domains/member/types/role.types";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { leaveOrganizationAction } from "@/server/organization/leave-organization.action";
 import { Loader2, LogOut } from "lucide-react";
 import { useState } from "react";
@@ -28,6 +29,7 @@ export function LeaveOrganizationButton({
   role: Role;
 }) {
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useI18n();
 
   if (role === "owner") return null;
 
@@ -36,57 +38,35 @@ export function LeaveOrganizationButton({
       setIsLoading(true);
       await leaveOrganizationAction(organizationId);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erro ao sair.");
+      toast.error(error instanceof Error ? error.message : t.user.leaveError);
       setIsLoading(false);
     }
   }
 
   const description =
-    role === "member" ? (
-      <>
-        <p>
-          Tus <strong>tarjetas asignadas</strong> y <strong>tus propias tarjetas</strong> se
-          liberarán para otros usuarios. Tus <strong>direcciones registradas</strong> se
-          conservarán.
-          <span className="uppercase text-red-500 font-semibold">
-            Toda su información personal será borrada y eliminada de esta organización, aún tendra
-            acceso a la aplicación con otras organizaciones a las que pertenezca.
-          </span>{" "}
-          según nuestra condiciones de uso.
-        </p>
-      </>
-    ) : (
-      <>
-        <p>
-          Tus <strong>tarjetas y registros enviados</strong> se conservarán. Perderás el acceso a la
-          applicación y tus tarjetas asignadas se liberarán.
-          <span className="uppercase text-red-500 font-semibold">
-            Toda su información personal será borrada y eliminada de esta aplicación,
-          </span>{" "}
-          según nuestra condiciones de uso.
-        </p>
-      </>
-    );
+    role === "member" ? t.user.leaveOrgMemberDescription : t.user.leaveOrgAdminDescription;
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="destructive" size="sm" className="gap-2">
           <LogOut className="size-4" aria-hidden />
-          Abandonar la organización
+          {t.user.leaveOrg}
         </Button>
       </AlertDialogTrigger>
 
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Salir de {organizationName}?</AlertDialogTitle>
+          <AlertDialogTitle>
+            {t.user.leaveOrgTitle.replace("{orgName}", organizationName)}
+          </AlertDialogTitle>
           <AlertDialogDescription asChild>
-            <div>{description}</div>
+            <p>{description}</p>
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel disabled={isLoading}>{t.common.cancel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleLeave}
             disabled={isLoading}
@@ -97,7 +77,7 @@ export function LeaveOrganizationButton({
             ) : (
               <LogOut className="size-4" aria-hidden />
             )}
-            Confirmar salida
+            {t.user.leaveOrgConfirm}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

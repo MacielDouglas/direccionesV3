@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 import type { AgendaEventItem, AgendaMember } from "../types/agenda.types";
 import { eventDateParts } from "../utils/agenda-time";
 import { monthName, weekdayLong } from "../utils/calendar-locale";
-import { AgendaCalendar } from "./AgendaCalendat";
+import { AgendaCalendar } from "./AgendaCalendar";
 import { AgendaEventList } from "./AgendaEventList";
 import { AgendaHero } from "./AgendaHero";
 import { AgendaNoEventModal } from "./ui/AgendaNoEventModal";

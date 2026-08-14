@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { assignCardAction } from "../../application/card.actions";
@@ -42,6 +43,7 @@ export function AssignCardModal({
   const [selectedPersonId, setSelectedPersonId] = useState("");
   const { t } = useI18n();
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleAssign = () => {
     if (!selectedPersonId) return;
@@ -53,6 +55,7 @@ export function AssignCardModal({
       }
       toast.success(t.cards.assignSuccess);
       onClose();
+      router.refresh();
     });
   };
 

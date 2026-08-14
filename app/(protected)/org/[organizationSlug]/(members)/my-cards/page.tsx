@@ -1,4 +1,4 @@
-import { MyCardsScreen } from "@/features/cards/ui/screens/MyCardsScreen.tsx";
+import { MyCardsScreen } from "@/features/cards/ui/screens/MyCardsScreen";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
 import type { Metadata } from "next";

@@ -1,4 +1,5 @@
 import { buttonVariants } from "@/components/ui/button";
+import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
@@ -10,11 +11,19 @@ export async function PendingDeletionBadge({
   organizationId: string;
   orgSlug: string;
 }) {
-  const count = await prisma.address.count({
-    where: { organizationId, pendingDeletion: true },
-  });
+  const [t, count] = await Promise.all([
+    getServerDictionary(),
+    prisma.address.count({
+      where: { organizationId, pendingDeletion: true },
+    }),
+  ]);
 
   if (count === 0) return null;
+
+  const label =
+    count === 1
+      ? t.addresses.pendingDeletionCountOne
+      : t.addresses.pendingDeletionCountMany.replace("{count}", String(count));
 
   return (
     <Link
@@ -22,8 +31,7 @@ export async function PendingDeletionBadge({
       className={buttonVariants({ variant: "destructive" })}
     >
       <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
-      {count} dirección{count !== 1 ? "es" : ""} pendiente
-      {count !== 1 ? "s" : ""} de eliminación
+      {label}
     </Link>
   );
 }

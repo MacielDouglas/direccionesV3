@@ -41,7 +41,8 @@ export function AgendaEventModal({ event, onClose }: Props) {
           <DialogTitle className="text-base capitalize leading-snug">{dateStr}</DialogTitle>
           <DialogDescription className="flex items-center gap-1.5 text-sm">
             <Clock className="size-3.5" aria-hidden />
-            {timeStr}hs
+            {timeStr}
+            {t.agenda.hourSuffix}
             {isPast && (
               <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                 {t.agenda.pastBadge}

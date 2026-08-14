@@ -1,3 +1,4 @@
+import { getServerDictionary } from "@/lib/i18n/server";
 import type { SurveyPin } from "../../types/survey.types";
 import SurveyMap from "../components/SurveyMap";
 
@@ -8,9 +9,11 @@ interface Props {
   initialPins: SurveyPin[];
 }
 
-export default function SurveyScreen(props: Props) {
+export default async function SurveyScreen(props: Props) {
+  const t = await getServerDictionary();
+
   return (
-    <main aria-label="Mapa de relevamiento" className="relative h-svh w-full overflow-hidden">
+    <main aria-label={t.survey.mapAria} className="relative h-svh w-full overflow-hidden">
       <SurveyMap {...props} />
     </main>
   );

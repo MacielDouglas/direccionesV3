@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { AddressViewMap } from "@/features/map/components/AddressViewMap";
+import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
 import { getUniquePerson } from "@/server/users";
 import type { Address } from "@prisma/client";
 import { CircleAlert } from "lucide-react";
@@ -7,7 +8,6 @@ import Link from "next/link";
 import { ADDRESS_TYPE_OPTIONS } from "../../domain/constants/address.constants";
 import { AddressImageViewer } from "../components/AddressImageViewer";
 import DeleteAddressButton from "../components/DeleteAddressButton";
-// import { useState } from "react";
 
 type AddressDetailsScreenProps = {
   address: Address;
@@ -26,8 +26,8 @@ function getAddressColor(type: string): string {
   return ADDRESS_COLOR_MAP[type] ?? "bg-brand";
 }
 
-function formatDate(date: Date | string): string {
-  return new Intl.DateTimeFormat("es-419", {
+function formatDate(date: Date | string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
     timeZone: "America/Bogota",
     day: "2-digit",
     month: "2-digit",
@@ -39,20 +39,24 @@ export default async function AddressDetailsScreen({
   address,
   organizationSlug,
 }: AddressDetailsScreenProps) {
-  const [createdUser, updatedUser] = await Promise.all([
+  const [createdUser, updatedUser, t, locale] = await Promise.all([
     getUniquePerson(address.createdByPersonId),
     address.updatedByPersonId ? getUniquePerson(address.updatedByPersonId) : null,
+    getServerDictionary(),
+    getServerLocale(),
   ]);
-  // const [editing, setEditing] = useState(false)
 
-  const typeConfig = ADDRESS_TYPE_OPTIONS.find((t) => t.value === address.type);
+  const typeConfig = ADDRESS_TYPE_OPTIONS.find((type) => type.value === address.type);
   const Icon = typeConfig?.icon;
   const colorClass = getAddressColor(address.type);
 
   return (
     <article className="mx-auto flex w-full max-w-3xl flex-col gap-2 px-3 py-4 sm:px-4 sm:py-6">
       {address.latitude && address.longitude && (
-        <section aria-label="Mapa de la dirección" className="w-full overflow-hidden rounded-2xl">
+        <section
+          aria-label={t.addresses.addressMapAria}
+          className="w-full overflow-hidden rounded-2xl"
+        >
           <AddressViewMap
             latitude={Number(address.latitude)}
             longitude={Number(address.longitude)}
@@ -61,40 +65,43 @@ export default async function AddressDetailsScreen({
       )}
 
       <section
-        aria-label="Detalles de la dirección"
+        aria-label={t.addresses.detailsAria}
         className="flex flex-col gap-4 rounded-2xl bg-white p-4 dark:bg-surface-subtle-dark sm:p-6"
       >
         <header className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <span className={`h-8 w-2 shrink-0 rounded-full ${colorClass}`} aria-hidden="true" />
             <h1 className="truncate text-lg font-semibold uppercase tracking-wide sm:text-2xl">
-              {address.businessName ?? "Residencial"}
+              {address.businessName ?? t.addresses.residential}
             </h1>
           </div>
 
           {Icon && (
             <div
               className="shrink-0 rounded bg-black/80 p-2"
-              aria-label={`Tipo: ${typeConfig?.label}`}
+              aria-label={t.addresses.typeAria.replace(
+                "{label}",
+                typeConfig?.label ?? address.type,
+              )}
             >
               <Icon className={typeConfig?.color} size={28} aria-hidden="true" />
             </div>
           )}
         </header>
-        <ul className="flex flex-wrap gap-3" aria-label="Estado de la dirección">
+        <ul className="flex flex-wrap gap-3" aria-label={t.addresses.statusAria}>
           <li
             className={`rounded-full px-2 py-1 text-xs font-semibold sm:text-sm ${
               address.confirmed ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-600"
             }`}
           >
-            {address.confirmed ? "✓ Confirmada" : "✗ No confirmada"}
+            {address.confirmed ? `✓ ${t.addresses.confirmed}` : `✗ ${t.addresses.notConfirmed}`}
           </li>
           <li
             className={`rounded-full px-2 py-1 text-xs font-semibold sm:text-sm ${
               address.active ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-600"
             }`}
           >
-            {address.active ? "✓ Activa" : "✗ Inactiva"}
+            {address.active ? `✓ ${t.addresses.active}` : `✗ ${t.addresses.inactive}`}
           </li>
         </ul>
 
@@ -102,39 +109,47 @@ export default async function AddressDetailsScreen({
           <figure className="w-full overflow-hidden rounded-xl">
             <AddressImageViewer
               src={address.image}
-              alt={`Imagen de ${address.businessName ?? "la dirección"}`}
+              alt={t.addresses.addressImageAlt.replace(
+                "{name}",
+                address.businessName ?? t.addresses.residential,
+              )}
             />
           </figure>
         )}
 
         <section aria-labelledby="address-info-title">
           <h2 id="address-info-title" className="sr-only">
-            Información de ubicación
+            {t.addresses.infoTitle}
           </h2>
           {!address.confirmed && (
             <div className="flex gap-2 items-center border border-red-500 py-2 px-4 rounded-xl justify-between bg-red-100 dark:bg-red-950 mb-3">
               <CircleAlert className="size-6 shrink-0 text-red-500 animate-pulse" aria-hidden />{" "}
               <p className="text-red-500 font-semibold text-xs inline-flex gap-2 ">
-                Dirección no verificada, puede tener errores. Revise la información adicional o
-                confirme con quien la envió.
+                {t.addresses.notVerifiedWarning}
               </p>
             </div>
           )}
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             <div>
-              <dt className="text-xs uppercase tracking-wide text-gray-400">Calle</dt>
+              <dt className="text-xs uppercase tracking-wide text-gray-400">
+                {t.addresses.streetField}
+              </dt>
               <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200 sm:text-base">
                 {address.street}, {address.number}
               </dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wide text-gray-400">Barrio</dt>
+              <dt className="text-xs uppercase tracking-wide text-gray-400">
+                {t.addresses.neighborhoodField}
+              </dt>
               <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200 sm:text-base">
                 {address.neighborhood}
               </dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wide text-gray-400">Ciudad</dt>
+              <dt className="text-xs uppercase tracking-wide text-gray-400">
+                {t.addresses.cityField}
+              </dt>
               <dd className="mt-0.5 text-sm font-medium text-gray-800 dark:text-slate-200 sm:text-base">
                 {address.city}
               </dd>
@@ -145,9 +160,7 @@ export default async function AddressDetailsScreen({
           <div className="flex gap-2 items-center border border-red-500 py-2 px-4 rounded-xl justify-between bg-red-100 dark:bg-red-950">
             <CircleAlert className="size-10 shrink-0 text-red-500 animate-pulse" aria-hidden />{" "}
             <p className="text-red-500 font-semibold text-md inline-flex gap-2 text-center">
-              Dirección desactivada. Puede haber cambiado.
-              <br />
-              Revise notas o contacte a quien la actualizó.
+              {t.addresses.inactiveWarning}
             </p>
           </div>
         )}
@@ -161,7 +174,7 @@ export default async function AddressDetailsScreen({
               id="extra-info-title"
               className="mb-1.5 text-xs font-semibold text-gray-700 dark:text-slate-300 sm:text-sm"
             >
-              Información adicional
+              {t.addresses.additionalInfo}
             </h2>
             <p className="text-sm leading-relaxed text-gray-600 dark:text-slate-400">
               {address.info}
@@ -172,30 +185,26 @@ export default async function AddressDetailsScreen({
         <footer className="flex flex-col gap-3 border-t border-gray-100 pt-3">
           <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-gray-400">
-              Enviado por:{" "}
+              {t.addresses.sentBy}{" "}
               <span className="font-medium text-gray-600 dark:text-slate-300">
-                {createdUser?.name ?? "Usuario desconocido"}
+                {createdUser?.name ?? t.addresses.unknownUser}
               </span>
             </p>
             <p className="flex gap-1 text-xs text-gray-400 sm:text-end">
-              Actualizado:{" "}
+              {t.addresses.updatedAtLabel}{" "}
               <time dateTime={new Date(address.updatedAt).toISOString()}>
-                {formatDate(address.updatedAt)}
+                {formatDate(address.updatedAt, locale)}
               </time>
               {updatedUser && (
-                <>
-                  {" "}
-                  por{" "}
-                  <span className="font-medium text-gray-600 dark:text-slate-300">
-                    {updatedUser.name}
-                  </span>
-                </>
+                <span className="font-medium text-gray-600 dark:text-slate-300">
+                  {updatedUser.name}
+                </span>
               )}
             </p>
           </div>
 
           <Link href={`/org/${organizationSlug}/addresses/${address.id}/edit`}>
-            <Button className="w-full sm:w-auto">Editar dirección</Button>
+            <Button className="w-full sm:w-auto">{t.addresses.editAddress}</Button>
           </Link>
         </footer>
       </section>

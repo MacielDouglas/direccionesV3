@@ -50,7 +50,7 @@ export function MyCardsMapModal({ open, onClose, addresses, onMarkerClick }: Pro
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-muted text-sm text-muted-foreground">
-            Sin coordenadas disponibles
+            {t.admin.noCoordinates}
           </div>
         )}
 

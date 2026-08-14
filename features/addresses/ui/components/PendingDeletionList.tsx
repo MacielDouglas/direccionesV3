@@ -1,8 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CheckCircle, Loader2, MapPin, XCircle } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -29,14 +31,17 @@ export function PendingDeletionList({
   orgSlug: string;
 }) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const { t } = useI18n();
+  const router = useRouter();
 
   async function handleConfirm(id: string) {
     try {
       setLoadingId(id);
       await confirmAddressDeletionAction(id);
-      toast.success("Dirección eliminada correctamente.");
+      toast.success(t.addresses.deletionConfirmed);
+      router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Error al eliminar.");
+      toast.error(error instanceof Error ? error.message : t.addresses.deleteError);
     } finally {
       setLoadingId(null);
     }
@@ -46,9 +51,10 @@ export function PendingDeletionList({
     try {
       setLoadingId(id);
       await cancelAddressDeletionAction(id);
-      toast.success("Solicitud cancelada.");
+      toast.success(t.addresses.deletionCancelled);
+      router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Error al cancelar.");
+      toast.error(error instanceof Error ? error.message : t.addresses.cancelDeletionError);
     } finally {
       setLoadingId(null);
     }
@@ -56,7 +62,7 @@ export function PendingDeletionList({
 
   if (addresses.length === 0) {
     return (
-      <p className="mt-10 text-center text-muted-foreground">No hay solicitudes pendientes.</p>
+      <p className="mt-10 text-center text-muted-foreground">{t.addresses.noPendingDeletions}</p>
     );
   }
 
@@ -88,7 +94,7 @@ export function PendingDeletionList({
               </p>
               {address.requestedBy && (
                 <p className="mt-1 text-xs text-muted/70">
-                  Solicitado por:{" "}
+                  {t.addresses.requestedBy}{" "}
                   <span className="font-medium">
                     {address.requestedBy.name ?? address.requestedBy.user?.email}
                   </span>
@@ -110,7 +116,7 @@ export function PendingDeletionList({
               ) : (
                 <CheckCircle className="h-4 w-4" aria-hidden="true" />
               )}
-              Confirmar eliminación
+              {t.addresses.confirmDeletion}
             </Button>
 
             <Button
@@ -121,7 +127,7 @@ export function PendingDeletionList({
               className="gap-2"
             >
               <XCircle className="h-4 w-4" aria-hidden="true" />
-              Cancelar solicitud
+              {t.addresses.cancelDeletion}
             </Button>
           </div>
         </li>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CheckCircle, Loader2, Users, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -9,6 +10,7 @@ import { applyInviteTokenAction } from "../../applications/inviteToken.action";
 
 export function JoinScreen({ token }: { token: string }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [orgName, setOrgName] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -21,7 +23,7 @@ export function JoinScreen({ token }: { token: string }) {
 
       setOrgName(org.name);
       setStatus("success");
-      toast.success(`¡Te uniste a ${org.name}!`);
+      toast.success(t.invitations.joiningSuccess.replace("{orgName}", org.name));
 
       // Redireciona para a org após 2s
       setTimeout(() => {
@@ -29,7 +31,7 @@ export function JoinScreen({ token }: { token: string }) {
         router.refresh();
       }, 2000);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Error al unirse.";
+      const msg = e instanceof Error ? e.message : t.invitations.joinError;
       setErrorMsg(msg);
       setStatus("error");
     }
@@ -39,8 +41,10 @@ export function JoinScreen({ token }: { token: string }) {
     return (
       <main className="flex min-h-svh flex-col items-center justify-center gap-4 px-4 text-center">
         <CheckCircle className="h-12 w-12 text-green-500" />
-        <h1 className="text-xl font-semibold">¡Bienvenido a {orgName}!</h1>
-        <p className="text-sm text-muted-foreground">Redirigiendo…</p>
+        <h1 className="text-xl font-semibold">
+          {t.invitations.welcomeTitle.replace("{orgName}", orgName ?? "")}
+        </h1>
+        <p className="text-sm text-muted-foreground">{t.invitations.redirecting}</p>
       </main>
     );
   }
@@ -49,10 +53,10 @@ export function JoinScreen({ token }: { token: string }) {
     return (
       <main className="flex min-h-svh flex-col items-center justify-center gap-4 px-4 text-center">
         <XCircle className="h-12 w-12 text-destructive" />
-        <h1 className="text-xl font-semibold">Enlace no válido</h1>
+        <h1 className="text-xl font-semibold">{t.invitations.invalidLink}</h1>
         <p className="text-sm text-muted-foreground">{errorMsg}</p>
         <Button variant="outline" onClick={() => router.push("/")}>
-          Volver al inicio
+          {t.invitations.backToHome}
         </Button>
       </main>
     );
@@ -65,10 +69,8 @@ export function JoinScreen({ token }: { token: string }) {
           <div className="rounded-full bg-brand/10 p-4">
             <Users className="h-8 w-8 text-brand" aria-hidden />
           </div>
-          <h1 className="text-xl font-semibold">Unirse a organización</h1>
-          <p className="text-sm text-muted-foreground">
-            Fuiste invitado a formar parte de un equipo.
-          </p>
+          <h1 className="text-xl font-semibold">{t.invitations.joinTitle}</h1>
+          <p className="text-sm text-muted-foreground">{t.invitations.joinDescription}</p>
         </div>
 
         <Button onClick={handleJoin} disabled={status === "loading"} className="w-full gap-2">
@@ -77,7 +79,7 @@ export function JoinScreen({ token }: { token: string }) {
           ) : (
             <Users className="h-4 w-4" aria-hidden />
           )}
-          Aceptar e ingresar
+          {t.invitations.acceptAndJoin}
         </Button>
       </article>
     </main>

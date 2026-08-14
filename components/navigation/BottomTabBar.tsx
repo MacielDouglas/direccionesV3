@@ -65,7 +65,7 @@ export function BottomTabBar({ orgSlug }: BottomTabBarProps) {
     <nav
       aria-label={t.header.mainMenu}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-black text-white transition-transform duration-500 ease-in-out md:hidden",
+        "fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0c0a09] text-white transition-transform duration-500 ease-in-out md:hidden",
         isHidden && "translate-y-full",
       )}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}

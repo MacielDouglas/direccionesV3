@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Role } from "@/domains/member/types/role.types";
 import { EditNameForm } from "@/features/user/ui/EditNameForm";
+import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/server/users";
 import { CreditCard } from "lucide-react";
@@ -25,7 +26,7 @@ function upgradeGoogleAvatar(url: string | null | undefined): string | undefined
 
 export default async function UserPage({ params }: Props) {
   const { organizationSlug } = await params;
-  const data = await getCurrentUser();
+  const [data, t] = await Promise.all([getCurrentUser(), getServerDictionary()]);
   //  const user = await getCurrentUser();
   if (!data) redirect("/login");
 
@@ -79,9 +80,7 @@ export default async function UserPage({ params }: Props) {
         </Avatar>
 
         <div className="flex flex-col items-center gap-1">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">
-            Perfil de usuario
-          </p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">{t.user.title}</p>
           <EditNameForm currentName={user.name} />
           <p className="text-sm text-muted-foreground">{user.email}</p>
         </div>
@@ -95,16 +94,18 @@ export default async function UserPage({ params }: Props) {
               id="cards-title"
               className="text-sm font-semibold uppercase tracking-widest text-muted-foreground"
             >
-              Mis tarjetas
+              {t.cards.title}
             </h2>
             <span className="text-xs text-muted-foreground">
-              {cards.length} asignada{cards.length !== 1 ? "s" : ""}
+              {cards.length === 1
+                ? t.user.assignedCardsOne
+                : t.user.assignedCardsMany.replace("{count}", String(cards.length))}
             </span>
           </div>
 
           {cards.length === 0 ? (
             <div className="rounded-xl border bg-muted/40 px-4 py-8 text-center text-sm text-muted-foreground">
-              No tienes tarjetas asignadas.
+              {t.cards.noCards}
             </div>
           ) : (
             <ul className="flex flex-col gap-2">
@@ -118,7 +119,10 @@ export default async function UserPage({ params }: Props) {
                     transition-colors hover:bg-muted/50
                     focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand
                   "
-                    aria-label={`Tarjeta #${String(card.number).padStart(2, "0")}`}
+                    aria-label={t.cards.cardNumber.replace(
+                      "{number}",
+                      String(card.number).padStart(2, "0"),
+                    )}
                   >
                     <CreditCard
                       className="h-5 w-5 shrink-0 text-muted-foreground"
@@ -126,7 +130,10 @@ export default async function UserPage({ params }: Props) {
                     />
                     <div className="flex flex-col min-w-0">
                       <span className="text-sm font-semibold tabular-nums">
-                        Tarjeta #{String(card.number).padStart(2, "0")}
+                        {t.cards.cardNumber.replace(
+                          "{number}",
+                          String(card.number).padStart(2, "0"),
+                        )}
                       </span>
                       {card.addresses.length > 0 && (
                         <span className="text-xs text-muted-foreground truncate">
@@ -137,7 +144,7 @@ export default async function UserPage({ params }: Props) {
                       )}
                     </div>
                     <span className="ml-auto text-xs text-muted-foreground shrink-0">
-                      {card.addresses.length} dir.
+                      {card.addresses.length} {t.user.dirShort}
                     </span>
                   </Link>
                 </li>
@@ -145,13 +152,11 @@ export default async function UserPage({ params }: Props) {
             </ul>
           )}
           <div className="border-t pt-6 flex flex-col gap-4">
-            <h2 className="text-sm font-medium text-destructive">Zona de peligro</h2>
+            <h2 className="text-sm font-medium text-destructive">{t.user.dangerZone}</h2>
 
             <div className="flex flex-col gap-1.5">
-              <p className="text-sm font-medium">Abandonar la organización</p>
-              <p className="text-xs text-muted-foreground">
-                Perderás el acceso a esta organización. Tu cuenta permanecerá activa.
-              </p>
+              <p className="text-sm font-medium">{t.user.leaveOrg}</p>
+              <p className="text-xs text-muted-foreground">{t.user.leaveOrgDescription}</p>
               <div className="mt-1">
                 <LeaveOrganizationButton
                   organizationId={activeOrganization.id}
@@ -162,10 +167,8 @@ export default async function UserPage({ params }: Props) {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <p className="text-sm font-medium">Eliminar cuenta</p>
-              <p className="text-xs text-muted-foreground">
-                Eliminar permanentemente tu cuenta de todas las organizaciones y de la aplicación.
-              </p>
+              <p className="text-sm font-medium">{t.user.deleteAccount}</p>
+              <p className="text-xs text-muted-foreground">{t.user.deleteAccountDescription}</p>
               <div className="mt-1">
                 <DeleteAccountButton userEmail={session.user.email} />
               </div>

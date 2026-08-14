@@ -139,9 +139,9 @@
   --sidebar-ring: #ff6828;
 }
 
-/* Footer sempre preto #000 com texto branco — não adapta ao tema */
+/* Footer sempre escuro com texto branco — neutro quente, não adapta ao tema */
 .footer-fixed {
-  background-color: #000000;
+  background-color: #0c0a09;
   color: #ffffff;
 }
 

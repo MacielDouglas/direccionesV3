@@ -1,8 +1,9 @@
 "use server";
 
+import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import type { AddressFormData } from "../domain/address.schema";
-import { addressCreateSchema } from "../domain/address.schema";
+import { createAddressCreateSchema } from "../domain/address.schema";
 import { sanitizeInfo } from "../utils/sanitizeInfo";
 
 export async function createAddressService(params: {
@@ -10,7 +11,16 @@ export async function createAddressService(params: {
   organizationId: string;
   personId: string;
 }) {
-  const data = addressCreateSchema.parse(params.input);
+  const t = await getServerDictionary();
+  const data = createAddressCreateSchema({
+    streetTooShort: t.addresses.errorStreet,
+    numberRequired: t.addresses.errorNumber,
+    neighborhoodRequired: t.addresses.errorNeighborhood,
+    cityRequired: t.addresses.errorCity,
+    invalidCoords: t.addresses.gpsInvalidCoords,
+    infoTooLong: t.addresses.errorInfo,
+    gpsRequired: t.addresses.errorGps,
+  }).parse(params.input);
 
   return prisma.address.create({
     data: {
