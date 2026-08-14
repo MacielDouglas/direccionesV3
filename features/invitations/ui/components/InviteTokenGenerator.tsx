@@ -57,9 +57,12 @@ export function InviteTokenGenerator({ organizationId, orgSlug }: Props) {
       {token ? (
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-2 sm:flex-row">
-            <div className="flex flex-1 items-center gap-2 rounded-md border bg-muted/40 px-3 py-2">
+            <div className="flex flex-1 items-center justify-center gap-2 rounded-md border bg-muted/40 px-3 py-2.5">
               <KeyRound className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-              <code className="truncate font-mono text-sm" aria-label={t.admin.generateTitle}>
+              <code
+                className="font-mono text-2xl font-semibold tracking-[0.4em]"
+                aria-label={t.admin.generateTitle}
+              >
                 {token}
               </code>
             </div>

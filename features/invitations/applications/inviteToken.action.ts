@@ -8,6 +8,20 @@ import { z } from "zod";
 
 const organizationIdSchema = z.string().min(1);
 const tokenSchema = z.string().min(1);
+const TOKEN_VALIDITY_MS = 1000 * 60 * 60 * 24 * 3; // 72 horas
+
+// Token numérico de 6 dígitos, sem colisão com tokens existentes.
+async function generateNumericToken(): Promise<string> {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const candidate = String(Math.floor(100000 + Math.random() * 900000));
+    const existing = await prisma.inviteToken.findUnique({
+      where: { token: candidate },
+      select: { id: true },
+    });
+    if (!existing) return candidate;
+  }
+  throw new Error("No se pudo generar un token único. Intenta nuevamente.");
+}
 
 async function requireSuperUser() {
   const currentUser = await getCurrentUser();
@@ -51,7 +65,7 @@ export async function createInviteTokenAction(data: {
     });
   }
 
-  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30); // 30 dias
+  const expiresAt = new Date(Date.now() + TOKEN_VALIDITY_MS); // 72 horas
 
   const token = await prisma.inviteToken.create({
     data: {
@@ -60,6 +74,7 @@ export async function createInviteTokenAction(data: {
       role: "member",
       createdByPersonId: userData.person.id,
       personId: data.personId ?? null,
+      token: await generateNumericToken(),
       expiresAt,
     },
   });
@@ -187,39 +202,56 @@ export async function redeemOwnerOnboardingTokenAction(data: {
   return result;
 }
 
-// ── Tela de boas-vindas: aceita token de onboarding OU de convite ─
-export async function redeemWelcomeTokenAction(data: { token: string; name?: string }) {
-  if (!tokenSchema.safeParse(data.token).success) throw new Error("Token no válido.");
+// ── Tela de boas-vindas: aceita token de convite OU de onboarding ─
+export type WelcomeResult =
+  | { kind: "owner_needs_name" }
+  | { kind: "owner"; org: { name: string } }
+  | { kind: "invite"; org: { name: string } }
+  | {
+      kind: "error";
+      code: "invalid" | "used" | "expired" | "already_in_org" | "unauthorized" | "other";
+    };
+
+export async function redeemWelcomeTokenAction(data: {
+  token: string;
+  name?: string;
+}): Promise<WelcomeResult> {
+  if (!tokenSchema.safeParse(data.token).success) {
+    return { kind: "error", code: "invalid" };
+  }
 
   const invite = await prisma.inviteToken.findUnique({ where: { token: data.token } });
 
-  if (!invite) throw new Error("Token no válido.");
-  if (invite.usedAt) throw new Error("Este token ya fue utilizado.");
-  if (invite.expiresAt < new Date()) throw new Error("Este token expiró.");
+  if (!invite) return { kind: "error", code: "invalid" };
+  if (invite.usedAt) return { kind: "error", code: "used" };
+  if (invite.expiresAt < new Date()) return { kind: "error", code: "expired" };
 
   if (invite.type === "OWNER_ONBOARDING") {
+    // Sem nome da organização ainda → pede para o usuário digitar.
     const name = data.name?.trim();
     if (!name || name.length < 2) {
-      throw new Error("Ingresa el nombre de tu organización.");
+      return { kind: "owner_needs_name" };
     }
 
     const currentUser = await getCurrentUser();
-    if (!currentUser) throw new Error("No autorizado.");
-    if (currentUser.isSuperUser) {
-      throw new Error("El super usuario no crea organizaciones.");
-    }
+    if (!currentUser) return { kind: "error", code: "unauthorized" };
+    if (currentUser.isSuperUser) return { kind: "error", code: "other" };
 
     const org = await createOrganizationService(
       { token: data.token, name },
       { userId: currentUser.user.id },
     );
 
-    return { kind: "owner" as const, org };
+    return { kind: "owner", org };
   }
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser) return { kind: "error", code: "unauthorized" };
+  if (currentUser.person.organizationId) return { kind: "error", code: "already_in_org" };
 
   const org = await applyInviteTokenAction(data.token);
 
-  return { kind: "invite" as const, org };
+  return { kind: "invite", org };
 }
 
 // ── Lista tokens de onboarding — apenas Super User ─────────────

@@ -8,6 +8,21 @@ import { revalidatePath } from "next/cache";
 const canManageRequester = (role: string | undefined | null) =>
   role === "owner" || role === "admin";
 
+const INVITE_TOKEN_VALIDITY_MS = 1000 * 60 * 60 * 24 * 3; // 72 horas
+
+// Token numérico de 6 dígitos, sem colisão com tokens existentes.
+async function generateNumericInviteToken(): Promise<string> {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const candidate = String(Math.floor(100000 + Math.random() * 900000));
+    const existing = await prisma.inviteToken.findUnique({
+      where: { token: candidate },
+      select: { id: true },
+    });
+    if (!existing) return candidate;
+  }
+  throw new Error("No se pudo generar un token único. Intenta nuevamente.");
+}
+
 // ✅ Vincular uma person desvinculada a uma organização
 export const linkPersonToOrganization = async (
   personId: string,
@@ -250,7 +265,8 @@ export const createOrgPersonAction = async (organizationId: string, name: string
         role: "member",
         createdByPersonId: currentUser.person.id,
         personId: newPerson.id,
-        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        token: await generateNumericInviteToken(),
+        expiresAt: new Date(Date.now() + INVITE_TOKEN_VALIDITY_MS),
       },
     });
 
@@ -299,7 +315,8 @@ export const regeneratePersonInviteAction = async (
         role: "member",
         createdByPersonId: currentUser.person.id,
         personId,
-        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        token: await generateNumericInviteToken(),
+        expiresAt: new Date(Date.now() + INVITE_TOKEN_VALIDITY_MS),
       },
     });
   });
@@ -453,7 +470,9 @@ export const deletePersonAction = async (
     select: { id: true, userId: true, role: true },
   });
   if (!target) throw new Error("Persona no encontrada.");
-  if (target.userId) throw new Error("Desvincula el usuario antes de eliminar la persona.");
+  if (target.userId === currentUser.user.id) {
+    throw new Error("No puedes eliminarte a ti mismo.");
+  }
   if (requesterRole === "admin" && target.role === "owner") {
     throw new Error("Los administradores no pueden eliminar al owner.");
   }
@@ -665,6 +684,130 @@ export const adminBulkUpdatePersonCards = async (
       await tx.card.update({
         where: { id: assignedCardId },
         data: { assignedPersonId: personId },
+      });
+    }
+  });
+
+  revalidatePath(`/org/${slug}/admin/pessoas`);
+  return { success: true };
+};
+
+// ✅ Dados para o modal "Administrar Cartões" (disponíveis + designados)
+export const getPersonCardsManageData = async (organizationId: string, personId: string) => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("No autenticado.");
+
+  if (!currentUser.isSuperUser) {
+    if (currentUser.person?.organizationId !== organizationId) {
+      throw new Error("Sin permiso.");
+    }
+    if (!canManageRequester(currentUser.person?.role)) {
+      throw new Error("Sin permiso.");
+    }
+  }
+
+  const person = await prisma.person.findFirst({
+    where: { id: personId, organizationId },
+    select: { id: true, name: true, role: true },
+  });
+  if (!person) throw new Error("Persona no encontrada.");
+
+  const [available, designated] = await Promise.all([
+    prisma.card.findMany({
+      where: { organizationId, assignedPersonId: null },
+      orderBy: { number: "asc" },
+      select: {
+        id: true,
+        number: true,
+        addresses: { select: { neighborhood: true } },
+      },
+    }),
+    prisma.card.findMany({
+      where: { organizationId, assignedPersonId: { not: null } },
+      orderBy: { number: "asc" },
+      select: {
+        id: true,
+        number: true,
+        startDate: true,
+        createdAt: true,
+        assignedTo: { select: { name: true } },
+        addresses: { select: { neighborhood: true } },
+      },
+    }),
+  ]);
+
+  const neighborhoodsOf = (card: { addresses: { neighborhood: string }[] }) =>
+    [...new Set(card.addresses.map((address) => address.neighborhood.trim()).filter(Boolean))].sort(
+      (a, b) => a.localeCompare(b),
+    );
+
+  return {
+    person: { id: person.id, name: person.name, role: person.role },
+    availableCards: available.map((card) => ({
+      id: card.id,
+      number: card.number,
+      neighborhoods: neighborhoodsOf(card),
+    })),
+    designatedCards: designated.map((card) => ({
+      id: card.id,
+      number: card.number,
+      neighborhoods: neighborhoodsOf(card),
+      personName: card.assignedTo?.name ?? "—",
+      designationDate: (card.startDate ?? card.createdAt).toISOString(),
+    })),
+  };
+};
+
+// ✅ Designar cards disponíveis a uma pessoa
+export const adminDesignateCardsAction = async (
+  organizationId: string,
+  personId: string,
+  cardIds: string[],
+  slug: string,
+) => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("No autenticado.");
+
+  if (!currentUser.isSuperUser) {
+    if (currentUser.person?.organizationId !== organizationId) {
+      throw new Error("Sin permiso.");
+    }
+    if (!canManageRequester(currentUser.person?.role)) {
+      throw new Error("Sin permiso.");
+    }
+  }
+
+  if (cardIds.length === 0) throw new Error("Selecciona al menos un card.");
+
+  const person = await prisma.person.findFirst({
+    where: { id: personId, organizationId },
+    select: { id: true },
+  });
+  if (!person) throw new Error("Persona no encontrada.");
+
+  const cards = await prisma.card.findMany({
+    where: { id: { in: cardIds }, organizationId, assignedPersonId: null },
+    select: { id: true },
+  });
+  if (cards.length !== cardIds.length) {
+    throw new Error("Alguns cards já estão designados ou não pertencem a esta organização.");
+  }
+
+  const now = new Date();
+  await prisma.$transaction(async (tx) => {
+    for (const card of cards) {
+      await tx.card.update({
+        where: { id: card.id },
+        data: { assignedPersonId: person.id, startDate: now, endDate: null },
+      });
+      await tx.cardEvent.create({
+        data: {
+          id: crypto.randomUUID(),
+          action: "ASSIGNED",
+          personId: currentUser.person.id,
+          cardId: card.id,
+          date: now,
+        },
       });
     }
   });

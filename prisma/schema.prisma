@@ -311,6 +311,7 @@ model CardEvent {
 enum CardEventAction {
   ASSIGNED
   RETURNED
+  TRANSFERRED
 }
 
 model Survey {

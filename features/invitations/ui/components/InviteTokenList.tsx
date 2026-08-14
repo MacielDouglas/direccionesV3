@@ -92,7 +92,7 @@ export async function InviteTokenList({ tokens, locale }: Props) {
             </div>
             {status === "active" && (
               <div className="flex items-center gap-2">
-                <code className="max-w-36 truncate rounded bg-muted/60 px-2 py-1 font-mono text-xs">
+                <code className="rounded-md bg-muted/60 px-2.5 py-1 font-mono text-base font-semibold tracking-[0.3em]">
                   {token.token}
                 </code>
                 <CopyTokenButton token={token.token} />

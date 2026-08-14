@@ -43,8 +43,7 @@ export default async function Home() {
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             {t.home.welcome} <span className="text-brand">{session.user.name}</span>
           </h1>
-          <div className="mt-4 space-y-4">
-            <p className="text-muted-foreground">{t.home.notInGroup}</p>
+          <div className="mt-6 space-y-4">
             <WelcomeScreen userEmail={session.user.email} />
           </div>
         </div>

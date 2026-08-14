@@ -14,9 +14,10 @@ import {
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import {
-  adminBulkUpdatePersonCards,
+  adminDesignateCardsAction,
   createOrgPersonAction,
-  getPersonWithCards,
+  deletePersonAction,
+  getPersonCardsManageData,
   linkUserToPersonAction,
   searchUsersToLinkAction,
   updatePersonName,
@@ -31,6 +32,7 @@ import {
   Pencil,
   Search,
   ShieldCheck,
+  Trash2,
   UserPlus,
   UserRound,
   UserRoundX,
@@ -74,37 +76,16 @@ export type LinkableUser = {
   image: string | null;
 };
 
-type AdminCardOption = {
+export type ManageCardInfo = {
   id: string;
   number: number;
-  ownerPersonId: string | null;
-  assignedPersonId: string | null;
-  ownerName: string | null;
-  assignedToName: string | null;
   neighborhoods: string[];
 };
 
-type NeighborhoodOption = {
-  name: string;
-  count: number;
-};
-
-export type PersonWithCards = {
-  id: string;
-  name: string;
-  role: string | null;
-  userId: string | null;
-  cardsOwned: { id: string; number: number; assignedPersonId: string | null }[];
-  cardsAssigned: { id: string; number: number }[];
-  allCards: AdminCardOption[];
-  neighborhoods: NeighborhoodOption[];
-};
-
-type CardOption = {
-  id: string;
-  number: number;
-  assignedPersonId: string | null;
-  neighborhoods: string[];
+export type ManagePersonCards = {
+  person: { id: string; name: string; role: string | null };
+  availableCards: ManageCardInfo[];
+  designatedCards: (ManageCardInfo & { personName: string; designationDate: string })[];
 };
 
 interface Props {
@@ -138,7 +119,7 @@ function errorMessage(err: unknown, fallback: string) {
   return err instanceof Error && err.message.trim() ? err.message : fallback;
 }
 
-function ModalOverlay({
+export function ModalOverlay({
   label,
   onClose,
   children,
@@ -202,6 +183,7 @@ function PersonCard({
   onEdit,
   onAdminCards,
   onLink,
+  onRemove,
   t,
 }: {
   person: PeopleListItem;
@@ -212,6 +194,7 @@ function PersonCard({
   onEdit: () => void;
   onAdminCards: () => void;
   onLink?: () => void;
+  onRemove: () => void;
   t: ReturnType<typeof useI18n>["t"];
 }) {
   const actionButtonClasses =
@@ -287,6 +270,19 @@ function PersonCard({
             <span className="truncate">{t.people.linkUser}</span>
           </button>
         ) : null}
+        {canManage && !isSelf ? (
+          <button
+            type="button"
+            onClick={onRemove}
+            className={cn(
+              actionButtonClasses,
+              "border-l border-border text-destructive hover:bg-destructive/10 hover:text-destructive",
+            )}
+          >
+            <Trash2 className="size-3.5 shrink-0" aria-hidden="true" />
+            <span className="truncate">{t.people.removePerson}</span>
+          </button>
+        ) : null}
       </div>
     </li>
   );
@@ -310,10 +306,11 @@ export function PeopleScreen({
   const [editName, setEditName] = useState("");
   const [editRole, setEditRole] = useState<PersonRole>("member");
   const [isEditing, startEditTransition] = useTransition();
-  const [cardsData, setCardsData] = useState<PersonWithCards | null>(null);
-  const [selectedOwnerCardIds, setSelectedOwnerCardIds] = useState<string[]>([]);
-  const [selectedAssignedCardId, setSelectedAssignedCardId] = useState<string | null>(null);
-  const [isSavingCards, startSaveCardsTransition] = useTransition();
+  const [manageData, setManageData] = useState<ManagePersonCards | null>(null);
+  const [selectedDesignateIds, setSelectedDesignateIds] = useState<string[]>([]);
+  const [isDesignating, startDesignateTransition] = useTransition();
+  const [removeTarget, setRemoveTarget] = useState<PeopleListItem | null>(null);
+  const [isRemoving, startRemoveTransition] = useTransition();
 
   const linkedUsers = persons.filter((p) => Boolean(p.userId));
   const unlinkedPersons = persons.filter((p) => !p.userId);
@@ -404,36 +401,28 @@ export function PeopleScreen({
     }
     setCardsTarget(person);
     try {
-      const data = await getPersonWithCards(organizationId, person.id);
-      if (data) {
-        setCardsData(data);
-        setSelectedOwnerCardIds(data.cardsOwned.map((c) => c.id));
-        setSelectedAssignedCardId(data.cardsAssigned[0]?.id ?? null);
-      }
+      const data = await getPersonCardsManageData(organizationId, person.id);
+      setManageData(data);
+      setSelectedDesignateIds([]);
     } catch (err) {
       toast.error(errorMessage(err, t.errors.generic));
       setCardsTarget(null);
     }
   };
 
-  const handleSaveCards = () => {
-    if (!cardsTarget || !cardsData) return;
-    if (!canManagePerson(cardsTarget)) {
-      toast.error(t.people.cannotRemoveOwner);
-      return;
-    }
-    startSaveCardsTransition(async () => {
+  const handleDesignateCards = () => {
+    if (!cardsTarget || !manageData || selectedDesignateIds.length === 0) return;
+    startDesignateTransition(async () => {
       try {
-        await adminBulkUpdatePersonCards(
+        await adminDesignateCardsAction(
           organizationId,
           cardsTarget.id,
-          selectedOwnerCardIds,
-          selectedAssignedCardId,
+          selectedDesignateIds,
           organizationSlug,
         );
-        toast.success(t.people.cardsUpdated);
+        toast.success(t.people.cardsDesignated);
         setCardsTarget(null);
-        setCardsData(null);
+        setManageData(null);
         router.refresh();
       } catch (err) {
         toast.error(errorMessage(err, t.errors.generic));
@@ -441,46 +430,18 @@ export function PeopleScreen({
     });
   };
 
-  const availableOwnerCards: CardOption[] = cardsData
-    ? cardsData.allCards
-        .filter((c) => !c.ownerPersonId || c.ownerPersonId === cardsTarget?.id)
-        .map((c) => ({
-          id: c.id,
-          number: c.number,
-          assignedPersonId: c.assignedPersonId,
-          neighborhoods: c.neighborhoods,
-        }))
-    : [];
-
-  const availableAssignedCards: CardOption[] = cardsData
-    ? cardsData.allCards
-        .filter(
-          (c) =>
-            (!c.assignedPersonId || c.assignedPersonId === cardsTarget?.id) &&
-            !selectedOwnerCardIds.includes(c.id),
-        )
-        .map((c) => ({
-          id: c.id,
-          number: c.number,
-          assignedPersonId: c.assignedPersonId,
-          neighborhoods: c.neighborhoods,
-        }))
-    : [];
-
-  const handleOwnerCardToggle = (cardId: string) => {
-    setSelectedOwnerCardIds((prev) =>
-      prev.includes(cardId) ? prev.filter((id) => id !== cardId) : [...prev, cardId],
-    );
-    if (selectedAssignedCardId === cardId) {
-      setSelectedAssignedCardId(null);
-    }
-  };
-
-  const handleAssignedCardChange = (cardId: string | null) => {
-    setSelectedAssignedCardId(cardId);
-    if (cardId && selectedOwnerCardIds.includes(cardId)) {
-      setSelectedOwnerCardIds((prev) => prev.filter((id) => id !== cardId));
-    }
+  const handleRemovePerson = () => {
+    if (!removeTarget) return;
+    startRemoveTransition(async () => {
+      try {
+        await deletePersonAction(organizationId, removeTarget.id, organizationSlug);
+        toast.success(t.people.personRemoved);
+        setRemoveTarget(null);
+        router.refresh();
+      } catch (err) {
+        toast.error(errorMessage(err, t.errors.generic));
+      }
+    });
   };
 
   return (
@@ -564,6 +525,7 @@ export function PeopleScreen({
                   t={t}
                   onEdit={() => openEditPerson(person)}
                   onAdminCards={() => openAdminCards(person)}
+                  onRemove={() => setRemoveTarget(person)}
                 />
               );
             })}
@@ -603,6 +565,7 @@ export function PeopleScreen({
                 onEdit={() => openEditPerson(person)}
                 onAdminCards={() => openAdminCards(person)}
                 onLink={() => setLinkTarget(person)}
+                onRemove={() => setRemoveTarget(person)}
               />
             ))}
           </ul>
@@ -634,23 +597,32 @@ export function PeopleScreen({
         />
       ) : null}
 
-      {cardsTarget && cardsData ? (
+      {cardsTarget && manageData ? (
         <AdminCardsDialog
           person={cardsTarget}
-          selectedOwnerCardIds={selectedOwnerCardIds}
-          selectedAssignedCardId={selectedAssignedCardId}
-          onOwnerCardToggle={handleOwnerCardToggle}
-          onAssignedCardChange={handleAssignedCardChange}
-          availableOwnerCards={availableOwnerCards}
-          availableAssignedCards={availableAssignedCards}
-          allCards={cardsData.allCards}
-          neighborhoods={cardsData.neighborhoods}
+          data={manageData}
+          selectedDesignateIds={selectedDesignateIds}
+          onToggleDesignate={(cardId) =>
+            setSelectedDesignateIds((prev) =>
+              prev.includes(cardId) ? prev.filter((id) => id !== cardId) : [...prev, cardId],
+            )
+          }
+          onDesignate={handleDesignateCards}
+          isDesignating={isDesignating}
           onClose={() => {
             setCardsTarget(null);
-            setCardsData(null);
+            setManageData(null);
           }}
-          onSave={handleSaveCards}
-          isSaving={isSavingCards}
+          t={t}
+        />
+      ) : null}
+
+      {removeTarget ? (
+        <RemovePersonDialog
+          person={removeTarget}
+          onClose={() => setRemoveTarget(null)}
+          onRemove={handleRemovePerson}
+          isRemoving={isRemoving}
           t={t}
         />
       ) : null}
@@ -803,7 +775,7 @@ function LinkUserDialog({
   );
 }
 
-function EditPersonDialog({
+export function EditPersonDialog({
   name,
   onNameChange,
   role,
@@ -898,40 +870,29 @@ function EditPersonDialog({
   );
 }
 
-function AdminCardsDialog({
+export function AdminCardsDialog({
   person,
-  selectedOwnerCardIds,
-  selectedAssignedCardId,
-  availableOwnerCards,
-  availableAssignedCards,
-  allCards,
-  neighborhoods,
-  onOwnerCardToggle,
-  onAssignedCardChange,
+  data,
+  selectedDesignateIds,
+  onToggleDesignate,
+  onDesignate,
+  isDesignating,
   onClose,
-  onSave,
-  isSaving,
   t,
 }: {
-  person: PeopleListItem;
-  selectedOwnerCardIds: string[];
-  onOwnerCardToggle: (cardId: string) => void;
-  selectedAssignedCardId: string | null;
-  onAssignedCardChange: (cardId: string | null) => void;
-  availableOwnerCards: CardOption[];
-  availableAssignedCards: CardOption[];
-  allCards: AdminCardOption[];
-  neighborhoods: NeighborhoodOption[];
+  person: { id: string; name: string };
+  data: ManagePersonCards;
+  selectedDesignateIds: string[];
+  onToggleDesignate: (cardId: string) => void;
+  onDesignate: () => void;
+  isDesignating: boolean;
   onClose: () => void;
-  onSave: () => void;
-  isSaving: boolean;
   t: ReturnType<typeof useI18n>["t"];
 }) {
-  const cardStatusLabel = (card: AdminCardOption) => {
-    if (card.ownerName) return t.people.cardOwner.replace("{name}", card.ownerName);
-    if (card.assignedToName) return t.cards.assignedTo.replace("{name}", card.assignedToName);
-    return t.cards.free;
-  };
+  const { locale } = useI18n();
+  const dateLocale = locale === "pt" ? "pt-BR" : "es-419";
+  const formatDate = (iso: string) => new Date(iso).toLocaleDateString(dateLocale);
+  const cardNumber = (number: number) => `#${String(number).padStart(2, "0")}`;
 
   return (
     <ModalOverlay label={t.people.adminCardsTitle} onClose={onClose} panelClassName="max-w-2xl">
@@ -951,179 +912,176 @@ function AdminCardsDialog({
           <X className="size-4" aria-hidden />
         </button>
       </div>
-      <div className="mt-4 flex max-h-[60vh] flex-col gap-6 overflow-y-auto sm:max-h-[70vh]">
-        <div>
+
+      <div className="mt-4 flex max-h-[65vh] flex-col gap-6 overflow-y-auto">
+        <section aria-label={t.people.availableCardsTitle}>
           <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
             <CreditCard className="size-5 text-brand" aria-hidden="true" />
-            {t.people.allCards} ({allCards.length})
+            {t.people.availableCardsTitle} ({data.availableCards.length})
           </h4>
-          {allCards.length === 0 ? (
+          {data.availableCards.length === 0 ? (
             <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-6 text-center text-sm text-muted-foreground">
               <CreditCard className="size-6" aria-hidden />
               <p>{t.people.noAvailableCards}</p>
             </div>
           ) : (
+            <>
+              <ul className="flex flex-col gap-2">
+                {data.availableCards.map((card) => {
+                  const selected = selectedDesignateIds.includes(card.id);
+                  return (
+                    <li key={card.id}>
+                      <button
+                        type="button"
+                        onClick={() => onToggleDesignate(card.id)}
+                        aria-pressed={selected}
+                        className={cn(
+                          "flex w-full items-start justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors",
+                          selected
+                            ? "border-brand bg-brand/10"
+                            : "border-border bg-card hover:border-brand/50 hover:bg-surface-subtle-light",
+                        )}
+                      >
+                        <span className="flex items-center gap-3">
+                          <span
+                            className={cn(
+                              "flex size-5 shrink-0 items-center justify-center rounded border",
+                              selected
+                                ? "border-brand bg-brand text-brand-foreground"
+                                : "border-muted-foreground/40 bg-transparent",
+                            )}
+                            aria-hidden
+                          >
+                            {selected ? <Check className="size-3.5" /> : null}
+                          </span>
+                          <span className="flex flex-col">
+                            <span className="text-sm font-semibold text-foreground">
+                              {cardNumber(card.number)}
+                            </span>
+                            <span className="mt-0.5 text-xs text-muted-foreground">
+                              {card.neighborhoods.length > 0 ? card.neighborhoods.join(" · ") : "—"}
+                            </span>
+                          </span>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              <Button
+                type="button"
+                onClick={onDesignate}
+                disabled={isDesignating || selectedDesignateIds.length === 0}
+                aria-busy={isDesignating}
+                className="mt-3 w-full gap-2 sm:w-auto"
+              >
+                {isDesignating ? (
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
+                ) : (
+                  <Check className="size-4" aria-hidden />
+                )}
+                {isDesignating
+                  ? t.people.designatingCards
+                  : t.people.designateCardsFor.replace("{name}", person.name)}
+              </Button>
+            </>
+          )}
+        </section>
+
+        <section aria-label={t.people.designatedCardsTitle}>
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+            <MapPin className="size-5 text-brand" aria-hidden="true" />
+            {t.people.designatedCardsTitle} ({data.designatedCards.length})
+          </h4>
+          {data.designatedCards.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-6 text-center text-sm text-muted-foreground">
+              <MapPin className="size-6" aria-hidden />
+              <p>{t.people.noDesignatedCards}</p>
+            </div>
+          ) : (
             <ul className="flex flex-col gap-2">
-              {allCards.map((card) => (
-                <li
-                  key={card.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground">
-                      #{String(card.number).padStart(2, "0")}
-                    </p>
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                      {card.neighborhoods.length > 0 ? card.neighborhoods.join(" · ") : "—"}
-                    </p>
+              {data.designatedCards.map((card) => (
+                <li key={card.id} className="rounded-xl border border-border bg-card px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm font-semibold text-foreground">
+                      {cardNumber(card.number)}
+                    </span>
+                    <span className="shrink-0 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
+                      {card.personName}
+                    </span>
                   </div>
-                  <span className="shrink-0 text-xs font-medium text-muted-foreground">
-                    {cardStatusLabel(card)}
-                  </span>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {card.neighborhoods.length > 0 ? card.neighborhoods.join(" · ") : "—"}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {t.people.designatedOn.replace("{date}", formatDate(card.designationDate))}
+                  </p>
                 </li>
               ))}
             </ul>
           )}
-        </div>
-
-        <div>
-          <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-            <MapPin className="size-5 text-brand" aria-hidden="true" />
-            {t.people.neighborhoods} ({neighborhoods.length})
-          </h4>
-          {neighborhoods.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-6 text-center text-sm text-muted-foreground">
-              <MapPin className="size-6" aria-hidden />
-              <p>{t.people.noNeighborhoods}</p>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {neighborhoods.map((neighborhood) => (
-                <span
-                  key={neighborhood.name}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground"
-                >
-                  {neighborhood.name}
-                  <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-bold text-brand">
-                    {neighborhood.count}
-                  </span>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-            <CreditCard className="size-5 text-brand" aria-hidden="true" />
-            {t.people.ownerCards} ({selectedOwnerCardIds.length})
-          </h4>
-          {availableOwnerCards.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-6 text-center text-sm text-muted-foreground">
-              <CreditCard className="size-6" aria-hidden />
-              <p>{t.people.noAvailableCards}</p>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {availableOwnerCards.map((card) => (
-                <button
-                  key={card.id}
-                  type="button"
-                  onClick={() => onOwnerCardToggle(card.id)}
-                  className={cn(
-                    "inline-flex flex-col items-start gap-1 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors",
-                    selectedOwnerCardIds.includes(card.id)
-                      ? "border-brand bg-brand/10 text-brand"
-                      : "border-border bg-card text-muted-foreground hover:border-brand/50 hover:bg-surface-subtle-light",
-                  )}
-                >
-                  <span className="flex items-center gap-2">
-                    #{String(card.number).padStart(2, "0")}
-                    {selectedOwnerCardIds.includes(card.id) ? (
-                      <Check className="size-4 text-brand" aria-hidden />
-                    ) : null}
-                  </span>
-                  {card.neighborhoods.length > 0 ? (
-                    <span className="max-w-44 truncate text-[10px] font-medium text-muted-foreground">
-                      {card.neighborhoods.join(" · ")}
-                    </span>
-                  ) : null}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-            <CreditCard className="size-5 text-brand" aria-hidden="true" />
-            {t.people.assignedCard}
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => onAssignedCardChange(null)}
-              className={cn(
-                "inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors",
-                !selectedAssignedCardId
-                  ? "border-brand bg-brand/10 text-brand"
-                  : "border-border bg-card text-muted-foreground hover:border-brand/50 hover:bg-surface-subtle-light",
-              )}
-            >
-              <X className="size-4" aria-hidden />
-              {t.people.noAssignedCard}
-            </button>
-            {availableAssignedCards.map((card) => (
-              <button
-                key={card.id}
-                type="button"
-                onClick={() => onAssignedCardChange(card.id)}
-                className={cn(
-                  "inline-flex flex-col items-start gap-1 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors",
-                  selectedAssignedCardId === card.id
-                    ? "border-brand bg-brand/10 text-brand"
-                    : "border-border bg-card text-muted-foreground hover:border-brand/50 hover:bg-surface-subtle-light",
-                )}
-              >
-                <span className="flex items-center gap-2">
-                  #{String(card.number).padStart(2, "0")}
-                  {selectedAssignedCardId === card.id ? (
-                    <Check className="size-4 text-brand" aria-hidden />
-                  ) : null}
-                </span>
-                {card.neighborhoods.length > 0 ? (
-                  <span className="max-w-44 truncate text-[10px] font-medium text-muted-foreground">
-                    {card.neighborhoods.join(" · ")}
-                  </span>
-                ) : null}
-              </button>
-            ))}
-          </div>
-        </div>
+        </section>
       </div>
-      <div className="mt-6 flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row">
+    </ModalOverlay>
+  );
+}
+
+function RemovePersonDialog({
+  person,
+  onClose,
+  onRemove,
+  isRemoving,
+  t,
+}: {
+  person: PeopleListItem;
+  onClose: () => void;
+  onRemove: () => void;
+  isRemoving: boolean;
+  t: ReturnType<typeof useI18n>["t"];
+}) {
+  return (
+    <ModalOverlay label={t.people.removePersonTitle} onClose={onClose}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-base font-semibold text-foreground">{t.people.removePersonTitle}</h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t.people.removePersonHint}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t.common.close}
+          className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <X className="size-4" aria-hidden />
+        </button>
+      </div>
+      <p className="mt-4 rounded-lg bg-muted/60 px-3 py-2.5 text-sm text-foreground">
+        {t.people.removePersonConfirm.replace("{name}", person.name)}
+      </p>
+      <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row">
         <Button
+          type="button"
           variant="outline"
           onClick={onClose}
-          disabled={isSaving}
+          disabled={isRemoving}
           className="w-full sm:w-auto"
         >
           {t.common.cancel}
         </Button>
         <Button
-          onClick={onSave}
-          disabled={isSaving}
-          aria-busy={isSaving}
-          className="w-full sm:w-auto"
+          type="button"
+          variant="destructive"
+          onClick={onRemove}
+          disabled={isRemoving}
+          aria-busy={isRemoving}
+          className="w-full gap-2 sm:w-auto"
         >
-          {isSaving ? (
+          {isRemoving ? (
             <Loader2 className="size-4 animate-spin" aria-hidden />
           ) : (
-            <>
-              <Check className="mr-2 size-4" aria-hidden />
-              {t.people.saveCards}
-            </>
+            <Trash2 className="size-4" aria-hidden />
           )}
+          {isRemoving ? t.people.removingPerson : t.people.removePerson}
         </Button>
       </div>
     </ModalOverlay>
