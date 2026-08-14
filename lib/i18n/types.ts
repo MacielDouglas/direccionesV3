@@ -647,6 +647,22 @@ export type I18nDictionary = {
   };
   superuser: {
     panelTitle: string;
+    panelOrganizations: string;
+    panelOrganizationsHint: string;
+    emptyOrganizations: string;
+    personCountOne: string;
+    personCountMany: string;
+    enterOrg: string;
+    panelUsersWithoutOrg: string;
+    panelUsersHint: string;
+    emptyUsersWithoutOrg: string;
+    selectOrgPlaceholder: string;
+    selectOrgToSend: string;
+    sendToOrg: string;
+    userSent: string;
+    deleteUser: string;
+    deleteUserConfirm: string;
+    userDeleted: string;
     ownerTokens: {
       generate: string;
       generating: string;

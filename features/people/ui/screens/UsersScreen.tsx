@@ -199,109 +199,7 @@ export function UsersScreen({
         <p className="mb-3 text-sm text-muted-foreground">{t.people.usersSubtitle}</p>
       </header>
 
-      {/* Usuários COM pessoa vinculada */}
-      <section aria-labelledby="users-linked-title">
-        <h2
-          id="users-linked-title"
-          className="mb-1 flex items-center gap-2 text-base font-semibold"
-        >
-          <UserRound className="size-4 text-brand" aria-hidden />
-          {t.people.usersSectionTitle}
-        </h2>
-        <p className="mb-3 text-sm text-muted-foreground">
-          {usersWithPerson.length === 1
-            ? t.people.countOne.replace("{count}", "1")
-            : t.people.countMany.replace("{count}", String(usersWithPerson.length))}
-        </p>
-
-        {usersWithPerson.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-10 text-center text-sm text-muted-foreground">
-            <UserRound className="size-6" aria-hidden />
-            <p>{t.people.noUsers}</p>
-          </div>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {usersWithPerson.map((user) => {
-              const isBusy = busyUserId === user.person?.id;
-              const isSelf = user.person?.id === currentUserId;
-              const canManage = canManagePerson(user);
-              return (
-                <li
-                  key={user.id}
-                  className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-xs sm:flex-row sm:items-center"
-                >
-                  <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <Avatar className="size-10 shrink-0">
-                      <AvatarImage src={user.image ?? undefined} />
-                      <AvatarFallback>{user.name?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">
-                        {user.name ?? "Usuário"}
-                        {isSelf && (
-                          <span className="ml-1.5 text-xs font-normal text-muted-foreground">
-                            ({t.people.youLabel})
-                          </span>
-                        )}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">{user.email ?? ""}</p>
-                    </div>
-                  </div>
-
-                  <span className={badgeClasses(true)}>
-                    {roleLabel(user.person?.role ?? "member")}
-                  </span>
-
-                  <div className="flex flex-wrap gap-2">
-                    {canManage && (
-                      <>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEdit(user)}
-                        >
-                          <Pencil className="size-3.5" aria-hidden />
-                          {t.people.editPerson}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openAdminCards(user)}
-                        >
-                          <CreditCard className="size-3.5" aria-hidden />
-                          {t.people.adminCardsTitle}
-                        </Button>
-                      </>
-                    )}
-                    {canManage && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => removeUser(user)}
-                        disabled={isBusy}
-                        aria-busy={isBusy}
-                      >
-                        {isBusy ? (
-                          <Loader2 className="size-3.5 animate-spin" aria-hidden />
-                        ) : (
-                          <Trash2 className="size-3.5" aria-hidden />
-                        )}
-                        {t.people.removeFromOrg}
-                      </Button>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
-
-      {/* Usuários SEM pessoa vinculada */}
+      {/* Usuários SEM pessoa vinculada (sempre no topo) */}
       <section aria-labelledby="users-unlinked-title">
         <h2
           id="users-unlinked-title"
@@ -398,6 +296,108 @@ export function UsersScreen({
                       </Button>
                     </div>
                   )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      {/* Usuários COM pessoa vinculada */}
+      <section aria-labelledby="users-linked-title">
+        <h2
+          id="users-linked-title"
+          className="mb-1 flex items-center gap-2 text-base font-semibold"
+        >
+          <UserRound className="size-4 text-brand" aria-hidden />
+          {t.people.usersSectionTitle}
+        </h2>
+        <p className="mb-3 text-sm text-muted-foreground">
+          {usersWithPerson.length === 1
+            ? t.people.countOne.replace("{count}", "1")
+            : t.people.countMany.replace("{count}", String(usersWithPerson.length))}
+        </p>
+
+        {usersWithPerson.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-10 text-center text-sm text-muted-foreground">
+            <UserRound className="size-6" aria-hidden />
+            <p>{t.people.noUsers}</p>
+          </div>
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {usersWithPerson.map((user) => {
+              const isBusy = busyUserId === user.person?.id;
+              const isSelf = user.person?.id === currentUserId;
+              const canManage = canManagePerson(user);
+              return (
+                <li
+                  key={user.id}
+                  className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-xs sm:flex-row sm:items-center"
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <Avatar className="size-10 shrink-0">
+                      <AvatarImage src={user.image ?? undefined} />
+                      <AvatarFallback>{user.name?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">
+                        {user.name ?? "Usuário"}
+                        {isSelf && (
+                          <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                            ({t.people.youLabel})
+                          </span>
+                        )}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">{user.email ?? ""}</p>
+                    </div>
+                  </div>
+
+                  <span className={badgeClasses(true)}>
+                    {roleLabel(user.person?.role ?? "member")}
+                  </span>
+
+                  <div className="flex flex-wrap gap-2">
+                    {canManage && (
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEdit(user)}
+                        >
+                          <Pencil className="size-3.5" aria-hidden />
+                          {t.people.editPerson}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openAdminCards(user)}
+                        >
+                          <CreditCard className="size-3.5" aria-hidden />
+                          {t.people.adminCardsTitle}
+                        </Button>
+                      </>
+                    )}
+                    {canManage && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => removeUser(user)}
+                        disabled={isBusy}
+                        aria-busy={isBusy}
+                      >
+                        {isBusy ? (
+                          <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                        ) : (
+                          <Trash2 className="size-3.5" aria-hidden />
+                        )}
+                        {t.people.removeFromOrg}
+                      </Button>
+                    )}
+                  </div>
                 </li>
               );
             })}
