@@ -11,8 +11,10 @@ import { useRouter } from "next/navigation";
 
 export function LanguageSelector({
   className,
+  compact = false,
 }: {
   className?: string;
+  compact?: boolean;
 }) {
   const { locale, setLocale, t } = useI18n();
   const { vibrate } = useHaptic();
@@ -26,6 +28,37 @@ export function LanguageSelector({
       /* persistência no banco é best-effort — cookie/localStorage seguem valendo */
     });
     router.refresh();
+  }
+
+  if (compact) {
+    return (
+      <fieldset
+        aria-label={t.login.chooseLanguage}
+        className={cn(
+          "inline-flex w-fit rounded-full border border-white/15 bg-white/10 p-1 backdrop-blur-sm",
+          className,
+        )}
+      >
+        {locales.map((l) => (
+          <button
+            key={l}
+            type="button"
+            onClick={() => handleChangeLanguage(l)}
+            aria-pressed={locale === l}
+            aria-label={localeLabels[l]}
+            className={cn(
+              "rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
+              locale === l
+                ? "bg-brand text-brand-foreground shadow-sm"
+                : "text-white/70 hover:text-white",
+            )}
+          >
+            {l.toUpperCase()}
+          </button>
+        ))}
+      </fieldset>
+    );
   }
 
   return (

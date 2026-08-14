@@ -5,28 +5,20 @@ export default function LoginLoading() {
     <div
       aria-label="Cargando inicio de sesión"
       aria-busy="true"
-      className="relative flex min-h-svh w-full flex-col items-center justify-center overflow-hidden px-4 py-12 bg-background"
+      className="relative flex min-h-svh w-full flex-col items-center justify-center overflow-hidden bg-background px-4"
     >
-      <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-8 rounded-xl border border-border bg-card p-8 shadow-sm sm:p-9">
+      <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-8 rounded-3xl border border-white/10 bg-black/30 p-8 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-10">
         <header className="flex flex-col items-center gap-5 text-center">
-          <Skeleton className="size-24 rounded-xl" />
+          <Skeleton className="size-24 rounded-2xl bg-white/15" />
           <div className="flex flex-col items-center gap-2">
-            <Skeleton className="h-3 w-20" />
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-4 w-60" />
+            <Skeleton className="h-8 w-52 bg-white/15" />
+            <Skeleton className="h-4 w-64 bg-white/15" />
           </div>
         </header>
 
-        <div className="w-full space-y-3">
-          <Skeleton className="h-11 w-full rounded-full" />
-        </div>
+        <Skeleton className="h-11 w-full rounded-full bg-white/15" />
 
-        <div className="w-full border-t border-border pt-6">
-          <div className="flex flex-col items-center gap-2">
-            <Skeleton className="h-3 w-24" />
-            <Skeleton className="h-9 w-40 rounded-full" />
-          </div>
-        </div>
+        <Skeleton className="h-8 w-24 rounded-full bg-white/10" />
       </div>
     </div>
   );
