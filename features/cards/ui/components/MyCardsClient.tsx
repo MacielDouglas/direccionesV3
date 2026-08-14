@@ -11,6 +11,7 @@ import { MyCardsMapModal } from "./MyCardsMapModal";
 
 type CardAddress = {
   id: string;
+  type: string;
   street: string;
   number: string;
   neighborhood: string;

@@ -108,6 +108,7 @@ export async function listMyCards(organizationId: string, personId: string) {
       addresses: {
         select: {
           id: true,
+          type: true,
           street: true,
           number: true,
           neighborhood: true,
