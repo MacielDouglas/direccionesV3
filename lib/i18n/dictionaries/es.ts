@@ -439,6 +439,8 @@ const es: I18nDictionary = {
     enterWithToken: "Ingresar con el token",
     entering: "Ingresando…",
     ownerCreated: "¡Organización creada! Bienvenido a {orgName}",
+    goToOrg: "Ir a {orgName}",
+    goToOrgHint: "¡Ingresaste con éxito! Ahora puedes acceder a la organización.",
     tokenError: "Error al ingresar.",
   },
   admin: {
@@ -588,6 +590,10 @@ const es: I18nDictionary = {
     alreadyLinked: "Este usuario ya está vinculado a otra persona.",
     linkSuccess: "¡Usuario vinculado con éxito!",
     searchingUsers: "Buscando usuarios...",
+    linkTokenTitle: "O genera un token para un nuevo usuario",
+    linkTokenHint:
+      "Token de 6 dígitos válido por 72 horas — envíalo a la persona para que acceda con su cuenta de Google.",
+    generateLinkToken: "Generar token de 6 dígitos",
     removeFromOrg: "Eliminar de la organización",
     removeFromOrgConfirm: "¿Eliminar a {name} de la organización?",
     removeFromOrgSuccess: "Usuario eliminado de la organización.",

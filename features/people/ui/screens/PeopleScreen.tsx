@@ -21,13 +21,16 @@ import {
   deletePersonAction,
   getPersonCardsManageData,
   linkUserToPersonAction,
+  regeneratePersonInviteAction,
   searchUsersToLinkAction,
   updatePersonName,
   updatePersonRole,
 } from "@/server/person";
 import {
   Check,
+  Copy,
   CreditCard,
+  KeyRound,
   Loader2,
   Mail,
   MapPin,
@@ -636,6 +639,9 @@ function LinkUserDialog({
   const [isSearching, startSearch] = useTransition();
   const [_isLinking, startLinking] = useTransition();
   const [busyUserId, setBusyUserId] = useState<string | null>(null);
+  const [generatedToken, setGeneratedToken] = useState<string | null>(null);
+  const [isGeneratingToken, startTokenGeneration] = useTransition();
+  const [copied, setCopied] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -644,6 +650,31 @@ function LinkUserDialog({
     },
     [],
   );
+
+  const generateToken = () => {
+    startTokenGeneration(async () => {
+      try {
+        const result = await regeneratePersonInviteAction(
+          organizationId,
+          person.id,
+          organizationSlug,
+        );
+        setGeneratedToken(result.token);
+        setCopied(false);
+        toast.success(t.admin.tokenGenerated);
+      } catch (err) {
+        toast.error(errorMessage(err, t.errors.generic));
+      }
+    });
+  };
+
+  const copyToken = async () => {
+    if (!generatedToken) return;
+    await navigator.clipboard.writeText(generatedToken);
+    setCopied(true);
+    toast.success(t.admin.tokenCopied);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleQueryChange = (value: string) => {
     setQuery(value);
@@ -757,6 +788,51 @@ function LinkUserDialog({
             </button>
           );
         })}
+      </div>
+
+      <div className="mt-4 border-t border-border pt-4">
+        <p className="text-sm font-medium text-foreground">{t.people.linkTokenTitle}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{t.people.linkTokenHint}</p>
+        <div className="mt-3">
+          {generatedToken ? (
+            <div className="flex items-center gap-2">
+              <code className="flex-1 rounded-lg border bg-muted/40 px-3 py-2 text-center font-mono text-lg font-semibold tracking-[0.4em] text-foreground">
+                {generatedToken}
+              </code>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={copyToken}
+                className="shrink-0 gap-1.5"
+              >
+                {copied ? (
+                  <Check className="size-3.5" aria-hidden />
+                ) : (
+                  <Copy className="size-3.5" aria-hidden />
+                )}
+                {t.admin.tokenCopy}
+              </Button>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={generateToken}
+              disabled={isGeneratingToken}
+              aria-busy={isGeneratingToken}
+              className="w-full gap-1.5"
+            >
+              {isGeneratingToken ? (
+                <Loader2 className="size-3.5 animate-spin" aria-hidden />
+              ) : (
+                <KeyRound className="size-3.5" aria-hidden />
+              )}
+              {t.people.generateLinkToken}
+            </Button>
+          )}
+        </div>
       </div>
     </ModalOverlay>
   );

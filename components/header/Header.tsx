@@ -12,6 +12,7 @@ interface HeaderProps {
   role?: Role | null;
   session: Session;
   organization: Organization | null;
+  isSuperUser?: boolean;
 }
 
 function Logo() {
@@ -23,11 +24,13 @@ function Logo() {
   );
 }
 
-export default function Header({ session, role, organization }: HeaderProps) {
+export default function Header({ session, role, organization, isSuperUser = false }: HeaderProps) {
+  const showControls = Boolean(organization?.slug) || isSuperUser;
+
   return (
     <header className="sticky top-0 z-30 w-full border-b border-border bg-white/95 backdrop-blur-md dark:bg-[#1f1b17]/95">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:h-20 md:px-8">
-        {organization?.slug ? (
+        {showControls ? (
           <NavLink
             href="/"
             className="rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
@@ -39,14 +42,14 @@ export default function Header({ session, role, organization }: HeaderProps) {
           <Logo />
         )}
 
-        {organization?.slug && (
+        {showControls && (
           <div className="flex items-center gap-2">
             <div className="hidden md:block">
               <LanguageSelector />
             </div>
             <SessionTimer expiresAt={session.expiresAt} />
             <DarkModeButton />
-            <MobileHeader role={role ?? null} orgSlug={organization.slug} />
+            <MobileHeader role={role ?? null} orgSlug={organization?.slug} />
           </div>
         )}
       </div>

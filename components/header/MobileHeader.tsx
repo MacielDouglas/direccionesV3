@@ -15,7 +15,7 @@ import { Button } from "../ui/button";
 
 interface MenuMobileProps {
   role?: Role | null;
-  orgSlug: string;
+  orgSlug?: string;
 }
 
 export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
@@ -26,7 +26,7 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
   const { t } = useI18n();
   const { vibrate } = useHaptic();
 
-  const navigation = role ? getNavigationByRole(navigationMenu, role) : [];
+  const navigation = orgSlug && role ? getNavigationByRole(navigationMenu, role) : [];
   const closeMenu = useCallback(() => setIsMenuOpen(false), []);
   const toggleMenu = useCallback(() => setIsMenuOpen((p) => !p), []);
 
@@ -206,7 +206,7 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
                     <li key={item.id}>
                       <MenuItem
                         item={item}
-                        orgSlug={orgSlug}
+                        orgSlug={orgSlug ?? ""}
                         onSelect={closeMenu}
                         className="
                           flex items-center gap-4

@@ -440,6 +440,8 @@ const ptBR: I18nDictionary = {
     enterWithToken: "Entrar com o token",
     entering: "Entrando…",
     ownerCreated: "Organização criada! Bem-vindo a {orgName}",
+    goToOrg: "Ir para {orgName}",
+    goToOrgHint: "Você entrou com sucesso! Agora pode acessar a organização.",
     tokenError: "Erro ao entrar.",
   },
   admin: {
@@ -586,6 +588,10 @@ const ptBR: I18nDictionary = {
     alreadyLinked: "Este usuário já está vinculado a outra pessoa.",
     linkSuccess: "Usuário vinculado com sucesso!",
     searchingUsers: "Buscando usuários...",
+    linkTokenTitle: "Ou gere um token para um novo usuário",
+    linkTokenHint:
+      "Token de 6 dígitos válido por 72 horas — envie para a pessoa acessar com a conta Google.",
+    generateLinkToken: "Gerar token de 6 dígitos",
     removeFromOrg: "Remover da organização",
     removeFromOrgConfirm: "Remover {name} da organização?",
     removeFromOrgSuccess: "Usuário removido da organização.",

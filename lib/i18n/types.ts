@@ -422,6 +422,8 @@ export type I18nDictionary = {
     enterWithToken: string;
     entering: string;
     ownerCreated: string;
+    goToOrg: string;
+    goToOrgHint: string;
     tokenError: string;
   };
   admin: {
@@ -564,6 +566,9 @@ export type I18nDictionary = {
     alreadyLinked: string;
     linkSuccess: string;
     searchingUsers: string;
+    linkTokenTitle: string;
+    linkTokenHint: string;
+    generateLinkToken: string;
     removeFromOrg: string;
     removeFromOrgConfirm: string;
     removeFromOrgSuccess: string;

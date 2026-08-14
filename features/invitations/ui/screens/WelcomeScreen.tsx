@@ -11,7 +11,8 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { KeyRound, Loader2 } from "lucide-react";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { ArrowRight, CheckCircle2, KeyRound, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,6 +21,8 @@ import { redeemWelcomeTokenAction } from "../../applications/inviteToken.action"
 interface WelcomeScreenProps {
   userEmail: string;
 }
+
+type SuccessOrg = { name: string; slug: string };
 
 const ERROR_TOAST = {
   invalid: "tokenInvalid",
@@ -37,6 +40,7 @@ export function WelcomeScreen({ userEmail }: WelcomeScreenProps) {
   const [needsOrgName, setNeedsOrgName] = useState(false);
   const [orgName, setOrgName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [successOrg, setSuccessOrg] = useState<SuccessOrg | null>(null);
 
   async function handleSubmit() {
     const clean = token.trim();
@@ -64,18 +68,40 @@ export function WelcomeScreen({ userEmail }: WelcomeScreenProps) {
         return;
       }
 
-      toast.success(
-        result.kind === "owner"
-          ? t.invitations.ownerCreated.replace("{orgName}", result.org.name)
-          : t.invitations.joiningSuccess.replace("{orgName}", result.org.name),
-      );
+      setSuccessOrg(result.org);
       setLoading(false);
-      router.push(`/org/${result.org.slug}`);
-      router.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t.invitations.tokenError);
       setLoading(false);
     }
+  }
+
+  const goToOrg = () => {
+    if (!successOrg) return;
+    router.push(`/org/${successOrg.slug}`);
+    router.refresh();
+  };
+
+  if (successOrg) {
+    return (
+      <div className="flex flex-col items-center gap-5 text-foreground">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <CheckCircle2 className="size-12 text-brand" aria-hidden />
+          <h2 className="text-lg font-semibold tracking-tight">{t.invitations.welcomeCardTitle}</h2>
+          <p className="text-sm text-muted-foreground">{t.invitations.goToOrgHint}</p>
+        </div>
+
+        <Button type="button" onClick={goToOrg} className="w-full gap-2 rounded-full" autoFocus>
+          <ArrowRight className="size-4" aria-hidden />
+          {t.invitations.goToOrg.replace("{orgName}", successOrg.name)}
+        </Button>
+
+        <div className="flex w-full flex-col gap-3 border-t border-border pt-4">
+          <LogoutButton />
+          <DeleteAccountButton userEmail={userEmail} />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -95,7 +121,7 @@ export function WelcomeScreen({ userEmail }: WelcomeScreenProps) {
           value={token}
           onChange={(value) => setToken(value.replace(/\D/g, ""))}
           inputMode="numeric"
-          pattern="[0-9]{6}"
+          pattern={REGEXP_ONLY_DIGITS}
           autoComplete="one-time-code"
           autoFocus
         >
