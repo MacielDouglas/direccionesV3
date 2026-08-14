@@ -19,7 +19,7 @@ export default async function AddressEditScreen({ organizationSlug, addressId }:
   const { neighborhoods, cities } = await getExistingLocations(address.organizationId);
 
   return (
-    <article className="mx-auto flex w-full max-w-2xl flex-col gap-2">
+    <article className="mx-auto flex w-full max-w-3xl flex-col gap-2">
       <header className="flex items-center gap-3 px-4 pb-2 pt-4">
         <Link
           href={`/org/${organizationSlug}/addresses/${addressId}`}

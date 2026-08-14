@@ -39,7 +39,7 @@ export default async function Home() {
           isAdminOrOwner={organization && ["admin", "owner"].includes(memberRole?.role ?? "")}
         />
       ) : (
-        <div className="mx-auto max-w-md px-4 py-10 text-center md:py-14">
+        <div className="mx-auto max-w-3xl px-4 py-10 text-center md:py-14">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             {t.home.welcome} <span className="text-brand">{session.user.name}</span>
           </h1>

@@ -7,7 +7,7 @@ export default async function SuperUserPanel({ email }: { email: string }) {
 
   return (
     <main className="w-full overflow-y-auto">
-      <div className="mx-auto w-full max-w-md px-4 py-10 text-center">
+      <div className="mx-auto w-full max-w-3xl px-4 py-10 text-center">
         <h1 className="text-3xl font-semibold tracking-tight">Panel del Super Usuario</h1>
         <p className="mt-2 text-sm text-muted-foreground">{email}</p>
 

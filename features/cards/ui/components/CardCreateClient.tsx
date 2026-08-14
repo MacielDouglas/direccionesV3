@@ -104,7 +104,7 @@ export function CardCreateClient({
   };
 
   return (
-    <div className="w-full flex flex-1 flex-col overflow-hidden max-w-7xl mx-auto">
+    <div className="w-full flex flex-1 flex-col overflow-hidden max-w-3xl mx-auto">
       <div className="w-full h-96">
         <LazyMapboxProvider className="h-96 w-full shrink-0">
           <SelectableAddressesLayer

@@ -108,7 +108,7 @@ export function CardListClient({ cards, persons, organizationSlug }: Props) {
   }, []);
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 md:py-10" aria-labelledby="cards-heading">
+    <main className="mx-auto w-full max-w-3xl px-4 py-6 md:py-10" aria-labelledby="cards-heading">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-brand">

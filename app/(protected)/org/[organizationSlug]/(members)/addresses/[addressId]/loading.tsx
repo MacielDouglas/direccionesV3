@@ -1,7 +1,7 @@
 export default function AddressDetailLoading() {
   return (
     <article
-      className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-3 py-4 sm:px-4 sm:py-6"
+      className="mx-auto flex w-full max-w-3xl flex-col gap-2 px-3 py-4 sm:px-4 sm:py-6"
       aria-busy="true"
       aria-label="Cargando dirección"
     >

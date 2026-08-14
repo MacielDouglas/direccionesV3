@@ -48,7 +48,7 @@ export default async function AgendaPage({ params, searchParams }: Props) {
   const monthLabel = monthLabelLocalized(locale, activeMonth, activeYear);
 
   return (
-    <main className="mx-auto w-full max-w-md px-4 py-7 md:py-10">
+    <main className="mx-auto w-full max-w-3xl px-4 py-7 md:py-10">
       <header className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t.agenda.title}</h1>
         <p className="mt-0.5 text-sm text-muted-foreground">{t.agenda.subtitle}</p>

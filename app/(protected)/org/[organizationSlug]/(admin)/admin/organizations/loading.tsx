@@ -3,7 +3,7 @@ import { Building2 } from "lucide-react";
 export default function AdminOrganizationsLoading() {
   return (
     <div
-      className="mx-auto mt-4 flex w-full max-w-6xl flex-col gap-6 px-4"
+      className="mx-auto mt-4 flex w-full max-w-3xl flex-col gap-6 px-4"
       aria-busy="true"
       aria-label="Cargando organizaciones"
     >

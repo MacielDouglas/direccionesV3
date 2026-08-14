@@ -31,7 +31,7 @@ export default async function PeoplePage({ params }: Props) {
   const persons = await getOrgPersonsWithInvites(organization.id);
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
       <div className="mb-6">
         <BackLink href={`/org/${organizationSlug}/admin`} />
       </div>

@@ -22,7 +22,7 @@ export default async function OrganizationsPage({ params }: Props) {
   if (!organization) redirect("/");
 
   return (
-    <div className="mx-auto mt-4 flex w-full max-w-6xl flex-col gap-6 px-4">
+    <div className="mx-auto mt-4 flex w-full max-w-3xl flex-col gap-6 px-4">
       <BackLink href={`/org/${organizationSlug}/admin`} />
       <header className="flex items-center gap-3">
         <Building2 className="h-8 w-8 text-brand" aria-hidden="true" />

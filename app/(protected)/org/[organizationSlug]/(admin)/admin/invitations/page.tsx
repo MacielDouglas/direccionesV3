@@ -25,7 +25,7 @@ export default async function InvitationsPage({ params }: Props) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl">
+    <div className="mx-auto w-full max-w-3xl">
       <div className="px-4 pt-4">
         <BackLink href={`/org/${organizationSlug}/admin`} />
       </div>

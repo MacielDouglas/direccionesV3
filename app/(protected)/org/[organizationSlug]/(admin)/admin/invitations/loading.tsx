@@ -5,7 +5,7 @@ import { Link2 } from "lucide-react";
 export default function InvitationsLoading() {
   return (
     <main
-      className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-6"
+      className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-6"
       aria-busy="true"
       aria-label="Cargando invitaciones"
     >

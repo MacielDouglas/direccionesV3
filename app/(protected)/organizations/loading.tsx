@@ -3,7 +3,7 @@ import { Building2 } from "lucide-react";
 export default function OrganizationsLoading() {
   return (
     <main
-      className="mx-auto w-full max-w-md px-4 py-10"
+      className="mx-auto w-full max-w-3xl px-4 py-10"
       aria-busy="true"
       aria-label="Cargando organizaciones"
     >

@@ -1,7 +1,7 @@
 export default function AddressEditLoading() {
   return (
     <article
-      className="mx-auto flex w-full max-w-2xl flex-col gap-2"
+      className="mx-auto flex w-full max-w-3xl flex-col gap-2"
       aria-busy="true"
       aria-label="Cargando editor de dirección"
     >

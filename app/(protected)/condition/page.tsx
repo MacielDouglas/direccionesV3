@@ -1,14 +1,14 @@
 export default function ConditionPage() {
   return (
     <div className="space-y-6 px-4 py-6">
-      <section className="mx-auto max-w-2xl rounded-2xl border bg-card p-6 shadow-xs">
+      <section className="mx-auto max-w-3xl rounded-2xl border bg-card p-6 shadow-xs">
         <h1 className="text-3xl font-semibold tracking-tight">Condiciones de Uso</h1>
         <p className="mt-2 text-muted-foreground">
           Aquí puedes consultar las condiciones de uso de este sistema.
         </p>
       </section>
 
-      <div className="mx-auto max-w-2xl space-y-6 p-6 text-base text-foreground/80">
+      <div className="mx-auto max-w-3xl space-y-6 p-6 text-base text-foreground/80">
         <div className="space-y-4 rounded-2xl border bg-card p-4 shadow-xs">
           <h2 className="text-xl font-semibold tracking-tight">Términos Generales</h2>
           <ul className="list-disc space-y-2 pl-5">

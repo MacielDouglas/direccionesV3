@@ -50,7 +50,7 @@ export default async function AddressDetailsScreen({
   const colorClass = getAddressColor(address.type);
 
   return (
-    <article className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-3 py-4 sm:px-4 sm:py-6">
+    <article className="mx-auto flex w-full max-w-3xl flex-col gap-2 px-3 py-4 sm:px-4 sm:py-6">
       {address.latitude && address.longitude && (
         <section aria-label="Mapa de la dirección" className="w-full overflow-hidden rounded-2xl">
           <AddressViewMap

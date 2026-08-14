@@ -23,7 +23,7 @@ export default async function CardsPage({ params }: Props) {
 
   return (
     <>
-      <div className="mx-auto w-full max-w-5xl px-4 pt-4">
+      <div className="mx-auto w-full max-w-3xl px-4 pt-4">
         <BackLink href={`/org/${organizationSlug}/admin`} />
       </div>
       <CardListScreen organizationId={org.id} organizationSlug={organizationSlug} />

@@ -51,7 +51,7 @@ export default async function AdminAgendaPage({ params, searchParams }: Props) {
   const monthLabel = monthLabelLocalized(locale, activeMonth, activeYear);
 
   return (
-    <main className="mx-auto w-full max-w-md px-4 py-7 md:py-10">
+    <main className="mx-auto w-full max-w-3xl px-4 py-7 md:py-10">
       <BackLink href={`/org/${organizationSlug}/admin`} className="mb-4" />
       <header className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t.admin.agenda}</h1>

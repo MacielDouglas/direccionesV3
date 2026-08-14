@@ -64,7 +64,7 @@ export default async function UserPage({ params }: Props) {
     .join("");
 
   return (
-    <main className="mx-auto w-full max-w-lg px-4 py-8 flex flex-col gap-8">
+    <main className="mx-auto w-full max-w-3xl px-4 py-8 flex flex-col gap-8">
       {/* Avatar + nome */}
       <section
         aria-labelledby="profile-title"

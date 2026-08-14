@@ -38,7 +38,7 @@ export default async function AdminPage({ params }: Props) {
   const tAlt = dictionaries[altLocale];
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 md:py-10" aria-labelledby="admin-heading">
+    <main className="mx-auto w-full max-w-3xl px-4 py-6 md:py-10" aria-labelledby="admin-heading">
       {/* Cabeçalho */}
       <header className="mb-6">
         <p className="text-xs font-semibold uppercase tracking-widest text-brand">

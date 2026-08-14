@@ -1,7 +1,7 @@
 export default function AddressListLoading() {
   return (
     <div
-      className="mx-auto flex w-full max-w-5xl flex-col gap-0"
+      className="mx-auto flex w-full max-w-3xl flex-col gap-0"
       aria-busy="true"
       aria-label="Cargando direcciones"
     >
@@ -17,7 +17,7 @@ export default function AddressListLoading() {
         </div>
       </div>
 
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-3 py-4 sm:px-4 sm:py-6">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 px-3 py-4 sm:px-4 sm:py-6">
         {/* Botão + busca */}
         <div className="space-y-4">
           <div className="h-8 w-40 animate-pulse rounded-md bg-muted" />

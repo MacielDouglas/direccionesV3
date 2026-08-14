@@ -19,7 +19,7 @@ export default async function OrganizationsPage() {
   });
 
   return (
-    <main className="mx-auto w-full max-w-md px-4 py-10">
+    <main className="mx-auto w-full max-w-3xl px-4 py-10">
       <header className="flex flex-col items-center gap-2 text-center">
         <Building2 className="h-10 w-10 text-brand" aria-hidden="true" />
         <h1 className="text-2xl font-semibold">Organizaciones</h1>

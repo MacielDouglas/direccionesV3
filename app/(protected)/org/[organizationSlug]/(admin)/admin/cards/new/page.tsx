@@ -23,7 +23,7 @@ export default async function CardNewPage({ params }: Props) {
   if (!canCreate) redirect(`/org/${organizationSlug}`);
 
   return (
-    <div className="mx-auto w-full max-w-7xl">
+    <div className="mx-auto w-full max-w-3xl">
       <div className="px-4 pt-4">
         <BackLink href={`/org/${organizationSlug}/admin/cards`} />
       </div>

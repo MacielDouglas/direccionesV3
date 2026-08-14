@@ -4,7 +4,7 @@ import { MapPinPlus } from "lucide-react";
 export default function NewAddressLoading() {
   return (
     <div
-      className="mx-auto h-full w-full max-w-5xl space-y-4"
+      className="mx-auto h-full w-full max-w-3xl space-y-4"
       aria-busy="true"
       aria-label="Cargando formulario de nueva dirección"
     >

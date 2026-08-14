@@ -31,7 +31,7 @@ export async function HomeDashboard({
   const hasEvents = todayEvents.length > 0;
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-7 md:py-10">
+    <div className="mx-auto w-full max-w-3xl px-4 py-7 md:py-10">
       <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
         {t.home.welcome} <span className="text-foreground">{userName}</span>
       </h1>

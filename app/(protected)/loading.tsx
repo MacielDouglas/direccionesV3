@@ -1,7 +1,7 @@
 export default function HomeLoading() {
   return (
     <div
-      className="mx-auto w-full max-w-md px-4 py-7 md:py-10"
+      className="mx-auto w-full max-w-3xl px-4 py-7 md:py-10"
       aria-busy="true"
       aria-label="Cargando inicio"
     >

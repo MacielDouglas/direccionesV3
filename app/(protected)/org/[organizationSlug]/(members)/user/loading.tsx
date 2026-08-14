@@ -1,7 +1,7 @@
 export default function UserLoading() {
   return (
     <main
-      className="mx-auto w-full max-w-lg px-4 py-8 flex flex-col gap-8"
+      className="mx-auto w-full max-w-3xl px-4 py-8 flex flex-col gap-8"
       aria-busy="true"
       aria-label="Cargando perfil"
     >

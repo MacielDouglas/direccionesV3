@@ -1,7 +1,7 @@
 export default function CardsLoading() {
   return (
     <div
-      className="mx-auto w-full max-w-2xl px-4 py-6 sm:py-10"
+      className="mx-auto w-full max-w-3xl px-4 py-6 sm:py-10"
       aria-busy="true"
       aria-label="Cargando tarjetas"
     >
