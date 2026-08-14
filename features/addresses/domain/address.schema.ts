@@ -41,6 +41,17 @@ export const addressFormSchema = z.object({
 
 export type AddressFormData = z.infer<typeof addressFormSchema>;
 
+// Schema de criação — GPS obrigatório (validação reforçada no envio)
+export const addressCreateSchema = addressFormSchema.superRefine((data, ctx) => {
+  if (data.latitude == null || data.longitude == null) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["latitude"],
+      message: "La ubicación GPS es obligatoria.",
+    });
+  }
+});
+
 export const addressPersistenceSchema = addressFormSchema.extend({
   organizationId: z.string().min(1),
   createdByPersonId: z.string().min(1),
@@ -50,5 +61,5 @@ export const addressPersistenceSchema = addressFormSchema.extend({
 export type AddressPersistenceInput = z.infer<typeof addressPersistenceSchema>;
 
 // Schema server-side derivado — sem duplicação
-export const createAddressSchema = addressFormSchema;
+export const createAddressSchema = addressCreateSchema;
 export type CreateAddressInput = AddressFormData;

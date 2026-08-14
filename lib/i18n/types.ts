@@ -170,6 +170,15 @@ export type I18nDictionary = {
     gpsEnableGps: string;
     gpsVerifying: string;
     gpsCheckingAria: string;
+    gpsSendButton: string;
+    gpsModalTitle: string;
+    gpsModalHint: string;
+    gpsConfirmClose: string;
+    gpsClose: string;
+    gpsNotSet: string;
+    gpsCurrent: string;
+    gpsUnsupported: string;
+    gpsFailed: string;
     imageTitle: string;
     imageHint: string;
     imageSelectAria: string;
@@ -187,6 +196,15 @@ export type I18nDictionary = {
     comboboxSimilar: string;
     comboboxSimilarWarning: string;
     comboboxSuggestions: string;
+    validateTitle: string;
+    validateDescription: string;
+    validateDismiss: string;
+    errorGps: string;
+    errorStreet: string;
+    errorNumber: string;
+    errorNeighborhood: string;
+    errorCity: string;
+    errorInfo: string;
   };
   cards: {
     title: string;

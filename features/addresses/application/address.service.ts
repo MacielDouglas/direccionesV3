@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import type { AddressFormData } from "../domain/address.schema";
-import { addressFormSchema } from "../domain/address.schema";
+import { addressCreateSchema } from "../domain/address.schema";
 import { sanitizeInfo } from "../utils/sanitizeInfo";
 
 export async function createAddressService(params: {
@@ -10,7 +10,7 @@ export async function createAddressService(params: {
   organizationId: string;
   personId: string;
 }) {
-  const data = addressFormSchema.parse(params.input);
+  const data = addressCreateSchema.parse(params.input);
 
   return prisma.address.create({
     data: {

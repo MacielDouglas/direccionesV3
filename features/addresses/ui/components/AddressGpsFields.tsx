@@ -1,9 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import type { Coordinates } from "@/features/map/types/map.types";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { I18nDictionary } from "@/lib/i18n/types";
-import { BrushCleaning, MapPin, Paperclip, Pin, SatelliteDish } from "lucide-react";
+import { BrushCleaning, MapPin, Paperclip, Pin, SatelliteDish, XIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useCallback, useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -14,7 +22,7 @@ const MapboxMap = dynamic(
   () => import("@/features/map/components/MapboxMap").then((m) => m.MapboxMap),
   {
     ssr: false,
-    loading: () => <div className="h-80 w-full animate-pulse rounded-xl bg-muted" />,
+    loading: () => <div className="h-[80svh] w-full animate-pulse rounded-xl bg-muted" />,
   },
 );
 
@@ -42,7 +50,7 @@ function GeolocationBlockedOverlay({
       className="block relative overflow-hidden rounded-xl"
     >
       {/* Mapa borrado como fundo */}
-      <div className="h-80 w-full select-none rounded-xl bg-muted" aria-hidden="true">
+      <div className="h-full w-full select-none rounded-xl bg-muted" aria-hidden="true">
         <div className="h-full w-full animate-pulse rounded-xl bg-linear-to-br from-muted to-muted-foreground/10" />
       </div>
 
@@ -67,7 +75,7 @@ function GeolocationIdleSkeleton({ t }: { t: I18nDictionary }) {
   return (
     <output
       aria-label={t.addresses.gpsVerifying}
-      className="block h-80 w-full animate-pulse rounded-xl bg-muted"
+      className="block h-full w-full animate-pulse rounded-xl bg-muted"
     >
       <span className="sr-only">{t.addresses.gpsCheckingAria}</span>
     </output>
@@ -85,7 +93,7 @@ function GeolocationPrompt({
   loading: boolean;
 }) {
   return (
-    <div className="flex h-80 w-full flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-muted-foreground/30 bg-muted/30 text-center px-4">
+    <div className="flex h-full w-full flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-muted-foreground/30 bg-muted/30 text-center px-4">
       <MapPin className="h-10 w-10 text-brand" aria-hidden="true" />
       <div className="space-y-1">
         <p className="text-sm font-semibold text-foreground">{t.addresses.gpsPromptTitle}</p>
@@ -106,8 +114,10 @@ export default function AddressGpsFields() {
   const latitude = watch("latitude");
   const longitude = watch("longitude");
 
+  const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [isFetchingGps, setIsFetchingGps] = useState(false);
+  const [draft, setDraft] = useState<Coordinates | null>(null);
 
   const { state, requestPermission } = useGeolocation();
 
@@ -117,17 +127,16 @@ export default function AddressGpsFields() {
         setError(t.addresses.gpsInvalidCoords);
         return;
       }
-      setValue("latitude", lat, { shouldValidate: true });
-      setValue("longitude", lng, { shouldValidate: true });
+      setDraft({ latitude: lat, longitude: lng });
       setError("");
     },
-    [setValue, t],
+    [t],
   );
 
   const handleGetUserLocation = () => {
     requestPermission(
       (lat, lng) => updateGps(lat, lng),
-      (msg) => setError(msg),
+      (reason) => setError(t.addresses[reason === "unsupported" ? "gpsUnsupported" : "gpsFailed"]),
       setIsFetchingGps,
     );
   };
@@ -146,12 +155,16 @@ export default function AddressGpsFields() {
     }
   };
 
-  // ── Limpar coordenadas (pin do mapa é limpo automaticamente pelo value=null)
   const handleClear = useCallback(() => {
-    setValue("latitude", null, { shouldValidate: true });
-    setValue("longitude", null, { shouldValidate: true });
+    setDraft(null);
     setError("");
-  }, [setValue]);
+  }, []);
+
+  const handleConfirm = () => {
+    setValue("latitude", draft?.latitude ?? null, { shouldValidate: true });
+    setValue("longitude", draft?.longitude ?? null, { shouldValidate: true });
+    setOpen(false);
+  };
 
   const renderMapArea = () => {
     if (state === "idle" || state === "unsupported") return <GeolocationIdleSkeleton t={t} />;
@@ -162,14 +175,16 @@ export default function AddressGpsFields() {
 
     return (
       <MapboxMap
-        value={latitude != null && longitude != null ? { latitude, longitude } : null}
+        className="h-[80svh]"
+        value={draft}
         onChange={(coords) => {
-          setValue("latitude", coords.latitude);
-          setValue("longitude", coords.longitude);
+          setDraft({ latitude: coords.latitude, longitude: coords.longitude });
         }}
       />
     );
   };
+
+  const hasGps = latitude != null && longitude != null;
 
   return (
     <section aria-labelledby="gps-section-title" className="space-y-4 p-5 sm:p-6">
@@ -184,59 +199,118 @@ export default function AddressGpsFields() {
         <p className="text-sm text-muted-foreground">{t.addresses.gpsHint}</p>
       </header>
 
-      <div className="rounded-lg bg-surface-subtle-light text-lg text-center p-3 dark:bg-surface-subtle-dark dark:text-slate-400">
-        <p>{t.addresses.gpsTip}</p>
+      {/* Estado atual da localização */}
+      <div className="rounded-xl border border-border bg-surface-subtle-light p-4 dark:bg-surface-subtle-dark">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {t.addresses.gpsCurrent}
+        </p>
+        {hasGps ? (
+          <div className="mt-1 flex items-center justify-around gap-4 text-sm">
+            <p>
+              {t.addresses.gpsLatitude}: <span className="font-mono text-blue-500">{latitude}</span>
+            </p>
+            <p>
+              {t.addresses.gpsLongitude}:{" "}
+              <span className="font-mono text-blue-500">{longitude}</span>
+            </p>
+          </div>
+        ) : (
+          <p className="mt-1 text-sm text-muted-foreground">{t.addresses.gpsNotSet}</p>
+        )}
       </div>
 
-      <div className="flex items-center justify-around gap-10">
-        <p className="text-sm">
-          {t.addresses.gpsLatitude}:{" "}
-          <span className="font-mono text-blue-500">{latitude ?? "—"}</span>
-        </p>
-        <p className="text-sm">
-          {t.addresses.gpsLongitude}:{" "}
-          <span className="font-mono text-blue-500">{longitude ?? "—"}</span>
-        </p>
-      </div>
+      {/* Botão chamativo — abre o modal */}
+      <Button
+        type="button"
+        onClick={() => {
+          const lat = latitude ?? null;
+          const lng = longitude ?? null;
+          setDraft(lat != null && lng != null ? { latitude: lat, longitude: lng } : null);
+          setError("");
+          setOpen(true);
+        }}
+        className="w-full rounded-full bg-brand px-5 py-3.5 text-sm font-semibold text-brand-foreground shadow-sm transition-colors hover:bg-brand/90 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+      >
+        <MapPin className="size-4" aria-hidden="true" />
+        {t.addresses.gpsSendButton}
+      </Button>
 
-      {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
-      )}
+      {/* Modal — mapa ocupa 80% da tela */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent
+          showCloseButton={false}
+          className="max-w-[calc(100%-1rem)] gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-3xl"
+        >
+          <div className="flex items-center justify-between gap-4 border-b p-4">
+            <div>
+              <DialogTitle className="text-base sm:text-lg">
+                {t.addresses.gpsModalTitle}
+              </DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm">
+                {t.addresses.gpsModalHint}
+              </DialogDescription>
+            </div>
+            <DialogClose asChild>
+              <Button type="button" variant="outline" size="icon" aria-label={t.addresses.gpsClose}>
+                <XIcon className="size-4" aria-hidden="true" />
+              </Button>
+            </DialogClose>
+          </div>
 
-      {/* Área do mapa — condicional por estado de permissão */}
-      {renderMapArea()}
+          {/* Mapa — 80% da altura da tela */}
+          <div className="relative h-[80svh]">
+            {renderMapArea()}
 
-      {/* Botões só aparecem quando GPS está disponível */}
-      {(state === "granted" || state === "prompt") && (
-        <div className="mx-auto flex flex-wrap justify-center gap-2 pt-2">
-          <Button
-            type="button"
-            onClick={handleGetUserLocation}
-            disabled={isFetchingGps}
-            aria-busy={isFetchingGps}
-          >
-            <Pin aria-hidden="true" />
-            {isFetchingGps ? t.addresses.gpsGettingLocation : t.addresses.gpsMyLocation}
-          </Button>
+            {/* Erro sobreposto ao mapa */}
+            {error && (
+              <p
+                role="alert"
+                className="absolute left-3 right-3 top-3 z-10 rounded-lg bg-background/90 px-3 py-2 text-sm text-destructive shadow backdrop-blur-sm"
+              >
+                {error}
+              </p>
+            )}
+          </div>
 
-          <Button type="button" variant="outline" onClick={handlePaste} disabled={isFetchingGps}>
-            <Paperclip aria-hidden="true" />
-            {t.addresses.gpsPasteCoords}
-          </Button>
+          {/* Rodapé — ações */}
+          <div className="flex flex-wrap items-center gap-2 border-t p-4">
+            <Button
+              type="button"
+              onClick={handleGetUserLocation}
+              disabled={isFetchingGps}
+              aria-busy={isFetchingGps}
+            >
+              <Pin aria-hidden="true" />
+              {isFetchingGps ? t.addresses.gpsGettingLocation : t.addresses.gpsMyLocation}
+            </Button>
 
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={handleClear}
-            disabled={isFetchingGps}
-          >
-            <BrushCleaning aria-hidden="true" />
-            {t.addresses.gpsClear}
-          </Button>
-        </div>
-      )}
+            <Button type="button" variant="outline" onClick={handlePaste} disabled={isFetchingGps}>
+              <Paperclip aria-hidden="true" />
+              {t.addresses.gpsPasteCoords}
+            </Button>
+
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleClear}
+              disabled={isFetchingGps}
+            >
+              <BrushCleaning aria-hidden="true" />
+              {t.addresses.gpsClear}
+            </Button>
+
+            <Button
+              type="button"
+              onClick={handleConfirm}
+              disabled={isFetchingGps}
+              className="ml-auto w-full sm:w-auto"
+            >
+              <SatelliteDish aria-hidden="true" />
+              {t.addresses.gpsConfirmClose}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

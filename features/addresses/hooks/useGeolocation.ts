@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 type GeolocationState = "idle" | "granted" | "denied" | "prompt" | "unsupported";
+type GeolocationErrorReason = "unsupported" | "failed";
 
 function getInitialState(): GeolocationState {
   if (typeof window === "undefined") return "idle";
@@ -46,11 +47,11 @@ export function useGeolocation() {
 
   const requestPermission = (
     onSuccess: (lat: number, lng: number) => void,
-    onError: (msg: string) => void,
+    onError: (reason: GeolocationErrorReason) => void,
     onLoading: (v: boolean) => void,
   ) => {
     if (!navigator.geolocation) {
-      onError("Geolocalización no soportada en este dispositivo.");
+      onError("unsupported");
       return;
     }
 
@@ -63,7 +64,7 @@ export function useGeolocation() {
       },
       () => {
         setState("denied");
-        onError("No fue posible obtener tu ubicación. Verifica los permisos.");
+        onError("failed");
         onLoading(false);
       },
       { enableHighAccuracy: true, timeout: 10000 },
