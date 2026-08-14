@@ -24,7 +24,6 @@ import {
 } from "@/server/person";
 import {
   Check,
-  ChevronRight,
   CreditCard,
   Loader2,
   Mail,
@@ -130,8 +129,10 @@ const roleBadgeClasses = (role: string | null) => {
   return "inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground";
 };
 
-const unlinkedBadgeClasses =
-  "inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand";
+const cardCountBadge = (t: ReturnType<typeof useI18n>["t"], count: number) =>
+  count === 1
+    ? t.people.cardCountOne.replace("{count}", "1")
+    : t.people.cardCountMany.replace("{count}", String(count));
 
 function errorMessage(err: unknown, fallback: string) {
   return err instanceof Error && err.message.trim() ? err.message : fallback;
@@ -192,6 +193,105 @@ function ModalOverlay({
   );
 }
 
+function PersonCard({
+  person,
+  subtitle,
+  isSelf = false,
+  showLinkAction = false,
+  canManage,
+  onEdit,
+  onAdminCards,
+  onLink,
+  t,
+}: {
+  person: PeopleListItem;
+  subtitle: string;
+  isSelf?: boolean;
+  showLinkAction?: boolean;
+  canManage: boolean;
+  onEdit: () => void;
+  onAdminCards: () => void;
+  onLink?: () => void;
+  t: ReturnType<typeof useI18n>["t"];
+}) {
+  const actionButtonClasses =
+    "inline-flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1.5 px-2 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand";
+
+  return (
+    <li className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xs transition-shadow hover:shadow-md">
+      <div className="flex items-center gap-3 p-4 pb-3">
+        <Avatar className="size-11 shrink-0">
+          <AvatarImage src={person.user?.image ?? undefined} alt="" />
+          <AvatarFallback className="bg-brand/10 text-sm font-semibold text-brand">
+            {person.name.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <h3 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+            <span className="truncate">{person.name}</span>
+            {isSelf ? (
+              <span className="shrink-0 rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand">
+                {t.people.youLabel}
+              </span>
+            ) : null}
+          </h3>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">{subtitle}</p>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-1.5 px-4 pb-4">
+        <span className={roleBadgeClasses(person.role)}>
+          <ShieldCheck className="size-3" aria-hidden="true" />
+          {roleLabel(t, person.role)}
+        </span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <CreditCard className="size-3" aria-hidden="true" />
+          {cardCountBadge(t, person.cardsCount)}
+        </span>
+      </div>
+
+      <div className="mt-auto flex border-t border-border bg-muted/40">
+        {canManage ? (
+          <button
+            type="button"
+            onClick={onEdit}
+            className={cn(actionButtonClasses, "text-brand hover:bg-muted/60")}
+          >
+            <Pencil className="size-3.5 shrink-0" aria-hidden="true" />
+            <span className="truncate">{t.people.editPerson}</span>
+          </button>
+        ) : null}
+        {canManage ? (
+          <button
+            type="button"
+            onClick={onAdminCards}
+            className={cn(
+              actionButtonClasses,
+              "border-l border-border text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+            )}
+          >
+            <CreditCard className="size-3.5 shrink-0" aria-hidden="true" />
+            <span className="truncate">{t.people.adminCardsTitle}</span>
+          </button>
+        ) : null}
+        {showLinkAction ? (
+          <button
+            type="button"
+            onClick={onLink}
+            className={cn(
+              actionButtonClasses,
+              "border-l border-border text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+            )}
+          >
+            <UserPlus className="size-3.5 shrink-0" aria-hidden="true" />
+            <span className="truncate">{t.people.linkUser}</span>
+          </button>
+        ) : null}
+      </div>
+    </li>
+  );
+}
+
 export function PeopleScreen({
   persons,
   organizationId,
@@ -214,7 +314,6 @@ export function PeopleScreen({
   const [selectedOwnerCardIds, setSelectedOwnerCardIds] = useState<string[]>([]);
   const [selectedAssignedCardId, setSelectedAssignedCardId] = useState<string | null>(null);
   const [isSavingCards, startSaveCardsTransition] = useTransition();
-  const [isLoadingCards, setIsLoadingCards] = useState(false);
 
   const linkedUsers = persons.filter((p) => Boolean(p.userId));
   const unlinkedPersons = persons.filter((p) => !p.userId);
@@ -304,7 +403,6 @@ export function PeopleScreen({
       return;
     }
     setCardsTarget(person);
-    setIsLoadingCards(true);
     try {
       const data = await getPersonWithCards(organizationId, person.id);
       if (data) {
@@ -315,8 +413,6 @@ export function PeopleScreen({
     } catch (err) {
       toast.error(errorMessage(err, t.errors.generic));
       setCardsTarget(null);
-    } finally {
-      setIsLoadingCards(false);
     }
   };
 
@@ -457,70 +553,18 @@ export function PeopleScreen({
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {linkedUsers.map((person) => {
               const isSelf = person.userId === currentUserId;
+              const canManage = canManagePerson(person);
               return (
-                <li
+                <PersonCard
                   key={person.id}
-                  className="flex flex-col rounded-2xl border border-border bg-card p-5 shadow-xs transition-colors hover:bg-surface-subtle-light dark:hover:bg-surface-subtle-dark"
-                >
-                  <div className="flex min-w-0 items-start gap-3">
-                    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand/10">
-                      <Avatar className="size-10">
-                        <AvatarImage src={person.user?.image ?? undefined} alt="" />
-                        <AvatarFallback className="text-xs">
-                          {person.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-sm font-semibold text-foreground">
-                        {person.name}
-                        {isSelf ? (
-                          <span className="ml-1.5 text-xs font-normal text-muted-foreground/80">
-                            ({t.people.youLabel})
-                          </span>
-                        ) : null}
-                      </h3>
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                        {person.user?.email}
-                      </p>
-                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                        <span className={roleBadgeClasses(person.role)}>
-                          <ShieldCheck className="size-3" aria-hidden="true" />
-                          {roleLabel(t, person.role)}
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                          <CreditCard className="size-3" aria-hidden="true" />
-                          {person.cardsCount === 1
-                            ? t.people.cardCountOne.replace("{count}", "1")
-                            : t.people.cardCountMany.replace("{count}", String(person.cardsCount))}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {canManagePerson(person) ? (
-                    <div className="mt-4 flex flex-wrap gap-3">
-                      <button
-                        type="button"
-                        onClick={() => openEditPerson(person)}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline"
-                      >
-                        <Pencil className="size-3.5" aria-hidden="true" />
-                        {t.people.editPerson}
-                        <ChevronRight className="size-3" aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => openAdminCards(person)}
-                        disabled={isLoadingCards}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:underline"
-                      >
-                        <CreditCard className="size-3.5" aria-hidden="true" />
-                        {t.people.adminCardsTitle}
-                      </button>
-                    </div>
-                  ) : null}
-                </li>
+                  person={person}
+                  subtitle={person.user?.email ?? ""}
+                  isSelf={isSelf}
+                  canManage={canManage}
+                  t={t}
+                  onEdit={() => openEditPerson(person)}
+                  onAdminCards={() => openAdminCards(person)}
+                />
               );
             })}
           </ul>
@@ -549,69 +593,17 @@ export function PeopleScreen({
         ) : (
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {unlinkedPersons.map((person) => (
-              <li
+              <PersonCard
                 key={person.id}
-                className="flex flex-col rounded-2xl border border-border bg-card p-5 shadow-xs transition-colors hover:bg-surface-subtle-light dark:hover:bg-surface-subtle-dark"
-              >
-                <div className="flex min-w-0 items-start gap-3">
-                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand/10">
-                    <Avatar className="size-10">
-                      <AvatarImage src={person.user?.image ?? undefined} alt="" />
-                      <AvatarFallback className="text-xs">
-                        {person.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate text-sm font-semibold text-foreground">
-                      {person.name}
-                    </h3>
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                      {person.inviteToken ? t.people.inviteHint : t.people.noUser}
-                    </p>
-                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                      <span className={unlinkedBadgeClasses}>
-                        <UserRound className="size-3" aria-hidden="true" />
-                        {roleLabel(t, person.role)}
-                      </span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                        <CreditCard className="size-3" aria-hidden="true" />
-                        {person.cardsCount === 1
-                          ? t.people.cardCountOne.replace("{count}", "1")
-                          : t.people.cardCountMany.replace("{count}", String(person.cardsCount))}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={() => openEditPerson(person)}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline"
-                  >
-                    <Pencil className="size-3.5" aria-hidden="true" />
-                    {t.people.editPerson}
-                    <ChevronRight className="size-3" aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openAdminCards(person)}
-                    disabled={isLoadingCards}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:underline"
-                  >
-                    <CreditCard className="size-3.5" aria-hidden="true" />
-                    {t.people.adminCardsTitle}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLinkTarget(person)}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:underline"
-                  >
-                    {t.people.linkUser}
-                  </button>
-                </div>
-              </li>
+                person={person}
+                subtitle={person.inviteToken ? t.people.inviteHint : t.people.noUser}
+                showLinkAction
+                canManage={canManagePerson(person)}
+                t={t}
+                onEdit={() => openEditPerson(person)}
+                onAdminCards={() => openAdminCards(person)}
+                onLink={() => setLinkTarget(person)}
+              />
             ))}
           </ul>
         )}
