@@ -85,6 +85,7 @@ export type I18nDictionary = {
     todaySchedule: string;
     eventsToday: string;
     cardsAddresses: string;
+    goToCards: string;
   };
   addresses: {
     allTitle: string;

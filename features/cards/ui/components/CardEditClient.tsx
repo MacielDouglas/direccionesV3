@@ -240,7 +240,7 @@ function AddressList({
               onClick={() => onToggle(addr.id)}
               className={cn(
                 "w-full text-left rounded-lg border p-3 transition-colors",
-                "flex items-center gap-3",
+                "flex items-start gap-3",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 isSelected
                   ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30"
@@ -263,19 +263,22 @@ function AddressList({
 
               <span className="flex flex-col gap-0.5 min-w-0 flex-1">
                 {addr.businessName && (
-                  <span className="font-medium text-sm truncate">{addr.businessName}</span>
+                  <span className="font-medium text-sm break-words">{addr.businessName}</span>
                 )}
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
                   <MapPin className="size-3 shrink-0" aria-hidden />
-                  <span className="truncate">
-                    {addr.street}, {addr.number} — {addr.neighborhood}, {addr.city}
+                  <span className="break-words">
+                    {addr.street}, {addr.number}
                   </span>
+                </span>
+                <span className="text-xs text-muted-foreground/80 break-words">
+                  {addr.neighborhood} · {addr.city}
                 </span>
               </span>
 
               <CheckCircle2
                 className={cn(
-                  "ml-auto size-4 shrink-0 transition-colors",
+                  "ml-auto mt-0.5 size-4 shrink-0 transition-colors",
                   isSelected ? "text-blue-500" : "text-muted-foreground/20",
                 )}
                 aria-hidden

@@ -57,8 +57,11 @@ export async function HomeDashboard({
               {t.home.addressesBadge.replace("{count}", String(totalAddresses))}
             </p>
           </div>
-          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-transform group-hover:translate-x-0.5">
-            <ChevronRight className="size-5" aria-hidden="true" />
+          <span className="flex shrink-0 items-center gap-2">
+            <span className="text-sm font-medium text-neutral-300">{t.home.goToCards}</span>
+            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-transform group-hover:translate-x-0.5">
+              <ChevronRight className="size-5" aria-hidden="true" />
+            </span>
           </span>
         </Link>
 

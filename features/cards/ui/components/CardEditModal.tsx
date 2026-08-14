@@ -347,7 +347,7 @@ function AddressRow({
         aria-disabled={disabled}
         className={cn(
           "w-full rounded-xl border p-3 text-left transition-colors",
-          "flex items-center gap-3",
+          "flex items-start gap-3",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
           disabled
             ? "cursor-not-allowed border-border/50 bg-muted/30 opacity-70"
@@ -368,14 +368,17 @@ function AddressRow({
           </span>
         )}
 
-        <TypeIcon className={cn("size-4 shrink-0", typeConfig?.color)} aria-hidden />
+        <TypeIcon className={cn("mt-0.5 size-4 shrink-0", typeConfig?.color)} aria-hidden />
 
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
           {addr.businessName && (
-            <span className="truncate text-sm font-medium">{addr.businessName}</span>
+            <span className="break-words text-sm font-medium">{addr.businessName}</span>
           )}
-          <span className="truncate text-sm text-muted-foreground">
-            {addr.street}, {addr.number} — {addr.neighborhood}, {addr.city}
+          <span className="break-words text-sm text-muted-foreground">
+            {addr.street}, {addr.number}
+          </span>
+          <span className="break-words text-xs text-muted-foreground/80">
+            {addr.neighborhood}, {addr.city}
           </span>
           {disabled && otherCardNumber && (
             <span className="mt-0.5 inline-flex w-fit items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
@@ -389,7 +392,7 @@ function AddressRow({
         {!disabled && (
           <CheckCircle2
             className={cn(
-              "ml-auto size-4 shrink-0 transition-colors",
+              "ml-auto mt-0.5 size-4 shrink-0 transition-colors",
               selected ? "text-brand" : "text-muted-foreground/20",
             )}
             aria-hidden

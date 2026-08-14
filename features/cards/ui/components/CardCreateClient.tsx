@@ -1,11 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import type { AddressType } from "@/features/addresses/types/address.types";
 import { LazyMapboxProvider } from "@/features/map/core/LazyMapboxProvider";
 import { SelectableAddressesLayer } from "@/features/map/layers/SelectableAddressesLayer";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -16,6 +18,13 @@ import type { AvailableAddress } from "../../types/card.types";
 import { sortAddressesByProximity } from "../../utils/sortAddressesByProximity";
 import { AddressFilterBar, type AddressFilters } from "./AddressFilterBar";
 import { AddressSelector } from "./AddressSelector";
+
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Mark}/gu, "");
+}
 
 interface Props {
   organizationId: string;
@@ -40,6 +49,8 @@ export function CardCreateClient({
     types: [],
   });
 
+  const [query, setQuery] = useState("");
+
   const {
     handleSubmit,
     setValue,
@@ -60,6 +71,8 @@ export function CardCreateClient({
   };
 
   const { sortedAddresses, selectableAddresses } = useMemo(() => {
+    const q = normalize(query.trim());
+
     // ✅ Filtra client-side — sem roundtrip
     const filtered = availableAddresses.filter((a) => {
       if (filters.active !== undefined && a.active !== filters.active) return false;
@@ -68,6 +81,12 @@ export function CardCreateClient({
         !filters.types.includes(a.type as AddressType) // ✅ cast aqui
       )
         return false;
+      if (q) {
+        const haystack = normalize(
+          [a.businessName, a.street, a.number, a.neighborhood, a.city].filter(Boolean).join(" "),
+        );
+        if (!haystack.includes(q)) return false;
+      }
       return true;
     });
 
@@ -87,7 +106,7 @@ export function CardCreateClient({
         index: i + 1,
       })),
     };
-  }, [availableAddresses, filters]);
+  }, [availableAddresses, filters, query]);
 
   const onSubmit = (data: CreateCardInput) => {
     startTransition(async () => {
@@ -144,6 +163,22 @@ export function CardCreateClient({
               : t.admin.createCardButton.replace("{number}", String(nextNumber).padStart(2, "0"))}
           </Button>
           {/* )} */}
+          {/* ✅ Busca por nome/estabelecimento, rua, bairro ou cidade */}
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden
+            />
+            <Input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t.addresses.searchPlaceholder}
+              aria-label={t.addresses.searchPlaceholder}
+              className="pl-9"
+            />
+          </div>
+
           {/* ✅ Filtros */}
           <AddressFilterBar
             filters={filters}

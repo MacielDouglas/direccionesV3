@@ -84,6 +84,7 @@ const es: I18nDictionary = {
     todaySchedule: "Agenda de hoy",
     eventsToday: "{count} eventos hoy",
     cardsAddresses: "ver tus direcciones",
+    goToCards: "Ir a mis tarjetas",
   },
   addresses: {
     allTitle: "Todas las direcciones",

@@ -84,6 +84,7 @@ const ptBR: I18nDictionary = {
     todaySchedule: "Programação de hoje",
     eventsToday: "{count} eventos hoje",
     cardsAddresses: "veja seus endereços",
+    goToCards: "Ir para meus cards",
   },
   addresses: {
     allTitle: "Todos os endereços",
