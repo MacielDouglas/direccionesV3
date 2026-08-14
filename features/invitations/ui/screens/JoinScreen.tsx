@@ -25,11 +25,11 @@ export function JoinScreen({ token }: { token: string }) {
       setStatus("success");
       toast.success(t.invitations.joiningSuccess.replace("{orgName}", org.name));
 
-      // Redireciona para a org após 2s
+      // Redireciona para a página da organização após 1.5s
       setTimeout(() => {
-        router.push("/");
+        router.push(`/org/${org.slug}`);
         router.refresh();
-      }, 2000);
+      }, 1500);
     } catch (e) {
       const msg = e instanceof Error ? e.message : t.invitations.joinError;
       setErrorMsg(msg);
