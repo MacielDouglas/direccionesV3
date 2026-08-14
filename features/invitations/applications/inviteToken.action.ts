@@ -203,10 +203,12 @@ export async function redeemOwnerOnboardingTokenAction(data: {
 }
 
 // ── Tela de boas-vindas: aceita token de convite OU de onboarding ─
+export type WelcomeOrg = { name: string; slug: string };
+
 export type WelcomeResult =
   | { kind: "owner_needs_name" }
-  | { kind: "owner"; org: { name: string } }
-  | { kind: "invite"; org: { name: string } }
+  | { kind: "owner"; org: WelcomeOrg }
+  | { kind: "invite"; org: WelcomeOrg }
   | {
       kind: "error";
       code: "invalid" | "used" | "expired" | "already_in_org" | "unauthorized" | "other";

@@ -3,16 +3,21 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { updateUserNameAction } from "@/server/users/user.action";
+import { updatePersonName } from "@/server/person";
 import { Check, Loader2, Pencil, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 interface Props {
   currentName: string;
+  personId: string;
+  organizationId: string;
+  organizationSlug: string;
 }
 
-export function EditNameForm({ currentName }: Props) {
+export function EditNameForm({ currentName, personId, organizationId, organizationSlug }: Props) {
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(currentName);
   const [isPending, startTransition] = useTransition();
@@ -26,13 +31,14 @@ export function EditNameForm({ currentName }: Props) {
     }
 
     startTransition(async () => {
-      const result = await updateUserNameAction({ name: value.trim() });
-      if (result.error) {
-        toast.error(result.error);
-        return;
+      try {
+        await updatePersonName(organizationId, personId, value.trim(), organizationSlug);
+        toast.success(t.user.editNameSuccess);
+        setEditing(false);
+        router.refresh();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t.errors.generic);
       }
-      toast.success(t.user.editNameSuccess);
-      setEditing(false);
     });
   };
 
@@ -50,7 +56,7 @@ export function EditNameForm({ currentName }: Props) {
           size="icon"
           onClick={() => setEditing(true)}
           aria-label={t.user.editNameAria}
-          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+          className="h-8 w-8 rounded-lg text-brand hover:text-brand/80"
         >
           <Pencil className="h-4 w-4" aria-hidden="true" />
         </Button>
@@ -68,7 +74,7 @@ export function EditNameForm({ currentName }: Props) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         autoFocus
-        maxLength={60}
+        maxLength={80}
         aria-label={t.user.newNameAria}
         className="h-9 w-48 text-base"
         disabled={isPending}

@@ -19,29 +19,11 @@ export async function leaveOrganizationAction(organizationId: string) {
     throw new Error("O owner não pode sair. Transfira a ownership antes.");
   }
 
-  // ✅ Sempre: desatribui cards (ficam livres na org)
-  await prisma.card.updateMany({
-    where: { assignedPersonId: person.id, organizationId },
-    data: { assignedPersonId: null },
-  });
-
-  if (person.role === "member") {
-    // ✅ Membro comum: libera ownership dos cards e condução de eventos
-    await prisma.card.updateMany({
-      where: { ownerPersonId: person.id, organizationId },
-      data: { ownerPersonId: null },
-    });
-    await prisma.agendaEvent.updateMany({
-      where: { conductorPersonId: person.id, organizationId },
-      data: { conductorPersonId: null },
-    });
-  }
-  // Admin: ownership dos cards e condução da agenda são mantidos
-
-  // ✅ Desvincula a person da organização
+  // ✅ A pessoa permanece na organização intacta (nome, papel, cards e ownership).
+  // Apenas o vínculo com a conta do usuário é removido — vira "pessoa sem usuário".
   await prisma.person.update({
     where: { id: person.id },
-    data: { organizationId: null, role: null, lastActiveAt: new Date() },
+    data: { userId: null, lastActiveAt: new Date() },
   });
 
   redirect("/");

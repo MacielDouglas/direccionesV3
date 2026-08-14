@@ -15,6 +15,8 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import {
   adminDesignateCardsAction,
+  adminReturnCardsAction,
+  adminTransferCardAction,
   createOrgPersonAction,
   deletePersonAction,
   getPersonCardsManageData,
@@ -80,11 +82,13 @@ export type ManageCardInfo = {
   id: string;
   number: number;
   neighborhoods: string[];
+  addressCount: number;
 };
 
 export type ManagePersonCards = {
   person: { id: string; name: string; role: string | null };
-  availableCards: ManageCardInfo[];
+  personCards: (ManageCardInfo & { designationDate: string })[];
+  availableCards: (ManageCardInfo & { lastReturnDate: string | null })[];
   designatedCards: (ManageCardInfo & { personName: string; designationDate: string })[];
 };
 
@@ -180,6 +184,7 @@ function PersonCard({
   isSelf = false,
   showLinkAction = false,
   canManage,
+  canRemove = false,
   onEdit,
   onAdminCards,
   onLink,
@@ -191,6 +196,7 @@ function PersonCard({
   isSelf?: boolean;
   showLinkAction?: boolean;
   canManage: boolean;
+  canRemove?: boolean;
   onEdit: () => void;
   onAdminCards: () => void;
   onLink?: () => void;
@@ -270,7 +276,7 @@ function PersonCard({
             <span className="truncate">{t.people.linkUser}</span>
           </button>
         ) : null}
-        {canManage && !isSelf ? (
+        {canRemove && !isSelf ? (
           <button
             type="button"
             onClick={onRemove}
@@ -307,8 +313,6 @@ export function PeopleScreen({
   const [editRole, setEditRole] = useState<PersonRole>("member");
   const [isEditing, startEditTransition] = useTransition();
   const [manageData, setManageData] = useState<ManagePersonCards | null>(null);
-  const [selectedDesignateIds, setSelectedDesignateIds] = useState<string[]>([]);
-  const [isDesignating, startDesignateTransition] = useTransition();
   const [removeTarget, setRemoveTarget] = useState<PeopleListItem | null>(null);
   const [isRemoving, startRemoveTransition] = useTransition();
 
@@ -319,10 +323,18 @@ export function PeopleScreen({
     (person: PeopleListItem) => {
       if (person.userId === currentUserId) return false;
       if (isSuperUser) return true;
-      if (currentRole === "admin" && person.role === "owner") return false;
       return currentRole === "admin" || currentRole === "owner";
     },
     [currentRole, currentUserId, isSuperUser],
+  );
+
+  const canRemovePerson = useCallback(
+    (person: PeopleListItem) => {
+      if (!canManagePerson(person)) return false;
+      if (isSuperUser) return true;
+      return !(currentRole === "admin" && person.role === "owner");
+    },
+    [canManagePerson, currentRole, isSuperUser],
   );
 
   const canPromoteToOwner = isSuperUser || currentRole === "owner";
@@ -403,31 +415,10 @@ export function PeopleScreen({
     try {
       const data = await getPersonCardsManageData(organizationId, person.id);
       setManageData(data);
-      setSelectedDesignateIds([]);
     } catch (err) {
       toast.error(errorMessage(err, t.errors.generic));
       setCardsTarget(null);
     }
-  };
-
-  const handleDesignateCards = () => {
-    if (!cardsTarget || !manageData || selectedDesignateIds.length === 0) return;
-    startDesignateTransition(async () => {
-      try {
-        await adminDesignateCardsAction(
-          organizationId,
-          cardsTarget.id,
-          selectedDesignateIds,
-          organizationSlug,
-        );
-        toast.success(t.people.cardsDesignated);
-        setCardsTarget(null);
-        setManageData(null);
-        router.refresh();
-      } catch (err) {
-        toast.error(errorMessage(err, t.errors.generic));
-      }
-    });
   };
 
   const handleRemovePerson = () => {
@@ -522,6 +513,7 @@ export function PeopleScreen({
                   subtitle={person.user?.email ?? ""}
                   isSelf={isSelf}
                   canManage={canManage}
+                  canRemove={canManagePerson(person) && canRemovePerson(person)}
                   t={t}
                   onEdit={() => openEditPerson(person)}
                   onAdminCards={() => openAdminCards(person)}
@@ -561,6 +553,7 @@ export function PeopleScreen({
                 subtitle={person.inviteToken ? t.people.inviteHint : t.people.noUser}
                 showLinkAction
                 canManage={canManagePerson(person)}
+                canRemove={canManagePerson(person) && canRemovePerson(person)}
                 t={t}
                 onEdit={() => openEditPerson(person)}
                 onAdminCards={() => openAdminCards(person)}
@@ -599,16 +592,10 @@ export function PeopleScreen({
 
       {cardsTarget && manageData ? (
         <AdminCardsDialog
-          person={cardsTarget}
+          person={{ id: cardsTarget.id, name: cardsTarget.name }}
           data={manageData}
-          selectedDesignateIds={selectedDesignateIds}
-          onToggleDesignate={(cardId) =>
-            setSelectedDesignateIds((prev) =>
-              prev.includes(cardId) ? prev.filter((id) => id !== cardId) : [...prev, cardId],
-            )
-          }
-          onDesignate={handleDesignateCards}
-          isDesignating={isDesignating}
+          organizationId={organizationId}
+          organizationSlug={organizationSlug}
           onClose={() => {
             setCardsTarget(null);
             setManageData(null);
@@ -873,26 +860,155 @@ export function EditPersonDialog({
 export function AdminCardsDialog({
   person,
   data,
-  selectedDesignateIds,
-  onToggleDesignate,
-  onDesignate,
-  isDesignating,
+  organizationId,
+  organizationSlug,
   onClose,
   t,
 }: {
   person: { id: string; name: string };
   data: ManagePersonCards;
-  selectedDesignateIds: string[];
-  onToggleDesignate: (cardId: string) => void;
-  onDesignate: () => void;
-  isDesignating: boolean;
+  organizationId: string;
+  organizationSlug: string;
   onClose: () => void;
   t: ReturnType<typeof useI18n>["t"];
 }) {
   const { locale } = useI18n();
+  const router = useRouter();
   const dateLocale = locale === "pt" ? "pt-BR" : "es-419";
   const formatDate = (iso: string) => new Date(iso).toLocaleDateString(dateLocale);
   const cardNumber = (number: number) => `#${String(number).padStart(2, "0")}`;
+  const [selectedReturnIds, setSelectedReturnIds] = useState<string[]>([]);
+  const [selectedDesignateIds, setSelectedDesignateIds] = useState<string[]>([]);
+  const [selectedTransferCard, setSelectedTransferCard] = useState<
+    ManagePersonCards["designatedCards"][number] | null
+  >(null);
+  const [confirmTarget, setConfirmTarget] = useState<
+    ManagePersonCards["designatedCards"][number] | null
+  >(null);
+  const [isReturning, startReturnTransition] = useTransition();
+  const [isDesignating, startDesignateTransition] = useTransition();
+  const [isTransferring, startTransferTransition] = useTransition();
+
+  const toggleIn = (id: string, setter: React.Dispatch<React.SetStateAction<string[]>>) => {
+    setter((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const handleReturn = () => {
+    if (selectedReturnIds.length === 0) return;
+    startReturnTransition(async () => {
+      try {
+        await adminReturnCardsAction(
+          organizationId,
+          person.id,
+          selectedReturnIds,
+          organizationSlug,
+        );
+        toast.success(t.people.cardsReturned);
+        onClose();
+        router.refresh();
+      } catch (err) {
+        toast.error(errorMessage(err, t.errors.generic));
+      }
+    });
+  };
+
+  const handleDesignate = () => {
+    if (selectedDesignateIds.length === 0) return;
+    startDesignateTransition(async () => {
+      try {
+        await adminDesignateCardsAction(
+          organizationId,
+          person.id,
+          selectedDesignateIds,
+          organizationSlug,
+        );
+        toast.success(t.people.cardsDesignated);
+        onClose();
+        router.refresh();
+      } catch (err) {
+        toast.error(errorMessage(err, t.errors.generic));
+      }
+    });
+  };
+
+  const handleTransfer = () => {
+    if (!confirmTarget) return;
+    startTransferTransition(async () => {
+      try {
+        await adminTransferCardAction(
+          organizationId,
+          person.id,
+          confirmTarget.id,
+          organizationSlug,
+        );
+        toast.success(t.people.cardTransferred);
+        setConfirmTarget(null);
+        onClose();
+        router.refresh();
+      } catch (err) {
+        toast.error(errorMessage(err, t.errors.generic));
+        setConfirmTarget(null);
+      }
+    });
+  };
+
+  const addressCountLabel = (count: number) =>
+    count === 1
+      ? t.people.addressesCountOne.replace("{count}", "1")
+      : t.people.addressesCountMany.replace("{count}", String(count));
+
+  const selectableRow = (
+    card: ManageCardInfo,
+    selected: boolean,
+    onToggle: () => void,
+    meta?: ReactNode,
+  ) => (
+    <li key={card.id}>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-pressed={selected}
+        className={cn(
+          "flex w-full items-start justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors",
+          selected
+            ? "border-brand bg-brand/10"
+            : "border-border bg-card hover:border-brand/50 hover:bg-surface-subtle-light",
+        )}
+      >
+        <span className="flex items-center gap-3">
+          <span
+            className={cn(
+              "flex size-5 shrink-0 items-center justify-center rounded border",
+              selected
+                ? "border-brand bg-brand text-brand-foreground"
+                : "border-muted-foreground/40 bg-transparent",
+            )}
+            aria-hidden
+          >
+            {selected ? <Check className="size-3.5" /> : null}
+          </span>
+          <span className="flex flex-col">
+            <span className="text-sm font-semibold text-foreground">
+              {cardNumber(card.number)}
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                {addressCountLabel(card.addressCount)}
+              </span>
+            </span>
+            <span className="mt-0.5 text-xs text-muted-foreground">
+              {card.neighborhoods.length > 0 ? card.neighborhoods.join(" · ") : "—"}
+            </span>
+          </span>
+        </span>
+        {meta}
+      </button>
+    </li>
+  );
+
+  const personCardMeta = (designationDate: string) => (
+    <span className="shrink-0 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
+      {t.people.designatedOn.replace("{date}", formatDate(designationDate))}
+    </span>
+  );
 
   return (
     <ModalOverlay label={t.people.adminCardsTitle} onClose={onClose} panelClassName="max-w-2xl">
@@ -914,63 +1030,65 @@ export function AdminCardsDialog({
       </div>
 
       <div className="mt-4 flex max-h-[65vh] flex-col gap-6 overflow-y-auto">
-        <section aria-label={t.people.availableCardsTitle}>
+        {/* Seção 1: cards designados à própria pessoa */}
+        <section aria-label={t.people.personCardsTitle}>
           <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
             <CreditCard className="size-5 text-brand" aria-hidden="true" />
+            {t.people.personCardsTitle} ({data.personCards.length})
+          </h4>
+          {data.personCards.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-6 text-center text-sm text-muted-foreground">
+              <CreditCard className="size-6" aria-hidden />
+              <p>{t.people.noPersonCards}</p>
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {data.personCards.map((card) =>
+                selectableRow(
+                  card,
+                  selectedReturnIds.includes(card.id),
+                  () => toggleIn(card.id, setSelectedReturnIds),
+                  personCardMeta(card.designationDate),
+                ),
+              )}
+            </ul>
+          )}
+        </section>
+
+        {/* Seção 2: cards disponíveis */}
+        <section aria-label={t.people.availableCardsTitle}>
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+            <MapPin className="size-5 text-brand" aria-hidden="true" />
             {t.people.availableCardsTitle} ({data.availableCards.length})
           </h4>
           {data.availableCards.length === 0 ? (
             <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-6 text-center text-sm text-muted-foreground">
-              <CreditCard className="size-6" aria-hidden />
+              <MapPin className="size-6" aria-hidden />
               <p>{t.people.noAvailableCards}</p>
             </div>
           ) : (
             <>
               <ul className="flex flex-col gap-2">
-                {data.availableCards.map((card) => {
-                  const selected = selectedDesignateIds.includes(card.id);
-                  return (
-                    <li key={card.id}>
-                      <button
-                        type="button"
-                        onClick={() => onToggleDesignate(card.id)}
-                        aria-pressed={selected}
-                        className={cn(
-                          "flex w-full items-start justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors",
-                          selected
-                            ? "border-brand bg-brand/10"
-                            : "border-border bg-card hover:border-brand/50 hover:bg-surface-subtle-light",
-                        )}
-                      >
-                        <span className="flex items-center gap-3">
-                          <span
-                            className={cn(
-                              "flex size-5 shrink-0 items-center justify-center rounded border",
-                              selected
-                                ? "border-brand bg-brand text-brand-foreground"
-                                : "border-muted-foreground/40 bg-transparent",
-                            )}
-                            aria-hidden
-                          >
-                            {selected ? <Check className="size-3.5" /> : null}
-                          </span>
-                          <span className="flex flex-col">
-                            <span className="text-sm font-semibold text-foreground">
-                              {cardNumber(card.number)}
-                            </span>
-                            <span className="mt-0.5 text-xs text-muted-foreground">
-                              {card.neighborhoods.length > 0 ? card.neighborhoods.join(" · ") : "—"}
-                            </span>
-                          </span>
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
+                {data.availableCards.map((card) =>
+                  selectableRow(
+                    card,
+                    selectedDesignateIds.includes(card.id),
+                    () => toggleIn(card.id, setSelectedDesignateIds),
+                    card.lastReturnDate ? (
+                      <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+                        {t.people.lastReturnedOn.replace("{date}", formatDate(card.lastReturnDate))}
+                      </span>
+                    ) : (
+                      <span className="shrink-0 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
+                        {t.people.newCard}
+                      </span>
+                    ),
+                  ),
+                )}
               </ul>
               <Button
                 type="button"
-                onClick={onDesignate}
+                onClick={handleDesignate}
                 disabled={isDesignating || selectedDesignateIds.length === 0}
                 aria-busy={isDesignating}
                 className="mt-3 w-full gap-2 sm:w-auto"
@@ -988,40 +1106,146 @@ export function AdminCardsDialog({
           )}
         </section>
 
+        {/* Seção 3: todos os cards designados (para transferir) */}
         <section aria-label={t.people.designatedCardsTitle}>
           <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-            <MapPin className="size-5 text-brand" aria-hidden="true" />
+            <CreditCard className="size-5 text-brand" aria-hidden="true" />
             {t.people.designatedCardsTitle} ({data.designatedCards.length})
           </h4>
           {data.designatedCards.length === 0 ? (
             <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-6 text-center text-sm text-muted-foreground">
-              <MapPin className="size-6" aria-hidden />
+              <CreditCard className="size-6" aria-hidden />
               <p>{t.people.noDesignatedCards}</p>
             </div>
           ) : (
-            <ul className="flex flex-col gap-2">
-              {data.designatedCards.map((card) => (
-                <li key={card.id} className="rounded-xl border border-border bg-card px-4 py-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-semibold text-foreground">
-                      {cardNumber(card.number)}
-                    </span>
-                    <span className="shrink-0 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
+            <>
+              <ul className="flex flex-col gap-2">
+                {data.designatedCards.map((card) =>
+                  selectableRow(
+                    card,
+                    selectedTransferCard?.id === card.id,
+                    () => setSelectedTransferCard((prev) => (prev?.id === card.id ? null : card)),
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold",
+                        card.personName === person.name
+                          ? "bg-muted text-muted-foreground"
+                          : "bg-brand/10 text-brand",
+                      )}
+                    >
                       {card.personName}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {card.neighborhoods.length > 0 ? card.neighborhoods.join(" · ") : "—"}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {t.people.designatedOn.replace("{date}", formatDate(card.designationDate))}
-                  </p>
-                </li>
-              ))}
-            </ul>
+                    </span>,
+                  ),
+                )}
+              </ul>
+              <div className="mt-3 flex flex-col gap-1.5">
+                <p className="text-xs text-muted-foreground">
+                  {selectedTransferCard && selectedTransferCard.personName !== person.name
+                    ? t.people.transferFrom.replace("{from}", selectedTransferCard.personName)
+                    : t.people.selectCardToTransfer}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setConfirmTarget(selectedTransferCard)}
+                  disabled={
+                    isTransferring ||
+                    !selectedTransferCard ||
+                    selectedTransferCard.personName === person.name
+                  }
+                  aria-busy={isTransferring}
+                  className="w-full gap-2 sm:w-auto"
+                >
+                  {isTransferring ? (
+                    <Loader2 className="size-4 animate-spin" aria-hidden />
+                  ) : (
+                    <CreditCard className="size-4" aria-hidden />
+                  )}
+                  {isTransferring ? t.people.transferringCard : t.people.transferCard}
+                </Button>
+              </div>
+            </>
           )}
         </section>
       </div>
+
+      {/* Barra flutuante: devolver cards da pessoa */}
+      {selectedReturnIds.length > 0 && (
+        <div className="sticky bottom-0 z-10 -mx-5 -mb-5 mt-4 flex justify-end border-t border-border bg-card/95 p-4 backdrop-blur">
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={handleReturn}
+            disabled={isReturning}
+            aria-busy={isReturning}
+            className="gap-2"
+          >
+            {isReturning ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+            ) : (
+              <CreditCard className="size-4" aria-hidden />
+            )}
+            {isReturning
+              ? t.people.returningCards
+              : selectedReturnIds.length === 1
+                ? t.people.returnCard
+                : t.people.returnCardsMany.replace("{count}", String(selectedReturnIds.length))}
+          </Button>
+        </div>
+      )}
+
+      {/* Confirmação de transferência */}
+      {confirmTarget ? (
+        <ModalOverlay label={t.people.transferCardTitle} onClose={() => setConfirmTarget(null)}>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-base font-semibold text-foreground">
+                {t.people.transferCardTitle}
+              </h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">{t.people.transferCardHint}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setConfirmTarget(null)}
+              aria-label={t.common.close}
+              className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <X className="size-4" aria-hidden />
+            </button>
+          </div>
+          <p className="mt-4 rounded-lg bg-muted/60 px-3 py-2.5 text-sm text-foreground">
+            {t.people.transferCardConfirm
+              .replace("{card}", cardNumber(confirmTarget.number))
+              .replace("{fromName}", confirmTarget.personName)
+              .replace("{name}", person.name)}
+          </p>
+          <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmTarget(null)}
+              disabled={isTransferring}
+              className="w-full sm:w-auto"
+            >
+              {t.common.cancel}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleTransfer}
+              disabled={isTransferring}
+              aria-busy={isTransferring}
+              className="w-full gap-2 sm:w-auto"
+            >
+              {isTransferring ? (
+                <Loader2 className="size-4 animate-spin" aria-hidden />
+              ) : (
+                <CreditCard className="size-4" aria-hidden />
+              )}
+              {isTransferring ? t.people.transferringCard : t.people.transferCard}
+            </Button>
+          </div>
+        </ModalOverlay>
+      ) : null}
     </ModalOverlay>
   );
 }

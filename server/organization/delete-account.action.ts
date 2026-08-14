@@ -16,21 +16,15 @@ export async function deleteAccountAction() {
 
   const person = await prisma.person.findUnique({
     where: { userId },
-    select: { id: true },
+    select: { id: true, organizationId: true, role: true },
   });
   if (!person) throw new Error("Persona no encontrada.");
 
-  // Busca a organização da person
-  const membership = await prisma.person.findUnique({
-    where: { userId },
-    select: { organizationId: true, role: true },
-  });
-
   // Verifica se é owner de alguma org sem outro owner
-  if (membership?.role === "owner" && membership.organizationId) {
+  if (person.role === "owner" && person.organizationId) {
     const otherOwners = await prisma.person.count({
       where: {
-        organizationId: membership.organizationId,
+        organizationId: person.organizationId,
         role: "owner",
         id: { not: person.id },
       },
@@ -38,7 +32,7 @@ export async function deleteAccountAction() {
 
     if (otherOwners === 0) {
       const org = await prisma.organization.findUnique({
-        where: { id: membership.organizationId },
+        where: { id: person.organizationId },
         select: { name: true },
       });
       throw new Error(
@@ -47,56 +41,14 @@ export async function deleteAccountAction() {
     }
   }
 
-  // Orgs onde é membro comum → limpa ownerPersonId dos cards
-  if (membership?.role === "member" && membership.organizationId) {
-    await prisma.card.updateMany({
-      where: { ownerPersonId: person.id, organizationId: membership.organizationId },
-      data: { ownerPersonId: null },
-    });
-  }
-
-  // Todas as referências → limpa assignedPersonId
-  await prisma.card.updateMany({
-    where: { assignedPersonId: person.id },
-    data: { assignedPersonId: null },
+  // ✅ A pessoa permanece na organização intacta (nome, papel, cards e ownership) —
+  // apenas o vínculo com a conta é removido e a conta do usuário é excluída.
+  await prisma.person.update({
+    where: { id: person.id },
+    data: { userId: null },
   });
 
-  // Limpa conductor da agenda
-  await prisma.agendaEvent.updateMany({
-    where: { conductorPersonId: person.id },
-    data: { conductorPersonId: null },
-  });
-
-  // Nullifica survey pins
-  await prisma.surveyPin.updateMany({
-    where: { confirmedByPersonId: person.id },
-    data: { confirmedByPersonId: null },
-  });
-
-  // Deleta card events da pessoa
-  await prisma.cardEvent.deleteMany({
-    where: { personId: person.id },
-  });
-
-  // Nullifica referências em Address (mantém o address, limpa o vínculo)
-  await prisma.address.updateMany({
-    where: { invitedByPersonId: person.id },
-    data: { invitedByPersonId: null },
-  });
-  await prisma.address.updateMany({
-    where: { updatedByPersonId: person.id },
-    data: { updatedByPersonId: null },
-  });
-  await prisma.address.updateMany({
-    where: { pendingDeletionByPersonId: person.id },
-    data: {
-      pendingDeletionByPersonId: null,
-      pendingDeletion: false,
-      pendingDeletionAt: null,
-    },
-  });
-
-  // ✅ Deleta o usuário — cascade remove session, account e a person vinculada (userId FK cascade)
+  // O cascade de User remove session/account; a Person já foi desvinculada.
   await prisma.user.delete({ where: { id: userId } });
 
   redirect("/login");

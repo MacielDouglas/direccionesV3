@@ -607,7 +607,8 @@ export const updatePersonName = async (
     if (currentUser.person?.organizationId !== organizationId) {
       throw new Error("Sin permiso.");
     }
-    if (!canManageRequester(currentUser.person?.role)) {
+    // Qualquer pessoa pode renomear a si mesma; admin/owner renomeia os demais.
+    if (currentUser.person?.id !== personId && !canManageRequester(currentUser.person?.role)) {
       throw new Error("Sin permiso.");
     }
   }
@@ -692,7 +693,7 @@ export const adminBulkUpdatePersonCards = async (
   return { success: true };
 };
 
-// ✅ Dados para o modal "Administrar Cartões" (disponíveis + designados)
+// ✅ Dados para o modal "Administrar Cards" (da pessoa + disponíveis + designados)
 export const getPersonCardsManageData = async (organizationId: string, personId: string) => {
   const currentUser = await getCurrentUser();
   if (!currentUser) throw new Error("No autenticado.");
@@ -712,14 +713,25 @@ export const getPersonCardsManageData = async (organizationId: string, personId:
   });
   if (!person) throw new Error("Persona no encontrada.");
 
-  const [available, designated] = await Promise.all([
+  const [personCards, available, designated] = await Promise.all([
+    prisma.card.findMany({
+      where: { organizationId, assignedPersonId: person.id },
+      orderBy: { number: "asc" },
+      select: {
+        id: true,
+        number: true,
+        startDate: true,
+        createdAt: true,
+        addresses: { select: { id: true, neighborhood: true } },
+      },
+    }),
     prisma.card.findMany({
       where: { organizationId, assignedPersonId: null },
       orderBy: { number: "asc" },
       select: {
         id: true,
         number: true,
-        addresses: { select: { neighborhood: true } },
+        addresses: { select: { id: true, neighborhood: true } },
       },
     }),
     prisma.card.findMany({
@@ -731,31 +743,180 @@ export const getPersonCardsManageData = async (organizationId: string, personId:
         startDate: true,
         createdAt: true,
         assignedTo: { select: { name: true } },
-        addresses: { select: { neighborhood: true } },
+        addresses: { select: { id: true, neighborhood: true } },
       },
     }),
   ]);
 
-  const neighborhoodsOf = (card: { addresses: { neighborhood: string }[] }) =>
-    [...new Set(card.addresses.map((address) => address.neighborhood.trim()).filter(Boolean))].sort(
-      (a, b) => a.localeCompare(b),
-    );
+  const lastReturnEvents = await prisma.cardEvent.findMany({
+    where: {
+      action: "RETURNED",
+      cardId: { in: available.map((card) => card.id) },
+    },
+    orderBy: { date: "desc" },
+    select: { cardId: true, date: true },
+  });
+  const lastReturnByCard = new Map<string, string>();
+  for (const event of lastReturnEvents) {
+    if (!lastReturnByCard.has(event.cardId)) {
+      lastReturnByCard.set(event.cardId, event.date.toISOString());
+    }
+  }
+
+  const mapCard = (card: {
+    id: string;
+    number: number;
+    addresses: { id: string; neighborhood: string }[];
+  }) => ({
+    id: card.id,
+    number: card.number,
+    neighborhoods: [
+      ...new Set(card.addresses.map((a) => a.neighborhood.trim()).filter(Boolean)),
+    ].sort((a, b) => a.localeCompare(b)),
+    addressCount: card.addresses.length,
+  });
 
   return {
     person: { id: person.id, name: person.name, role: person.role },
+    personCards: personCards.map((card) => ({
+      ...mapCard(card),
+      designationDate: (card.startDate ?? card.createdAt).toISOString(),
+    })),
     availableCards: available.map((card) => ({
-      id: card.id,
-      number: card.number,
-      neighborhoods: neighborhoodsOf(card),
+      ...mapCard(card),
+      lastReturnDate: lastReturnByCard.get(card.id) ?? null,
     })),
     designatedCards: designated.map((card) => ({
-      id: card.id,
-      number: card.number,
-      neighborhoods: neighborhoodsOf(card),
+      ...mapCard(card),
       personName: card.assignedTo?.name ?? "—",
       designationDate: (card.startDate ?? card.createdAt).toISOString(),
     })),
   };
+};
+
+// ✅ Devolver cards designados a uma pessoa (voltam para disponíveis)
+export const adminReturnCardsAction = async (
+  organizationId: string,
+  personId: string,
+  cardIds: string[],
+  slug: string,
+) => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("No autenticado.");
+
+  if (!currentUser.isSuperUser) {
+    if (currentUser.person?.organizationId !== organizationId) {
+      throw new Error("Sin permiso.");
+    }
+    if (!canManageRequester(currentUser.person?.role)) {
+      throw new Error("Sin permiso.");
+    }
+  }
+
+  if (cardIds.length === 0) throw new Error("Selecciona al menos un card.");
+
+  const person = await prisma.person.findFirst({
+    where: { id: personId, organizationId },
+    select: { id: true },
+  });
+  if (!person) throw new Error("Persona no encontrada.");
+
+  const cards = await prisma.card.findMany({
+    where: { id: { in: cardIds }, organizationId, assignedPersonId: person.id },
+    select: { id: true },
+  });
+  if (cards.length !== cardIds.length) {
+    throw new Error(
+      "Alguns cards não estão designados a esta persona ou não pertencem à organização.",
+    );
+  }
+
+  const now = new Date();
+  await prisma.$transaction(async (tx) => {
+    for (const card of cards) {
+      await tx.card.update({
+        where: { id: card.id },
+        data: { assignedPersonId: null, startDate: null, endDate: now },
+      });
+      await tx.cardEvent.create({
+        data: {
+          id: crypto.randomUUID(),
+          action: "RETURNED",
+          personId: currentUser.person.id,
+          cardId: card.id,
+          date: now,
+        },
+      });
+    }
+  });
+
+  revalidatePath(`/org/${slug}/admin/pessoas`);
+  return { success: true };
+};
+
+// ✅ Transferir um card designado de outra pessoa para a pessoa administrada
+export const adminTransferCardAction = async (
+  organizationId: string,
+  personId: string,
+  cardId: string,
+  slug: string,
+) => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("No autenticado.");
+
+  if (!currentUser.isSuperUser) {
+    if (currentUser.person?.organizationId !== organizationId) {
+      throw new Error("Sin permiso.");
+    }
+    if (!canManageRequester(currentUser.person?.role)) {
+      throw new Error("Sin permiso.");
+    }
+  }
+
+  const person = await prisma.person.findFirst({
+    where: { id: personId, organizationId },
+    select: { id: true },
+  });
+  if (!person) throw new Error("Persona no encontrada.");
+
+  const card = await prisma.card.findFirst({
+    where: { id: cardId, organizationId, assignedPersonId: { not: null } },
+    select: { id: true, assignedPersonId: true },
+  });
+  if (!card) throw new Error("Card no encontrado.");
+  if (card.assignedPersonId === person.id) {
+    throw new Error("Este card ya está designado a esta persona.");
+  }
+
+  const now = new Date();
+  await prisma.$transaction(async (tx) => {
+    await tx.card.update({
+      where: { id: card.id },
+      data: { assignedPersonId: person.id, startDate: now, endDate: null },
+    });
+    // Devolução do card para a pessoa que o tinha e nova designação para o destino.
+    await tx.cardEvent.create({
+      data: {
+        id: crypto.randomUUID(),
+        action: "RETURNED",
+        personId: currentUser.person.id,
+        cardId: card.id,
+        date: now,
+      },
+    });
+    await tx.cardEvent.create({
+      data: {
+        id: crypto.randomUUID(),
+        action: "ASSIGNED",
+        personId: currentUser.person.id,
+        cardId: card.id,
+        date: now,
+      },
+    });
+  });
+
+  revalidatePath(`/org/${slug}/admin/pessoas`);
+  return { success: true };
 };
 
 // ✅ Designar cards disponíveis a uma pessoa

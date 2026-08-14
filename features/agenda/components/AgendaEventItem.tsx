@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { Clock, History, Info, MapPin, MapPinned, Pencil, Tag, User } from "lucide-react";
+import { Clock, History, Info, MapPin, MapPinned, Pencil, Sparkles, Tag, User } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import type {
@@ -23,6 +23,7 @@ interface Props {
   canEdit?: boolean;
   members?: AgendaMember[];
   fieldOptions?: AgendaFieldOptions | null;
+  isNext?: boolean;
   onOpen?: () => void;
 }
 
@@ -33,6 +34,7 @@ export function AgendaEventItem({
   canEdit,
   members = [],
   fieldOptions,
+  isNext = false,
   onOpen,
 }: Props) {
   const { t, locale } = useI18n();
@@ -56,6 +58,8 @@ export function AgendaEventItem({
         }}
         className={cn(
           "group-data-[highlight]:ring-2 group-data-[highlight]:ring-primary group-data-[highlight]:ring-offset-2 flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-xs transition-opacity",
+          isNext &&
+            "border-brand/50 bg-gradient-to-br from-brand/10 via-card to-card shadow-[0_12px_35px_-12px] shadow-brand/40 ring-1 ring-brand/30",
           isPast && "opacity-70",
           onOpen && "cursor-pointer",
         )}
@@ -94,6 +98,13 @@ export function AgendaEventItem({
                 {timeStr}
                 {t.agenda.hourSuffix}
               </time>
+
+              {isNext && (
+                <span className="inline-flex w-fit items-center gap-1 rounded-full bg-brand px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-foreground">
+                  <Sparkles className="size-3" aria-hidden />
+                  {t.agenda.nextBadge}
+                </span>
+              )}
 
               {isPast && (
                 <span className="inline-flex w-fit items-center gap-1 rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">

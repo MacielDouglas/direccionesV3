@@ -4,6 +4,12 @@ import { DeleteAccountButton } from "@/app/(protected)/org/[organizationSlug]/(m
 import LogoutButton from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { KeyRound, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -63,7 +69,8 @@ export function WelcomeScreen({ userEmail }: WelcomeScreenProps) {
           ? t.invitations.ownerCreated.replace("{orgName}", result.org.name)
           : t.invitations.joiningSuccess.replace("{orgName}", result.org.name),
       );
-      router.push("/");
+      setLoading(false);
+      router.push(`/org/${result.org.slug}`);
       router.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t.invitations.tokenError);
@@ -78,28 +85,32 @@ export function WelcomeScreen({ userEmail }: WelcomeScreenProps) {
         <p className="text-sm text-muted-foreground">{t.invitations.notInOrg}</p>
       </div>
 
-      <div className="flex flex-col gap-2 text-left">
-        <label htmlFor="welcome-token" className="text-sm font-medium">
+      <div className="flex flex-col items-center gap-2 text-left">
+        <label htmlFor="welcome-token" className="self-start text-sm font-medium">
           {t.invitations.tokenLabel}
         </label>
-        <div className="relative">
-          <KeyRound
-            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden
-          />
-          <Input
-            id="welcome-token"
-            inputMode="numeric"
-            pattern="[0-9]{6}"
-            maxLength={6}
-            value={token}
-            onChange={(e) => setToken(e.target.value.replace(/\D/g, ""))}
-            placeholder={t.invitations.tokenPlaceholder}
-            className="pl-9 font-mono text-center text-lg tracking-[0.4em]"
-            autoComplete="off"
-            autoFocus
-          />
-        </div>
+        <InputOTP
+          id="welcome-token"
+          maxLength={6}
+          value={token}
+          onChange={(value) => setToken(value.replace(/\D/g, ""))}
+          inputMode="numeric"
+          pattern="[0-9]{6}"
+          autoComplete="one-time-code"
+          autoFocus
+        >
+          <InputOTPGroup>
+            <InputOTPSlot index={0} />
+            <InputOTPSlot index={1} />
+            <InputOTPSlot index={2} />
+          </InputOTPGroup>
+          <InputOTPSeparator />
+          <InputOTPGroup>
+            <InputOTPSlot index={3} />
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
+          </InputOTPGroup>
+        </InputOTP>
         <p className="text-xs text-muted-foreground">{t.invitations.tokenHint}</p>
       </div>
 
@@ -128,7 +139,7 @@ export function WelcomeScreen({ userEmail }: WelcomeScreenProps) {
         onClick={handleSubmit}
         disabled={loading}
         aria-busy={loading}
-        className="w-full gap-2"
+        className="w-full gap-2 rounded-full"
       >
         {loading ? (
           <Loader2 className="size-4 animate-spin" aria-hidden />

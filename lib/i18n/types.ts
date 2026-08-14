@@ -331,6 +331,7 @@ export type I18nDictionary = {
     heroNext: string;
     heroNoNext: string;
     hourSuffix: string;
+    nextBadge: string;
   };
   survey: {
     title: string;
@@ -620,6 +621,24 @@ export type I18nDictionary = {
     neighborhoods: string;
     noNeighborhoods: string;
     cardOwner: string;
+    personCardsTitle: string;
+    noPersonCards: string;
+    addressesCountOne: string;
+    addressesCountMany: string;
+    lastReturnedOn: string;
+    newCard: string;
+    returnCard: string;
+    returnCardsMany: string;
+    returningCards: string;
+    cardsReturned: string;
+    transferCard: string;
+    transferCardTitle: string;
+    transferCardHint: string;
+    transferCardConfirm: string;
+    transferringCard: string;
+    cardTransferred: string;
+    selectCardToTransfer: string;
+    transferFrom: string;
   };
   organizations: {
     selectOrg: string;

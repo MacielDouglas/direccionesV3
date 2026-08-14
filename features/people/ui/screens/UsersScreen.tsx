@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import {
-  adminDesignateCardsAction,
   getPersonCardsManageData,
   regeneratePersonInviteAction,
   removePersonFromOrganization,
@@ -80,14 +79,11 @@ export function UsersScreen({
   const [isEditing, startEditTransition] = useTransition();
   const [cardsTarget, setCardsTarget] = useState<AdminUserItem | null>(null);
   const [manageData, setManageData] = useState<ManagePersonCards | null>(null);
-  const [selectedDesignateIds, setSelectedDesignateIds] = useState<string[]>([]);
-  const [isDesignating, startDesignateTransition] = useTransition();
 
   const canManagePerson = (person: AdminUserItem) => {
     if (!person.person) return false;
     if (person.person.id === currentUserId) return false;
     if (isSuperUser) return true;
-    if (currentRole === "admin" && person.person.role === "owner") return false;
     return currentRole === "admin" || currentRole === "owner";
   };
 
@@ -176,32 +172,10 @@ export function UsersScreen({
     try {
       const data = await getPersonCardsManageData(organizationId, user.person.id);
       setManageData(data);
-      setSelectedDesignateIds([]);
     } catch (err) {
       toast.error(errorMessage(err, t.errors.generic));
       setCardsTarget(null);
     }
-  };
-
-  const handleDesignate = () => {
-    const target = cardsTarget?.person;
-    if (!target || !manageData || selectedDesignateIds.length === 0) return;
-    startDesignateTransition(async () => {
-      try {
-        await adminDesignateCardsAction(
-          organizationId,
-          target.id,
-          selectedDesignateIds,
-          organizationSlug,
-        );
-        toast.success(t.people.cardsDesignated);
-        setCardsTarget(null);
-        setManageData(null);
-        router.refresh();
-      } catch (err) {
-        toast.error(errorMessage(err, t.errors.generic));
-      }
-    });
   };
 
   const roleLabel = (role: string) => {
@@ -451,14 +425,8 @@ export function UsersScreen({
         <AdminCardsDialog
           person={{ id: cardsTarget.person.id, name: cardsTarget.person.name }}
           data={manageData}
-          selectedDesignateIds={selectedDesignateIds}
-          onToggleDesignate={(cardId) =>
-            setSelectedDesignateIds((prev) =>
-              prev.includes(cardId) ? prev.filter((id) => id !== cardId) : [...prev, cardId],
-            )
-          }
-          onDesignate={handleDesignate}
-          isDesignating={isDesignating}
+          organizationId={organizationId}
+          organizationSlug={organizationSlug}
           onClose={() => {
             setCardsTarget(null);
             setManageData(null);

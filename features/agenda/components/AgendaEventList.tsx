@@ -47,6 +47,8 @@ export function AgendaEventList({
     .filter((e) => !isEventPast(e))
     .sort((a, b) => eventStartUtcMs(a) - eventStartUtcMs(b));
 
+  const nextEventId = upcomingEvents[0]?.id ?? null;
+
   useEffect(() => {
     if (!highlightEventId) return;
 
@@ -79,11 +81,12 @@ export function AgendaEventList({
           canEdit={canEdit}
           members={members}
           fieldOptions={fieldOptions}
+          isNext={event.id === nextEventId}
           onOpen={() => setModalEvent(event)}
         />
       </li>
     ),
-    [organizationSlug, canDelete, canEdit, members, fieldOptions],
+    [organizationSlug, canDelete, canEdit, members, fieldOptions, nextEventId],
   );
 
   if (events.length === 0) {

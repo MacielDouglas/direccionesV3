@@ -32,7 +32,7 @@ export default function LogoutButton() {
 
   return (
     <Button
-      variant="destructive"
+      variant="outline"
       onClick={handleSignOut}
       disabled={loading}
       aria-busy={loading}
