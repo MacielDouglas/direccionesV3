@@ -359,6 +359,13 @@ export type I18nDictionary = {
     newCard: string;
     noCardsCreated: string;
     cardListAria: string;
+    filterAll: string;
+    filterDesignated: string;
+    filterAvailable: string;
+    searchCardsPlaceholder: string;
+    searchCardsAria: string;
+    searchNoResults: string;
+    cardBadgeLabel: string;
     clearSelection: string;
     deselectPin: string;
     createCardNumber: string;
