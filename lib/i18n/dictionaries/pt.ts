@@ -539,6 +539,7 @@ const ptBR: I18nDictionary = {
     typeHotel: "Hotel",
     typeRestaurant: "Restaurante",
     usersDescription: "Veja todos os usuários da organização, gere convites e gerencie acessos.",
+    noOrganizations: "Nenhuma organização cadastrada.",
   },
   people: {
     title: "Pessoas",
@@ -621,6 +622,39 @@ const ptBR: I18nDictionary = {
     selectOrg: "Selecione uma organização",
     selectOrgHint: "Escolha com qual organização deseja continuar.",
     createOrg: "Criar organização",
+  },
+  superuser: {
+    panelTitle: "Painel do Super Usuário",
+    ownerTokens: {
+      generate: "Gerar token de onboarding",
+      generating: "Gerando…",
+      newTokenExpires: "Novo token (vence em 7 dias):",
+      copyToken: "Copiar token",
+      usedBy: "Usado por {name}",
+      expired: "Expirado",
+      available: "Disponível",
+      createdOn: "Criado em {date}",
+      error: "Erro ao gerar o token.",
+    },
+  },
+  terms: {
+    title: "Condições de Uso",
+    intro: "Aqui você pode consultar as condições de uso deste sistema.",
+    generalTitle: "Termos Gerais",
+    generalItem1: "Todos os direitos estão reservados. No entanto, o uso deste sistema é gratuito.",
+    generalItem2:
+      "O acesso ou uso pode ser revogado ou restrito a qualquer momento, sem aviso prévio.",
+    privacyTitle: "Privacidade e Dados",
+    privacyItem1:
+      "Não armazenamos informações sensíveis, em conformidade com a Lei Geral de Proteção de Dados (LGPD) do Brasil.",
+    privacyItem2: "Coletamos apenas informações necessárias, como: nome, e-mail e foto de perfil.",
+    privacyItem3:
+      "Ao utilizar este sistema, o usuário aceita o uso desses dados para o funcionamento básico.",
+    privacyItem4:
+      "Se o usuário não concordar ou desejar excluir seus dados, pode solicitá-lo a qualquer momento entrando em contato com os administradores.",
+    adminTitle: "Informações para Administradores",
+    adminText:
+      "Lembre-se de que é sua responsabilidade respeitar a privacidade dos usuários e processar solicitações de exclusão de dados de forma rápida e segura.",
   },
   errors: {
     generic: "Algo deu errado. Tente novamente.",

@@ -1,3 +1,4 @@
+import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/server/users";
 import { Building2, Users } from "lucide-react";
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function OrganizationsPage() {
-  const data = await getCurrentUser();
+  const [data, t] = await Promise.all([getCurrentUser(), getServerDictionary()]);
   if (!data) redirect("/login");
   if (!data.isSuperUser) redirect("/");
 
@@ -22,8 +23,8 @@ export default async function OrganizationsPage() {
     <main className="mx-auto w-full max-w-3xl px-4 py-10">
       <header className="flex flex-col items-center gap-2 text-center">
         <Building2 className="h-10 w-10 text-brand" aria-hidden="true" />
-        <h1 className="text-2xl font-semibold">Organizaciones</h1>
-        <p className="text-sm text-muted-foreground">Lista de organizaciones registradas.</p>
+        <h1 className="text-2xl font-semibold">{t.admin.organizationsTitle}</h1>
+        <p className="text-sm text-muted-foreground">{t.admin.organizationsPageDescription}</p>
       </header>
 
       <div className="mt-8 flex flex-col gap-3">
@@ -44,7 +45,7 @@ export default async function OrganizationsPage() {
             </div>
           ))
         ) : (
-          <p className="text-center text-sm text-muted-foreground">Aún no hay organizaciones.</p>
+          <p className="text-center text-sm text-muted-foreground">{t.admin.noOrganizations}</p>
         )}
       </div>
     </main>

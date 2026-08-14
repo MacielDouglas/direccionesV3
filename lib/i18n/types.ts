@@ -518,6 +518,7 @@ export type I18nDictionary = {
     typeHotel: string;
     typeRestaurant: string;
     usersDescription: string;
+    noOrganizations: string;
   };
   people: {
     title: string;
@@ -600,6 +601,34 @@ export type I18nDictionary = {
     selectOrg: string;
     selectOrgHint: string;
     createOrg: string;
+  };
+  superuser: {
+    panelTitle: string;
+    ownerTokens: {
+      generate: string;
+      generating: string;
+      newTokenExpires: string;
+      copyToken: string;
+      usedBy: string;
+      expired: string;
+      available: string;
+      createdOn: string;
+      error: string;
+    };
+  };
+  terms: {
+    title: string;
+    intro: string;
+    generalTitle: string;
+    generalItem1: string;
+    generalItem2: string;
+    privacyTitle: string;
+    privacyItem1: string;
+    privacyItem2: string;
+    privacyItem3: string;
+    privacyItem4: string;
+    adminTitle: string;
+    adminText: string;
   };
   errors: {
     generic: string;

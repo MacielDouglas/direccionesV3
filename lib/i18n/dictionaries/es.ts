@@ -540,6 +540,7 @@ const es: I18nDictionary = {
     typeRestaurant: "Restaurante",
     usersDescription:
       "Ver todos los usuarios de la organización, generar invitaciones y gestionar accesos.",
+    noOrganizations: "Aún no hay organizaciones.",
   },
   people: {
     title: "Personas",
@@ -624,6 +625,41 @@ const es: I18nDictionary = {
     selectOrg: "Selecciona una organización",
     selectOrgHint: "Elige con cuál organización deseas continuar.",
     createOrg: "Crear organización",
+  },
+  superuser: {
+    panelTitle: "Panel del Super Usuario",
+    ownerTokens: {
+      generate: "Generar token de onboarding",
+      generating: "Generando…",
+      newTokenExpires: "Nuevo token (vence en 7 días):",
+      copyToken: "Copiar token",
+      usedBy: "Usado por {name}",
+      expired: "Expirado",
+      available: "Disponible",
+      createdOn: "Creado el {date}",
+      error: "Error al generar el token.",
+    },
+  },
+  terms: {
+    title: "Condiciones de Uso",
+    intro: "Aquí puedes consultar las condiciones de uso de este sistema.",
+    generalTitle: "Términos Generales",
+    generalItem1:
+      "Todos los derechos están reservados. Sin embargo, el uso de este sistema es gratuito.",
+    generalItem2:
+      "El acceso o uso puede ser revocado o restringido en cualquier momento, sin previo aviso.",
+    privacyTitle: "Privacidad y Datos",
+    privacyItem1:
+      "No almacenamos información sensible, cumpliendo con la Ley General de Protección de Datos (LGPD) de Brasil.",
+    privacyItem2:
+      "Solo recopilamos información necesaria como: nombre, correo electrónico y foto de perfil.",
+    privacyItem3:
+      "Al utilizar este sistema, el usuario acepta el uso de esos datos para el funcionamiento básico.",
+    privacyItem4:
+      "Si el usuario no está de acuerdo o desea eliminar sus datos, puede solicitarlo en cualquier momento contactando a los administradores.",
+    adminTitle: "Información para Administradores",
+    adminText:
+      "Recuerde que es su responsabilidad respetar la privacidad de los usuarios y procesar solicitudes de eliminación de datos de manera rápida y segura.",
   },
   errors: {
     generic: "Algo salió mal. Intente nuevamente.",

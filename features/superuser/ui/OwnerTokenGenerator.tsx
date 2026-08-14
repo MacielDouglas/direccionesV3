@@ -5,6 +5,7 @@ import {
   createOwnerOnboardingTokenAction,
   getOwnerOnboardingTokensAction,
 } from "@/features/invitations/applications/inviteToken.action";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Check, Copy, Loader2, Ticket } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -16,6 +17,8 @@ export function OwnerTokenGenerator({
 }: {
   initialTokens: OnboardingToken[];
 }) {
+  const { locale, t } = useI18n();
+  const tokensI18n = t.superuser.ownerTokens;
   const [tokens, setTokens] = useState<OnboardingToken[]>(initialTokens);
   const [loading, setLoading] = useState(false);
   const [newToken, setNewToken] = useState<OnboardingToken | null>(null);
@@ -29,7 +32,7 @@ export function OwnerTokenGenerator({
       setTokens(list);
       setNewToken(list.find((item) => item.id === created.id) ?? null);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Error al generar el token.");
+      toast.error(error instanceof Error ? error.message : tokensI18n.error);
     } finally {
       setLoading(false);
     }
@@ -50,17 +53,22 @@ export function OwnerTokenGenerator({
         ) : (
           <Ticket className="size-4" aria-hidden="true" />
         )}
-        {loading ? "Generando…" : "Generar token de onboarding"}
+        {loading ? tokensI18n.generating : tokensI18n.generate}
       </Button>
 
       {newToken && (
         <div className="rounded-2xl border bg-card p-4 shadow-sm">
-          <p className="text-sm text-muted-foreground">Nuevo token (vence en 7 días):</p>
+          <p className="text-sm text-muted-foreground">{tokensI18n.newTokenExpires}</p>
           <div className="mt-2 flex items-center gap-2">
             <code className="min-w-0 flex-1 truncate rounded-lg bg-muted px-3 py-2 font-mono text-sm">
               {newToken.token}
             </code>
-            <Button variant="outline" size="icon" onClick={copyToken} aria-label="Copiar token">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={copyToken}
+              aria-label={tokensI18n.copyToken}
+            >
               {copied ? (
                 <Check className="size-4" aria-hidden="true" />
               ) : (
@@ -78,11 +86,18 @@ export function OwnerTokenGenerator({
               <code className="font-mono">{token.token}</code>
               <p className="mt-1 text-xs text-muted-foreground">
                 {token.usedAt
-                  ? `Usado por ${token.usedBy?.name ?? token.usedBy?.user?.email ?? "alguien"}`
+                  ? tokensI18n.usedBy.replace(
+                      "{name}",
+                      token.usedBy?.name ?? token.usedBy?.user?.email ?? "—",
+                    )
                   : token.expiresAt < new Date()
-                    ? "Expirado"
-                    : "Disponible"}
-                {" · "}Creado el {new Date(token.createdAt).toLocaleDateString()}
+                    ? tokensI18n.expired
+                    : tokensI18n.available}
+                {" · "}
+                {tokensI18n.createdOn.replace(
+                  "{date}",
+                  new Date(token.createdAt).toLocaleDateString(locale === "pt" ? "pt-BR" : "es-ES"),
+                )}
               </p>
             </li>
           ))}
