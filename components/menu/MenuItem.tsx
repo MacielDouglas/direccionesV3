@@ -1,4 +1,7 @@
+"use client";
+
 import type { NavigationItem as Item } from "@/features/navigation/constants/navigation";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { NavLink } from "../ui/NavLink";
 
@@ -10,7 +13,9 @@ type Props = {
 };
 
 export default function MenuItem({ item, orgSlug, onSelect, className }: Props) {
+  const { t } = useI18n();
   const Icon = item.icon;
+  const label = item.label ? t.navigation[item.label] : item.name;
 
   return (
     <NavLink
@@ -23,7 +28,7 @@ export default function MenuItem({ item, orgSlug, onSelect, className }: Props) 
     >
       <div className="inline-flex gap-3">
         <Icon className="h-7 w-7" aria-hidden="true" />
-        <span className="font-medium">{item.label ?? item.name}</span>
+        <span className="font-medium">{label}</span>
       </div>
     </NavLink>
   );

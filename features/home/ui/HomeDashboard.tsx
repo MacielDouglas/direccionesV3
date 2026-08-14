@@ -3,7 +3,7 @@ import { getAgendaEventsByDay } from "@/features/agenda/application/agenda.servi
 import { eventTime, todayInBrasiliaDateOnly } from "@/features/agenda/utils/agenda-time";
 import { countMyCards, countMyTotalAddresses } from "@/features/cards/application/card.service";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { CalendarDays, ChevronRight, CreditCard, Plus } from "lucide-react";
+import { CalendarDays, ChevronRight, CreditCard, Plus, Shield } from "lucide-react";
 import Link from "next/link";
 
 interface HomeDashboardProps {
@@ -62,6 +62,17 @@ export async function HomeDashboard({
           </span>
         </Link>
 
+        {/* Administração */}
+        {isAdminOrOwner && (
+          <Link
+            href={`/org/${organizationSlug}/admin`}
+            className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-xs transition-colors hover:bg-muted active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          >
+            <Shield className="size-4 text-brand" aria-hidden="true" />
+            {t.navigation.administration}
+          </Link>
+        )}
+
         {/* Enviar novo endereço */}
         <Link
           href={`/org/${organizationSlug}/addresses/new`}
@@ -95,22 +106,22 @@ export async function HomeDashboard({
                 <li key={event.id}>
                   <Link
                     href={`/org/${organizationSlug}/agenda`}
-                    className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-surface-subtle-light dark:hover:bg-surface-subtle-dark"
+                    className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 transition-colors hover:bg-surface-subtle-light dark:hover:bg-surface-subtle-dark"
                   >
-                    <div className="flex h-11 min-w-11 flex-col items-center justify-center rounded-lg bg-black px-2 text-white">
-                      <span className="text-[0.625rem] font-medium uppercase leading-none tracking-wide text-neutral-300">
+                    <div className="flex h-9 min-w-9 flex-col items-center justify-center rounded-lg bg-black px-2 text-white">
+                      <span className="text-[0.5625rem] font-medium uppercase leading-none tracking-wide text-neutral-300">
                         {t.agenda.hour}
                       </span>
-                      <span className="mt-0.5 text-sm font-semibold tabular-nums leading-none">
+                      <span className="mt-0.5 text-xs font-semibold tabular-nums leading-none">
                         {eventTime(event)}
                       </span>
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-foreground">
+                      <p className="truncate text-xs font-medium text-foreground">
                         {event.tipo ?? event.territorio ?? event.saida ?? t.agenda.title}
                       </p>
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                      <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
                         {[event.territorio, event.saida, event.conductor?.name]
                           .filter(Boolean)
                           .join(" · ")}
@@ -121,11 +132,11 @@ export async function HomeDashboard({
               ))}
             </ul>
           ) : (
-            <div className="mt-3 rounded-xl border border-border bg-card p-5 text-center">
+            <div className="mt-3 rounded-xl border border-border bg-card p-4 text-center">
               <p className="text-sm text-muted-foreground">{t.home.noEventsToday}</p>
               <Link
                 href={`/org/${organizationSlug}/agenda`}
-                className="mt-2 inline-block text-sm font-medium text-brand transition-colors hover:text-brand-muted"
+                className="mt-1.5 inline-block text-sm font-medium text-brand transition-colors hover:text-brand-muted"
               >
                 {t.home.viewAgenda}
               </Link>
