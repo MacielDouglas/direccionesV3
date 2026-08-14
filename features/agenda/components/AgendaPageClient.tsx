@@ -2,7 +2,7 @@
 
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useCallback, useState } from "react";
-import type { AgendaEventItem, AgendaMember } from "../types/agenda.types";
+import type { AgendaEventItem, AgendaFieldOptions, AgendaMember } from "../types/agenda.types";
 import { eventDateParts } from "../utils/agenda-time";
 import { monthName, weekdayLong } from "../utils/calendar-locale";
 import { AgendaCalendar } from "./AgendaCalendar";
@@ -18,8 +18,9 @@ interface Props {
   organizationSlug: string;
   canDelete?: boolean;
   canEdit?: boolean;
-
+  dimPast?: boolean;
   members?: AgendaMember[];
+  fieldOptions?: AgendaFieldOptions | null;
   adminContent?: React.ReactNode;
   footerContent?: React.ReactNode;
 }
@@ -32,7 +33,9 @@ export function AgendaPageClient({
   organizationSlug,
   canDelete,
   canEdit,
+  dimPast,
   members,
+  fieldOptions,
   adminContent,
   footerContent,
 }: Props) {
@@ -75,7 +78,9 @@ export function AgendaPageClient({
         organizationSlug={organizationSlug}
         canDelete={canDelete}
         canEdit={canEdit}
+        dimPast={dimPast}
         members={members}
+        fieldOptions={fieldOptions}
         highlightEventId={highlightEventId}
         onHighlightConsumed={() => setHighlightEventId(null)}
       />

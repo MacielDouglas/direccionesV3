@@ -5,7 +5,6 @@ import {
 } from "@/features/agenda/application/agenda.service";
 import { AgendaAdminForm } from "@/features/agenda/components/AgendaAdminForm";
 import { AgendaPageClient } from "@/features/agenda/components/AgendaPageClient";
-import { AgendaPdfButton } from "@/features/agenda/components/AgendaPdfButton";
 import { todayInBrasilia } from "@/features/agenda/utils/agenda-time";
 import { monthLabel as monthLabelLocalized } from "@/features/agenda/utils/calendar-locale";
 import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
@@ -60,9 +59,8 @@ export default async function AgendaPage({ params, searchParams }: Props) {
         month={activeMonth}
         monthLabel={monthLabel}
         organizationSlug={slug}
-        canDelete={isAdminOrOwner}
-        canEdit={isAdminOrOwner}
         members={members}
+        fieldOptions={fieldOptions}
         adminContent={
           isAdminOrOwner && fieldOptions ? (
             <AgendaAdminForm
@@ -71,18 +69,6 @@ export default async function AgendaPage({ params, searchParams }: Props) {
               members={members}
               fieldOptions={fieldOptions}
             />
-          ) : undefined
-        }
-        footerContent={
-          isAdminOrOwner ? (
-            <div className="flex items-center justify-center">
-              <AgendaPdfButton
-                events={events}
-                monthLabel={monthLabel}
-                month={activeMonth}
-                year={activeYear}
-              />
-            </div>
           ) : undefined
         }
       />

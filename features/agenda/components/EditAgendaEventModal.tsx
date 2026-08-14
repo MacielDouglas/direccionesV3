@@ -15,22 +15,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { updateAgendaEventAction } from "../application/agenda.action";
-import type { AgendaEventItem, AgendaMember } from "../types/agenda.types";
+import type { AgendaEventItem, AgendaFieldOptions, AgendaMember } from "../types/agenda.types";
 import { eventTime } from "../utils/agenda-time";
 import { formatDateInput } from "../utils/calendar-locale";
-
-const editSchema = z.object({
-  date: z.string().min(1, "La fecha es obligatoria."),
-  time: z.string().min(1, "La hora es obligatoria."),
-  conductorId: z.string().nullable().optional(),
-  info: z.string().max(500, "Máximo 500 caracteres.").optional(),
-});
-
-type EditInput = z.infer<typeof editSchema>;
+import { ComboboxField } from "./ui/ComboboxField";
 
 interface Props {
   event: AgendaEventItem | null;
@@ -38,17 +30,38 @@ interface Props {
   onClose: () => void;
   organizationSlug: string;
   members: AgendaMember[];
+  fieldOptions?: AgendaFieldOptions | null;
 }
 
-export function EditAgendaEventModal({ event, open, onClose, organizationSlug, members }: Props) {
+export function EditAgendaEventModal({
+  event,
+  open,
+  onClose,
+  organizationSlug,
+  members,
+  fieldOptions,
+}: Props) {
   const { t } = useI18n();
   const [isPending, startTransition] = useTransition();
+
+  const editSchema = z.object({
+    date: z.string().min(1, t.agenda.date),
+    time: z.string().min(1, t.agenda.time),
+    conductorId: z.string().nullable().optional(),
+    saida: z.string().optional(),
+    tipo: z.string().optional(),
+    territorio: z.string().optional(),
+    info: z.string().max(500, t.agenda.infoField).optional(),
+  });
+
+  type EditInput = z.infer<typeof editSchema>;
 
   const {
     register,
     handleSubmit,
     reset,
     setValue,
+    control,
     formState: { errors },
   } = useForm<EditInput>({
     resolver: zodResolver(editSchema),
@@ -60,6 +73,9 @@ export function EditAgendaEventModal({ event, open, onClose, organizationSlug, m
       date: formatDateInput(event.date),
       time: eventTime(event),
       conductorId: event.conductor?.id ?? null,
+      saida: event.saida ?? "",
+      tipo: event.tipo ?? "",
+      territorio: event.territorio ?? "",
       info: event.info ?? "",
     });
   }, [event, reset]);
@@ -79,13 +95,13 @@ export function EditAgendaEventModal({ event, open, onClose, organizationSlug, m
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-md w-full">
+      <DialogContent className="max-h-[85vh] w-full max-w-md gap-4 overflow-y-auto rounded-2xl">
         <DialogHeader>
           <DialogTitle>{t.agenda.editEvent}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-2 flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-3">
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
+          <div className="flex-wrap gap-3 md:grid md:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="edit-date">{t.agenda.date}</Label>
               <Input
@@ -138,6 +154,66 @@ export function EditAgendaEventModal({ event, open, onClose, organizationSlug, m
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="edit-saida">
+              {t.agenda.exit}{" "}
+              <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
+            </Label>
+            <Controller
+              control={control}
+              name="saida"
+              render={({ field }) => (
+                <ComboboxField
+                  id="edit-saida"
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  options={fieldOptions?.saida ?? []}
+                  placeholder={t.agenda.saidaPlaceholder}
+                />
+              )}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="edit-tipo">
+              {t.agenda.type}{" "}
+              <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
+            </Label>
+            <Controller
+              control={control}
+              name="tipo"
+              render={({ field }) => (
+                <ComboboxField
+                  id="edit-tipo"
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  options={fieldOptions?.tipo ?? []}
+                  placeholder={t.agenda.tipoPlaceholder}
+                />
+              )}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="edit-territorio">
+              {t.agenda.territory}{" "}
+              <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
+            </Label>
+            <Controller
+              control={control}
+              name="territorio"
+              render={({ field }) => (
+                <ComboboxField
+                  id="edit-territorio"
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  options={fieldOptions?.territorio ?? []}
+                  placeholder={t.agenda.territorioPlaceholder}
+                />
+              )}
+            />
           </div>
 
           <div className="flex flex-col gap-1.5">

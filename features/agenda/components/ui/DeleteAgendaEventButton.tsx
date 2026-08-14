@@ -46,7 +46,7 @@ export function DeleteAgendaEventButton({ eventId, organizationSlug }: Props) {
             type="button"
             size="icon"
             variant="ghost"
-            className="size-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            className="size-11 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
             aria-label={t.agenda.deleteTitle}
             disabled={isPending}
             onClick={(e) => e.stopPropagation()}
