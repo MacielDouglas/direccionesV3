@@ -3,10 +3,25 @@
 import { toRole } from "@/domains/member/utils/toRole";
 import { auth } from "@/lib/auth";
 import { type AppRole, canAccess } from "@/lib/autorize";
+import type { Locale } from "@/lib/i18n/types";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
+
+// ✅ Idioma persistido do usuário no banco (fallback quando não há cookie)
+export const getUserLanguage = cache(async (): Promise<Locale | null> => {
+  const reqHeaders = await headers();
+  const session = await auth.api.getSession({ headers: reqHeaders });
+  if (!session) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { language: true },
+  });
+
+  return user?.language === "pt" || user?.language === "es" ? user.language : null;
+});
 
 export const getCurrentUser = cache(async () => {
   const reqHeaders = await headers();
@@ -22,6 +37,7 @@ export const getCurrentUser = cache(async () => {
       email: true,
       image: true,
       isSuperUser: true,
+      language: true,
       createdAt: true,
       person: {
         select: {

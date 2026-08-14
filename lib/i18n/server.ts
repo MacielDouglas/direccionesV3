@@ -1,3 +1,4 @@
+import { getUserLanguage } from "@/server/users";
 import { cookies } from "next/headers";
 import { LOCALE_COOKIE_NAME } from "./I18nProvider";
 import { dictionaries } from "./dictionaries";
@@ -14,15 +15,24 @@ export function resolveLocale(preferred: Locale, acceptLanguage?: string): Local
   return "pt";
 }
 
+function isLocale(value: string | null | undefined): value is Locale {
+  return value === "pt" || value === "es";
+}
+
 /**
- * Resolve o idioma ativo no servidor: cookie persistido > Accept-Language > pt.
- * Server components não têm acesso ao contexto cliente, por isso leem o cookie.
+ * Resolve o idioma ativo no servidor: cookie persistido > preferência no banco > Accept-Language > pt.
+ * Server components não têm acesso ao contexto cliente, por isso leem cookie/banco.
  */
 export async function getServerLocale(): Promise<Locale> {
   const store = await cookies();
   const stored = store.get(LOCALE_COOKIE_NAME)?.value;
+  if (isLocale(stored)) return stored;
+
+  const fromDb = await getUserLanguage();
+  if (fromDb) return fromDb;
+
   const acceptLanguage = store.get("Accept-Language")?.value;
-  return resolveLocale((stored as Locale) ?? "pt", acceptLanguage);
+  return resolveLocale("pt", acceptLanguage ?? undefined);
 }
 
 export async function getServerDictionary(): Promise<I18nDictionary> {
