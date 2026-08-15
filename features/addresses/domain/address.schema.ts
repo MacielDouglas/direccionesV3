@@ -57,7 +57,6 @@ export function createAddressFormSchema(messages: AddressFormMessages = defaultM
 
     active: z.boolean(),
     confirmed: z.boolean(),
-    invited: z.boolean(),
   });
 }
 

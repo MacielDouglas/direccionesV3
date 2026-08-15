@@ -36,7 +36,6 @@ export async function createAddressService(params: {
       businessName: data.businessName ?? null,
       active: data.active,
       confirmed: data.confirmed,
-      invited: data.invited,
       organizationId: params.organizationId,
       createdByPersonId: params.personId,
       updatedByPersonId: params.personId,
@@ -75,7 +74,6 @@ export async function updateAddressService({
     info,
     confirmed,
     active,
-    invited,
   } = input;
 
   return prisma.address.update({
@@ -92,7 +90,6 @@ export async function updateAddressService({
       info: sanitizeInfo(info ?? null),
       confirmed,
       active,
-      invited,
       image: image.imageUrl ?? null,
       updatedByPersonId: personId,
       updatedAt: new Date(),

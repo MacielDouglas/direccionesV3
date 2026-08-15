@@ -38,7 +38,6 @@ export function useAddressEditForm(address: AddressWithImageKey) {
       info: address.info ?? "",
       confirmed: address.confirmed,
       active: address.active,
-      invited: address.invited,
       image: {
         imageUrl: address.image ?? undefined,
         imageKey: address.imageKey || null, // ✅ TypeScript feliz

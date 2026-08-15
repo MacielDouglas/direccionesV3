@@ -36,7 +36,6 @@ export function useAddressForm(defaultValues?: Partial<AddressFormData>) {
       },
       active: true,
       confirmed: false,
-      invited: false,
       info: "",
       businessName: null,
       ...defaultValues,

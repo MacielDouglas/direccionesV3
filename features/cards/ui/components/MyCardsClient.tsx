@@ -112,6 +112,7 @@ export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props
         promise={addressPromise}
         organizationSlug={organizationSlug}
         onClose={() => setAddressPromise(null)}
+        myCards
       />
     </div>
   );

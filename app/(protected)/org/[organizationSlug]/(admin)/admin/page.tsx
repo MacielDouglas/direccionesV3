@@ -72,8 +72,6 @@ export default async function AdminPage({ params }: Props) {
             <ChevronRight className="size-5" aria-hidden="true" />
           </span>
         </Link>
-
-        {/* Gestão */}
         <section aria-labelledby="manage-heading">
           <h2
             id="manage-heading"

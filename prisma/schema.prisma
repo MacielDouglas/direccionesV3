@@ -8,7 +8,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
 datasource db {
   provider = "postgresql"
 }
@@ -25,13 +24,13 @@ model User {
   image         String?
   emailVerified Boolean @default(false)
 
-  role       String?
-  isSuperUser Boolean  @default(false)
-  banned     Boolean   @default(false)
-  banReason  String?
-  banExpires DateTime?
-  theme String?
-  language String @default("pt")
+  role        String?
+  isSuperUser Boolean   @default(false)
+  banned      Boolean   @default(false)
+  banReason   String?
+  banExpires  DateTime?
+  theme       String?
+  language    String    @default("pt")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -64,18 +63,18 @@ model Person {
   user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Card
-  cardsOwned    Card[]      @relation("CardOwner")
-  cardsAssigned Card[]      @relation("CardAssignedTo")
-  createdCards  Card[]      @relation("CardCreatedBy")
-  updatedCards  Card[]      @relation("CardUpdatedBy")
-  cardEvents    CardEvent[] @relation("CardEventWorker")
+  cardsOwned      Card[]      @relation("CardOwner")
+  cardsAssigned   Card[]      @relation("CardAssignedTo")
+  createdCards    Card[]      @relation("CardCreatedBy")
+  updatedCards    Card[]      @relation("CardUpdatedBy")
+  cardEvents      CardEvent[] @relation("CardEventWorker")
   actorCardEvents CardEvent[] @relation("CardEventActor")
 
   // Address
-  createdAddresses Address[] @relation("AddressCreatedBy")
-  updatedAddresses Address[] @relation("AddressUpdatedBy")
-  invitedAddresses Address[] @relation("InvitedAddresses")
-  deletionRequests Address[] @relation("AddressDeletionRequests")
+  createdAddresses Address[]       @relation("AddressCreatedBy")
+  updatedAddresses Address[]       @relation("AddressUpdatedBy")
+  deletionRequests Address[]       @relation("AddressDeletionRequests")
+  inviteDeliveries AddressInvite[] @relation("AddressInviteDeliveredBy")
 
   // Survey
   surveysCreated   SurveyPin[] @relation("SurveyCreatedPins")
@@ -106,7 +105,6 @@ model Address {
   neighborhood String
   city         String
 
-
   //  Coordenadas GPS
 
   latitude  Float?
@@ -122,21 +120,22 @@ model Address {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  // Convite
+  // Situação do local (My Cards)
 
-  invited     Boolean @default(false)
-  invitedByPersonId String?
-  invitedBy   Person? @relation("InvitedAddresses", fields: [invitedByPersonId], references: [id], onDelete: SetNull)
+  personChanged Boolean @default(false)
+  noVisits      Boolean @default(false)
 
+  // Convites entregues (My Cards)
+
+  invites AddressInvite[]
 
   //  Auditoria
 
   createdByPersonId String
-  createdBy         Person  @relation("AddressCreatedBy", fields: [createdByPersonId], references: [id], onDelete: SetNull)
+  createdBy         Person @relation("AddressCreatedBy", fields: [createdByPersonId], references: [id], onDelete: SetNull)
 
   updatedByPersonId String?
   updatedBy         Person? @relation("AddressUpdatedBy", fields: [updatedByPersonId], references: [id], onDelete: SetNull)
-
 
   //  Relação com Card
 
@@ -147,8 +146,8 @@ model Address {
   updatedAt DateTime @updatedAt
 
   //Delete
-  pendingDeletion        Boolean   @default(false)
-  pendingDeletionAt      DateTime?
+  pendingDeletion           Boolean   @default(false)
+  pendingDeletionAt         DateTime?
   pendingDeletionByPersonId String?
 
   requestedBy Person? @relation("AddressDeletionRequests", fields: [pendingDeletionByPersonId], references: [id], onDelete: SetNull)
@@ -157,6 +156,27 @@ model Address {
   @@index([latitude, longitude])
   @@index([createdByPersonId])
   @@map("address")
+}
+
+model AddressInvite {
+  id                  String            @id @default(uuid())
+  addressId           String
+  address             Address           @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  year                Int
+  type                AddressInviteType
+  otherLabel          String?
+  deliveredByPersonId String
+  deliveredBy         Person            @relation("AddressInviteDeliveredBy", fields: [deliveredByPersonId], references: [id], onDelete: SetNull)
+  createdAt           DateTime          @default(now())
+
+  @@index([addressId, year])
+  @@map("address_invite")
+}
+
+enum AddressInviteType {
+  CELEBRATION
+  CONVENTION
+  OTHER
 }
 
 //////////////////////////////////////////////////////
@@ -176,14 +196,14 @@ model Card {
 
   // Auditoria
   createdByPersonId String
-  createdBy         Person   @relation("CardCreatedBy", fields: [createdByPersonId], references: [id], onDelete: SetNull)
+  createdBy         Person @relation("CardCreatedBy", fields: [createdByPersonId], references: [id], onDelete: SetNull)
 
   updatedByPersonId String?
-  updatedBy         Person?  @relation("CardUpdatedBy", fields: [updatedByPersonId], references: [id], onDelete: SetNull)
+  updatedBy         Person? @relation("CardUpdatedBy", fields: [updatedByPersonId], references: [id], onDelete: SetNull)
 
   // Atribuição
   assignedPersonId String?
-  assignedTo       Person?  @relation("CardAssignedTo", fields: [assignedPersonId], references: [id], onDelete: SetNull)
+  assignedTo       Person? @relation("CardAssignedTo", fields: [assignedPersonId], references: [id], onDelete: SetNull)
 
   // Relações
   addresses Address[]
@@ -201,7 +221,6 @@ model Card {
   @@index([organizationId])
   @@map("card")
 }
-
 
 //////////////////////////////////////////////////////
 // AUTH
@@ -269,21 +288,21 @@ model Verification {
 //////////////////////////////////////////////////////
 
 model Organization {
-  id        String  @id @default(uuid())
+  id        String   @id @default(uuid())
   name      String
-  slug      String  @unique
+  slug      String   @unique
   logo      String?
   metadata  String?
   createdAt DateTime @default(now())
 
-  persons     Person[]
-  addresses   Address[]
-  cards       Card[]
-  surveys     Survey[]
-  agenda      AgendaEvent[]
+  persons      Person[]
+  addresses    Address[]
+  cards        Card[]
+  surveys      Survey[]
+  agenda       AgendaEvent[]
   agendaOption AgendaFieldOption[]
 
-   inviteTokens InviteToken[]
+  inviteTokens InviteToken[]
 
   @@map("organization")
 }
@@ -319,30 +338,30 @@ enum CardEventAction {
 }
 
 model Survey {
-  id             String      @id @default(cuid())
+  id             String       @id @default(cuid())
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
   pins           SurveyPin[]
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   @@index([organizationId])
   @@map("survey")
 }
 
 model SurveyPin {
-  id            String    @id @default(cuid())
-  surveyId      String
-  survey        Survey    @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-  latitude      Float
-  longitude     Float
-  status        PinStatus @default(PENDING)
+  id                  String    @id @default(cuid())
+  surveyId            String
+  survey              Survey    @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  latitude            Float
+  longitude           Float
+  status              PinStatus @default(PENDING)
   createdByPersonId   String?
-  createdBy     Person?      @relation("SurveyCreatedPins", fields: [createdByPersonId], references: [id], onDelete: SetNull)
+  createdBy           Person?   @relation("SurveyCreatedPins", fields: [createdByPersonId], references: [id], onDelete: SetNull)
   confirmedByPersonId String?
-  confirmedBy   Person?     @relation("SurveyConfirmedPins", fields: [confirmedByPersonId], references: [id], onDelete: SetNull)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  confirmedBy         Person?   @relation("SurveyConfirmedPins", fields: [confirmedByPersonId], references: [id], onDelete: SetNull)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   @@index([surveyId])
   @@index([createdByPersonId])
@@ -350,69 +369,66 @@ model SurveyPin {
 }
 
 enum PinStatus {
-  PENDING     // vermelho  — marcado pelo usuário, não confirmado ainda
-  SUGGESTED   // amarelo   — enviado por admin/owner
-  CONFIRMED   // verde     — confirmado por qualquer membro
-  CANCELLED   // cinza     — cancelado
+  PENDING // vermelho  — marcado pelo usuário, não confirmado ainda
+  SUGGESTED // amarelo   — enviado por admin/owner
+  CONFIRMED // verde     — confirmado por qualquer membro
+  CANCELLED // cinza     — cancelado
 }
-
-
 
 //////////////////////////////////////////////////////
 // AGENDA
 //////////////////////////////////////////////////////
 
 model AgendaEvent {
-  id             String    @id @default(cuid())
-  organizationId String
-  date           DateTime
-  time           String?
+  id                String   @id @default(cuid())
+  organizationId    String
+  date              DateTime
+  time              String?
   conductorPersonId String?
-  saida          String?
-  tipo           String?
-  territorio     String?
-  info           String?
+  saida             String?
+  tipo              String?
+  territorio        String?
+  info              String?
 
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  conductor      Person?        @relation("AgendaEventConductor", fields: [conductorPersonId], references: [id], onDelete: SetNull)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  conductor    Person?      @relation("AgendaEventConductor", fields: [conductorPersonId], references: [id], onDelete: SetNull)
 
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([organizationId, date])
 }
 
 // ✅ Armazena opções salvas por campo e organização
 model AgendaFieldOption {
-  id             String   @id @default(cuid())
+  id             String @id @default(cuid())
   organizationId String
-  field          String   // "saida" | "tipo" | "territorio"
+  field          String // "saida" | "tipo" | "territorio"
   value          String
 
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  createdAt      DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@unique([organizationId, field, value]) // ← sem duplicatas
   @@index([organizationId, field])
 }
-
 
 //////////////////////////////////////////////////////
 // INVITATION
 //////////////////////////////////////////////////////
 
 model InviteToken {
-  id             String    @id @default(cuid())
-  token          String    @unique @default(cuid())
-  type           TokenType @default(INVITE)
-  organizationId String?
-  role           String    @default("member")
+  id                String    @id @default(cuid())
+  token             String    @unique @default(cuid())
+  type              TokenType @default(INVITE)
+  organizationId    String?
+  role              String    @default("member")
   createdByPersonId String
-  personId       String?
-  expiresAt      DateTime
-  usedAt         DateTime?
-  usedByPersonId String?
+  personId          String?
+  expiresAt         DateTime
+  usedAt            DateTime?
+  usedByPersonId    String?
 
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdBy    Person        @relation("InviteTokensCreated", fields: [createdByPersonId], references: [id], onDelete: Cascade)

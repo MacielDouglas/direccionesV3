@@ -969,6 +969,28 @@ export function AdminCardsDialog({
     setter((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
+  const toggleReturnCard = (id: string) => {
+    setSelectedTransferCard(null);
+    setSelectedDesignateIds([]);
+    toggleIn(id, setSelectedReturnIds);
+  };
+
+  const toggleSendCard = (id: string) => {
+    setSelectedTransferCard(null);
+    setSelectedReturnIds([]);
+    toggleIn(id, setSelectedDesignateIds);
+  };
+
+  const toggleTransferCard = (card: ManagePersonCards["designatedCards"][number]) => {
+    setSelectedReturnIds([]);
+    setSelectedDesignateIds([]);
+    setSelectedTransferCard((prev) => (prev?.id === card.id ? null : card));
+  };
+
+  const otherDesignatedCards = data.designatedCards.filter(
+    (card) => card.personName !== person.name,
+  );
+
   const handleReturn = () => {
     if (selectedReturnIds.length === 0) return;
     startReturnTransition(async () => {
@@ -998,7 +1020,7 @@ export function AdminCardsDialog({
           selectedDesignateIds,
           organizationSlug,
         );
-        toast.success(t.people.cardsDesignated);
+        toast.success(t.people.cardsSent);
         onClose();
         router.refresh();
       } catch (err) {
@@ -1123,7 +1145,7 @@ export function AdminCardsDialog({
                 selectableRow(
                   card,
                   selectedReturnIds.includes(card.id),
-                  () => toggleIn(card.id, setSelectedReturnIds),
+                  () => toggleReturnCard(card.id),
                   personCardMeta(card.designationDate),
                 ),
               )}
@@ -1149,7 +1171,7 @@ export function AdminCardsDialog({
                   selectableRow(
                     card,
                     selectedDesignateIds.includes(card.id),
-                    () => toggleIn(card.id, setSelectedDesignateIds),
+                    () => toggleSendCard(card.id),
                     card.lastReturnDate ? (
                       <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
                         {t.people.lastReturnedOn.replace("{date}", formatDate(card.lastReturnDate))}
@@ -1162,22 +1184,6 @@ export function AdminCardsDialog({
                   ),
                 )}
               </ul>
-              <Button
-                type="button"
-                onClick={handleDesignate}
-                disabled={isDesignating || selectedDesignateIds.length === 0}
-                aria-busy={isDesignating}
-                className="mt-3 w-full gap-2 sm:w-auto"
-              >
-                {isDesignating ? (
-                  <Loader2 className="size-4 animate-spin" aria-hidden />
-                ) : (
-                  <Check className="size-4" aria-hidden />
-                )}
-                {isDesignating
-                  ? t.people.designatingCards
-                  : t.people.designateCardsFor.replace("{name}", person.name)}
-              </Button>
             </>
           )}
         </section>
@@ -1186,61 +1192,26 @@ export function AdminCardsDialog({
         <section aria-label={t.people.designatedCardsTitle}>
           <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
             <CreditCard className="size-5 text-brand" aria-hidden="true" />
-            {t.people.designatedCardsTitle} ({data.designatedCards.length})
+            {t.people.designatedCardsTitle} ({otherDesignatedCards.length})
           </h4>
-          {data.designatedCards.length === 0 ? (
+          {otherDesignatedCards.length === 0 ? (
             <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-6 text-center text-sm text-muted-foreground">
               <CreditCard className="size-6" aria-hidden />
               <p>{t.people.noDesignatedCards}</p>
             </div>
           ) : (
-            <>
-              <ul className="flex flex-col gap-2">
-                {data.designatedCards.map((card) =>
-                  selectableRow(
-                    card,
-                    selectedTransferCard?.id === card.id,
-                    () => setSelectedTransferCard((prev) => (prev?.id === card.id ? null : card)),
-                    <span
-                      className={cn(
-                        "shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold",
-                        card.personName === person.name
-                          ? "bg-muted text-muted-foreground"
-                          : "bg-brand/10 text-brand",
-                      )}
-                    >
-                      {card.personName}
-                    </span>,
-                  ),
-                )}
-              </ul>
-              <div className="mt-3 flex flex-col gap-1.5">
-                <p className="text-xs text-muted-foreground">
-                  {selectedTransferCard && selectedTransferCard.personName !== person.name
-                    ? t.people.transferFrom.replace("{from}", selectedTransferCard.personName)
-                    : t.people.selectCardToTransfer}
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setConfirmTarget(selectedTransferCard)}
-                  disabled={
-                    isTransferring ||
-                    !selectedTransferCard ||
-                    selectedTransferCard.personName === person.name
-                  }
-                  aria-busy={isTransferring}
-                  className="w-full gap-2 sm:w-auto"
-                >
-                  {isTransferring ? (
-                    <Loader2 className="size-4 animate-spin" aria-hidden />
-                  ) : (
-                    <CreditCard className="size-4" aria-hidden />
-                  )}
-                  {isTransferring ? t.people.transferringCard : t.people.transferCard}
-                </Button>
-              </div>
-            </>
+            <ul className="flex flex-col gap-2">
+              {otherDesignatedCards.map((card) =>
+                selectableRow(
+                  card,
+                  selectedTransferCard?.id === card.id,
+                  () => toggleTransferCard(card),
+                  <span className="shrink-0 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
+                    {card.personName}
+                  </span>,
+                ),
+              )}
+            </ul>
           )}
         </section>
       </div>
@@ -1266,6 +1237,54 @@ export function AdminCardsDialog({
               : selectedReturnIds.length === 1
                 ? t.people.returnCard
                 : t.people.returnCardsMany.replace("{count}", String(selectedReturnIds.length))}
+          </Button>
+        </div>
+      )}
+
+      {/* Barra flutuante: enviar cards disponíveis para a pessoa */}
+      {selectedDesignateIds.length > 0 && (
+        <div className="sticky bottom-0 z-10 -mx-5 -mb-5 mt-4 flex justify-end border-t border-border bg-card/95 p-4 backdrop-blur">
+          <Button
+            type="button"
+            onClick={handleDesignate}
+            disabled={isDesignating}
+            aria-busy={isDesignating}
+            className="gap-2"
+          >
+            {isDesignating ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+            ) : (
+              <Check className="size-4" aria-hidden />
+            )}
+            {isDesignating
+              ? t.people.sendingCards
+              : selectedDesignateIds.length === 1
+                ? t.people.sendCard
+                : t.people.sendCardsMany.replace("{count}", String(selectedDesignateIds.length))}
+          </Button>
+        </div>
+      )}
+
+      {/* Barra flutuante: transferir card de outro usuário para a pessoa */}
+      {selectedTransferCard && (
+        <div className="sticky bottom-0 z-10 -mx-5 -mb-5 mt-4 flex items-center justify-between gap-3 border-t border-border bg-card/95 p-4 backdrop-blur">
+          <p className="min-w-0 flex-1 text-xs text-muted-foreground">
+            {t.people.transferFrom.replace("{from}", selectedTransferCard.personName)}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setConfirmTarget(selectedTransferCard)}
+            disabled={isTransferring}
+            aria-busy={isTransferring}
+            className="shrink-0 gap-2"
+          >
+            {isTransferring ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+            ) : (
+              <CreditCard className="size-4" aria-hidden />
+            )}
+            {isTransferring ? t.people.transferringCard : t.people.transferCard}
           </Button>
         </div>
       )}

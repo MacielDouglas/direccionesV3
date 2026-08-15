@@ -211,11 +211,6 @@ export const removePersonFromOrganization = async (
   }
   // Admin/owner: ownership de cards e condução da agenda são mantidos
 
-  await prisma.address.updateMany({
-    where: { invitedByPersonId: target.id, organizationId },
-    data: { invitedByPersonId: null },
-  });
-
   await prisma.person.update({
     where: { id: target.id },
     data: { organizationId: null, role: null, lastActiveAt: new Date() },
@@ -507,10 +502,6 @@ export const deletePersonAction = async (
     await tx.address.updateMany({
       where: { organizationId, updatedByPersonId: target.id },
       data: { updatedByPersonId: null },
-    });
-    await tx.address.updateMany({
-      where: { organizationId, invitedByPersonId: target.id },
-      data: { invitedByPersonId: null },
     });
     await tx.address.updateMany({
       where: { organizationId, pendingDeletionByPersonId: target.id },
