@@ -20,12 +20,15 @@ export default async function ProtectedLayout({
         role={data.memberRole?.role ?? null}
         organization={data.activeOrganization}
         isSuperUser={data.isSuperUser}
+        hasPerson={Boolean(data.person)}
       />
       <main id="main-content" className="flex-1 min-h-0 flex flex-col overflow-hidden">
         {children}
       </main>
       <Footer organization={data.activeOrganization} />
-      {data.activeOrganization?.slug && <BottomTabBar orgSlug={data.activeOrganization.slug} />}
+      {data.activeOrganization?.slug && (
+        <BottomTabBar orgSlug={data.activeOrganization.slug} role={data.memberRole?.role ?? null} />
+      )}
     </div>
   );
 }

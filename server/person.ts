@@ -842,7 +842,8 @@ export const adminReturnCardsAction = async (
         data: {
           id: crypto.randomUUID(),
           action: "RETURNED",
-          personId: currentUser.person.id,
+          personId: person.id,
+          actorPersonId: currentUser.person.id,
           cardId: card.id,
           date: now,
         },
@@ -899,7 +900,8 @@ export const adminTransferCardAction = async (
       data: {
         id: crypto.randomUUID(),
         action: "RETURNED",
-        personId: currentUser.person.id,
+        personId: card.assignedPersonId,
+        actorPersonId: currentUser.person.id,
         cardId: card.id,
         date: now,
       },
@@ -908,7 +910,8 @@ export const adminTransferCardAction = async (
       data: {
         id: crypto.randomUUID(),
         action: "ASSIGNED",
-        personId: currentUser.person.id,
+        personId: person.id,
+        actorPersonId: currentUser.person.id,
         cardId: card.id,
         date: now,
       },
@@ -965,7 +968,8 @@ export const adminDesignateCardsAction = async (
         data: {
           id: crypto.randomUUID(),
           action: "ASSIGNED",
-          personId: currentUser.person.id,
+          personId: person.id,
+          actorPersonId: currentUser.person.id,
           cardId: card.id,
           date: now,
         },

@@ -88,7 +88,8 @@ export async function assignCardAction(cardId: string, personId: string, organiz
         data: {
           id: crypto.randomUUID(),
           cardId,
-          personId: data.person.id,
+          personId,
+          actorPersonId: data.person.id,
           action: "ASSIGNED",
         },
       });
@@ -116,6 +117,8 @@ export async function returnCardAction(cardId: string, organizationSlug: string)
       if (!card) throw new Error("Tarjeta no encontrada.");
       if (!card.assignedPersonId) throw new Error("La tarjeta no está asignada.");
 
+      const assignedPersonId = card.assignedPersonId;
+
       await tx.card.update({
         where: { id: cardId },
         data: {
@@ -128,7 +131,8 @@ export async function returnCardAction(cardId: string, organizationSlug: string)
         data: {
           id: crypto.randomUUID(),
           cardId,
-          personId: data.person.id,
+          personId: assignedPersonId,
+          actorPersonId: data.person.id,
           action: "RETURNED",
         },
       });
@@ -140,6 +144,47 @@ export async function returnCardAction(cardId: string, organizationSlug: string)
   } catch (err) {
     return {
       error: err instanceof Error ? err.message : "Error al devolver la tarjeta.",
+    };
+  }
+}
+
+export async function getCardRegistryAction(cardId: string) {
+  try {
+    const data = await requireAdminOrOwner();
+    const organizationId = data.person?.organizationId;
+    if (!organizationId) throw new Error("Sin organización activa.");
+
+    const card = await prisma.card.findFirst({
+      where: { id: cardId, organizationId },
+      select: { id: true, number: true },
+    });
+    if (!card) throw new Error("Tarjeta no encontrada.");
+
+    const events = await prisma.cardEvent.findMany({
+      where: { cardId: card.id },
+      orderBy: { date: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        action: true,
+        date: true,
+        person: { select: { id: true, name: true, user: { select: { image: true } } } },
+      },
+    });
+
+    return {
+      success: true,
+      cardNumber: card.number,
+      events: events.map((event) => ({
+        id: event.id,
+        action: event.action,
+        date: event.date.toISOString(),
+        person: event.person,
+      })),
+    };
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "Error al cargar el registro.",
     };
   }
 }

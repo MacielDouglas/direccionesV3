@@ -68,7 +68,8 @@ model Person {
   cardsAssigned Card[]      @relation("CardAssignedTo")
   createdCards  Card[]      @relation("CardCreatedBy")
   updatedCards  Card[]      @relation("CardUpdatedBy")
-  cardEvents    CardEvent[] @relation("CardEventActor")
+  cardEvents    CardEvent[] @relation("CardEventWorker")
+  actorCardEvents CardEvent[] @relation("CardEventActor")
 
   // Address
   createdAddresses Address[] @relation("AddressCreatedBy")
@@ -298,7 +299,10 @@ model CardEvent {
   card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
 
   personId String?
-  person   Person? @relation("CardEventActor", fields: [personId], references: [id], onDelete: SetNull)
+  person   Person? @relation("CardEventWorker", fields: [personId], references: [id], onDelete: SetNull)
+
+  actorPersonId String?
+  actor         Person? @relation("CardEventActor", fields: [actorPersonId], references: [id], onDelete: SetNull)
 
   action CardEventAction
   date   DateTime        @default(now())

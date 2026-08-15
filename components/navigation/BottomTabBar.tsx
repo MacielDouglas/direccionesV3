@@ -1,23 +1,53 @@
 "use client";
 
 import { useHaptic } from "@/app/hooks/useHaptic";
+import type { Role } from "@/domains/member/types/role.types";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { CalendarDays, CreditCard, Home, MapPin, User } from "lucide-react";
+import { CalendarDays, CreditCard, Home, MapPin, ShieldCheck, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 interface BottomTabBarProps {
   orgSlug: string;
+  role?: Role | null;
 }
 
-export function BottomTabBar({ orgSlug }: BottomTabBarProps) {
+export function BottomTabBar({ orgSlug, role }: BottomTabBarProps) {
   const pathname = usePathname();
   const { vibrate } = useHaptic();
   const { t } = useI18n();
   const [isHidden, setIsHidden] = useState(false);
   const lastScrollY = useRef(0);
+
+  const isAdminSection = pathname.startsWith(`/org/${orgSlug}/admin`);
+  const isAdminRole = role === "admin" || role === "owner";
+
+  const tabs = [
+    { id: "home", href: "/", label: t.navigation.homeLabel, Icon: Home },
+    {
+      id: "my-cards",
+      href: "/my-cards",
+      label: t.navigation.myCardsLabel,
+      Icon: CreditCard,
+    },
+    {
+      id: "addresses",
+      href: "/addresses",
+      label: t.navigation.addressesLabel,
+      Icon: MapPin,
+    },
+    { id: "agenda", href: "/agenda", label: t.navigation.agendaLabel, Icon: CalendarDays },
+    isAdminSection && isAdminRole
+      ? { id: "admin", href: "/admin", label: t.navigation.administration, Icon: ShieldCheck }
+      : { id: "user", href: "/user", label: t.navigation.profileLabel, Icon: User },
+  ].filter(Boolean) as {
+    id: string;
+    href: string;
+    label: string;
+    Icon: typeof Home;
+  }[];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,24 +67,6 @@ export function BottomTabBar({ orgSlug }: BottomTabBarProps) {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  const tabs = [
-    { id: "home", href: "/", label: t.navigation.homeLabel, Icon: Home },
-    {
-      id: "my-cards",
-      href: "/my-cards",
-      label: t.navigation.myCardsLabel,
-      Icon: CreditCard,
-    },
-    {
-      id: "addresses",
-      href: "/addresses",
-      label: t.navigation.addressesLabel,
-      Icon: MapPin,
-    },
-    { id: "agenda", href: "/agenda", label: t.navigation.agendaLabel, Icon: CalendarDays },
-    { id: "user", href: "/user", label: t.navigation.profileLabel, Icon: User },
-  ];
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/" || pathname === `/org/${orgSlug}`;

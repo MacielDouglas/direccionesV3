@@ -21,9 +21,10 @@ interface Props {
   cardId: string;
   cardNumber: number;
   organizationSlug: string;
+  className?: string;
 }
 
-export function DeleteCardButton({ cardId, cardNumber, organizationSlug }: Props) {
+export function DeleteCardButton({ cardId, cardNumber, organizationSlug, className }: Props) {
   const [open, setOpen] = useState(false);
   const { t } = useI18n();
   const [isPending, startTransition] = useTransition();
@@ -46,6 +47,7 @@ export function DeleteCardButton({ cardId, cardNumber, organizationSlug }: Props
         <Button
           variant="destructive"
           size="sm"
+          className={className}
           aria-label={`${t.admin.deleteCard} #${String(cardNumber).padStart(2, "0")}`}
         >
           <Trash2 className="size-4 mr-1.5" aria-hidden />

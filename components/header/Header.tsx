@@ -13,6 +13,7 @@ interface HeaderProps {
   session: Session;
   organization: Organization | null;
   isSuperUser?: boolean;
+  hasPerson?: boolean;
 }
 
 function Logo() {
@@ -24,8 +25,14 @@ function Logo() {
   );
 }
 
-export default function Header({ session, role, organization, isSuperUser = false }: HeaderProps) {
-  const showControls = Boolean(organization?.slug) || isSuperUser;
+export default function Header({
+  session,
+  role,
+  organization,
+  isSuperUser = false,
+  hasPerson = false,
+}: HeaderProps) {
+  const showControls = Boolean(organization?.slug) || isSuperUser || hasPerson;
 
   return (
     <header className="sticky top-0 z-30 w-full border-b border-border bg-white/95 backdrop-blur-md dark:bg-[#1f1b17]/95">

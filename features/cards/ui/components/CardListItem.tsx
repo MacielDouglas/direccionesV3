@@ -4,10 +4,20 @@ import { Button } from "@/components/ui/button";
 import { ADDRESS_TYPE_OPTIONS } from "@/features/addresses/domain/constants/address.constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { CheckCircle, Circle, CircleAlert, Clock, MapPin, Pencil, User } from "lucide-react";
+import {
+  CheckCircle,
+  Circle,
+  CircleAlert,
+  Clock,
+  History,
+  MapPin,
+  Pencil,
+  User,
+} from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { AssignCardModal } from "./AssignCardModal";
+import { CardRegistryModal } from "./CardRegistryModal";
 import { DeleteCardButton } from "./DeleteCardButton";
 import { ReturnCardButton } from "./ReturnCardButton";
 
@@ -63,6 +73,7 @@ export function CardListItem({
   onEditCard,
 }: CardItemProps) {
   const [assignOpen, setAssignOpen] = useState(false);
+  const [registryOpen, setRegistryOpen] = useState(false);
   const { t, locale } = useI18n();
 
   const isAssigned = !!card.assignedTo;
@@ -246,10 +257,10 @@ export function CardListItem({
             </ul>
           )}
 
-          {/* ── Ações (clareza estilo Estapar) ── */}
-          <div className="mt-1 flex items-center gap-1 border-t border-border/60 pt-3">
+          {/* ── Ações (grade 2×2, tamanhos iguais) ── */}
+          <div className="mt-1 grid grid-cols-2 gap-2 border-t border-border/60 pt-3">
             {!isAssigned ? (
-              <Button size="sm" onClick={() => setAssignOpen(true)}>
+              <Button size="sm" className="w-full" onClick={() => setAssignOpen(true)}>
                 <User className="mr-1.5 size-4" aria-hidden />
                 {t.admin.assignVerb}
               </Button>
@@ -258,26 +269,36 @@ export function CardListItem({
                 cardId={card.id}
                 cardNumber={card.number}
                 organizationSlug={organizationSlug}
+                className="w-full"
               />
             )}
 
             <Button
               size="sm"
               variant="ghost"
-              className="text-muted-foreground hover:text-foreground"
+              className="w-full text-muted-foreground hover:text-foreground"
+              onClick={() => setRegistryOpen(true)}
+            >
+              <History className="mr-1.5 size-4" aria-hidden />
+              {t.admin.registry}
+            </Button>
+
+            <Button
+              size="sm"
+              variant="ghost"
+              className="w-full text-muted-foreground hover:text-foreground"
               onClick={() => onEditCard(card.id)}
             >
               <Pencil className="mr-1.5 size-4" aria-hidden />
               {t.admin.edit}
             </Button>
 
-            <div className="ml-auto flex items-center gap-1">
-              <DeleteCardButton
-                cardId={card.id}
-                cardNumber={card.number}
-                organizationSlug={organizationSlug}
-              />
-            </div>
+            <DeleteCardButton
+              cardId={card.id}
+              cardNumber={card.number}
+              organizationSlug={organizationSlug}
+              className="w-full"
+            />
           </div>
         </div>
       </article>
@@ -289,6 +310,14 @@ export function CardListItem({
         organizationSlug={organizationSlug}
         open={assignOpen}
         onClose={() => setAssignOpen(false)}
+      />
+
+      <CardRegistryModal
+        cardId={card.id}
+        cardNumber={card.number}
+        color={color}
+        open={registryOpen}
+        onClose={() => setRegistryOpen(false)}
       />
     </>
   );

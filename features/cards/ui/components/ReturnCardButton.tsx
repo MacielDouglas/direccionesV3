@@ -24,6 +24,7 @@ interface Props {
   cardNumber: number;
   organizationSlug: string;
   variant?: "default" | "outline" | "destructive";
+  className?: string;
 }
 
 export function ReturnCardButton({
@@ -31,6 +32,7 @@ export function ReturnCardButton({
   cardNumber,
   organizationSlug,
   variant = "outline",
+  className,
 }: Props) {
   const [isPending, startTransition] = useTransition();
   const { t } = useI18n();
@@ -56,6 +58,7 @@ export function ReturnCardButton({
         <Button
           variant={variant}
           size="sm"
+          className={className}
           disabled={isPending}
           aria-busy={isPending}
           aria-label={`${t.admin.returnCard} ${cardLabel}`}

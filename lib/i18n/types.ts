@@ -488,6 +488,15 @@ export type I18nDictionary = {
     searchCardsPlaceholder: string;
     searchCardsAria: string;
     searchNoResults: string;
+    registry: string;
+    registryTitle: string;
+    registryDescription: string;
+    registryEmpty: string;
+    registryDesignatedAt: string;
+    registryReturnedAt: string;
+    registryInUse: string;
+    registryCurrent: string;
+    registryError: string;
     cardBadgeLabel: string;
     clearSelection: string;
     deselectPin: string;
