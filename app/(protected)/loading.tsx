@@ -11,7 +11,7 @@ export default async function HomeLoading() {
       <div className="h-8 w-52 animate-pulse rounded-md bg-muted" />
 
       <div className="mt-6 space-y-6">
-        {/* Hero — Saldo de Cards */}
+        {/* Hero — Saldo de Cartões */}
         <div className="flex items-center justify-between gap-4 rounded-xl bg-black p-6 text-white">
           <div className="flex flex-col gap-3">
             <div className="h-3 w-24 animate-pulse rounded bg-white/20" />
@@ -24,7 +24,7 @@ export default async function HomeLoading() {
           <div className="size-11 shrink-0 animate-pulse rounded-full bg-white/20" />
         </div>
 
-        {/* Programação de hoje */}
+        {/* ProgramaÃ§Ã£o de hoje */}
         <section aria-hidden>
           <div className="flex items-center justify-between">
             <div className="h-5 w-40 animate-pulse rounded bg-muted" />
