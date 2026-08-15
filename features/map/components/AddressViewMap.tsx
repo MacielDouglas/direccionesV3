@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { Car, Footprints } from "lucide-react";
 import Link from "next/link";
@@ -14,11 +15,15 @@ interface Props extends Coordinates {
 }
 
 export function AddressViewMap({ latitude, longitude, className, mapClassName }: Props) {
+  const { t } = useI18n();
   const [profile, setProfile] = useState<RouteProfile>("walking");
 
   const destination = { latitude, longitude };
   const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=${profile === "walking" ? "walking" : "driving"}`;
   const wazeUrl = `https://waze.com/ul?ll=${latitude},${longitude}&navigate=yes`;
+
+  const profileLabel = profile === "walking" ? t.addresses.routeWalking : t.addresses.routeDriving;
+  const ProfileIcon = profile === "walking" ? Footprints : Car;
 
   return (
     <div className={cn("flex w-full flex-col", className)}>
@@ -30,12 +35,8 @@ export function AddressViewMap({ latitude, longitude, className, mapClassName }:
 
         {/* Badge de modo */}
         <div className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-full bg-background/90 px-3 py-1 text-xs font-semibold text-foreground shadow backdrop-blur-sm">
-          {profile === "walking" ? (
-            <Footprints size={14} aria-hidden="true" />
-          ) : (
-            <Car size={14} aria-hidden="true" />
-          )}
-          {profile === "walking" ? "Caminando" : "En auto"}
+          <ProfileIcon size={14} aria-hidden="true" />
+          {profileLabel}
         </div>
       </div>
 
@@ -49,12 +50,12 @@ export function AddressViewMap({ latitude, longitude, className, mapClassName }:
             aria-pressed={profile === "walking"}
             className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all ${
               profile === "walking"
-                ? "bg-blue-600 text-white shadow-md"
+                ? "bg-foreground text-background shadow-md"
                 : "bg-muted text-muted-foreground hover:bg-muted/70"
             }`}
           >
             <Footprints size={18} aria-hidden="true" />
-            Caminando
+            {t.addresses.routeWalking}
           </button>
 
           <button
@@ -68,7 +69,7 @@ export function AddressViewMap({ latitude, longitude, className, mapClassName }:
             }`}
           >
             <Car size={18} aria-hidden="true" />
-            En auto
+            {t.addresses.routeDriving}
           </button>
         </div>
 
@@ -99,7 +100,7 @@ export function AddressViewMap({ latitude, longitude, className, mapClassName }:
             href={wazeUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-cyan-300 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-cyan-200"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-cyan-300 py-3 text-sm font-semibold text-cyan-950 transition-all hover:bg-cyan-200"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

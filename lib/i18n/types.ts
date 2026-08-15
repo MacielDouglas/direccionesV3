@@ -389,6 +389,8 @@ export type I18nDictionary = {
     imageCloseAria: string;
     backToDetailsAria: string;
     imagePreviewAlt: string;
+    routeWalking: string;
+    routeDriving: string;
   };
   cards: {
     title: string;

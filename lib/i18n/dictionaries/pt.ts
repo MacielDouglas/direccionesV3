@@ -404,6 +404,8 @@ const ptBR: I18nDictionary = {
     imageCloseAria: "Fechar imagem",
     backToDetailsAria: "Voltar aos detalhes do endereço",
     imagePreviewAlt: "Prévia",
+    routeWalking: "A pé",
+    routeDriving: "De carro",
   },
   cards: {
     title: "Meus Cards",

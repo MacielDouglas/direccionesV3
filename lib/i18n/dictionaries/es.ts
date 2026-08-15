@@ -406,6 +406,8 @@ const es: I18nDictionary = {
     imageCloseAria: "Cerrar imagen",
     backToDetailsAria: "Volver a los detalles de la dirección",
     imagePreviewAlt: "Vista previa",
+    routeWalking: "A pie",
+    routeDriving: "En auto",
   },
   cards: {
     title: "Mis Tarjetas",
