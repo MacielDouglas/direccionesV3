@@ -496,6 +496,7 @@ export type I18nDictionary = {
     registryReturnedAt: string;
     registryInUse: string;
     registryCurrent: string;
+    registryNoUsers: string;
     registryError: string;
     cardBadgeLabel: string;
     clearSelection: string;

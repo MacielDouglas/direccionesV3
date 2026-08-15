@@ -156,14 +156,20 @@ export async function getCardRegistryAction(cardId: string) {
 
     const card = await prisma.card.findFirst({
       where: { id: cardId, organizationId },
-      select: { id: true, number: true },
+      select: {
+        id: true,
+        number: true,
+        assignedTo: {
+          select: { id: true, name: true, user: { select: { image: true } } },
+        },
+      },
     });
     if (!card) throw new Error("Tarjeta no encontrada.");
 
     const events = await prisma.cardEvent.findMany({
       where: { cardId: card.id },
       orderBy: { date: "desc" },
-      take: 20,
+      take: 50,
       select: {
         id: true,
         action: true,
@@ -175,6 +181,7 @@ export async function getCardRegistryAction(cardId: string) {
     return {
       success: true,
       cardNumber: card.number,
+      current: card.assignedTo,
       events: events.map((event) => ({
         id: event.id,
         action: event.action,

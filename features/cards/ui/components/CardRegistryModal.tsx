@@ -57,15 +57,17 @@ function buildSessions(events: RegistryEvent[]): RegistrySession[] {
     }
   }
 
-  return sessions.slice(-6).reverse();
+  return sessions;
 }
 
 function formatDate(date: string, locale: string) {
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) return "";
   return new Intl.DateTimeFormat(locale === "pt" ? "pt-BR" : "es-419", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  }).format(new Date(date));
+  }).format(parsed);
 }
 
 type RegistryResult =
@@ -112,9 +114,17 @@ export function CardRegistryModal({ cardId, cardNumber, color, open, onClose }: 
   }, [open, cardId, t]);
 
   const sessions = useMemo(() => (result?.success ? buildSessions(result.events) : []), [result]);
-
+  const currentPerson = result?.success ? result.current : null;
   const currentSession = sessions.find((session) => !session.returnedAt) ?? null;
-  const pastSessions = sessions.filter((session) => session.returnedAt);
+  const hasRecords = sessions.length > 0 || currentPerson !== null;
+  const pastSessions = useMemo(
+    () =>
+      sessions
+        .filter((session) => session.returnedAt)
+        .slice(-6)
+        .reverse(),
+    [sessions],
+  );
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
@@ -171,24 +181,43 @@ export function CardRegistryModal({ cardId, cardNumber, color, open, onClose }: 
               {result.error ?? t.admin.registryError}
             </p>
           </div>
-        ) : sessions.length === 0 ? (
+        ) : !hasRecords ? (
           <div className="flex flex-col items-center gap-2 border-t border-border bg-card py-10 text-center text-sm text-muted-foreground sm:p-6">
             <UserRound className="size-6" aria-hidden />
             <p>{t.admin.registryEmpty}</p>
           </div>
         ) : (
           <div className="flex flex-col gap-4 border-t border-border bg-card p-4 pb-8 sm:p-6">
-            {currentSession && (
-              <section
-                aria-label={t.admin.registryCurrent}
-                className="rounded-xl border-2 border-brand/30 bg-brand/5 p-3"
-              >
-                <p className="mb-2 text-[0.625rem] font-semibold uppercase tracking-widest text-brand">
-                  {t.admin.registryCurrent}
-                </p>
-                <SessionRow session={currentSession} color={color} current />
-              </section>
-            )}
+            <section
+              aria-label={t.admin.registryCurrent}
+              className="rounded-xl border-2 border-brand/30 bg-brand/5 p-3"
+            >
+              <p className="mb-2 text-[0.625rem] font-semibold uppercase tracking-widest text-brand">
+                {t.admin.registryCurrent}
+              </p>
+              {currentPerson ? (
+                <SessionRow
+                  session={{
+                    id: currentPerson.id,
+                    person: currentPerson,
+                    assignedAt: currentSession?.assignedAt ?? "",
+                    returnedAt: null,
+                  }}
+                  color={color}
+                  current
+                />
+              ) : (
+                <div className="flex items-center gap-3">
+                  <span
+                    className="grid size-10 shrink-0 place-items-center rounded-full border border-dashed border-border bg-muted/40 text-muted-foreground"
+                    aria-hidden="true"
+                  >
+                    <UserRound className="size-5" />
+                  </span>
+                  <p className="text-sm text-muted-foreground">{t.admin.registryNoUsers}</p>
+                </div>
+              )}
+            </section>
 
             {pastSessions.length > 0 && (
               <section aria-label={t.admin.historyTitle}>
@@ -255,10 +284,12 @@ function SessionRow({
             </span>
           )}
         </p>
-        <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <CalendarCheck className="size-3.5 shrink-0 text-emerald-500" aria-hidden />
-          {t.admin.registryDesignatedAt.replace("{date}", formatDate(session.assignedAt, locale))}
-        </p>
+        {session.assignedAt && (
+          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <CalendarCheck className="size-3.5 shrink-0 text-emerald-500" aria-hidden />
+            {t.admin.registryDesignatedAt.replace("{date}", formatDate(session.assignedAt, locale))}
+          </p>
+        )}
         {session.returnedAt && (
           <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
             <CalendarX className="size-3.5 shrink-0 text-amber-500" aria-hidden />
