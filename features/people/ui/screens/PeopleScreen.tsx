@@ -620,7 +620,7 @@ export function PeopleScreen({
   );
 }
 
-function LinkUserDialog({
+export function LinkUserDialog({
   person,
   organizationId,
   organizationSlug,

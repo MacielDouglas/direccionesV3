@@ -9,7 +9,6 @@ import {
   Plus,
   ShieldCheck,
   UserPlus,
-  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -53,7 +52,7 @@ export default async function AdminPage({ params }: Props) {
       <div className="space-y-8">
         {/* Hero — criar pessoa */}
         <Link
-          href={`/org/${slug}/admin/pessoas`}
+          href={`/org/${slug}/admin/gestao`}
           className="group flex items-center justify-between gap-4 rounded-2xl bg-black p-6 text-white shadow-md shadow-black/20 transition-transform active:scale-[0.99] sm:p-8"
         >
           <div>
@@ -104,21 +103,12 @@ export default async function AdminPage({ params }: Props) {
               cta={t.admin.open}
             />
             <AdminAction
-              href={`/org/${slug}/admin/invitations`}
+              href={`/org/${slug}/admin/gestao`}
               icon={<KeyRound className="size-5 text-brand" aria-hidden="true" />}
-              title={t.admin.invitations}
-              titleAlt={tAlt.admin.invitations}
-              description={t.admin.invitationsDescription}
-              descriptionAlt={tAlt.admin.invitationsDescription}
-              cta={t.admin.open}
-            />
-            <AdminAction
-              href={`/org/${slug}/admin/usuarios`}
-              icon={<Users className="size-5 text-brand" aria-hidden="true" />}
-              title={t.admin.users}
-              titleAlt={tAlt.admin.users}
-              description={t.admin.usersDescription}
-              descriptionAlt={tAlt.admin.usersDescription}
+              title={t.admin.gestaoTitle}
+              titleAlt={tAlt.admin.gestaoTitle}
+              description={t.admin.gestaoDescription}
+              descriptionAlt={tAlt.admin.gestaoDescription}
               cta={t.admin.open}
             />
             {isOwner && (

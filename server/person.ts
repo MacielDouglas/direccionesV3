@@ -57,7 +57,7 @@ export const linkPersonToOrganization = async (
     data: { organizationId, role, lastActiveAt: new Date() },
   });
 
-  revalidatePath(`/org/${slug}/admin/pessoas`);
+  revalidatePath(`/org/${slug}/admin/gestao`);
 };
 
 // ✅ Atualizar o papel de uma persona na organização
@@ -104,7 +104,7 @@ export const updatePersonRole = async (
     data: { role },
   });
 
-  if (slug) revalidatePath(`/org/${slug}/admin/pessoas`);
+  if (slug) revalidatePath(`/org/${slug}/admin/gestao`);
 };
 
 // ✅ Transferir a ownership para outra persona (owner → novo owner)
@@ -146,7 +146,7 @@ export const transferOwnership = async (
     }),
   ]);
 
-  revalidatePath(`/org/${slug}/admin/pessoas`);
+  revalidatePath(`/org/${slug}/admin/gestao`);
 };
 
 // ✅ Remover uma persona da organização (preserva a person, apenas desvincula)
@@ -273,7 +273,7 @@ export const createOrgPersonAction = async (organizationId: string, name: string
     return newPerson;
   });
 
-  revalidatePath(`/org/${slug}/admin/pessoas`);
+  revalidatePath(`/org/${slug}/admin/gestao`);
   return person;
 };
 
@@ -321,7 +321,7 @@ export const regeneratePersonInviteAction = async (
     });
   });
 
-  revalidatePath(`/org/${slug}/admin/pessoas`);
+  revalidatePath(`/org/${slug}/admin/gestao`);
   return token;
 };
 
@@ -441,7 +441,7 @@ export const linkUserToPersonAction = async (
     data: { userId: user.id, name: user.name },
   });
 
-  revalidatePath(`/org/${slug}/admin/pessoas`);
+  revalidatePath(`/org/${slug}/admin/gestao`);
   return { success: true };
 };
 
@@ -538,7 +538,7 @@ export const deletePersonAction = async (
     await tx.person.delete({ where: { id: target.id } });
   });
 
-  revalidatePath(`/org/${slug}/admin/pessoas`);
+  revalidatePath(`/org/${slug}/admin/gestao`);
   return { success: true };
 };
 
@@ -629,7 +629,7 @@ export const updatePersonName = async (
     data: { name: parsedName },
   });
 
-  revalidatePath(`/org/${slug}/admin/pessoas`);
+  revalidatePath(`/org/${slug}/admin/gestao`);
   return { success: true };
 };
 
@@ -689,7 +689,7 @@ export const adminBulkUpdatePersonCards = async (
     }
   });
 
-  revalidatePath(`/org/${slug}/admin/pessoas`);
+  revalidatePath(`/org/${slug}/admin/gestao`);
   return { success: true };
 };
 
@@ -850,7 +850,7 @@ export const adminReturnCardsAction = async (
     }
   });
 
-  revalidatePath(`/org/${slug}/admin/pessoas`);
+  revalidatePath(`/org/${slug}/admin/gestao`);
   return { success: true };
 };
 
@@ -915,7 +915,7 @@ export const adminTransferCardAction = async (
     });
   });
 
-  revalidatePath(`/org/${slug}/admin/pessoas`);
+  revalidatePath(`/org/${slug}/admin/gestao`);
   return { success: true };
 };
 
@@ -973,7 +973,7 @@ export const adminDesignateCardsAction = async (
     }
   });
 
-  revalidatePath(`/org/${slug}/admin/pessoas`);
+  revalidatePath(`/org/${slug}/admin/gestao`);
   return { success: true };
 };
 

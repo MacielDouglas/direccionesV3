@@ -455,6 +455,8 @@ const es: I18nDictionary = {
     agendaDescription: "Crea y gestiona los eventos del cronograma mensual.",
     invitations: "Invitaciones",
     invitationsDescription: "Genera invitaciones para nuevos miembros de la organización.",
+    gestaoTitle: "Personas e Invitaciones",
+    gestaoDescription: "Gestiona personas, usuarios vinculados e historial de invitaciones.",
     organizations: "Organizaciones",
     organizationsDescription: "Administra todas las organizaciones del sistema.",
     createNew: "Crear nuevo",
@@ -462,7 +464,7 @@ const es: I18nDictionary = {
     subtitle: "Gestiona personas, tarjetas, cronograma e invitaciones.",
     invitationsTitle: "Invitaciones",
     invitationsSubtitle:
-      "Genera un token y compártelo como quieras — válido 24 horas, un solo uso.",
+      "Genera un token para una persona específica y compártelo — válido 72 horas, un solo uso.",
     generateTitle: "Generar token de invitación",
     historyTitle: "Historial",
     noInvites: "Aún no hay invitaciones generadas.",
@@ -478,13 +480,21 @@ const es: I18nDictionary = {
     tokenDescription:
       "Cualquier persona con este token podrá unirse como <strong>miembro</strong>. Copia el token y envíalo como quieras (WhatsApp, email…). El token tiene <strong>6 dígitos</strong>, expira en <strong>72 horas</strong> y es de un solo uso. Al generar uno nuevo, el anterior se invalida.",
     inviteMessage:
-      "Te invito a unirte a mi organización en Direcciones. Tu token de acceso es: {token}",
+      "Te invito a entrar en la organización {orgName} en Direcciones. Tu token de acceso es: {token}",
     generatedBy: "Generado por {name} — {date}",
     usedBy: "Usado por {name} en {date}",
     expiresAt: "Expira: {date}",
     tokenActive: "Activo",
     tokenUsed: "Utilizado",
     tokenExpired: "Expirado",
+    selectPersonToInvite: "Selecciona la persona a invitar.",
+    selectPersonPlaceholder: "Seleccionar persona…",
+    noUnlinkedPersons:
+      "No hay personas sin usuario. Crea una persona en la pestaña Personas para generar invitaciones.",
+    tokenFor: "Para {name}",
+    deleteToken: "Eliminar",
+    deleteTokenConfirm: "¿Eliminar este token definitivamente?",
+    tokenDeleted: "Token eliminado.",
     organizationsTitle: "Organizaciones",
     organizationsMemberCount: "{count} miembros",
     organizationsPageDescription:
@@ -616,6 +626,12 @@ const es: I18nDictionary = {
     savePerson: "Guardar",
     savingPerson: "Guardando...",
     personUpdated: "Persona actualizada.",
+    personCreated: "Persona creada.",
+    personWithoutUser: "Sin usuario vinculado",
+    removePersonConfirmTitle: "¿Eliminar a {name} de la organización?",
+    removePersonConfirmHint:
+      "Esta acción es irreversible. {name} perderá el acceso a la organización y no podrá volver sin una nueva invitación.",
+    removePersonConfirmSwitch: "Confirmo la eliminación",
     adminCardsTitle: "Administrar tarjetas",
     adminCardsHint: "Designa tarjetas disponibles a esta persona y mira quién tiene cada tarjeta.",
     availableCardsTitle: "Tarjetas disponibles",

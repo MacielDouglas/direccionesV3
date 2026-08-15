@@ -8,20 +8,6 @@ import { z } from "zod";
 
 const organizationIdSchema = z.string().min(1);
 const tokenSchema = z.string().min(1);
-const TOKEN_VALIDITY_MS = 1000 * 60 * 60 * 24 * 3; // 72 horas
-
-// Token numérico de 6 dígitos, sem colisão com tokens existentes.
-async function generateNumericToken(): Promise<string> {
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const candidate = String(Math.floor(100000 + Math.random() * 900000));
-    const existing = await prisma.inviteToken.findUnique({
-      where: { token: candidate },
-      select: { id: true },
-    });
-    if (!existing) return candidate;
-  }
-  throw new Error("No se pudo generar un token único. Intenta nuevamente.");
-}
 
 async function requireSuperUser() {
   const currentUser = await getCurrentUser();
@@ -29,59 +15,6 @@ async function requireSuperUser() {
     throw new Error("No autorizado.");
   }
   return currentUser;
-}
-
-// ── Gera token de convite — apenas admin/owner ─────────────────
-export async function createInviteTokenAction(data: {
-  organizationId: string;
-  orgSlug: string;
-  personId?: string;
-}) {
-  if (!organizationIdSchema.safeParse(data.organizationId).success) {
-    throw new Error("Organización inválida.");
-  }
-
-  const userData = await requireOrgAdminOrOwner(data.organizationId);
-
-  if (data.personId) {
-    const person = await prisma.person.findFirst({
-      where: { id: data.personId, organizationId: data.organizationId },
-    });
-    if (!person) throw new Error("Persona no encontrada.");
-    if (person.userId) throw new Error("Esta persona ya tiene un usuario vinculado.");
-  }
-
-  // Convites de pessoas são individuais — não invalidam os demais.
-  if (!data.personId) {
-    await prisma.inviteToken.updateMany({
-      where: {
-        type: "INVITE",
-        organizationId: data.organizationId,
-        personId: null,
-        usedAt: null,
-        expiresAt: { gt: new Date() },
-      },
-      data: { expiresAt: new Date() },
-    });
-  }
-
-  const expiresAt = new Date(Date.now() + TOKEN_VALIDITY_MS); // 72 horas
-
-  const token = await prisma.inviteToken.create({
-    data: {
-      type: "INVITE",
-      organizationId: data.organizationId,
-      role: "member",
-      createdByPersonId: userData.person.id,
-      personId: data.personId ?? null,
-      token: await generateNumericToken(),
-      expiresAt,
-    },
-  });
-
-  revalidatePath(`/org/${data.orgSlug}/admin/invitations`);
-  revalidatePath(`/org/${data.orgSlug}/admin/pessoas`);
-  return token;
 }
 
 // ── Usa token de convite — qualquer usuário logado ─────────────
@@ -101,55 +34,32 @@ export async function applyInviteTokenAction(token: string) {
   if (invite.expiresAt < new Date()) throw new Error("Este enlace expiró.");
   if (!invite.organizationId || !invite.organization) throw new Error("Enlace no válido.");
 
-  if (userData.person.organizationId) {
-    throw new Error("Ya perteneces a una organización.");
-  }
+  // Todo token é vinculado a uma Pessoa pré-criada pelo admin/owner.
+  if (!invite.personId) throw new Error("Enlace no válido.");
 
-  // Convite vinculado a uma Pessoa pré-criada: o usuário assume aquela Pessoa.
-  if (invite.personId) {
-    const person = invite.person;
-    if (!person) throw new Error("Enlace no válido.");
-    if (person.userId) throw new Error("Esta persona ya tiene un usuario vinculado.");
+  const person = invite.person;
+  if (!person) throw new Error("Enlace no válido.");
+  if (person.userId) throw new Error("Esta persona ya tiene un usuario vinculado.");
 
-    await prisma.$transaction(async (tx) => {
-      // Remove a Person auto-criada do usuário (sem org e sem dados).
-      if (userData.person.id !== person.id) {
-        await tx.person.deleteMany({
-          where: { id: userData.person.id, organizationId: null, userId: userData.user.id },
-        });
-      }
-
-      await tx.person.update({
-        where: { id: person.id },
-        data: {
-          userId: userData.user.id,
-          lastActiveAt: new Date(),
-        },
-      });
-
-      await tx.inviteToken.update({
-        where: { token },
-        data: { usedAt: new Date(), usedByPersonId: person.id },
-      });
-    });
-
-    return invite.organization;
-  }
-
-  // Convite genérico: a Person do próprio usuário entra na organização.
   await prisma.$transaction(async (tx) => {
-    const updated = await tx.person.update({
-      where: { id: userData.person.id },
+    // Remove a Person auto-criada do usuário (sem org e sem dados).
+    if (userData.person.id !== person.id) {
+      await tx.person.deleteMany({
+        where: { id: userData.person.id, organizationId: null, userId: userData.user.id },
+      });
+    }
+
+    await tx.person.update({
+      where: { id: person.id },
       data: {
-        organizationId: invite.organizationId,
-        role: invite.role,
+        userId: userData.user.id,
         lastActiveAt: new Date(),
       },
     });
 
     await tx.inviteToken.update({
       where: { token },
-      data: { usedAt: new Date(), usedByPersonId: updated.id },
+      data: { usedAt: new Date(), usedByPersonId: person.id },
     });
   });
 
@@ -283,9 +193,35 @@ export async function getOrgInviteTokensAction(organizationId: string) {
     where: { organizationId, type: "INVITE" },
     include: {
       createdBy: { select: { name: true } },
+      person: { select: { name: true } },
       usedBy: { select: { name: true } },
     },
     orderBy: { createdAt: "desc" },
-    take: 10,
+    take: 50,
   });
+}
+
+// ── Deletar token não utilizado — apenas admin/owner ────────────
+export async function deleteInviteTokenAction(
+  organizationId: string,
+  tokenId: string,
+  slug: string,
+) {
+  if (!organizationIdSchema.safeParse(organizationId).success) {
+    throw new Error("Organización inválida.");
+  }
+
+  await requireOrgAdminOrOwner(organizationId);
+
+  const token = await prisma.inviteToken.findFirst({
+    where: { id: tokenId, organizationId, type: "INVITE" },
+    select: { id: true, usedAt: true },
+  });
+  if (!token) throw new Error("Token no encontrado.");
+  if (token.usedAt) throw new Error("No se puede eliminar un token ya utilizado.");
+
+  await prisma.inviteToken.delete({ where: { id: token.id } });
+
+  revalidatePath(`/org/${slug}/admin/gestao`);
+  return { success: true };
 }

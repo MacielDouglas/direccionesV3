@@ -438,6 +438,8 @@ export type I18nDictionary = {
     agendaDescription: string;
     invitations: string;
     invitationsDescription: string;
+    gestaoTitle: string;
+    gestaoDescription: string;
     organizations: string;
     organizationsDescription: string;
     createNew: string;
@@ -465,6 +467,13 @@ export type I18nDictionary = {
     tokenActive: string;
     tokenUsed: string;
     tokenExpired: string;
+    selectPersonToInvite: string;
+    selectPersonPlaceholder: string;
+    noUnlinkedPersons: string;
+    tokenFor: string;
+    deleteToken: string;
+    deleteTokenConfirm: string;
+    tokenDeleted: string;
     organizationsTitle: string;
     organizationsMemberCount: string;
     organizationsPageDescription: string;
@@ -590,6 +599,11 @@ export type I18nDictionary = {
     savePerson: string;
     savingPerson: string;
     personUpdated: string;
+    personCreated: string;
+    personWithoutUser: string;
+    removePersonConfirmTitle: string;
+    removePersonConfirmHint: string;
+    removePersonConfirmSwitch: string;
     adminCardsTitle: string;
     adminCardsHint: string;
     availableCardsTitle: string;
