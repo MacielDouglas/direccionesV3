@@ -2,7 +2,9 @@
 
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { Sparkles } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { Suspense } from "react";
 import LoginButton from "./LoginButton";
 
@@ -39,7 +41,17 @@ export function LoginCard() {
           </Suspense>
         </div>
 
-        <LanguageSelector compact />
+        <div className="flex w-full flex-wrap items-center justify-center gap-2.5">
+          <Link
+            href="/demo"
+            className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3.5 text-xs font-medium text-white/85 backdrop-blur-md transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          >
+            <Sparkles className="size-3.5" aria-hidden="true" />
+            {t.login.demoButton}
+          </Link>
+
+          <LanguageSelector compact />
+        </div>
       </div>
     </div>
   );

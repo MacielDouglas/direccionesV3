@@ -57,6 +57,7 @@ export type I18nDictionary = {
       addressFields: string;
       gpsFields: string;
       imageField: string;
+      demo: string;
     };
   };
   navigation: {
@@ -92,6 +93,88 @@ export type I18nDictionary = {
     signingIn: string;
     loginError: string;
     chooseLanguage: string;
+    demoButton: string;
+  };
+  demo: {
+    badge: string;
+    photoCredit: string;
+    backToLogin: string;
+    museumChip: string;
+    tabs: {
+      cards: string;
+      addresses: string;
+      about: string;
+    };
+    intro: {
+      eyebrow: string;
+      title: string;
+      subtitle: string;
+      stepsTitle: string;
+      step1Title: string;
+      step1Text: string;
+      step2Title: string;
+      step2Text: string;
+      step3Title: string;
+      step3Text: string;
+      disclaimer: string;
+      start: string;
+    };
+    cards: {
+      title: string;
+      subtitle: string;
+      infoNote: string;
+      cardNumber: string;
+      holder: string;
+      sinceLabel: string;
+      sinceValue: string;
+      neighborhoodsLabel: string;
+      tapHint: string;
+      addressesCount: string;
+      modalTitle: string;
+      modalHint: string;
+    };
+    flags: {
+      personChanged: string;
+      personChangedNote: string;
+      noVisits: string;
+      noVisitsNote: string;
+      invite: string;
+      inviteNote: string;
+      inviteDeliveredOn: string;
+      toggleHint: string;
+    };
+    addresses: {
+      title: string;
+      subtitle: string;
+      infoNote: string;
+      openGoogleMaps: string;
+      openWaze: string;
+      situationTitle: string;
+      situationNote: string;
+    };
+    detail: {
+      back: string;
+      infoNote: string;
+    };
+    about: {
+      title: string;
+      p1: string;
+      p2: string;
+      bulletsTitle: string;
+      b1: string;
+      b2: string;
+      b3: string;
+      b4: string;
+      final: string;
+    };
+    museums: {
+      masp: string;
+      amanha: string;
+      pinacoteca: string;
+      inhotim: string;
+      mon: string;
+      imperial: string;
+    };
   };
   home: {
     welcome: string;

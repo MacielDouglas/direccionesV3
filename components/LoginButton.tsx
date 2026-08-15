@@ -44,7 +44,7 @@ export default function LoginButton() {
   return (
     <Button
       onClick={() => handleClick()}
-      className="h-11 w-full rounded-full text-base font-medium"
+      className="h-11 w-full rounded-full border border-white/15 bg-white/10 text-base font-medium text-white backdrop-blur-md transition-colors hover:bg-white/20 focus-visible:ring-white/30"
       disabled={loading}
     >
       {loading ? (

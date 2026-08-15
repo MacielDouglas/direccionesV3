@@ -47,7 +47,7 @@ export function LanguageSelector({
             aria-pressed={locale === l}
             aria-label={localeLabels[l]}
             className={cn(
-              "min-h-10 rounded-full px-4 text-sm font-medium transition-colors",
+              "min-h-8 rounded-full px-3.5 text-xs font-medium transition-colors",
               "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
               locale === l
                 ? "bg-brand text-brand-foreground shadow-sm"

@@ -55,6 +55,7 @@ const es: I18nDictionary = {
       addressFields: "Cargando campos de dirección",
       gpsFields: "Cargando campos GPS",
       imageField: "Cargando campo de imagen",
+      demo: "Cargando demostración…",
     },
   },
   navigation: {
@@ -91,6 +92,96 @@ const es: I18nDictionary = {
     signingIn: "Ingresando…",
     loginError: "Error al iniciar sesión. Intente nuevamente.",
     chooseLanguage: "Elige tu idioma",
+    demoButton: "Conocer la aplicación",
+  },
+  demo: {
+    badge: "Demostración",
+    photoCredit: "Foto: Wikimedia Commons",
+    backToLogin: "Volver al inicio de sesión",
+    museumChip: "Museo",
+    tabs: {
+      cards: "Tarjetas",
+      addresses: "Direcciones",
+      about: "Cómo funciona",
+    },
+    intro: {
+      eyebrow: "Estás en la versión demostrativa",
+      title: "Explora Direcciones",
+      subtitle:
+        "Una muestra interactiva de la app: mira cómo organizamos direcciones, tarjetas de territorio y visitas. Todo aquí es ficticio.",
+      stepsTitle: "Cómo funciona",
+      step1Title: "Registra direcciones",
+      step1Text:
+        "Cada dirección tiene foto, dirección completa y apertura directa en Google Maps o Waze.",
+      step2Title: "Organiza tarjetas",
+      step2Text:
+        "Una tarjeta es un territorio asignado a una persona. Toca la tarjeta para ver sus direcciones.",
+      step3Title: "Registra situaciones",
+      step3Text:
+        "Marca si la persona se mudó, si no quiere visitas o si recibió invitación: el equipo siempre está informado.",
+      disclaimer: "Demostración con datos ficticios: ninguna dirección, tarjeta o persona es real.",
+      start: "Comenzar a explorar",
+    },
+    cards: {
+      title: "Mis tarjetas",
+      subtitle: "La tarjeta de abajo contiene 2 museos ficticios. Toca para explorar.",
+      infoNote:
+        "En la app real, cada tarjeta muestra las direcciones asignadas a la persona y el registro de uso.",
+      cardNumber: "Tarjeta",
+      holder: "Asignada a",
+      sinceLabel: "Desde",
+      sinceValue: "marzo de 2025",
+      neighborhoodsLabel: "Direcciones en la tarjeta",
+      tapHint: "Toca la tarjeta para ver las direcciones",
+      addressesCount: "{count} museos en la tarjeta",
+      modalTitle: "Direcciones de la tarjeta",
+      modalHint: "Prueba marcar una situación en un museo de abajo: nada se guarda.",
+    },
+    flags: {
+      personChanged: "La persona se mudó",
+      personChangedNote: "Avisa al equipo de que la persona ya no vive allí.",
+      noVisits: "No quiere visitas",
+      noVisitsNote: "Registra que la persona pidió no recibir visitas.",
+      invite: "Entregó invitación",
+      inviteNote: "Anota la entrega de la invitación.",
+      inviteDeliveredOn: "Invitación entregada en",
+      toggleHint: "Toca los botones para ver cómo aparece el registro en la dirección.",
+    },
+    addresses: {
+      title: "Direcciones",
+      subtitle: "6 museos famosos de Brasil, con fotos y ubicación real.",
+      infoNote:
+        "En la app real, la lista incluye búsqueda, filtros y el mapa con las direcciones marcadas.",
+      openGoogleMaps: "Abrir en Google Maps",
+      openWaze: "Abrir en Waze",
+      situationTitle: "Situación de la dirección",
+      situationNote: "Las marcas del equipo aparecen aquí en el detalle de la dirección.",
+    },
+    detail: {
+      back: "Volver",
+      infoNote:
+        "En la app real, esta dirección se puede editar, agregar fotos y ser eliminada por los administradores.",
+    },
+    about: {
+      title: "Cómo funciona",
+      p1: "Direcciones ayuda a grupos y equipos a organizar direcciones, tarjetas de territorio y visitas en un solo lugar, desde el celular o la computadora.",
+      p2: "Esta demostración usa museos famosos de Brasil como direcciones ficticias para que sientas el flujo de la app sin crear una cuenta.",
+      bulletsTitle: "En la app real puedes",
+      b1: "Registrar direcciones con fotos, dirección y apertura en Google Maps o Waze",
+      b2: "Crear tarjetas de territorio y asignarlas a cada persona del grupo",
+      b3: "Registrar situaciones: persona se mudó, no quiere visitas, invitación entregada",
+      b4: "Ver mapas, programar la agenda y seguir el trabajo del equipo",
+      final: "¿Listo para empezar? Inicia sesión con tu cuenta Google en la página principal.",
+    },
+    museums: {
+      masp: "Arte europea y brasileña en el icónico vano libre de la Avenida Paulista.",
+      amanha:
+        "Ciencia y futuro en la arquitectura de Santiago Calatrava, en la zona portuaria de Río.",
+      pinacoteca: "El museo de arte más antiguo de São Paulo, en un edificio histórico en Luz.",
+      inhotim: "Arte contemporáneo al aire libre en un jardín botánico gigante en Minas Gerais.",
+      mon: 'El "Museo del Ojo", ícono del trazo de Oscar Niemeyer en Curitiba.',
+      imperial: "El palacio de verano de Pedro II, en el centro histórico de Petrópolis.",
+    },
   },
   home: {
     welcome: "Bienvenido,",
