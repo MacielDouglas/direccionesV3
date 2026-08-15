@@ -2,17 +2,34 @@
 
 import type { AddressWithUsers } from "@/features/addresses/types/address.types";
 import { prisma } from "@/lib/prisma";
-import { requireAuthContext } from "@/server/users";
-import { getUniquePerson } from "@/server/users";
+import { getCurrentUser, requireAuthContext } from "@/server/users";
 import { z } from "zod";
 
+const personSelect = {
+  id: true,
+  name: true,
+  user: { select: { image: true } },
+} as const;
+
 export async function fetchAddressWithUsers(id: string): Promise<AddressWithUsers | null> {
+  const data = await getCurrentUser();
+  if (!data?.person) return null;
+
   const address = await prisma.address.findUnique({ where: { id } });
   if (!address) return null;
+  if (address.organizationId !== data.person.organizationId) return null;
 
   const [createdPerson, updatedPerson] = await Promise.all([
-    getUniquePerson(address.createdByPersonId),
-    address.updatedByPersonId ? getUniquePerson(address.updatedByPersonId) : null,
+    prisma.person.findUnique({
+      where: { id: address.createdByPersonId },
+      select: personSelect,
+    }),
+    address.updatedByPersonId
+      ? prisma.person.findUnique({
+          where: { id: address.updatedByPersonId },
+          select: personSelect,
+        })
+      : null,
   ]);
 
   return { ...address, createdUser: createdPerson, updatedUser: updatedPerson };

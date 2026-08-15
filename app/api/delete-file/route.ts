@@ -31,6 +31,11 @@ export async function POST(req: Request) {
       );
     }
 
+    // ✅ Bloqueia path traversal (ex.: organizations/acme/../../security/x)
+    if (key.split("/").includes("..") || key.includes("//") || key.endsWith("/")) {
+      return NextResponse.json({ error: "Ruta inválida." }, { status: 403 });
+    }
+
     // ✅ Escopo por organização — só deleta imagens da org ativa do usuário
     const organizationId = data.person?.organizationId;
     if (!organizationId) {

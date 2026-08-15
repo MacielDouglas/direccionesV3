@@ -1,9 +1,11 @@
 "use server";
 
+import { randomInt } from "node:crypto";
 import type { Role } from "@/domains/member/types/role.types";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/server/users";
+import { getCurrentUser, requireOrgAdminOrOwner } from "@/server/users";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
 const canManageRequester = (role: string | undefined | null) =>
   role === "owner" || role === "admin";
@@ -13,7 +15,7 @@ const INVITE_TOKEN_VALIDITY_MS = 1000 * 60 * 60 * 24 * 3; // 72 horas
 // Token numérico de 6 dígitos, sem colisão com tokens existentes.
 async function generateNumericInviteToken(): Promise<string> {
   for (let attempt = 0; attempt < 10; attempt++) {
-    const candidate = String(Math.floor(100000 + Math.random() * 900000));
+    const candidate = String(randomInt(100000, 1000000));
     const existing = await prisma.inviteToken.findUnique({
       where: { token: candidate },
       select: { id: true },
@@ -23,44 +25,7 @@ async function generateNumericInviteToken(): Promise<string> {
   throw new Error("No se pudo generar un token único. Intenta nuevamente.");
 }
 
-// ✅ Vincular uma person desvinculada a uma organização
-export const linkPersonToOrganization = async (
-  personId: string,
-  organizationId: string,
-  slug: string,
-  role: Role,
-) => {
-  const currentUser = await getCurrentUser();
-  if (!currentUser) throw new Error("No autenticado.");
-
-  if (!currentUser.isSuperUser) {
-    if (currentUser.person?.organizationId !== organizationId) {
-      throw new Error("Sin permiso.");
-    }
-    const requesterRole = currentUser.person?.role;
-    if (!canManageRequester(requesterRole)) {
-      throw new Error("Sin permiso.");
-    }
-  }
-
-  const person = await prisma.person.findUnique({
-    where: { id: personId },
-    select: { organizationId: true, name: true },
-  });
-  if (!person) throw new Error("Persona no encontrada.");
-  if (person.organizationId) {
-    throw new Error("Esta persona ya pertenece a una organización.");
-  }
-
-  await prisma.person.update({
-    where: { id: personId },
-    data: { organizationId, role, lastActiveAt: new Date() },
-  });
-
-  revalidatePath(`/org/${slug}/admin/gestao`);
-};
-
-// ✅ Atualizar o papel de uma persona na organização
+// ✅ Atualizar o papel de una persona na organização
 export const updatePersonRole = async (
   organizationId: string,
   personId: string,
@@ -69,6 +34,11 @@ export const updatePersonRole = async (
 ) => {
   const currentUser = await getCurrentUser();
   if (!currentUser) throw new Error("No autenticado.");
+
+  const roleSchema = z.enum(["member", "admin", "owner"]);
+  const parsedRole = roleSchema.safeParse(role);
+  if (!parsedRole.success) throw new Error("Rol inválido.");
+  const safeRole = parsedRole.data;
 
   const target = await prisma.person.findFirst({
     where: { id: personId, organizationId },
@@ -86,12 +56,12 @@ export const updatePersonRole = async (
     }
 
     if (requester.role === "admin") {
-      if (target.role === "owner" || role === "owner") {
+      if (target.role === "owner" || safeRole === "owner") {
         throw new Error("Solo el owner puede gestionar owners.");
       }
     }
 
-    if (target.role === "owner" && role !== "owner") {
+    if (target.role === "owner" && safeRole !== "owner") {
       const ownerCount = await prisma.person.count({
         where: { organizationId, role: "owner" },
       });
@@ -101,7 +71,7 @@ export const updatePersonRole = async (
 
   await prisma.person.update({
     where: { id: target.id },
-    data: { role },
+    data: { role: safeRole },
   });
 
   if (slug) revalidatePath(`/org/${slug}/admin/gestao`);
@@ -124,20 +94,21 @@ export const transferOwnership = async (
   const isOwner = currentUser.isSuperUser || reqPerson?.role === "owner";
   if (!isOwner) throw new Error("Solo el owner puede transferir la ownership.");
 
-  const currentOwner = await prisma.person.findUnique({
-    where: { id: currentOwnerPersonId },
+  const currentOwner = await prisma.person.findFirst({
+    where: { id: currentOwnerPersonId, organizationId },
     select: { id: true, role: true },
   });
+  if (!currentOwner) throw new Error("No eres propietario.");
   const newOwner = await prisma.person.findFirst({
     where: { id: newOwnerPersonId, organizationId },
     select: { id: true },
   });
   if (!newOwner) throw new Error("La persona destinataria no pertenece a esta organización.");
-  if (currentOwner?.role !== "owner") throw new Error("La persona actual no es owner.");
+  if (currentOwner.role !== "owner") throw new Error("La persona actual no es owner.");
 
   await prisma.$transaction([
     prisma.person.update({
-      where: { id: currentOwnerPersonId },
+      where: { id: currentOwner.id },
       data: { role: "admin" },
     }),
     prisma.person.update({
@@ -320,8 +291,10 @@ export const regeneratePersonInviteAction = async (
   return token;
 };
 
-// ✅ Pessoas da organização com o convite válido de cada uma
+// ✅ Pessoas da organização com o convite válido de cada uma (admin/owner)
 export const getOrgPersonsWithInvites = async (organizationId: string) => {
+  await requireOrgAdminOrOwner(organizationId);
+
   const persons = await prisma.person.findMany({
     where: { organizationId },
     select: {
@@ -533,57 +506,6 @@ export const deletePersonAction = async (
   return { success: true };
 };
 
-// ✅ Listar usuários da organização com info de pessoa vinculada (para página Usuários)
-export const getOrgUsersWithPersons = async (organizationId: string) => {
-  const currentUser = await getCurrentUser();
-  if (!currentUser) throw new Error("No autenticado.");
-
-  if (!currentUser.isSuperUser) {
-    if (currentUser.person?.organizationId !== organizationId) {
-      throw new Error("Sin permiso.");
-    }
-    if (!canManageRequester(currentUser.person?.role)) {
-      throw new Error("Sin permiso.");
-    }
-  }
-
-  const persons = await prisma.person.findMany({
-    where: { organizationId },
-    select: {
-      id: true,
-      name: true,
-      role: true,
-      userId: true,
-      user: { select: { id: true, name: true, email: true, image: true, createdAt: true } },
-    },
-    orderBy: { name: "asc" },
-  });
-
-  const usersWithPerson = persons
-    .filter((p) => p.userId)
-    .map((p) => ({
-      id: p.user?.id,
-      name: p.user?.name,
-      email: p.user?.email,
-      image: p.user?.image,
-      createdAt: p.user?.createdAt.toISOString(),
-      person: { id: p.id, name: p.name, role: p.role },
-    }));
-
-  const usersWithoutPerson = persons
-    .filter((p) => !p.userId)
-    .map((p) => ({
-      id: p.id,
-      name: p.name,
-      email: "",
-      image: null,
-      createdAt: new Date().toISOString(),
-      person: { id: p.id, name: p.name, role: p.role },
-    }));
-
-  return { usersWithPerson, usersWithoutPerson };
-};
-
 // ✅ Atualizar nome de uma pessoa
 export const updatePersonName = async (
   organizationId: string,
@@ -618,66 +540,6 @@ export const updatePersonName = async (
   await prisma.person.update({
     where: { id: personId, organizationId },
     data: { name: parsedName },
-  });
-
-  revalidatePath(`/org/${slug}/admin/gestao`);
-  return { success: true };
-};
-
-// ✅ Administrar cards de uma pessoa em bulk (owner + assigned)
-export const adminBulkUpdatePersonCards = async (
-  organizationId: string,
-  personId: string,
-  ownerCardIds: string[],
-  assignedCardId: string | null,
-  slug: string,
-) => {
-  const currentUser = await getCurrentUser();
-  if (!currentUser) throw new Error("No autenticado.");
-
-  if (!currentUser.isSuperUser) {
-    if (currentUser.person?.organizationId !== organizationId) {
-      throw new Error("Sin permiso.");
-    }
-    if (!canManageRequester(currentUser.person?.role)) {
-      throw new Error("Sin permiso.");
-    }
-  }
-
-  const person = await prisma.person.findFirst({
-    where: { id: personId, organizationId },
-    select: { id: true },
-  });
-  if (!person) throw new Error("Persona no encontrada.");
-
-  const allCardIds = [...ownerCardIds, ...(assignedCardId ? [assignedCardId] : [])];
-  const cards = await prisma.card.findMany({
-    where: { id: { in: allCardIds }, organizationId },
-    select: { id: true },
-  });
-  if (cards.length !== allCardIds.length) {
-    throw new Error("Alguns cards não pertencem a esta organização.");
-  }
-
-  await prisma.$transaction(async (tx) => {
-    await tx.card.updateMany({
-      where: { organizationId, ownerPersonId: personId },
-      data: { ownerPersonId: null },
-    });
-    await tx.card.updateMany({
-      where: { id: { in: ownerCardIds } },
-      data: { ownerPersonId: personId },
-    });
-    await tx.card.updateMany({
-      where: { organizationId, assignedPersonId: personId },
-      data: { assignedPersonId: null },
-    });
-    if (assignedCardId) {
-      await tx.card.update({
-        where: { id: assignedCardId },
-        data: { assignedPersonId: personId },
-      });
-    }
   });
 
   revalidatePath(`/org/${slug}/admin/gestao`);
@@ -970,73 +832,4 @@ export const adminDesignateCardsAction = async (
 
   revalidatePath(`/org/${slug}/admin/gestao`);
   return { success: true };
-};
-
-// ✅ Obter pessoa com seus cards (owner + assigned)
-export const getPersonWithCards = async (organizationId: string, personId: string) => {
-  const currentUser = await getCurrentUser();
-  if (!currentUser) throw new Error("No autenticado.");
-
-  if (!currentUser.isSuperUser) {
-    if (currentUser.person?.organizationId !== organizationId) {
-      throw new Error("Sin permiso.");
-    }
-    if (!canManageRequester(currentUser.person?.role)) {
-      throw new Error("Sin permiso.");
-    }
-  }
-
-  const person = await prisma.person.findFirst({
-    where: { id: personId, organizationId },
-    select: {
-      id: true,
-      name: true,
-      role: true,
-      userId: true,
-      cardsOwned: { select: { id: true, number: true, assignedPersonId: true } },
-      cardsAssigned: { select: { id: true, number: true, assignedPersonId: true } },
-    },
-  });
-  if (!person) return null;
-
-  const [allCards, neighborhoods] = await Promise.all([
-    prisma.card.findMany({
-      where: { organizationId },
-      orderBy: { number: "asc" },
-      select: {
-        id: true,
-        number: true,
-        ownerPersonId: true,
-        assignedPersonId: true,
-        owner: { select: { name: true } },
-        assignedTo: { select: { name: true } },
-        addresses: { select: { neighborhood: true } },
-      },
-    }),
-    prisma.address.groupBy({
-      by: ["neighborhood"],
-      where: { organizationId },
-      _count: { _all: true },
-      orderBy: { neighborhood: "asc" },
-    }),
-  ]);
-
-  return {
-    ...person,
-    allCards: allCards.map((card) => ({
-      id: card.id,
-      number: card.number,
-      ownerPersonId: card.ownerPersonId,
-      assignedPersonId: card.assignedPersonId,
-      ownerName: card.owner?.name ?? null,
-      assignedToName: card.assignedTo?.name ?? null,
-      neighborhoods: [
-        ...new Set(card.addresses.map((address) => address.neighborhood.trim()).filter(Boolean)),
-      ].sort((a, b) => a.localeCompare(b)),
-    })),
-    neighborhoods: neighborhoods.map((neighborhood) => ({
-      name: neighborhood.neighborhood,
-      count: neighborhood._count._all,
-    })),
-  };
 };

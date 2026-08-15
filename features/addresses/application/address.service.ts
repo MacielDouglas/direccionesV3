@@ -1,9 +1,8 @@
-"use server";
-
 import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import type { AddressFormData } from "../domain/address.schema";
 import { createAddressCreateSchema } from "../domain/address.schema";
+import { updateAddressSchema } from "../domain/address.schema";
 import { sanitizeInfo } from "../utils/sanitizeInfo";
 
 export async function createAddressService(params: {
@@ -54,6 +53,8 @@ export async function updateAddressService({
   organizationId: string;
   personId: string;
 }) {
+  const data = updateAddressSchema.parse(input);
+
   const address = await prisma.address.findFirst({
     where: { id: addressId, organizationId },
     select: { id: true },
@@ -61,36 +62,21 @@ export async function updateAddressService({
 
   if (!address) throw new Error("Dirección no encontrada.");
 
-  const {
-    image,
-    addressType,
-    businessName,
-    street,
-    number,
-    neighborhood,
-    city,
-    latitude,
-    longitude,
-    info,
-    confirmed,
-    active,
-  } = input;
-
   return prisma.address.update({
     where: { id: address.id },
     data: {
-      type: addressType,
-      businessName,
-      street,
-      number,
-      neighborhood,
-      city,
-      latitude,
-      longitude,
-      info: sanitizeInfo(info ?? null),
-      confirmed,
-      active,
-      image: image.imageUrl ?? null,
+      type: data.addressType,
+      businessName: data.businessName,
+      street: data.street,
+      number: data.number,
+      neighborhood: data.neighborhood,
+      city: data.city,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      info: sanitizeInfo(data.info ?? null),
+      confirmed: data.confirmed,
+      active: data.active,
+      image: data.image.imageUrl ?? null,
       updatedByPersonId: personId,
       updatedAt: new Date(),
     },

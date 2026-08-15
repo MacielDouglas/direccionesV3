@@ -1,10 +1,10 @@
 // import { getExistingLocations } from "../../application/address.queries";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAddressByIdAction } from "../../application/address.actions";
-import { getExistingLocations } from "../../application/address.service";
+import { getAddressByIdService, getExistingLocations } from "../../application/address.service";
 import AddressEditForm from "../components/AddressEditForm";
 
 type Props = {
@@ -14,7 +14,11 @@ type Props = {
 
 export default async function AddressEditScreen({ organizationSlug, addressId }: Props) {
   const t = await getServerDictionary();
-  const address = await getAddressByIdAction(addressId);
+
+  const org = await getOrganizationBySlug(organizationSlug);
+  if (!org) notFound();
+
+  const address = await getAddressByIdService({ addressId, organizationId: org.id });
   if (!address) notFound();
 
   // ✅ busca neighborhoods e cities existentes

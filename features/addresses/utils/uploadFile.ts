@@ -1,18 +1,17 @@
 export async function uploadFile(
   file: File,
-  organizationSlug: string,
+  _organizationSlug: string,
   onProgress: (p: number) => void,
 ): Promise<{ key: string; publicUrl: string }> {
-  const key = `organizations/${organizationSlug}/addresses/${file.name}`;
-
+  // ✅ Key é gerada no servidor (app/api/upload-url) — o cliente nunca escolhe o caminho
   const res = await fetch("/api/upload-url", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ key, contentType: file.type, maxSize: file.size }),
+    body: JSON.stringify({ contentType: file.type, maxSize: file.size }),
   });
 
   if (!res.ok) throw new Error(`Error al obtener URL firmada: ${res.status}`);
-  const { url } = await res.json();
+  const { url, key } = await res.json();
 
   await new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();

@@ -601,6 +601,7 @@ const ptBR: I18nDictionary = {
     goToOrg: "Ir para {orgName}",
     goToOrgHint: "Você entrou com sucesso! Agora pode acessar a organização.",
     tokenError: "Erro ao entrar.",
+    tooManyAttempts: "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
   },
   admin: {
     title: "Administração",

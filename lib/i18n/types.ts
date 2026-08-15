@@ -577,6 +577,7 @@ export type I18nDictionary = {
     goToOrg: string;
     goToOrgHint: string;
     tokenError: string;
+    tooManyAttempts: string;
   };
   admin: {
     title: string;

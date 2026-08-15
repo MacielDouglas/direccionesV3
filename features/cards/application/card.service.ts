@@ -1,5 +1,3 @@
-"use server";
-
 import type { AddressType } from "@/features/addresses/types/address.types";
 import { prisma } from "@/lib/prisma";
 

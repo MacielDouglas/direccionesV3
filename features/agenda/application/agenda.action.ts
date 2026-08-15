@@ -1,5 +1,6 @@
 "use server";
 
+import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminOrOwner, requireOrgAdminOrOwner } from "@/server/users";
 import { revalidatePath } from "next/cache";
@@ -8,6 +9,20 @@ import { type AgendaEventInput, agendaEventSchema } from "../domain/agenda.schem
 
 const eventIdSchema = z.string().cuid();
 const organizationIdSchema = z.string().min(1);
+
+// Mensagens de domínio conhecidas — qualquer outra (Prisma/DB/desconhecida) vira genérica
+const DOMAIN_ERRORS = new Set([
+  "No autenticado.",
+  "Sin permiso.",
+  "Sin permiso para esta organización.",
+  "Sin organización activa.",
+  "Evento no encontrado.",
+]);
+
+function knownDomainError(err: unknown): string | null {
+  if (err instanceof Error && DOMAIN_ERRORS.has(err.message)) return err.message;
+  return null;
+}
 
 // ✅ Salva valor como opção se ainda não existir
 async function saveFieldOption(
@@ -77,9 +92,10 @@ export async function createAgendaEventAction(
     revalidatePath(`/org/${organizationSlug}/admin/agenda`);
     return {};
   } catch (err) {
-    return {
-      error: err instanceof Error ? err.message : "Error al crear evento.",
-    };
+    // biome-ignore lint/suspicious/noConsole: log de erro intencional do servidor
+    console.error("[agenda] createAgendaEventAction", err);
+    const t = await getServerDictionary();
+    return { error: knownDomainError(err) ?? t.errors.generic };
   }
 }
 
@@ -132,9 +148,10 @@ export async function updateAgendaEventAction(
     revalidatePath(`/org/${organizationSlug}/admin/agenda`);
     return {};
   } catch (err) {
-    return {
-      error: err instanceof Error ? err.message : "Error al actualizar evento.",
-    };
+    // biome-ignore lint/suspicious/noConsole: log de erro intencional do servidor
+    console.error("[agenda] updateAgendaEventAction", err);
+    const t = await getServerDictionary();
+    return { error: knownDomainError(err) ?? t.errors.generic };
   }
 }
 
@@ -160,6 +177,9 @@ export async function deleteAgendaEventAction(
     revalidatePath(`/org/${organizationSlug}/admin/agenda`);
     return {};
   } catch (err) {
-    return { error: err instanceof Error ? err.message : "Error al eliminar." };
+    // biome-ignore lint/suspicious/noConsole: log de erro intencional do servidor
+    console.error("[agenda] deleteAgendaEventAction", err);
+    const t = await getServerDictionary();
+    return { error: knownDomainError(err) ?? t.errors.generic };
   }
 }

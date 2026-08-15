@@ -1,6 +1,5 @@
 "use client";
 
-import { DeleteAccountButton } from "@/app/(protected)/org/[organizationSlug]/(members)/user/_components/DeleteAccountButton";
 import LogoutButton from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +9,7 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { DeleteAccountButton } from "@/features/user/ui/components/DeleteAccountButton";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { ArrowRight, CheckCircle2, KeyRound, Loader2 } from "lucide-react";
@@ -30,6 +30,7 @@ const ERROR_TOAST = {
   expired: "tokenExpired",
   already_in_org: "alreadyInOrg",
   unauthorized: "tokenError",
+  rate_limited: "tooManyAttempts",
   other: "tokenError",
 } as const;
 

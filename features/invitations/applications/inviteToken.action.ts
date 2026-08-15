@@ -2,6 +2,7 @@
 
 import { createOrganizationService } from "@/domains/organization";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { getCurrentUser, requireOrgAdminOrOwner } from "@/server/users";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -23,6 +24,9 @@ export async function applyInviteTokenAction(token: string) {
 
   const userData = await getCurrentUser();
   if (!userData) throw new Error("No autorizado.");
+
+  if (!checkRateLimit(`invite:${userData.user.id}`)) throw new Error("rate_limited");
+  if (userData.person.organizationId) throw new Error("Ya perteneces a una organización.");
 
   const invite = await prisma.inviteToken.findUnique({
     where: { token },
@@ -121,7 +125,14 @@ export type WelcomeResult =
   | { kind: "invite"; org: WelcomeOrg }
   | {
       kind: "error";
-      code: "invalid" | "used" | "expired" | "already_in_org" | "unauthorized" | "other";
+      code:
+        | "invalid"
+        | "used"
+        | "expired"
+        | "already_in_org"
+        | "unauthorized"
+        | "rate_limited"
+        | "other";
     };
 
 export async function redeemWelcomeTokenAction(data: {
@@ -130,6 +141,11 @@ export async function redeemWelcomeTokenAction(data: {
 }): Promise<WelcomeResult> {
   if (!tokenSchema.safeParse(data.token).success) {
     return { kind: "error", code: "invalid" };
+  }
+
+  const rateLimitUser = await getCurrentUser();
+  if (rateLimitUser && !checkRateLimit(`invite:${rateLimitUser.user.id}`)) {
+    return { kind: "error", code: "rate_limited" };
   }
 
   const invite = await prisma.inviteToken.findUnique({ where: { token: data.token } });

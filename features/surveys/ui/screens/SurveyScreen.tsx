@@ -1,6 +1,6 @@
 import { getServerDictionary } from "@/lib/i18n/server";
 import type { SurveyPin } from "../../types/survey.types";
-import SurveyMap from "../components/SurveyMap";
+import LazySurveyMap from "../components/LazySurveyMap";
 
 interface Props {
   organizationId: string;
@@ -14,7 +14,7 @@ export default async function SurveyScreen(props: Props) {
 
   return (
     <main aria-label={t.survey.mapAria} className="relative h-svh w-full overflow-hidden">
-      <SurveyMap {...props} />
+      <LazySurveyMap {...props} />
     </main>
   );
 }

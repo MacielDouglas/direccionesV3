@@ -1,4 +1,4 @@
-import { PendingDeletionList } from "@/features/addresses/ui/components/PendingDeletionList";
+import PendingDeletionScreen from "@/features/addresses/ui/screens/PendingDeletionScreen";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
@@ -38,7 +38,7 @@ export default async function PendingDeletionPage({ params }: Props) {
     <main className="mx-auto w-full max-w-3xl px-4 py-6">
       <h1 className="text-2xl font-semibold">{t.addresses.deletionRequestsTitle}</h1>
       <p className="mt-1 text-sm text-muted-foreground">{countLabel}</p>
-      <PendingDeletionList addresses={addresses} orgSlug={organizationSlug} />
+      <PendingDeletionScreen addresses={addresses} />
     </main>
   );
 }

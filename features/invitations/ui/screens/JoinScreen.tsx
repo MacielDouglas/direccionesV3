@@ -31,7 +31,12 @@ export function JoinScreen({ token }: { token: string }) {
         router.refresh();
       }, 1500);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : t.invitations.joinError;
+      const isRateLimited = e instanceof Error && e.message === "rate_limited";
+      const msg = isRateLimited
+        ? t.invitations.tooManyAttempts
+        : e instanceof Error
+          ? e.message
+          : t.invitations.joinError;
       setErrorMsg(msg);
       setStatus("error");
     }

@@ -1,5 +1,4 @@
 import { TenantProvider } from "@/providers/TenantProvider";
-import { setActiveOrg } from "@/server/organization/organization.actions";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
 import { notFound, redirect } from "next/navigation";
@@ -24,7 +23,7 @@ export default async function TenantLayout({ children, params }: Props) {
     if (!data.person?.organizationId) redirect("/");
 
     if (data.person.organizationId !== organization.id) {
-      await setActiveOrg(organization.id);
+      notFound();
     }
   }
 

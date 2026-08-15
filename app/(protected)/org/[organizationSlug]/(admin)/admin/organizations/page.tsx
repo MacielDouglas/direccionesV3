@@ -14,6 +14,11 @@ export default async function OrganizationsPage({ params }: Props) {
   const [data, t] = await Promise.all([getCurrentUser(), getServerDictionary()]);
   if (!data) redirect("/login");
 
+  const role = data.memberRole?.role;
+  if (!data.isSuperUser && (!role || !["admin", "owner"].includes(role))) {
+    redirect(`/org/${organizationSlug}`);
+  }
+
   const organization = await prisma.organization.findUnique({
     where: { slug: organizationSlug },
     include: { _count: { select: { persons: true } } },

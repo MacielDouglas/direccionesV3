@@ -87,3 +87,29 @@ export type AddressPersistenceInput = z.infer<typeof addressPersistenceSchema>;
 // Schema server-side derivado — sem duplicação
 export const createAddressSchema = createAddressCreateSchema();
 export type CreateAddressInput = AddressFormData;
+
+// Schema de atualização — validação estrita server-side (.strict() rejeita campos extras)
+export const updateAddressSchema = z
+  .object({
+    addressType: z.enum(ADDRESS_TYPES),
+    street: z.string().min(2).max(200),
+    number: z.string().min(1).max(20),
+    neighborhood: z.string().min(2).max(200),
+    city: z.string().min(3).max(200),
+    latitude: z.number().min(-90).max(90).nullable().optional(),
+    longitude: z.number().min(-180).max(180).nullable().optional(),
+    image: addressImageSchema.refine((image) => {
+      if (!image.imageUrl) return true;
+      try {
+        const url = new URL(image.imageUrl);
+        return url.protocol === "http:" || url.protocol === "https:";
+      } catch {
+        return false;
+      }
+    }, "URL de imagen inválida."),
+    info: z.string().max(300).nullable().optional(),
+    businessName: z.string().max(200).nullable().optional(),
+    active: z.boolean(),
+    confirmed: z.boolean(),
+  })
+  .strict();

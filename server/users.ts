@@ -1,5 +1,3 @@
-"use server";
-
 import { toRole } from "@/domains/member/utils/toRole";
 import { auth } from "@/lib/auth";
 import { type AppRole, canAccess } from "@/lib/autorize";
@@ -123,43 +121,6 @@ export const getUniquePerson = cache(async (personId: string) => {
     },
   });
 });
-
-// ✅ Pessoas disponíveis para entrar em uma organização (person sem organização vinculada)
-export const getUnlinkedPersons = async (_organizationId: string) => {
-  try {
-    return prisma.person.findMany({
-      where: {
-        organizationId: null,
-        user: { isSuperUser: false },
-      },
-      select: {
-        id: true,
-        name: true,
-        role: true,
-        organizationId: true,
-        user: { select: { id: true, name: true, email: true, image: true } },
-      },
-      orderBy: { name: "asc" },
-    });
-  } catch {
-    return [];
-  }
-};
-
-// ✅ Pessoas de uma organização (com ou sem usuário vinculado)
-export const getOrgPersons = async (organizationId: string) => {
-  return prisma.person.findMany({
-    where: { organizationId },
-    select: {
-      id: true,
-      name: true,
-      role: true,
-      organizationId: true,
-      user: { select: { id: true, name: true, email: true, image: true, isSuperUser: true } },
-    },
-    orderBy: { name: "asc" },
-  });
-};
 
 export const requireSession = async () => {
   const data = await getCurrentUser();

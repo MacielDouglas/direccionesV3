@@ -603,6 +603,7 @@ const es: I18nDictionary = {
     goToOrg: "Ir a {orgName}",
     goToOrgHint: "¡Ingresaste con éxito! Ahora puedes acceder a la organización.",
     tokenError: "Error al ingresar.",
+    tooManyAttempts: "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
   },
   admin: {
     title: "Administración",

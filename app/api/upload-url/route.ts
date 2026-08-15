@@ -1,16 +1,17 @@
+import { randomUUID } from "node:crypto";
 import { generateUploadUrl } from "@/infrastructure/storage/r2.service";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/server/users";
 import { NextResponse } from "next/server";
 
-const ALLOWED_IMAGE_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  "image/heic",
-  "image/heif",
-]);
+const ALLOWED_IMAGE_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/heic": "heic",
+  "image/heif": "heif",
+};
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
@@ -22,33 +23,24 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => null);
 
-  if (
-    !body ||
-    typeof body.key !== "string" ||
-    typeof body.contentType !== "string" ||
-    typeof body.maxSize !== "number"
-  ) {
+  if (!body || typeof body.contentType !== "string" || typeof body.maxSize !== "number") {
     return NextResponse.json(
-      { error: "Campos requeridos: key, contentType, maxSize." },
+      { error: "Campos requeridos: contentType, maxSize." },
       { status: 400 },
     );
   }
 
-  const { key, contentType } = body;
+  const { contentType, maxSize } = body;
 
-  // ✅ Valida MIME — apenas imagens permitidas
-  if (!ALLOWED_IMAGE_TYPES.has(contentType)) {
+  // ✅ Valida MIME — apenas imagens permitidas (allowlist server-side)
+  const extension = ALLOWED_IMAGE_TYPES[contentType];
+  if (!extension) {
     return NextResponse.json({ error: "Tipo de archivo no permitido." }, { status: 400 });
   }
 
-  // ✅ Valida tamanho máximo antes de assinar a URL
-  if (body.maxSize > MAX_FILE_SIZE) {
+  // ✅ Valida tamanho máximo no servidor (o cliente não decide o limite)
+  if (!Number.isFinite(maxSize) || maxSize <= 0 || maxSize > MAX_FILE_SIZE) {
     return NextResponse.json({ error: "Archivo demasiado grande." }, { status: 400 });
-  }
-
-  // ✅ Escopo por organização — key DEVE pertencer à org ativa do usuário logado
-  if (!key.startsWith("organizations/")) {
-    return NextResponse.json({ error: "Ruta inválida." }, { status: 403 });
   }
 
   const organizationId = data.person?.organizationId;
@@ -60,13 +52,16 @@ export async function POST(req: Request) {
     where: { id: organizationId },
     select: { slug: true },
   });
-  if (!organization || !key.startsWith(`organizations/${organization.slug}/`)) {
+  if (!organization) {
     return NextResponse.json({ error: "Sin permiso para esta organización." }, { status: 403 });
   }
 
+  // ✅ Key montada 100% no servidor — o cliente nunca escolhe o caminho
+  const key = `organizations/${organization.slug}/addresses/${randomUUID()}.${extension}`;
+
   try {
     const url = await generateUploadUrl(key, contentType);
-    return NextResponse.json({ url });
+    return NextResponse.json({ url, key });
   } catch {
     return NextResponse.json({ error: "Error al generar la URL de carga." }, { status: 500 });
   }

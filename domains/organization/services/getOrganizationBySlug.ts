@@ -7,12 +7,13 @@ export async function getOrganizationBySlugService(slug: string) {
     where: { slug },
     include: {
       persons: {
-        include: {
+        select: {
+          id: true,
+          name: true,
           user: {
             select: {
               id: true,
               name: true,
-              email: true,
               image: true,
             },
           },

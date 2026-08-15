@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Role } from "@/domains/member/types/role.types";
 import { EditNameForm } from "@/features/user/ui/EditNameForm";
+import { DeleteAccountButton } from "@/features/user/ui/components/DeleteAccountButton";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/server/users";
@@ -8,7 +9,6 @@ import { CreditCard, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { DeleteAccountButton } from "./_components/DeleteAccountButton";
 import { LeaveOrganizationButton } from "./_components/LeaveOrganizationButton";
 
 export const metadata: Metadata = {

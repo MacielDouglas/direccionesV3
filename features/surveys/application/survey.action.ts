@@ -1,4 +1,5 @@
 "use server";
+import { getServerDictionary } from "@/lib/i18n/server";
 import { requireOrgMember } from "@/server/users";
 import { cancelPinSchema, confirmPinSchema, createPinsSchema } from "../domain/survey.schema";
 import type { SurveyPin } from "../types/survey.types";
@@ -11,6 +12,19 @@ import {
 
 type ActionResult<T> = { success: true; data: T } | { success: false; error: string };
 
+// Mensagens de domínio conhecidas — qualquer outra (Prisma/DB/desconhecida) vira genérica
+const DOMAIN_ERRORS = new Set([
+  "No autenticado.",
+  "Sin permiso para esta organización.",
+  "Pin no encontrado.",
+  "Sin permiso para este pin.",
+]);
+
+function knownDomainError(err: unknown): string | null {
+  if (err instanceof Error && DOMAIN_ERRORS.has(err.message)) return err.message;
+  return null;
+}
+
 export async function getSurveyPinsAction(
   organizationId: string,
 ): Promise<ActionResult<SurveyPin[]>> {
@@ -19,7 +33,10 @@ export async function getSurveyPinsAction(
     const pins = await getSurveyPins(organizationId);
     return { success: true, data: pins };
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "No autorizado" };
+    // biome-ignore lint/suspicious/noConsole: log de erro intencional do servidor
+    console.error("[surveys] getSurveyPinsAction", err);
+    const t = await getServerDictionary();
+    return { success: false, error: knownDomainError(err) ?? t.errors.generic };
   }
 }
 
@@ -32,10 +49,10 @@ export async function createSurveyPinsAction(input: unknown): Promise<ActionResu
     const pins = await createSurveyPins(parsed.data, data.person.id);
     return { success: true, data: pins };
   } catch (err) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "Error al guardar los pins",
-    };
+    // biome-ignore lint/suspicious/noConsole: log de erro intencional do servidor
+    console.error("[surveys] createSurveyPinsAction", err);
+    const t = await getServerDictionary();
+    return { success: false, error: knownDomainError(err) ?? t.errors.generic };
   }
 }
 
@@ -55,10 +72,10 @@ export async function confirmSurveyPinAction(
     });
     return { success: true, data: pin };
   } catch (err) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "Error al confirmar el pin",
-    };
+    // biome-ignore lint/suspicious/noConsole: log de erro intencional do servidor
+    console.error("[surveys] confirmSurveyPinAction", err);
+    const t = await getServerDictionary();
+    return { success: false, error: knownDomainError(err) ?? t.errors.generic };
   }
 }
 
@@ -78,9 +95,9 @@ export async function cancelSurveyPinAction(
     });
     return { success: true, data: pin };
   } catch (err) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "Error al cancelar el pin",
-    };
+    // biome-ignore lint/suspicious/noConsole: log de erro intencional do servidor
+    console.error("[surveys] cancelSurveyPinAction", err);
+    const t = await getServerDictionary();
+    return { success: false, error: knownDomainError(err) ?? t.errors.generic };
   }
 }
