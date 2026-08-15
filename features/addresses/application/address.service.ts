@@ -132,3 +132,13 @@ export async function getExistingLocations(organizationId: string) {
     cities: [...new Set(addresses.map((a) => a.city))].sort(),
   };
 }
+
+export async function getPendingDeletionAddresses(organizationId: string) {
+  return prisma.address.findMany({
+    where: { organizationId, pendingDeletion: true },
+    include: {
+      requestedBy: { select: { name: true, user: { select: { email: true } } } },
+    },
+    orderBy: { pendingDeletionAt: "asc" },
+  });
+}

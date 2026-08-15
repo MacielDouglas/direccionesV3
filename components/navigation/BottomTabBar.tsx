@@ -21,7 +21,6 @@ export function BottomTabBar({ orgSlug, role }: BottomTabBarProps) {
   const [isHidden, setIsHidden] = useState(false);
   const lastScrollY = useRef(0);
 
-  const isAdminSection = pathname.startsWith(`/org/${orgSlug}/admin`);
   const isAdminRole = role === "admin" || role === "owner";
 
   const tabs = [
@@ -39,15 +38,10 @@ export function BottomTabBar({ orgSlug, role }: BottomTabBarProps) {
       Icon: MapPin,
     },
     { id: "agenda", href: "/agenda", label: t.navigation.agendaLabel, Icon: CalendarDays },
-    isAdminSection && isAdminRole
+    isAdminRole
       ? { id: "admin", href: "/admin", label: t.navigation.administration, Icon: ShieldCheck }
       : { id: "user", href: "/user", label: t.navigation.profileLabel, Icon: User },
-  ].filter(Boolean) as {
-    id: string;
-    href: string;
-    label: string;
-    Icon: typeof Home;
-  }[];
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
