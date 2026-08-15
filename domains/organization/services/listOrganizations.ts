@@ -6,6 +6,7 @@ export async function listOrganizationsService() {
   if (!data?.isSuperUser) throw new Error("No autorizado.");
 
   return prisma.organization.findMany({
+    include: { _count: { select: { persons: true } } },
     orderBy: { createdAt: "asc" },
   });
 }

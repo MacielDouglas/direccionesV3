@@ -86,7 +86,7 @@ export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props
           <button
             type="button"
             onClick={() => setMapOpen(true)}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground shadow-xs transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground shadow-xs transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
           >
             <MapIcon className="size-4 text-brand" aria-hidden />
             {t.cards.seeMap}

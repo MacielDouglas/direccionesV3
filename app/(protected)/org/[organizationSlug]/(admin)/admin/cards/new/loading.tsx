@@ -1,9 +1,12 @@
-export default function CardNewLoading() {
+import { getServerDictionary } from "@/lib/i18n/server";
+
+export default async function CardNewLoading() {
+  const t = await getServerDictionary();
   return (
     <div
       className="flex flex-1 flex-col overflow-hidden"
       aria-busy="true"
-      aria-label="Cargando formulario de tarjeta"
+      aria-label={t.common.loadingLabels.cardForm}
     >
       {/* Mapa */}
       <div className="h-96 w-full shrink-0 animate-pulse bg-muted" />

@@ -71,7 +71,7 @@ export function PendingDeletionList({
       {addresses.map((address) => (
         <li
           key={address.id}
-          className="relative flex flex-col gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4"
+          className="relative flex flex-col gap-3 overflow-hidden rounded-xl border border-destructive/30 bg-destructive/5 p-4"
         >
           {address.image && (
             <Image
@@ -89,11 +89,11 @@ export function PendingDeletionList({
             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
             <div>
               {address.businessName && <p className="font-semibold">{address.businessName}</p>}
-              <p className="text-sm text-muted">
+              <p className="text-sm text-muted-foreground">
                 {address.street}, {address.number} — {address.neighborhood}, {address.city}
               </p>
               {address.requestedBy && (
-                <p className="mt-1 text-xs text-muted/70">
+                <p className="mt-1 text-xs text-muted-foreground/70">
                   {t.addresses.requestedBy}{" "}
                   <span className="font-medium">
                     {address.requestedBy.name ?? address.requestedBy.user?.email}

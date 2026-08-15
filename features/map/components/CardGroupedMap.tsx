@@ -1,6 +1,7 @@
 "use client";
 
 import { getCardColor } from "@/features/cards/utils/cardColors";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
 import { CardGroupedLayer, type GroupedAddress } from "../layers/CardGroupedLayer";
@@ -37,6 +38,7 @@ export function CardGroupedMap({
   onSelectCard,
   onSelectAddress,
 }: Props) {
+  const { t } = useI18n();
   const groupedAddresses = useMemo<GroupedAddress[]>(() => {
     return cards.flatMap((card, cardIndex) =>
       card.addresses
@@ -61,7 +63,7 @@ export function CardGroupedMap({
   if (!hasAddresses) {
     return (
       <div className="flex h-full w-full items-center justify-center rounded-xl border bg-muted text-sm text-muted-foreground">
-        Sin coordenadas disponibles
+        {t.admin.noCoordinates}
       </div>
     );
   }

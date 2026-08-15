@@ -1,12 +1,14 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { getServerDictionary } from "@/lib/i18n/server";
 import { MapPinPlus } from "lucide-react";
 
-export default function NewAddressLoading() {
+export default async function NewAddressLoading() {
+  const t = await getServerDictionary();
   return (
     <div
       className="mx-auto h-full w-full max-w-3xl space-y-4"
       aria-busy="true"
-      aria-label="Cargando formulario de nueva dirección"
+      aria-label={t.common.loadingLabels.addressForm}
     >
       {/* ── Header ── */}
       <header className="space-y-6 border-b p-5 md:p-10">
@@ -21,7 +23,7 @@ export default function NewAddressLoading() {
       </header>
 
       {/* ── Tipo de dirección ── */}
-      <section aria-label="Cargando selector de tipo" className="px-6 pt-5 space-y-3">
+      <section aria-label={t.common.loadingLabels.typeSelector} className="px-6 pt-5 space-y-3">
         <Skeleton className="h-5 w-36" />
         <div className="flex gap-3 overflow-hidden">
           {Array.from({ length: 5 }, (_, i) => i + 1).map((item) => (
@@ -31,7 +33,7 @@ export default function NewAddressLoading() {
       </section>
 
       {/* ── Campos del formulario ── */}
-      <section aria-label="Cargando campos de dirección" className="px-6 space-y-6 py-4">
+      <section aria-label={t.common.loadingLabels.addressFields} className="px-6 space-y-6 py-4">
         <div className="flex items-center gap-2">
           <Skeleton className="h-7 w-7 rounded" />
           <Skeleton className="h-6 w-52" />
@@ -88,7 +90,7 @@ export default function NewAddressLoading() {
 
       {/* ── GPS ── */}
       <section
-        aria-label="Cargando campos GPS"
+        aria-label={t.common.loadingLabels.gpsFields}
         className="border-t bg-muted/30 px-6 py-5 space-y-3"
       >
         <Skeleton className="h-5 w-32" />
@@ -96,7 +98,7 @@ export default function NewAddressLoading() {
       </section>
 
       {/* ── Imagen ── */}
-      <section aria-label="Cargando campo de imagen" className="px-6 py-4 space-y-3">
+      <section aria-label={t.common.loadingLabels.imageField} className="px-6 py-4 space-y-3">
         <Skeleton className="h-5 w-36" />
         <Skeleton className="aspect-square w-full rounded-2xl" />
       </section>

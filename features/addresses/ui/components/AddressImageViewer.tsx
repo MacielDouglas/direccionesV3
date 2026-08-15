@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -16,6 +17,7 @@ import { useState } from "react";
 type Props = { src: string; alt: string };
 
 export function AddressImageViewer({ src, alt }: Props) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
 
   return (
@@ -38,8 +40,8 @@ export function AddressImageViewer({ src, alt }: Props) {
         className="h-dvh max-w-none rounded-none border-none bg-black p-0 w-screen overflow-hidden"
       >
         <DialogHeader className="sr-only">
-          <DialogTitle>Visualización de imagen</DialogTitle>
-          <DialogDescription>Vista ampliada de la imagen de la dirección.</DialogDescription>
+          <DialogTitle>{t.addresses.imageViewerTitle}</DialogTitle>
+          <DialogDescription>{t.addresses.imageViewerDescription}</DialogDescription>
         </DialogHeader>
 
         {/* ✅ Container relativo — botão e imagem dentro do mesmo contexto */}
@@ -50,7 +52,7 @@ export function AddressImageViewer({ src, alt }: Props) {
           <Button
             size="icon"
             variant="ghost"
-            aria-label="Cerrar imagen"
+            aria-label={t.addresses.imageCloseAria}
             onClick={() => setOpen(false)}
             className="absolute right-3 top-3 z-50 rounded-full
               bg-black/60 text-white hover:bg-black/80

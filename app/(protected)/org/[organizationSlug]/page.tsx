@@ -1,12 +1,14 @@
 import { HomeDashboard } from "@/features/home/ui/HomeDashboard";
+import { getServerDictionary } from "@/lib/i18n/server";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Início",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getServerDictionary();
+  return { title: t.common.home };
+}
 
 interface Props {
   params: Promise<{ organizationSlug: string }>;

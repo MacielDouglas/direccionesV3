@@ -1,9 +1,12 @@
-export default function CardEditLoading() {
+import { getServerDictionary } from "@/lib/i18n/server";
+
+export default async function CardEditLoading() {
+  const t = await getServerDictionary();
   return (
     <div
       className="flex w-full max-w-3xl mx-auto flex-col overflow-hidden"
       aria-busy="true"
-      aria-label="Cargando edición de tarjeta"
+      aria-label={t.common.loadingLabels.cardEdit}
     >
       <div className="h-96 w-full shrink-0 animate-pulse bg-muted" />
 

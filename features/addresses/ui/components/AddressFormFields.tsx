@@ -13,8 +13,8 @@ import { ADDRESS_FORMS_OPTIONS } from "../config/address-form.config";
 import { SmartCombobox } from "./SmartCombobox";
 
 const inputStyle =
-  "border-0 border-b-2 border-b-muted rounded-none px-0 shadow-none bg-transparent " +
-  "focus-visible:ring-0 focus-visible:outline-none focus-visible:border-b-brand " +
+  "border-0 border-b-2 border-b-muted rounded-none px-0 shadow-none bg-transparent h-11 " +
+  "focus-visible:outline-none focus-visible:border-b-brand " +
   "transition-colors duration-150 bg-white pl-2";
 
 const comboboxInputStyle = `${inputStyle} pr-7`;
@@ -38,8 +38,8 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
   return (
     <section className="space-y-4 py-5">
       <header>
-        <h2 className="inline-flex items-baseline gap-1 text-xl font-semibold">
-          <MapPinPen className="h-7 w-7 text-brand" aria-hidden="true" />
+        <h2 className="inline-flex items-baseline gap-1 text-xl font-semibold tracking-tight">
+          <MapPinPen className="size-7 text-brand" aria-hidden="true" />
           {t.addresses.formTitle}
         </h2>
         <p className="text-sm text-muted-foreground">{t.addresses.formHint}</p>

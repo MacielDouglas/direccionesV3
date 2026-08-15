@@ -1,7 +1,10 @@
-export default function SurveysLoading() {
+import { getServerDictionary } from "@/lib/i18n/server";
+
+export default async function SurveysLoading() {
+  const t = await getServerDictionary();
   return (
     <main
-      aria-label="Cargando mapa de relevamiento"
+      aria-label={t.common.loadingLabels.surveyMap}
       aria-busy="true"
       className="relative h-svh w-full overflow-hidden"
     >

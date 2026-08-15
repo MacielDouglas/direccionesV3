@@ -1,9 +1,12 @@
-export default function AddressListLoading() {
+import { getServerDictionary } from "@/lib/i18n/server";
+
+export default async function AddressListLoading() {
+  const t = await getServerDictionary();
   return (
     <div
       className="mx-auto flex w-full max-w-3xl flex-col gap-0"
       aria-busy="true"
-      aria-label="Cargando direcciones"
+      aria-label={t.common.loadingLabels.addresses}
     >
       {/* Header */}
       <div className="space-y-6 border-b p-5 md:p-10">

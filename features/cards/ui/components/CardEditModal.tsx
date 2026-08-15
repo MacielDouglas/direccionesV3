@@ -381,7 +381,7 @@ function AddressRow({
             {addr.neighborhood}, {addr.city}
           </span>
           {disabled && otherCardNumber && (
-            <span className="mt-0.5 inline-flex w-fit items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+            <span className="mt-0.5 inline-flex w-fit items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
               <Lock className="size-3" aria-hidden />
               {t.admin.otherCardNumber.replace("{number}", otherCardNumber)} ·{" "}
               {t.admin.linkedToOtherCard}

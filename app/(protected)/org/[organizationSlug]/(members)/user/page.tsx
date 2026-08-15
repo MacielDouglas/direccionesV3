@@ -76,11 +76,11 @@ export default async function UserPage({ params }: Props) {
       {/* Hero: avatar + nome da pessoa + e-mail */}
       <section
         aria-labelledby="profile-title"
-        className="rounded-2xl bg-black p-6 text-white shadow-md shadow-black/20 sm:p-8"
+        className="rounded-2xl bg-black p-6 text-white shadow-xs sm:p-8"
       >
         <span
           id="profile-title"
-          className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-neutral-400"
+          className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-white/60"
         >
           {t.user.title}
         </span>
@@ -101,9 +101,9 @@ export default async function UserPage({ params }: Props) {
               organizationId={activeOrganization?.id ?? ""}
               organizationSlug={organizationSlug}
             />
-            <p className="text-sm text-neutral-300">{user.email}</p>
+            <p className="text-sm text-white/70">{user.email}</p>
             {memberRole ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[0.625rem] font-semibold uppercase tracking-widest text-brand">
                 <ShieldCheck className="size-3" aria-hidden="true" />
                 {roleLabel}
               </span>
@@ -131,7 +131,7 @@ export default async function UserPage({ params }: Props) {
             </div>
 
             {cards.length === 0 ? (
-              <div className="rounded-xl border bg-muted/40 px-4 py-8 text-center text-sm text-muted-foreground">
+              <div className="rounded-2xl border bg-muted/40 px-4 py-8 text-center text-sm text-muted-foreground">
                 {t.cards.noCards}
               </div>
             ) : (
@@ -142,7 +142,7 @@ export default async function UserPage({ params }: Props) {
                       href={`/org/${organizationSlug}/my-cards`}
                       className="
                     flex items-center gap-3
-                    rounded-xl border bg-card px-4 py-3
+                    rounded-2xl border bg-card px-4 py-3.5
                     transition-colors hover:bg-muted/50
                     focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand
                   "

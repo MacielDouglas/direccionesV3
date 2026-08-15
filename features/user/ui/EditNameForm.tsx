@@ -56,7 +56,7 @@ export function EditNameForm({ currentName, personId, organizationId, organizati
           size="icon"
           onClick={() => setEditing(true)}
           aria-label={t.user.editNameAria}
-          className="h-8 w-8 rounded-lg text-brand hover:text-brand/80"
+          className="size-11 rounded-lg text-brand hover:bg-white/10 hover:text-brand"
         >
           <Pencil className="h-4 w-4" aria-hidden="true" />
         </Button>
@@ -76,7 +76,7 @@ export function EditNameForm({ currentName, personId, organizationId, organizati
         autoFocus
         maxLength={80}
         aria-label={t.user.newNameAria}
-        className="h-9 w-48 text-base"
+        className="h-11 w-48 border-white/25 bg-transparent text-base text-white placeholder:text-white/50 focus-visible:border-white/40"
         disabled={isPending}
       />
       <Button
@@ -85,7 +85,7 @@ export function EditNameForm({ currentName, personId, organizationId, organizati
         variant="ghost"
         disabled={isPending || !value.trim()}
         aria-label={t.common.confirm}
-        className="h-8 w-8 text-green-600 hover:text-green-700"
+        className="size-11 text-green-400 hover:bg-white/10 hover:text-green-300"
       >
         {isPending ? (
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -100,7 +100,7 @@ export function EditNameForm({ currentName, personId, organizationId, organizati
         onClick={handleCancel}
         disabled={isPending}
         aria-label={t.common.cancel}
-        className="h-8 w-8 text-destructive hover:text-destructive/80"
+        className="size-11 text-red-300 hover:bg-white/10 hover:text-red-200"
       >
         <X className="h-4 w-4" aria-hidden="true" />
       </Button>

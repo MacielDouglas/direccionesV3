@@ -4,6 +4,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { I18nDictionary } from "@/lib/i18n/types";
 import mapboxgl from "mapbox-gl";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import ConfirmModal from "./ConfirmModal";
 import PinControls from "./PinControls";
 
@@ -249,7 +250,11 @@ export default function SurveyMap({ organizationId, userRole, initialPins }: Pro
         setLocalPins([]);
         setShowConfirmModal(false);
         setIsAddingMode(false);
+      } else if (result.error) {
+        toast.error(result.error);
       }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t.errors.generic);
     } finally {
       setLoading(false);
     }

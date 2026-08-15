@@ -1,9 +1,12 @@
-export default function HomeLoading() {
+import { getServerDictionary } from "@/lib/i18n/server";
+
+export default async function HomeLoading() {
+  const t = await getServerDictionary();
   return (
     <div
       className="mx-auto w-full max-w-3xl px-4 py-7 md:py-10"
       aria-busy="true"
-      aria-label="Cargando inicio"
+      aria-label={t.common.loadingLabels.home}
     >
       <div className="h-8 w-52 animate-pulse rounded-md bg-muted" />
 

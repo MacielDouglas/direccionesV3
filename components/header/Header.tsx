@@ -1,5 +1,6 @@
 import SessionTimer from "@/domains/auth/components/SessionTimer";
 import type { Role } from "@/domains/member/types/role.types";
+import { getServerDictionary } from "@/lib/i18n/server";
 import type { Session } from "better-auth";
 import type { Organization } from "better-auth/plugins";
 import { Compass } from "lucide-react";
@@ -16,37 +17,38 @@ interface HeaderProps {
   hasPerson?: boolean;
 }
 
-function Logo() {
+function Logo({ appName }: { appName: string }) {
   return (
     <span className="flex items-center gap-1.5 tracking-wide text-foreground">
       <Compass className="size-5 text-brand" aria-hidden="true" />
-      <span className="text-lg font-medium uppercase md:text-xl">Direcciones</span>
+      <span className="text-lg font-medium uppercase md:text-xl">{appName}</span>
     </span>
   );
 }
 
-export default function Header({
+export default async function Header({
   session,
   role,
   organization,
   isSuperUser = false,
   hasPerson = false,
 }: HeaderProps) {
+  const t = await getServerDictionary();
   const showControls = Boolean(organization?.slug) || isSuperUser || hasPerson;
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-border bg-white/95 backdrop-blur-md dark:bg-[#1f1b17]/95">
+    <header className="sticky top-0 z-30 w-full border-b border-border bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:h-20 md:px-8">
         {showControls ? (
           <NavLink
             href="/"
             className="rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-            aria-label="Ir al inicio de Direcciones"
+            aria-label={t.header.goToHome}
           >
-            <Logo />
+            <Logo appName={t.common.appName} />
           </NavLink>
         ) : (
-          <Logo />
+          <Logo appName={t.common.appName} />
         )}
 
         {showControls && (

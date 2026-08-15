@@ -1,11 +1,13 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { getServerDictionary } from "@/lib/i18n/server";
 
-export default function PessoasLoading() {
+export default async function PessoasLoading() {
+  const t = await getServerDictionary();
   return (
     <main
       className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8"
       aria-busy="true"
-      aria-label="Cargando personas"
+      aria-label={t.common.loadingLabels.people}
     >
       {/* Header skeleton */}
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">

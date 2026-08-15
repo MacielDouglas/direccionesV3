@@ -1,9 +1,12 @@
-export default function AddressDetailLoading() {
+import { getServerDictionary } from "@/lib/i18n/server";
+
+export default async function AddressDetailLoading() {
+  const t = await getServerDictionary();
   return (
     <article
       className="mx-auto flex w-full max-w-3xl flex-col gap-2 px-3 py-4 sm:px-4 sm:py-6"
       aria-busy="true"
-      aria-label="Cargando dirección"
+      aria-label={t.common.loadingLabels.address}
     >
       {/* Mapa */}
       <div className="h-56 w-full animate-pulse rounded-2xl bg-muted sm:h-72" />

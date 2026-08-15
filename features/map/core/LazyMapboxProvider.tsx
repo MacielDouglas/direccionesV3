@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState } from "react";
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export function LazyMapboxProvider({ children, className, center, zoom = 14 }: Props) {
+  const { t } = useI18n();
   const [active, setActive] = useState(false);
 
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -32,13 +34,13 @@ export function LazyMapboxProvider({ children, className, center, zoom = 14 }: P
         type="button"
         onClick={() => setActive(true)}
         className={`relative w-full ${className}`}
-        aria-label="Activar mapa interactivo"
+        aria-label={t.common.activateMap}
       >
         {/* imagem estática */}
         <div className="relative h-full w-full">
           <Image
             src={staticUrl}
-            alt="Vista previa del mapa"
+            alt={t.common.mapPreviewAlt}
             width={600}
             height={400}
             priority // ✅ mais importante que loading="eager"
@@ -49,7 +51,7 @@ export function LazyMapboxProvider({ children, className, center, zoom = 14 }: P
         {/* overlay UX */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/20">
           <span className="rounded-full bg-white/90 px-4 py-2 text-xs font-semibold shadow">
-            Tocar para interactuar
+            {t.common.tapToInteract}
           </span>
         </div>
       </button>

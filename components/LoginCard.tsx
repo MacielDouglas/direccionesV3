@@ -10,7 +10,7 @@ export function LoginCard() {
   const { t } = useI18n();
 
   return (
-    <div className="relative z-10 w-full max-w-sm rounded-3xl border border-white/10 bg-black/30 p-8 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-10">
+    <div className="relative z-10 w-full max-w-sm rounded-3xl border border-white/10 bg-black/30 p-8 shadow-lg shadow-black/40 backdrop-blur-xl sm:p-10">
       <div className="flex flex-col items-center gap-8">
         <header className="flex flex-col items-center gap-5 text-center">
           <Image

@@ -1,6 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function ComboboxField({ id, value, onChange, options, placeholder, disabled }: Props) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState(value);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -63,7 +65,7 @@ export function ComboboxField({ id, value, onChange, options, placeholder, disab
             tabIndex={-1}
             onClick={() => setOpen((v) => !v)}
             className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
-            aria-label="Ver opciones guardadas"
+            aria-label={t.agenda.viewSavedOptions}
           >
             <ChevronDown className="size-4" aria-hidden />
           </button>
@@ -73,7 +75,7 @@ export function ComboboxField({ id, value, onChange, options, placeholder, disab
       {/* Dropdown de sugestões */}
       {open && filtered.length > 0 && (
         <ul
-          aria-label="Opciones guardadas"
+          aria-label={t.agenda.savedOptions}
           className={cn(
             "absolute z-50 mt-1 w-full rounded-lg border bg-popover shadow-md",
             "max-h-48 overflow-y-auto py-1",

@@ -1,11 +1,13 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { getServerDictionary } from "@/lib/i18n/server";
 
-export default function AdminLoading() {
+export default async function AdminLoading() {
+  const t = await getServerDictionary();
   return (
     <main
       className="mx-auto w-full max-w-3xl px-4 py-6"
       aria-busy="true"
-      aria-label="Cargando panel de administración"
+      aria-label={t.common.loadingLabels.adminPanel}
     >
       {/* Header skeleton */}
       <header className="mb-6">

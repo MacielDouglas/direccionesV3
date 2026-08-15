@@ -81,7 +81,7 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
       {/* Resumo — Saldo de endereços */}
       <section
         aria-label={t.addresses.heroLabel}
-        className="rounded-2xl bg-black p-6 text-white shadow-md shadow-black/20"
+        className="rounded-2xl bg-black p-6 text-white shadow-xs shadow-black/20"
       >
         <span className="inline-flex items-center gap-2 text-[0.625rem] font-medium uppercase tracking-widest text-neutral-400">
           <MapPinned className="size-4 text-brand" aria-hidden="true" />
@@ -111,7 +111,7 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
 
       <Link
         href={`/org/${organizationSlug}/addresses/new`}
-        className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground shadow-sm transition-colors hover:bg-brand/90 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground shadow-xs transition-colors hover:bg-brand/90 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
       >
         <Plus className="size-4" aria-hidden="true" />
         {t.addresses.sendNew}
@@ -231,9 +231,9 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
       ) : (
         <section
           aria-label={t.addresses.noResults}
-          className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-card py-16 text-center text-muted-foreground"
+          className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-card px-4 py-10 text-center text-muted-foreground"
         >
-          <MapPin className="size-10 opacity-30" aria-hidden />
+          <MapPin className="size-8 text-muted-foreground" aria-hidden />
           <p className="text-sm font-medium">
             {t.addresses.noResults}
             {query ? ` "${query}"` : ""}

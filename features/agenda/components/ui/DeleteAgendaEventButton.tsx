@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { deleteAgendaEventAction } from "../../application/agenda.action";
@@ -25,6 +26,7 @@ interface Props {
 
 export function DeleteAgendaEventButton({ eventId, organizationSlug }: Props) {
   const { t } = useI18n();
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = () => {
@@ -35,6 +37,7 @@ export function DeleteAgendaEventButton({ eventId, organizationSlug }: Props) {
         return;
       }
       toast.success(t.agenda.deletedSuccess);
+      router.refresh();
     });
   };
 
@@ -63,6 +66,7 @@ export function DeleteAgendaEventButton({ eventId, organizationSlug }: Props) {
             <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
+              disabled={isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {t.common.delete}

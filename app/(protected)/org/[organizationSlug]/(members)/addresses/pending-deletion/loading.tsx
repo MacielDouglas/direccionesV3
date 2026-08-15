@@ -1,9 +1,12 @@
-export default function PendingDeletionLoading() {
+import { getServerDictionary } from "@/lib/i18n/server";
+
+export default async function PendingDeletionLoading() {
+  const t = await getServerDictionary();
   return (
     <main
       className="mx-auto w-full max-w-3xl px-4 py-6"
       aria-busy="true"
-      aria-label="Cargando solicitudes"
+      aria-label={t.common.loadingLabels.requests}
     >
       <div className="h-7 w-56 animate-pulse rounded-md bg-muted" />
       <div className="mt-1 h-4 w-32 animate-pulse rounded bg-muted" />

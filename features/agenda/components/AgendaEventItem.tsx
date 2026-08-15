@@ -80,7 +80,7 @@ export function AgendaEventItem({
             >
               {day}
             </span>
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <span className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
               {monthName(locale, month).slice(0, 3)}
             </span>
           </div>

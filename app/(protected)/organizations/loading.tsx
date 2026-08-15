@@ -1,11 +1,13 @@
+import { getServerDictionary } from "@/lib/i18n/server";
 import { Building2 } from "lucide-react";
 
-export default function OrganizationsLoading() {
+export default async function OrganizationsLoading() {
+  const t = await getServerDictionary();
   return (
     <main
       className="mx-auto w-full max-w-3xl px-4 py-10"
       aria-busy="true"
-      aria-label="Cargando organizaciones"
+      aria-label={t.common.loadingLabels.organizations}
     >
       <header className="flex flex-col items-center gap-2 text-center">
         <Building2 className="h-10 w-10 text-brand opacity-30" aria-hidden="true" />

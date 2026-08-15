@@ -53,17 +53,17 @@ export default async function AdminPage({ params }: Props) {
         {/* Hero — criar pessoa */}
         <Link
           href={`/org/${slug}/admin/gestao`}
-          className="group flex items-center justify-between gap-4 rounded-2xl bg-black p-6 text-white shadow-md shadow-black/20 transition-transform active:scale-[0.99] sm:p-8"
+          className="group flex items-center justify-between gap-4 rounded-2xl bg-black p-6 text-white shadow-xs shadow-black/20 transition-transform active:scale-[0.99] sm:p-8"
         >
           <div>
-            <span className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-neutral-400">
+            <span className="inline-flex items-center gap-2 text-[0.625rem] font-medium uppercase tracking-widest text-neutral-400">
               <UserPlus className="size-4" aria-hidden="true" />
               {t.admin.people}
             </span>
-            <p className="mt-3 max-w-md text-lg font-semibold leading-snug sm:text-xl">
+            <p className="mt-3 max-w-md text-lg font-semibold leading-snug tracking-tight sm:text-xl">
               {t.admin.peopleDescription}
             </p>
-            <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90">
+            <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-3 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90">
               <Plus className="size-4" aria-hidden="true" />
               {t.people.createButton}
             </span>
@@ -75,7 +75,7 @@ export default async function AdminPage({ params }: Props) {
         <section aria-labelledby="manage-heading">
           <h2
             id="manage-heading"
-            className="mb-3 flex items-center gap-2 text-base font-semibold text-foreground"
+            className="mb-3 flex items-center gap-2 text-base font-semibold tracking-tight text-foreground"
           >
             <ShieldCheck className="size-4 text-brand" aria-hidden="true" />
             {t.admin.dashboard}
@@ -155,7 +155,9 @@ function AdminAction({
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-1.5">
-            <h3 className="truncate text-sm font-semibold text-foreground">{title}</h3>
+            <h3 className="truncate text-sm font-semibold tracking-tight text-foreground">
+              {title}
+            </h3>
             {titleAlt && titleAlt !== title ? (
               <span className="truncate text-xs font-normal text-muted-foreground/80">
                 / {titleAlt}

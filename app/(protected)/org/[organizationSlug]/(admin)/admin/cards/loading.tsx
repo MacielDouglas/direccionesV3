@@ -1,9 +1,12 @@
-export default function CardsLoading() {
+import { getServerDictionary } from "@/lib/i18n/server";
+
+export default async function CardsLoading() {
+  const t = await getServerDictionary();
   return (
     <div
       className="mx-auto w-full max-w-3xl px-4 py-6 sm:py-10"
       aria-busy="true"
-      aria-label="Cargando tarjetas"
+      aria-label={t.common.loadingLabels.cards}
     >
       <header className="mb-6 flex items-center justify-between gap-4">
         <div className="space-y-1.5">

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inconsolata, Inter } from "next/font/google";
+import { Inconsolata, Outfit } from "next/font/google";
 import "@/app/globals.css";
 import { NavigationProvider } from "@/components/NavigationProvider";
 import { Toaster } from "@/components/ui/sonner";
@@ -8,10 +8,10 @@ import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
 import { ThemeProvider } from "next-themes";
 
-const inter = Inter({
+const outfit = Outfit({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-inter",
+  variable: "--font-outfit",
   display: "swap",
 });
 
@@ -60,8 +60,8 @@ export const viewport: Viewport = {
   // userScalable: false, // junto com maximumScale — padrão para app-like
   viewportFit: "cover", // safe area para notch/dynamic island
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f3f3f3" },
-    { media: "(prefers-color-scheme: dark)", color: "#111111" },
+    { media: "(prefers-color-scheme: light)", color: "#faf8f5" },
+    { media: "(prefers-color-scheme: dark)", color: "#161310" },
   ],
 };
 
@@ -81,7 +81,7 @@ export default async function RootLayout({
       </head>
       <body
         className={`
-          ${inter.variable} ${inconsolata.variable}
+          ${outfit.variable} ${inconsolata.variable}
           font-sans antialiased
           overflow-x-hidden
           bg-background text-foreground

@@ -19,6 +19,8 @@ export type I18nDictionary = {
     back: string;
     logout: string;
     logoutConfirm: string;
+    sessionClosed: string;
+    sessionCloseError: string;
     loading: string;
     language: string;
     all: string;
@@ -26,6 +28,36 @@ export type I18nDictionary = {
     skipLink: string;
     navigate: string;
     closeScreen: string;
+    backToTop: string;
+    activateMap: string;
+    mapPreviewAlt: string;
+    tapToInteract: string;
+    loadingLabels: {
+      home: string;
+      login: string;
+      organizations: string;
+      invitation: string;
+      conditions: string;
+      users: string;
+      myCards: string;
+      profile: string;
+      cardEdit: string;
+      surveyMap: string;
+      cardForm: string;
+      people: string;
+      adminPanel: string;
+      cards: string;
+      invitations: string;
+      address: string;
+      addressForm: string;
+      addresses: string;
+      requests: string;
+      addressEditor: string;
+      typeSelector: string;
+      addressFields: string;
+      gpsFields: string;
+      imageField: string;
+    };
   };
   navigation: {
     homeLabel: string;
@@ -268,6 +300,12 @@ export type I18nDictionary = {
     residential: string;
     addressMapAria: string;
     addressImageAlt: string;
+    detailTitle: string;
+    imageViewerTitle: string;
+    imageViewerDescription: string;
+    imageCloseAria: string;
+    backToDetailsAria: string;
+    imagePreviewAlt: string;
   };
   cards: {
     title: string;
@@ -293,6 +331,9 @@ export type I18nDictionary = {
     emptyTitle: string;
     emptyDescription: string;
     seeMap: string;
+    selectedAddresses: string;
+    selectAddressesAria: string;
+    unnamedAddress: string;
   };
   agenda: {
     title: string;
@@ -358,6 +399,8 @@ export type I18nDictionary = {
     heroNoNext: string;
     hourSuffix: string;
     nextBadge: string;
+    savedOptions: string;
+    viewSavedOptions: string;
   };
   survey: {
     title: string;

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { FileDown, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import type { AgendaEventItem } from "../types/agenda.types";
 import { eventDateParts } from "../utils/agenda-time";
 import { monthName, weekdayLong } from "../utils/calendar-locale";
@@ -252,7 +253,9 @@ export function AgendaPdfButton({ events, monthLabel: monthLabelProp, month, yea
         );
       }
 
-      doc.save(`Predicacion_${monthName(locale, month)}_${year}.pdf`);
+      doc.save(`${t.agenda.title}_${monthName(locale, month)}_${year}.pdf`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t.errors.generic);
     } finally {
       setLoading(false);
     }

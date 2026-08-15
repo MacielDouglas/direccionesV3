@@ -6,9 +6,10 @@ import { getCurrentUser } from "@/server/users";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Página Home",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getServerDictionary();
+  return { title: t.common.home };
+}
 
 export default async function Home() {
   const data = await getCurrentUser();

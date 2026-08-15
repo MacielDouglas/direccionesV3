@@ -92,10 +92,10 @@ export function AgendaEventList({
   if (events.length === 0) {
     return (
       <section aria-labelledby="events-heading">
-        <h2 id="events-heading" className="mb-3 text-base font-semibold">
+        <h2 id="events-heading" className="mb-3 text-base font-semibold tracking-tight">
           {t.agenda.eventsSection.replace("{month}", monthLabelProp)}
         </h2>
-        <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-muted/30 py-10 text-muted-foreground">
+        <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-muted/30 py-10 text-muted-foreground">
           <CalendarX className="size-8" aria-hidden />
           <p className="text-sm">{t.agenda.noEvents}</p>
         </div>
@@ -106,7 +106,7 @@ export function AgendaEventList({
   return (
     <>
       <section aria-labelledby="events-heading">
-        <h2 id="events-heading" className="mb-3 text-base font-semibold">
+        <h2 id="events-heading" className="mb-3 text-base font-semibold tracking-tight">
           {t.agenda.eventsSection.replace("{month}", monthLabelProp)}
         </h2>
 
@@ -117,7 +117,7 @@ export function AgendaEventList({
         >
           {upcomingEvents.length === 0 && pastEvents.length > 0 && (
             <li>
-              <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-muted/20 py-8 text-muted-foreground">
+              <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-muted/20 py-8 text-muted-foreground">
                 <CalendarX className="size-6" aria-hidden />
                 <p className="text-sm">{t.agenda.noUpcomingEvents}</p>
               </div>

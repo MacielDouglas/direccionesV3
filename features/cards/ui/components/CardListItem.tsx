@@ -102,6 +102,7 @@ export function CardListItem({
         <div
           className="relative overflow-hidden px-5 py-4 text-white"
           style={{
+            // impeccable-disable-next-line design-system-color -- escurece a cor dinâmica do cartão no gradiente
             background: `linear-gradient(135deg, ${color} 0%, color-mix(in srgb, ${color} 55%, #000) 100%)`,
           }}
         >

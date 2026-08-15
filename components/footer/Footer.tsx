@@ -30,7 +30,7 @@ export default async function Footer({ organization }: FooterProps) {
               <span className="text-lg font-medium uppercase">{t.common.appName}</span>
             </Link>
 
-            <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-neutral-400 lg:mx-0">
+            <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground lg:mx-0">
               {t.footer.tagline}
             </p>
           </div>
@@ -41,23 +41,25 @@ export default async function Footer({ organization }: FooterProps) {
               <li>
                 <Link
                   href="/"
-                  className="text-neutral-400 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                  className="text-muted-foreground transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                 >
                   {t.common.appName}
                 </Link>
               </li>
-              <li>
-                <Link
-                  href={`/org/${organization?.slug}/user`}
-                  className="text-neutral-400 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                >
-                  {t.footer.profile}
-                </Link>
-              </li>
+              {organization?.slug && (
+                <li>
+                  <Link
+                    href={`/org/${organization.slug}/user`}
+                    className="text-muted-foreground transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                  >
+                    {t.footer.profile}
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
                   href="/condition"
-                  className="text-neutral-400 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                  className="text-muted-foreground transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                 >
                   {t.footer.terms}
                 </Link>
@@ -67,8 +69,8 @@ export default async function Footer({ organization }: FooterProps) {
         </div>
 
         {/* Bottom */}
-        <div className="mt-8 border-t border-white/10 pt-5">
-          <p className="text-center text-xs text-neutral-400 lg:text-right">
+        <div className="mt-8 border-t border-border pt-5">
+          <p className="text-center text-xs text-muted-foreground lg:text-right">
             © {currentYear} {t.footer.copyright}
           </p>
         </div>

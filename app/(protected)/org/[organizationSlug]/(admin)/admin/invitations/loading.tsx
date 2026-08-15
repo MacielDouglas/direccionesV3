@@ -1,13 +1,15 @@
 // app/org/[organizationSlug]/admin/invitations/loading.tsx
 import { Skeleton } from "@/components/ui/skeleton";
+import { getServerDictionary } from "@/lib/i18n/server";
 import { Link2 } from "lucide-react";
 
-export default function InvitationsLoading() {
+export default async function InvitationsLoading() {
+  const t = await getServerDictionary();
   return (
     <main
       className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-6"
       aria-busy="true"
-      aria-label="Cargando invitaciones"
+      aria-label={t.common.loadingLabels.invitations}
     >
       {/* Header */}
       <header className="flex items-center gap-3">

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Loader2, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteCardAction } from "../../application/card.actions";
@@ -27,6 +28,7 @@ interface Props {
 export function DeleteCardButton({ cardId, cardNumber, organizationSlug, className }: Props) {
   const [open, setOpen] = useState(false);
   const { t } = useI18n();
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = () => {
@@ -38,6 +40,7 @@ export function DeleteCardButton({ cardId, cardNumber, organizationSlug, classNa
       }
       toast.success(t.admin.cardDeleted.replace("{number}", String(cardNumber).padStart(2, "0")));
       setOpen(false);
+      router.refresh();
     });
   };
 

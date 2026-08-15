@@ -1,10 +1,12 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { getServerDictionary } from "@/lib/i18n/server";
 
-export default function JoinLoading() {
+export default async function JoinLoading() {
+  const t = await getServerDictionary();
   return (
     <main className="flex min-h-svh flex-col items-center justify-center px-4">
       <article
-        aria-label="Cargando invitación"
+        aria-label={t.common.loadingLabels.invitation}
         aria-busy="true"
         className="w-full max-w-sm rounded-2xl border bg-card p-6 shadow-sm flex flex-col gap-5 text-center"
       >

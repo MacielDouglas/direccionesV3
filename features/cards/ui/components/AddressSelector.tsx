@@ -1,6 +1,7 @@
 "use client";
 
 import { useMapInstance } from "@/features/map/core/MapboxProvider";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, MapPin } from "lucide-react";
 import type { AvailableAddress } from "../../types/card.types";
@@ -15,6 +16,7 @@ interface Props {
 
 export function AddressSelector({ addresses, selected, onChange, error }: Props) {
   const { map } = useMapInstance();
+  const { t } = useI18n();
 
   const toggle = (id: string) => {
     onChange(selected.includes(id) ? selected.filter((s) => s !== id) : [...selected, id]);
@@ -32,7 +34,7 @@ export function AddressSelector({ addresses, selected, onChange, error }: Props)
   if (addresses.length === 0) {
     return (
       <p className="text-sm text-muted-foreground py-4 text-center">
-        No hay direcciones disponibles.
+        {t.admin.noAvailableAddresses}
       </p>
     );
   }
@@ -40,13 +42,13 @@ export function AddressSelector({ addresses, selected, onChange, error }: Props)
   return (
     <fieldset className="min-w-0">
       <legend className="text-sm font-medium mb-2">
-        Direcciones{" "}
+        {t.common.addresses}{" "}
         <span className="text-muted-foreground font-normal">
-          ({selected.length} seleccionada{selected.length !== 1 ? "s" : ""})
+          {t.cards.selectedAddresses.replace("{count}", String(selected.length))}
         </span>
       </legend>
 
-      <ul aria-label="Seleccionar direcciones" className="flex flex-col gap-2 min-w-0">
+      <ul aria-label={t.cards.selectAddressesAria} className="flex flex-col gap-2 min-w-0">
         {addresses.map((addr, index) => {
           const isSelected = selected.includes(addr.id);
           const num = index + 1;
@@ -86,7 +88,7 @@ export function AddressSelector({ addresses, selected, onChange, error }: Props)
                 {/* Texto — min-w-0 + overflow-hidden para truncate funcionar */}
                 <span className="flex flex-col gap-0.5 min-w-0 flex-1 overflow-hidden">
                   <span className="font-medium text-sm truncate">
-                    {addr.businessName ?? "Casa"}
+                    {addr.businessName ?? t.cards.unnamedAddress}
                   </span>
                   <span className="text-sm text-muted-foreground flex items-center gap-1 min-w-0">
                     <MapPin className="size-3 shrink-0" aria-hidden />

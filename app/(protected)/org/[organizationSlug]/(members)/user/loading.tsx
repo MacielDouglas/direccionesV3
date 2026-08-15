@@ -1,9 +1,12 @@
-export default function UserLoading() {
+import { getServerDictionary } from "@/lib/i18n/server";
+
+export default async function UserLoading() {
+  const t = await getServerDictionary();
   return (
     <main
       className="mx-auto w-full max-w-3xl px-4 py-8 flex flex-col gap-8"
       aria-busy="true"
-      aria-label="Cargando perfil"
+      aria-label={t.common.loadingLabels.profile}
     >
       <section className="flex flex-col items-center gap-4">
         <div className="size-28 animate-pulse rounded-full bg-muted" />

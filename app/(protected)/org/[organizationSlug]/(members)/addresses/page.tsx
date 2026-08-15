@@ -5,9 +5,10 @@ import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Direcciones",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getServerDictionary();
+  return { title: t.addresses.allTitle };
+}
 
 type AddressPageProps = {
   params: {

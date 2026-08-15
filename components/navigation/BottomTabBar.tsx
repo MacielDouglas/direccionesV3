@@ -77,7 +77,7 @@ export function BottomTabBar({ orgSlug, role }: BottomTabBarProps) {
     <nav
       aria-label={t.header.mainMenu}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0c0a09] text-white transition-transform duration-500 ease-in-out md:hidden",
+        "fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur-md text-foreground transition-transform duration-500 ease-in-out md:hidden",
         isHidden && "translate-y-full",
       )}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
@@ -94,7 +94,7 @@ export function BottomTabBar({ orgSlug, role }: BottomTabBarProps) {
                 className={cn(
                   "flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-xl px-1 transition-colors",
                   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
-                  active ? "text-white" : "text-neutral-400 hover:text-white",
+                  active ? "text-brand" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Icon

@@ -28,7 +28,7 @@ function buildLinks(lat: number, lng: number, isIOS: boolean): NavApp[] {
       label: "Google Maps",
       href: `https://www.google.com/maps/dir/?api=1&destination=${dest}`,
       bg: "#ffffff",
-      color: "#1a2028",
+      color: "#1a2028", // impeccable-disable-line design-system-color -- cor da marca Google Maps
       Icon: SiGooglemaps,
     },
     {

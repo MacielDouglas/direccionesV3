@@ -9,18 +9,18 @@
   --color-brand-foreground: #2a1405;
   --color-brand-muted: #b84f1a;
 
-  --color-surface-light: #f3f3f3;
-  --color-surface-dark: #111111;
-  --color-surface-subtle-light: #f0f0f0;
-  --color-surface-subtle-dark: #232323;
+  --color-surface-light: #faf8f5;
+  --color-surface-dark: #161310;
+  --color-surface-subtle-light: #eee9e1;
+  --color-surface-subtle-dark: #2a2620;
   --color-surface-elevated-light: #ffffff;
-  --color-surface-elevated-dark: #1f1f1f;
+  --color-surface-elevated-dark: #1d1a16;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-outfit);
   --font-mono: var(--font-inconsolata);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -61,29 +61,29 @@
 }
 
 :root {
-  /* Raios reduzidos estilo Estapar — cantos quase retos (8px base) */
-  --radius: 0.5rem;
+  /* Radius base generoso (14px) — cards 2xl, chips full */
+  --radius: 0.875rem;
 
-  /* Neutros Estapar — fundo cinza claro #f3f3f3, cards branco, ação primária preto #000 */
-  --background: #f3f3f3;
-  --foreground: #1a1a1a;
+  /* Neutros quentes — off-white #faf8f5, cards branco, ação primária laranja #ff6828 */
+  --background: #faf8f5;
+  --foreground: #1d1711;
   --card: #ffffff;
-  --card-foreground: #1a1a1a;
+  --card-foreground: #1d1711;
   --popover: #ffffff;
-  --popover-foreground: #1a1a1a;
+  --popover-foreground: #1d1711;
 
-  /* Ação primária preta (estilo Estapar/bancário sóbrio); laranja #ff6828 como acento/foco */
-  --primary: #000000;
-  --primary-foreground: #ffffff;
-  --secondary: #f0f0f0;
-  --secondary-foreground: #1a1a1a;
-  --muted: #f0f0f0;
-  --muted-foreground: #525252;
-  --accent: #f0f0f0;
-  --accent-foreground: #1a1a1a;
-  --destructive: #c70809;
-  --border: #e5e5e5;
-  --input: #e0e0e0;
+  /* Ação primária laranja Direcciones; texto sempre brand-foreground escuro */
+  --primary: #ff6828;
+  --primary-foreground: #2a1405;
+  --secondary: #eee9e1;
+  --secondary-foreground: #1d1711;
+  --muted: #eee9e1;
+  --muted-foreground: #6b6357;
+  --accent: #eee9e1;
+  --accent-foreground: #1d1711;
+  --destructive: #d93535;
+  --border: #e5ded3;
+  --input: #ddd2c3;
   --ring: #ff6828;
 
   --chart-1: #ff6828;
@@ -93,31 +93,31 @@
   --chart-5: #e2e8f0;
 
   --sidebar: #ffffff;
-  --sidebar-foreground: #1a1a1a;
-  --sidebar-primary: #000000;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f0f0f0;
-  --sidebar-accent-foreground: #1a1a1a;
-  --sidebar-border: #e5e5e5;
+  --sidebar-foreground: #1d1711;
+  --sidebar-primary: #ff6828;
+  --sidebar-primary-foreground: #2a1405;
+  --sidebar-accent: #eee9e1;
+  --sidebar-accent-foreground: #1d1711;
+  --sidebar-border: #e5ded3;
   --sidebar-ring: #ff6828;
 }
 
 .dark {
-  --background: #111111;
-  --foreground: #f2f2f2;
-  --card: #1a1a1a;
-  --card-foreground: #f2f2f2;
-  --popover: #1a1a1a;
-  --popover-foreground: #f2f2f2;
+  --background: #161310;
+  --foreground: #f2ede4;
+  --card: #1f1b17;
+  --card-foreground: #f2ede4;
+  --popover: #1f1b17;
+  --popover-foreground: #f2ede4;
 
-  --primary: #ffffff;
-  --primary-foreground: #000000;
-  --secondary: #2a2a2a;
-  --secondary-foreground: #f2f2f2;
-  --muted: #2a2a2a;
-  --muted-foreground: #a3a3a3;
-  --accent: #2a2a2a;
-  --accent-foreground: #f2f2f2;
+  --primary: #ff6828;
+  --primary-foreground: #2a1405;
+  --secondary: #2a2620;
+  --secondary-foreground: #f2ede4;
+  --muted: #2a2620;
+  --muted-foreground: #a49a8d;
+  --accent: #2a2620;
+  --accent-foreground: #f2ede4;
   --destructive: #f05b5b;
   --border: rgb(255 255 255 / 0.12);
   --input: rgb(255 255 255 / 0.18);
@@ -129,24 +129,23 @@
   --chart-4: #a78bfa;
   --chart-5: #e2e8f0;
 
-  --sidebar: #1a1a1a;
-  --sidebar-foreground: #f2f2f2;
-  --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #2a2a2a;
-  --sidebar-accent-foreground: #f2f2f2;
+  --sidebar: #1f1b17;
+  --sidebar-foreground: #f2ede4;
+  --sidebar-primary: #ff6828;
+  --sidebar-primary-foreground: #2a1405;
+  --sidebar-accent: #2a2620;
+  --sidebar-accent-foreground: #f2ede4;
   --sidebar-border: rgb(255 255 255 / 0.12);
   --sidebar-ring: #ff6828;
 }
 
-/* Footer sempre escuro com texto branco — neutro quente, não adapta ao tema */
+/* Footer — adapta ao tema, neutro quente */
 .footer-fixed {
-  background-color: #0c0a09;
-  color: #ffffff;
+  @apply border-t border-border bg-card text-muted-foreground;
 }
 
 .footer-fixed a {
-  color: #ffffff;
+  @apply text-muted-foreground;
 }
 
 .footer-fixed a:hover {
@@ -214,7 +213,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
+    font-size: 12px; /* impeccable-disable-line design-system-font-size -- marker físico de 28px no mapa */
     font-weight: 700;
     color: white;
     cursor: pointer;
@@ -237,7 +236,7 @@
     border-radius: 9999px;
     background-color: #3b82f6;
     border: 3px solid #ffffff;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4); /* impeccable-disable-line design-system-color -- sombra de dot estilo Google Maps */
     pointer-events: none;
   }
 

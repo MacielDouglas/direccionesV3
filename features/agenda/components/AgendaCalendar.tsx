@@ -82,7 +82,7 @@ export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
           onClick={() => navigate(-1)}
           disabled={isPending}
           aria-label={t.agenda.previousMonth}
-          className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-full p-3 text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
         >
           <ChevronLeft className="size-5" aria-hidden />
         </button>
@@ -113,7 +113,7 @@ export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
           onClick={() => navigate(1)}
           disabled={isPending}
           aria-label={t.agenda.nextMonth}
-          className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-full p-3 text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
         >
           <ChevronRight className="size-5" aria-hidden />
         </button>
@@ -166,7 +166,7 @@ export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
                           .replace("{day}", String(day))
                           .replace("{month}", monthName(locale, month))}
                         className={cn(
-                          "flex size-8 items-center justify-center rounded-full text-sm font-medium transition-all",
+                          "flex size-10 items-center justify-center rounded-full text-sm font-medium transition-all",
                           isClickable && !isPending && "cursor-pointer",
                           isClickable &&
                             !isPending &&

@@ -12,11 +12,17 @@ import { monthLabel as monthLabelLocalized } from "@/features/agenda/utils/calen
 import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 interface Props {
   params: Promise<{ organizationSlug: string }>;
   searchParams: Promise<{ year?: string; month?: string }>;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getServerDictionary();
+  return { title: t.admin.agenda };
 }
 
 export default async function AdminAgendaPage({ params, searchParams }: Props) {
@@ -27,7 +33,7 @@ export default async function AdminAgendaPage({ params, searchParams }: Props) {
     getServerDictionary(),
     getServerLocale(),
   ]);
-  if (!session) redirect("/sign-in");
+  if (!session) redirect("/login");
 
   const role = session.memberRole?.role;
   if (!session.isSuperUser && (!role || !["admin", "owner"].includes(role))) {
@@ -51,7 +57,7 @@ export default async function AdminAgendaPage({ params, searchParams }: Props) {
   const monthLabel = monthLabelLocalized(locale, activeMonth, activeYear);
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-7 md:py-10">
+    <main className="mx-auto w-full max-w-3xl px-4 py-6 md:py-10">
       <BackLink href={`/org/${organizationSlug}/admin`} className="mb-4" />
       <header className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t.admin.agenda}</h1>

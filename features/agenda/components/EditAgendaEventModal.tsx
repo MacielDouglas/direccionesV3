@@ -97,7 +97,7 @@ export function EditAgendaEventModal({
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-h-[85vh] w-full max-w-md gap-4 overflow-y-auto rounded-2xl">
         <DialogHeader>
-          <DialogTitle>{t.agenda.editEvent}</DialogTitle>
+          <DialogTitle className="tracking-tight">{t.agenda.editEvent}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
@@ -245,7 +245,12 @@ export function EditAgendaEventModal({
             >
               {t.common.cancel}
             </Button>
-            <Button type="submit" className="w-full" disabled={isPending} aria-busy={isPending}>
+            <Button
+              type="submit"
+              className="h-11 w-full"
+              disabled={isPending}
+              aria-busy={isPending}
+            >
               {isPending ? t.agenda.saving : t.common.save}
             </Button>
           </div>

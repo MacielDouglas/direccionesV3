@@ -1,8 +1,14 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { getServerDictionary } from "@/lib/i18n/server";
 
-export default function ConditionLoading() {
+export default async function ConditionLoading() {
+  const t = await getServerDictionary();
   return (
-    <div className="space-y-6 px-4 py-6" aria-busy="true" aria-label="Cargando condiciones">
+    <div
+      className="space-y-6 px-4 py-6"
+      aria-busy="true"
+      aria-label={t.common.loadingLabels.conditions}
+    >
       <section className="mx-auto max-w-3xl rounded-2xl border bg-card p-6 shadow-xs">
         <Skeleton className="h-8 w-56" />
         <Skeleton className="mt-3 h-4 w-3/4" />

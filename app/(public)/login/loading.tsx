@@ -1,9 +1,11 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { getServerDictionary } from "@/lib/i18n/server";
 
-export default function LoginLoading() {
+export default async function LoginLoading() {
+  const t = await getServerDictionary();
   return (
     <div
-      aria-label="Cargando inicio de sesión"
+      aria-label={t.common.loadingLabels.login}
       aria-busy="true"
       className="relative flex min-h-svh w-full flex-col items-center justify-center overflow-hidden bg-background px-4"
     >

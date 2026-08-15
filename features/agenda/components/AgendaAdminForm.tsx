@@ -171,7 +171,7 @@ export function AgendaAdminForm({
     <Dialog open={open} onOpenChange={setOpen}>
       <>
         <DialogTrigger asChild>
-          <Button className="w-full gap-2">
+          <Button className="h-11 w-full gap-2">
             <CalendarPlus className="size-4" aria-hidden />
             {t.agenda.createEvent}
           </Button>
@@ -179,7 +179,7 @@ export function AgendaAdminForm({
 
         <DialogContent className="max-h-[85vh] max-w-md gap-4 overflow-y-auto rounded-2xl">
           <DialogHeader>
-            <DialogTitle>{t.agenda.createEvent}</DialogTitle>
+            <DialogTitle className="tracking-tight">{t.agenda.createEvent}</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
@@ -365,7 +365,7 @@ export function AgendaAdminForm({
               )}
             </div>
 
-            <Button type="submit" disabled={isPending} aria-busy={isPending}>
+            <Button type="submit" className="h-11" disabled={isPending} aria-busy={isPending}>
               {isPending
                 ? t.agenda.saving
                 : recurring && weekdayLabel

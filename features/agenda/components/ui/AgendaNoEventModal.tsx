@@ -31,7 +31,7 @@ export function AgendaNoEventModal({ open, dateLabel, onClose }: Props) {
           <div className="mx-auto mb-2 flex size-12 items-center justify-center rounded-full bg-muted">
             <CalendarX className="size-6 text-muted-foreground" aria-hidden />
           </div>
-          <DialogTitle>{t.agenda.noEventTitle}</DialogTitle>
+          <DialogTitle className="tracking-tight">{t.agenda.noEventTitle}</DialogTitle>
           <DialogDescription>
             {t.agenda.noEventDescription.replace("{date}", dateLabel)}
           </DialogDescription>

@@ -17,11 +17,11 @@ export default function LogoutButton() {
       await authClient.signOut({
         fetchOptions: {
           onSuccess: () => {
-            toast.success("Sesión cerrada correctamente");
+            toast.success(t.common.sessionClosed);
             window.location.href = "/login";
           },
           onError: () => {
-            toast.error("Error al cerrar sesión. Intente nuevamente.");
+            toast.error(t.common.sessionCloseError);
           },
         },
       });

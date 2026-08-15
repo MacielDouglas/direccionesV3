@@ -38,7 +38,9 @@ export function AgendaEventModal({ event, onClose }: Props) {
     >
       <DialogContent className="max-w-sm rounded-2xl">
         <DialogHeader>
-          <DialogTitle className="text-base capitalize leading-snug">{dateStr}</DialogTitle>
+          <DialogTitle className="text-base tracking-tight capitalize leading-snug">
+            {dateStr}
+          </DialogTitle>
           <DialogDescription className="flex items-center gap-1.5 text-sm">
             <Clock className="size-3.5" aria-hidden />
             {timeStr}

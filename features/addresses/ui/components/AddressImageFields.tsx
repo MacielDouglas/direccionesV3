@@ -128,7 +128,7 @@ export default function AddressImageField() {
                 {hasImage && preview && (
                   <Image
                     src={preview}
-                    alt="Vista previa"
+                    alt={t.addresses.imagePreviewAlt}
                     fill
                     className="object-cover"
                     unoptimized

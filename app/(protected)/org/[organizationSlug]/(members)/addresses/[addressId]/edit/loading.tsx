@@ -1,9 +1,12 @@
-export default function AddressEditLoading() {
+import { getServerDictionary } from "@/lib/i18n/server";
+
+export default async function AddressEditLoading() {
+  const t = await getServerDictionary();
   return (
     <article
       className="mx-auto flex w-full max-w-3xl flex-col gap-2"
       aria-busy="true"
-      aria-label="Cargando editor de dirección"
+      aria-label={t.common.loadingLabels.addressEditor}
     >
       {/* Header */}
       <header className="flex items-center gap-3 px-4 pb-2 pt-4">

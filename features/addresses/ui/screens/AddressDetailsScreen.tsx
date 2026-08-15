@@ -71,7 +71,7 @@ export default async function AddressDetailsScreen({
         <header className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <span className={`h-8 w-2 shrink-0 rounded-full ${colorClass}`} aria-hidden="true" />
-            <h1 className="truncate text-lg font-semibold uppercase tracking-wide sm:text-2xl">
+            <h1 className="truncate text-2xl font-semibold tracking-tight">
               {address.businessName ?? t.addresses.residential}
             </h1>
           </div>
@@ -90,15 +90,19 @@ export default async function AddressDetailsScreen({
         </header>
         <ul className="flex flex-wrap gap-3" aria-label={t.addresses.statusAria}>
           <li
-            className={`rounded-full px-2 py-1 text-xs font-semibold sm:text-sm ${
-              address.confirmed ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-600"
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
+              address.confirmed
+                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                : "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300"
             }`}
           >
             {address.confirmed ? `✓ ${t.addresses.confirmed}` : `✗ ${t.addresses.notConfirmed}`}
           </li>
           <li
-            className={`rounded-full px-2 py-1 text-xs font-semibold sm:text-sm ${
-              address.active ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-600"
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
+              address.active
+                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                : "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300"
             }`}
           >
             {address.active ? `✓ ${t.addresses.active}` : `✗ ${t.addresses.inactive}`}
@@ -204,7 +208,7 @@ export default async function AddressDetailsScreen({
           </div>
 
           <Link href={`/org/${organizationSlug}/addresses/${address.id}/edit`}>
-            <Button className="w-full sm:w-auto">{t.addresses.editAddress}</Button>
+            <Button className="h-11 w-full sm:w-auto">{t.addresses.editAddress}</Button>
           </Link>
         </footer>
       </section>

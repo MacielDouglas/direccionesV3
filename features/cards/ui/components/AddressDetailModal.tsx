@@ -473,7 +473,7 @@ function AddressContent({
                 type="button"
                 variant="outline"
                 onClick={() => setInviteOpen(true)}
-                className="w-full border-0 bg-brand text-white hover:bg-brand/90 dark:bg-brand/90 dark:hover:bg-brand"
+                className="w-full border-0 bg-brand text-brand-foreground hover:bg-brand/90 dark:bg-brand/90 dark:hover:bg-brand"
               >
                 <MailCheck className="size-4 shrink-0" aria-hidden />
                 {t.addresses.inviteButton}
