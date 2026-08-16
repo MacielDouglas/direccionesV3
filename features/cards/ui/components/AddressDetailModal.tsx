@@ -28,6 +28,7 @@ import {
   Check,
   CircleAlert,
   DoorClosed,
+  Info,
   Loader2,
   MailCheck,
   Map as MapIcon,
@@ -738,6 +739,10 @@ function InviteDialogContent({
 
       {type === "OTHER" && (
         <div>
+          <p className="mb-2 flex items-start gap-1.5 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
+            <Info className="size-3.5 shrink-0" aria-hidden />
+            {t.addresses.inviteOtherHint}
+          </p>
           <Label
             htmlFor="invite-other"
             className="mb-1.5 block text-xs font-medium text-muted-foreground"

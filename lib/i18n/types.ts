@@ -254,6 +254,7 @@ export type I18nDictionary = {
     inviteTypeOther: string;
     inviteOtherLabel: string;
     inviteOtherPlaceholder: string;
+    inviteOtherHint: string;
     inviteSave: string;
     inviteSaving: string;
     inviteSaved: string;

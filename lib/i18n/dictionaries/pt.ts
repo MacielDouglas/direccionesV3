@@ -259,7 +259,9 @@ const ptBR: I18nDictionary = {
     inviteTypeConvention: "Congresso",
     inviteTypeOther: "Outro",
     inviteOtherLabel: "Descreva o outro tipo de convite",
-    inviteOtherPlaceholder: "Ex.: Curso Bíblico, Estudo em casa…",
+    inviteOtherPlaceholder: "Ex.: Outra campanha especial…",
+    inviteOtherHint:
+      "Não é necessário adicionar convites para reuniões, convites para cursos bíblico",
     inviteSave: "Salvar convite",
     inviteSaving: "Salvando…",
     inviteSaved: "Convite registrado.",
