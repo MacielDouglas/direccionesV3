@@ -43,7 +43,7 @@ export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props
   );
   const [mapOpen, setMapOpen] = useState(false);
 
-  const { allAddresses, addressIndexMap } = useMemo(() => {
+  const { allAddresses } = useMemo(() => {
     const addresses = cards
       .flatMap((card) => card.addresses)
       .filter(
@@ -59,7 +59,6 @@ export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props
 
     return {
       allAddresses: addresses,
-      addressIndexMap: new Map(addresses.map((a, i) => [a.id, i + 1])),
     };
   }, [cards]);
 
@@ -68,52 +67,44 @@ export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 px-4 pt-6 pb-28 md:py-10">
-      {/* Cabeçalho */}
-      <header className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-            {t.cards.mine}
-          </h1>
-          <p className="mt-0.5 truncate text-sm text-muted-foreground">
-            <span className="tabular-nums">{cards.length}</span>{" "}
-            {cards.length === 1 ? t.cards.assignedUnitSingular : t.cards.assignedUnit} ·{" "}
-            {t.cards.addressesCount.replace("{count}", String(totalAddresses))}
-          </p>
-        </div>
+    <div className="flex flex-col gap-6">
+      <MyCardsListView
+        cards={cards}
+        organizationSlug={organizationSlug}
+        totalAddresses={totalAddresses}
+        onOpenAddress={openAddress}
+      />
 
+      <div className="flex flex-col gap-4">
         {allAddresses.length > 0 && (
           <button
             type="button"
             onClick={() => setMapOpen(true)}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground shadow-xs transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full sm:w-auto rounded-xl border border-border bg-card py-3 text-sm font-medium text-foreground shadow-sm hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           >
-            <MapIcon className="size-4 text-brand" aria-hidden />
+            <MapIcon className="size-4 text-brand mr-2" aria-hidden />
             {t.cards.seeMap}
           </button>
         )}
-      </header>
 
-      <MyCardsListView
-        cards={cards}
-        totalAddresses={totalAddresses}
-        addressIndexMap={addressIndexMap}
-        onOpenAddress={openAddress}
-      />
+        {addressPromise && (
+          <AddressDetailModal
+            promise={addressPromise}
+            organizationSlug={organizationSlug}
+            onClose={() => setAddressPromise(null)}
+            myCards
+          />
+        )}
+      </div>
 
-      <MyCardsMapModal
-        open={mapOpen}
-        onClose={() => setMapOpen(false)}
-        addresses={allAddresses}
-        onMarkerClick={openAddress}
-      />
-
-      <AddressDetailModal
-        promise={addressPromise}
-        organizationSlug={organizationSlug}
-        onClose={() => setAddressPromise(null)}
-        myCards
-      />
+      {mapOpen && (
+        <MyCardsMapModal
+          open={mapOpen}
+          onClose={() => setMapOpen(false)}
+          addresses={allAddresses}
+          onMarkerClick={openAddress}
+        />
+      )}
     </div>
   );
 }

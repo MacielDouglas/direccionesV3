@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ADDRESS_TYPE_OPTIONS } from "@/features/addresses/domain/constants/address.constants";
 import type { AddressWithUsers } from "@/features/addresses/types/address.types";
-import { AddressImageViewer } from "@/features/addresses/ui/components/AddressImageViewer";
+import { AddressHeroImage } from "@/features/addresses/ui/components/AddressHeroImage";
 import DeleteAddressButton from "@/features/addresses/ui/components/DeleteAddressButton";
 import { NavigateAddressButtons } from "@/features/addresses/ui/components/NavigateAddressButtons";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -40,18 +40,6 @@ import Link from "next/link";
 import { Suspense, use, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AddressMapModal } from "./AddressMapModal";
-
-const TYPE_TILE: Record<string, string> = {
-  House: "bg-emerald-500/10",
-  Apartment: "bg-pink-500/10",
-  Store: "bg-amber-500/10",
-  Hotel: "bg-blue-500/10",
-  Restaurant: "bg-brand/10",
-};
-
-function typeTileOf(type: string): string {
-  return TYPE_TILE[type] ?? "bg-muted";
-}
 
 function formatDate(date: Date | string, locale: string) {
   return new Intl.DateTimeFormat(locale === "pt" ? "pt-BR" : "es-419", {
@@ -93,7 +81,6 @@ export function AddressDetailModal({ promise, onClose, organizationSlug, myCards
         if (!open) onClose();
       }}
     >
-      {/* Sheet mobile / diálogo central desktop */}
       <DialogContent showCloseButton={false} className={cn(SHEET_CLASSES, "sm:max-w-2xl!")}>
         <DialogHeader className="sr-only">
           <DialogTitle>{t.admin.addressDetailTitle}</DialogTitle>
@@ -119,24 +106,21 @@ export function AddressDetailModal({ promise, onClose, organizationSlug, myCards
 
 function AddressDetailSkeleton() {
   return (
-    <div className="flex flex-col">
-      <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-card/95 p-3 backdrop-blur">
+    <div className="flex flex-col bg-card">
+      <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border/60 bg-card/95 p-3 backdrop-blur">
         <Skeleton className="h-11 w-28 rounded-full" />
         <Skeleton className="size-11 rounded-full" />
       </div>
-      <section className="flex flex-col gap-4 border-t border-border bg-card p-4 pb-8 sm:p-6">
-        <div className="flex items-center gap-3">
-          <Skeleton className="size-12 rounded-xl" />
+      <Skeleton className="aspect-video w-full rounded-none" />
+      <section className="flex flex-col gap-5 p-4 pb-8 sm:p-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <Skeleton className="size-11 rounded-2xl" />
           <div className="flex flex-col gap-1.5">
             <Skeleton className="h-5 w-44" />
             <Skeleton className="h-3.5 w-28" />
           </div>
         </div>
-        <div className="flex gap-2">
-          <Skeleton className="h-6 w-24 rounded-full" />
-          <Skeleton className="h-6 w-20 rounded-full" />
-        </div>
-        <div className="grid grid-cols-2 gap-4 rounded-xl border p-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {[0, 1, 2, 3].map((row) => (
             <div key={row} className="flex flex-col gap-1">
               <Skeleton className="h-3 w-16" />
@@ -207,15 +191,11 @@ function AddressContent({
 
   const typeConfig = ADDRESS_TYPE_OPTIONS.find((opt) => opt.value === address.type);
   const Icon = typeConfig?.icon;
-  const fullAddress = `${address.street}, ${address.number} · ${address.neighborhood}, ${address.city}`;
+  const colorClass = typeConfig?.color ?? "text-brand";
+  const title = address.businessName ?? `${address.street}, ${address.number}`;
+  const addressLine = `${address.street}, ${address.number} · ${address.neighborhood}, ${address.city}`;
   const hasCoordinates = address.latitude != null && address.longitude != null;
   const yearInvites = invites.filter((invite) => invite.year === currentYear);
-  const isToned = myCards && (personChanged || noVisits);
-  const toneClasses = isToned
-    ? noVisits
-      ? "bg-red-50 dark:bg-red-950/20"
-      : "bg-zinc-100 dark:bg-zinc-950/40"
-    : null;
 
   const handleFlagConfirm = async () => {
     if (!flagTarget) return;
@@ -235,28 +215,19 @@ function AddressContent({
   };
 
   return (
-    <article className={cn("flex flex-col", toneClasses)}>
+    <article className="flex flex-col bg-card">
       {/* Topo fixo: avisos + ver mapa + navegação + fechar */}
-      <div
-        className={cn(
-          "sticky top-0 z-20 border-b border-border/60 backdrop-blur",
-          isToned
-            ? noVisits
-              ? "bg-red-50/95 dark:bg-red-950/20"
-              : "bg-zinc-100/95 dark:bg-zinc-950/40"
-            : "bg-card/95",
-        )}
-      >
+      <div className="sticky top-0 z-20 border-b border-border/60 bg-card/95 backdrop-blur">
         {myCards && (personChanged || noVisits) && (
           <div className="flex flex-col gap-1.5 px-3 pt-3">
             {personChanged && (
-              <p className="inline-flex items-center gap-1.5 self-start rounded-lg bg-zinc-200/80 px-2.5 py-1.5 text-[0.625rem] font-bold uppercase tracking-widest text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+              <p className="inline-flex items-center gap-1.5 self-start rounded-lg bg-muted/80 px-2.5 py-1.5 text-[0.625rem] font-bold uppercase tracking-widest text-muted-foreground">
                 <UserRoundX className="size-3.5 shrink-0" aria-hidden />
                 {t.addresses.personChangedBanner}
               </p>
             )}
             {noVisits && (
-              <p className="inline-flex items-center gap-1.5 self-start rounded-lg bg-red-100 px-2.5 py-1.5 text-[0.625rem] font-bold uppercase tracking-widest text-red-700 dark:bg-red-950/60 dark:text-red-300">
+              <p className="inline-flex items-center gap-1.5 self-start rounded-lg bg-destructive/10 px-2.5 py-1.5 text-[0.625rem] font-bold uppercase tracking-widest text-destructive">
                 <DoorClosed className="size-3.5 shrink-0" aria-hidden />
                 {t.addresses.noVisitsBanner}
               </p>
@@ -296,119 +267,140 @@ function AddressContent({
         )}
       </div>
 
+      {/* Hero com foto (padrão da tela de detalhes) */}
+      {address.image && (
+        <div className="p-4 pb-0 sm:p-6 sm:pb-0">
+          <AddressHeroImage
+            src={address.image}
+            alt={t.addresses.addressImageAlt.replace("{name}", title)}
+            name={title}
+            street={`${address.street}, ${address.number}`}
+            typeLabel={typeConfig ? t.admin[typeConfig.labelKey] : address.type}
+            typeIcon={
+              Icon ? <Icon className={`size-3.5 ${colorClass}`} aria-hidden="true" /> : null
+            }
+          />
+        </div>
+      )}
+
       {/* Detalhes */}
-      <section
-        aria-label={t.admin.addressDetailTitle}
-        className={cn(
-          "flex flex-col gap-5 border-t border-border p-4 pb-8 sm:p-6",
-          !isToned && "bg-card",
-        )}
-      >
-        {/* Cabeçalho: ícone + endereço à esquerda, foto à direita */}
-        <header className="flex items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-2.5">
-            {Icon && <Icon className={cn("size-5 shrink-0", typeConfig?.color)} aria-hidden />}
-            <div className="min-w-0">
-              <h2 className="truncate text-lg font-semibold tracking-tight text-foreground">
-                {address.businessName ?? `${address.street}, ${address.number}`}
-              </h2>
-              {address.businessName && (
-                <p className="mt-0.5 truncate text-sm text-muted-foreground">
-                  {address.street}, {address.number}
-                </p>
+      <section aria-label={t.addresses.detailsAria} className="flex flex-col gap-5 p-4 pb-8 sm:p-6">
+        {/* Cabeçalho: ícone + endereço */}
+        <header className="flex flex-wrap items-center gap-3">
+          {Icon && (
+            <div
+              className="grid size-11 shrink-0 place-items-center rounded-2xl bg-black/80"
+              aria-label={t.addresses.typeAria.replace(
+                "{label}",
+                typeConfig?.label ?? address.type,
               )}
-            </div>
-          </div>
-          {address.image ? (
-            <div className="relative size-20 shrink-0 overflow-hidden rounded-xl border border-border">
-              <AddressImageViewer
-                src={address.image}
-                alt={address.businessName ?? t.addresses.streetField}
-              />
-            </div>
-          ) : (
-            <span
-              className={cn(
-                "grid size-12 shrink-0 place-items-center rounded-xl",
-                typeTileOf(address.type),
-              )}
-              aria-hidden
             >
-              {Icon && <Icon className={typeConfig?.color} size={22} />}
-            </span>
+              <Icon className={colorClass} size={24} aria-hidden="true" />
+            </div>
           )}
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-lg font-semibold tracking-tight text-foreground">
+              {title}
+            </h2>
+            {address.businessName && (
+              <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                {address.street}, {address.number}
+              </p>
+            )}
+          </div>
         </header>
 
         {/* Estado */}
         <ul className="flex flex-wrap gap-2" aria-label={t.addresses.statusAria}>
           <li
-            className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
               address.confirmed
-                ? "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
-                : "bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400",
-            )}
+                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                : "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300"
+            }`}
           >
             {address.confirmed ? `✓ ${t.addresses.confirmed}` : `✗ ${t.addresses.notConfirmed}`}
           </li>
           <li
-            className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
               address.active
-                ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
-                : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
-            )}
+                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                : "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300"
+            }`}
           >
-            {address.active ? `✓ ${t.addresses.activeBadge}` : `✗ ${t.addresses.inactiveBadge}`}
+            {address.active ? `✓ ${t.addresses.active}` : `✗ ${t.addresses.inactive}`}
           </li>
           {address.pendingDeletionAt && (
-            <li className="inline-flex items-center gap-1 rounded-full bg-destructive px-2.5 py-1 text-xs font-semibold text-white">
+            <li className="inline-flex items-center gap-1 rounded-full bg-destructive px-2.5 py-1 text-xs font-medium text-white">
               {t.addresses.pendingDeletion}
             </li>
           )}
         </ul>
 
+        {!address.confirmed && (
+          <div className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3">
+            <CircleAlert className="size-5 shrink-0 text-destructive" aria-hidden="true" />
+            <p className="text-sm font-medium text-destructive">{t.addresses.notVerifiedWarning}</p>
+          </div>
+        )}
+
+        {!address.active && (
+          <div className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3">
+            <CircleAlert className="size-5 shrink-0 text-destructive" aria-hidden="true" />
+            <p className="text-sm font-medium text-destructive">{t.addresses.inactiveWarning}</p>
+          </div>
+        )}
+
+        {address.pendingDeletionAt && (
+          <div className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3">
+            <CircleAlert className="size-5 shrink-0 text-destructive" aria-hidden="true" />
+            <p className="text-sm font-medium text-destructive">
+              {t.addresses.pendingDeletionNotice}
+            </p>
+          </div>
+        )}
+
         {/* Informação de localização */}
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-4 rounded-xl border border-border bg-muted/40 p-4">
+        <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
           <div>
-            <dt className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+            <dt className="text-xs uppercase tracking-wide text-muted-foreground">
               {t.addresses.streetField}
             </dt>
-            <dd className="mt-0.5 break-words text-sm font-medium text-foreground">
+            <dd className="mt-1 break-words text-sm font-medium text-foreground sm:text-base">
               {address.street}, {address.number}
             </dd>
           </div>
           <div>
-            <dt className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+            <dt className="text-xs uppercase tracking-wide text-muted-foreground">
               {t.addresses.neighborhoodField}
             </dt>
-            <dd className="mt-0.5 break-words text-sm font-medium text-foreground">
+            <dd className="mt-1 break-words text-sm font-medium text-foreground sm:text-base">
               {address.neighborhood}
             </dd>
           </div>
           <div>
-            <dt className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+            <dt className="text-xs uppercase tracking-wide text-muted-foreground">
               {t.addresses.cityField}
             </dt>
-            <dd className="mt-0.5 break-words text-sm font-medium text-foreground">
+            <dd className="mt-1 break-words text-sm font-medium text-foreground sm:text-base">
               {address.city}
             </dd>
           </div>
           <div>
-            <dt className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+            <dt className="text-xs uppercase tracking-wide text-muted-foreground">
               {t.addresses.type}
             </dt>
-            <dd className="mt-0.5 inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
-              {Icon && <Icon className={cn("size-4", typeConfig?.color)} aria-hidden />}
+            <dd className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-foreground sm:text-base">
+              {Icon && <Icon className={cn("size-4", colorClass)} aria-hidden />}
               {typeConfig?.label ?? address.type}
             </dd>
           </div>
           {address.businessName && (
-            <div className="col-span-2">
-              <dt className="text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+            <div className="sm:col-span-2">
+              <dt className="text-xs uppercase tracking-wide text-muted-foreground">
                 {t.addresses.businessField}
               </dt>
-              <dd className="mt-0.5 break-words text-sm font-medium text-foreground">
+              <dd className="mt-1 break-words text-sm font-medium text-foreground sm:text-base">
                 {address.businessName}
               </dd>
             </div>
@@ -417,23 +409,16 @@ function AddressContent({
 
         <p className="flex items-start gap-1.5 rounded-xl bg-muted px-3 py-2 text-xs text-muted-foreground">
           <MapPin className="mt-px size-3.5 shrink-0 text-brand" aria-hidden />
-          {fullAddress}
+          {addressLine}
         </p>
-
-        {!address.active && (
-          <p className="inline-flex items-start gap-2 rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600 dark:bg-red-950/40 dark:text-red-400">
-            <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
-            {t.addresses.inactiveWarning}
-          </p>
-        )}
 
         {/* Informação adicional */}
         {address.info && (
           <section className="rounded-xl bg-muted p-4">
-            <h3 className="mb-1.5 text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+            <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {t.addresses.additionalInfo}
             </h3>
-            <p className="text-sm leading-relaxed text-foreground/80">{address.info}</p>
+            <p className="text-sm leading-relaxed text-muted-foreground">{address.info}</p>
           </section>
         )}
 
@@ -508,7 +493,7 @@ function AddressContent({
         )}
 
         {/* Auditoria */}
-        <footer className="flex flex-col gap-1 border-t border-border pt-3 text-xs text-muted-foreground">
+        <footer className="flex flex-col gap-1 border-t border-border pt-4 text-xs text-muted-foreground">
           <p>
             {t.addresses.sentBy}{" "}
             <span className="font-medium text-foreground">
@@ -530,17 +515,22 @@ function AddressContent({
         </footer>
 
         {/* Ações */}
-        <div className="flex flex-col gap-2">
-          <Link href={`/org/${organizationSlug}/addresses/${address.id}/edit`} className="w-full">
-            <Button className="w-full" variant="outline">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Link
+            href={`/org/${organizationSlug}/addresses/${address.id}/edit`}
+            className="w-full sm:flex-1"
+          >
+            <Button className="h-11 w-full" variant="outline">
               <Pencil className="size-4" aria-hidden />
               {t.addresses.editAddress}
             </Button>
           </Link>
-          <DeleteAddressButton
-            addressId={address.id}
-            isPendingDeletion={!!address.pendingDeletionAt}
-          />
+          <div className="w-full sm:flex-1">
+            <DeleteAddressButton
+              addressId={address.id}
+              isPendingDeletion={!!address.pendingDeletionAt}
+            />
+          </div>
         </div>
       </section>
 

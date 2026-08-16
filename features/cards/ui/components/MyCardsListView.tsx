@@ -27,8 +27,8 @@ type Card = {
 
 interface Props {
   cards: Card[];
+  organizationSlug: string;
   totalAddresses: number;
-  addressIndexMap: Map<string, number>;
   onOpenAddress: (id: string) => void;
 }
 
@@ -49,7 +49,7 @@ function neighborhoodsOf(addresses: CardAddress[]) {
   );
 }
 
-export function MyCardsListView({ cards, totalAddresses, addressIndexMap, onOpenAddress }: Props) {
+export function MyCardsListView({ cards, totalAddresses, onOpenAddress }: Props) {
   const { t, locale } = useI18n();
   const activeAddresses = cards.reduce(
     (total, card) => total + card.addresses.filter((a) => a.active).length,
@@ -75,7 +75,7 @@ export function MyCardsListView({ cards, totalAddresses, addressIndexMap, onOpen
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       {/* Resumo estilo banco */}
       <section
         aria-label={t.cards.summary}
@@ -121,8 +121,7 @@ export function MyCardsListView({ cards, totalAddresses, addressIndexMap, onOpen
                 <div
                   className="relative overflow-hidden px-5 py-4 text-white"
                   style={{
-                    // impeccable-disable-next-line design-system-color -- escurece a cor dinâmica do cartão no gradiente
-                    background: `linear-gradient(135deg, ${color} 0%, color-mix(in srgb, ${color} 55%, #000) 100%)`,
+                    background: `linear-gradient(135deg, ${color} 0%, color-mix(in srgb, ${color} 55%, black) 100%)`,
                   }}
                 >
                   <div
@@ -192,8 +191,6 @@ export function MyCardsListView({ cards, totalAddresses, addressIndexMap, onOpen
                     aria-label={t.common.addresses}
                   >
                     {card.addresses.map((addr) => {
-                      const index = addressIndexMap.get(addr.id);
-                      const label = addr.businessName ?? `${addr.street}, ${addr.number}`;
                       const typeConfig = ADDRESS_TYPE_OPTIONS.find(
                         (opt) => opt.value === addr.type,
                       );
@@ -204,19 +201,8 @@ export function MyCardsListView({ cards, totalAddresses, addressIndexMap, onOpen
                             type="button"
                             onClick={() => onOpenAddress(addr.id)}
                             className="flex min-h-11 w-full items-start gap-2.5 px-3 py-3 text-left text-sm transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                            aria-label={`${t.cards.viewDetails}: ${label}`}
+                            aria-label={`${t.cards.viewDetails}: ${addr.businessName ?? `${addr.street}, ${addr.number}`}`}
                           >
-                            <span
-                              className={cn(
-                                "mt-0.5 grid size-6 shrink-0 place-items-center rounded-full text-[0.625rem] font-bold",
-                                index != null
-                                  ? "bg-brand text-brand-foreground"
-                                  : "bg-muted text-muted-foreground",
-                              )}
-                              aria-hidden
-                            >
-                              {index ?? "·"}
-                            </span>
                             <TypeIcon
                               className={cn("mt-0.5 size-4 shrink-0", typeConfig?.color)}
                               aria-hidden
