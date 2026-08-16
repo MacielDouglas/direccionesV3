@@ -22,7 +22,7 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const drawerRef = useRef<HTMLDialogElement>(null);
+  const drawerRef = useRef<HTMLElement>(null);
   const { t } = useI18n();
   const { vibrate } = useHaptic();
 
@@ -125,18 +125,20 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
               `}
             />
 
-            {/* Drawer */}
-            <dialog
+            {/* Drawer — <aside> em vez de <dialog>: top layer do Safari iOS
+                não pinta itens intermediários (bug conhecido WebKit) */}
+            <aside
               ref={drawerRef}
               id="mobile-menu"
+              // biome-ignore lint/a11y/useSemanticElements: <dialog> no top layer não pinta itens no Safari iOS (WebKit 276727/296925); <aside role="dialog"> é o workaround
+              role="dialog"
               aria-modal="true"
               aria-label={t.header.navigation}
-              open
               className={`
-                fixed inset-y-0 right-0 left-auto z-[60]
-                m-0 flex max-h-none max-w-none flex-col
+                fixed inset-y-0 right-0 left-auto z-60
+                flex flex-col
                 w-[min(100vw,22rem)]
-                border-0 border-l border-border bg-background p-0 text-foreground
+                border-l border-border bg-background p-0 text-foreground
                 shadow-2xl
                 transition-transform duration-300 ease-out
                 will-change-transform
@@ -228,7 +230,7 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
                 <LanguageSelector />
                 <LogoutButton />
               </div>
-            </dialog>
+            </aside>
           </>,
           document.body,
         )}
