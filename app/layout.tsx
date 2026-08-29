@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inconsolata, Outfit } from "next/font/google";
 import "@/app/globals.css";
 import { NavigationProvider } from "@/components/NavigationProvider";
+import { SchedulerErrorHandler } from "@/components/SchedulerErrorHandler";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalMapProvider } from "@/features/map/core/GlobalMapProvider";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
@@ -74,7 +75,7 @@ export default async function RootLayout({
   const serverLocale = await getServerLocale();
 
   return (
-    <html lang={serverLocale} suppressHydrationWarning>
+    <html lang={serverLocale} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         {/* Previne flash de conteúdo não estilizado no iOS PWA */}
         <meta name="mobile-web-app-capable" content="yes" />
@@ -110,6 +111,7 @@ export default async function RootLayout({
             </a>
 
             <Toaster position="top-center" richColors closeButton />
+            <SchedulerErrorHandler />
             <GlobalMapProvider>
               <NavigationProvider>{children}</NavigationProvider>
             </GlobalMapProvider>

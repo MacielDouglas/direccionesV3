@@ -2,25 +2,27 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { AddressWithCard } from "@/features/addresses/application/address.service";
 import type { AddressType } from "@/features/addresses/types/address.types";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import type { Address } from "@prisma/client";
-import { MapPin, MapPinned, Plus, Search } from "lucide-react";
+import { Layers, MapPin, MapPinned, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { ADDRESS_TYPE_OPTIONS } from "../../domain/constants/address.constants";
 import { AddressCard } from "../components/AddressCard";
 import { AddressPagination } from "../components/AddressPagination";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE_OPTIONS = [10, 30, 50, 70, 100] as const;
+
+type PageSize = (typeof PAGE_SIZE_OPTIONS)[number];
 
 const ACTIVE_OPTIONS = [undefined, true, false] as const;
 
 type ActiveFilter = (typeof ACTIVE_OPTIONS)[number];
 
 type Props = {
-  addresses: Address[];
+  addresses: AddressWithCard[];
   organizationSlug: string;
 };
 
@@ -29,7 +31,9 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
   const [query, setQuery] = useState("");
   const [activeFilter, setActive] = useState<ActiveFilter>(undefined);
   const [typeFilters, setTypes] = useState<AddressType[]>([]);
+  const [withoutCardOnly, setWithoutCardOnly] = useState(false);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<PageSize>(10);
 
   const total = addresses.length;
   const confirmedCount = useMemo(() => addresses.filter((a) => a.confirmed).length, [addresses]);
@@ -53,6 +57,16 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
     resetPage();
   };
 
+  const handleWithoutCardToggle = () => {
+    setWithoutCardOnly((prev) => !prev);
+    resetPage();
+  };
+
+  const handlePageSizeChange = (size: PageSize) => {
+    setPageSize(size);
+    setPage(1);
+  };
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return addresses.filter((a) => {
@@ -65,16 +79,18 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
       }
       if (activeFilter !== undefined && a.active !== activeFilter) return false;
       if (typeFilters.length > 0 && !typeFilters.includes(a.type as AddressType)) return false;
+      if (withoutCardOnly && a.cardId !== null && a.cardId !== undefined) return false;
       return true;
     });
-  }, [addresses, query, activeFilter, typeFilters]);
+  }, [addresses, query, activeFilter, typeFilters, withoutCardOnly]);
 
   const paginated = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
-    return filtered.slice(start, start + PAGE_SIZE);
-  }, [filtered, page]);
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
 
-  const hasActiveFilters = query || activeFilter !== undefined || typeFilters.length > 0;
+  const hasActiveFilters =
+    query || activeFilter !== undefined || typeFilters.length > 0 || withoutCardOnly;
 
   return (
     <div className="flex flex-col gap-5">
@@ -198,18 +214,71 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
             );
           })}
         </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="w-12 shrink-0 text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+            {t.addresses.cardFilter}
+          </span>
+          <button
+            type="button"
+            onClick={handleWithoutCardToggle}
+            aria-pressed={withoutCardOnly}
+            className={cn(
+              "flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
+              withoutCardOnly
+                ? "border-brand bg-brand text-brand-foreground"
+                : "border-border text-muted-foreground hover:border-brand/50 hover:text-foreground",
+            )}
+          >
+            <Layers className="size-3.5" aria-hidden />
+            {t.addresses.withoutCard}
+          </button>
+        </div>
       </section>
 
-      {/* Contador */}
-      <p
-        className="text-sm font-medium tabular-nums text-muted-foreground"
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        {filtered.length > 0
-          ? t.addresses.resultCount.replace("{count}", String(filtered.length))
-          : t.addresses.noResults}
-      </p>
+      {/* Contador + seletor de tamanho de página */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p
+          className="text-sm font-medium tabular-nums text-muted-foreground"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {filtered.length > 0
+            ? t.addresses.resultCount.replace("{count}", String(filtered.length))
+            : t.addresses.noResults}
+        </p>
+
+        <div className="flex items-center gap-2">
+          <span className="shrink-0 text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+            {t.addresses.pageSizeLabel}
+          </span>
+          <fieldset
+            className="flex items-center gap-1 rounded-full border border-border bg-card p-1 shadow-xs"
+            aria-label={t.addresses.pageSizeLabel}
+          >
+            {PAGE_SIZE_OPTIONS.map((size) => {
+              const isActive = pageSize === size;
+              return (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => handlePageSizeChange(size)}
+                  aria-pressed={isActive}
+                  aria-label={`${size} ${t.addresses.pageSizeLabel.toLowerCase()}`}
+                  className={cn(
+                    "min-h-[32px] min-w-[40px] rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums transition-colors",
+                    isActive
+                      ? "bg-brand text-brand-foreground shadow-xs"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  {size}
+                </button>
+              );
+            })}
+          </fieldset>
+        </div>
+      </div>
 
       {/* Lista */}
       {paginated.length > 0 ? (
@@ -224,7 +293,7 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
           <AddressPagination
             page={page}
             total={filtered.length}
-            pageSize={PAGE_SIZE}
+            pageSize={pageSize}
             onChange={setPage}
           />
         </>
@@ -246,6 +315,7 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
                 setQuery("");
                 setActive(undefined);
                 setTypes([]);
+                setWithoutCardOnly(false);
                 setPage(1);
               }}
             >

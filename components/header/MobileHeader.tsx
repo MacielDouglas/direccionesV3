@@ -27,19 +27,49 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
   const { vibrate } = useHaptic();
 
   const navigation = orgSlug && role ? getNavigationByRole(navigationMenu, role) : [];
-  const closeMenu = useCallback(() => setIsMenuOpen(false), []);
+  const closeMenu = useCallback(() => {
+    // Evita "Blocked aria-hidden..." e também evita TypeError do scheduler (startTime)
+    // ao não fazer blur/focus síncrono dentro do mesmo tick do setState.
+    // O foco é devolvido de forma assíncrona após o commit.
+    const active = document.activeElement as HTMLElement | null;
+    const isInsideDrawer = !!active && !!drawerRef.current?.contains(active);
+    const isOverlay = !!active && active.tagName === "BUTTON" && active.classList.contains("fixed");
+    const shouldRestoreFocus = !!active && (isInsideDrawer || isOverlay);
+
+    // Atualiza estado primeiro; o DOM `inert`/`aria-hidden` será aplicado no próximo commit
+    setIsMenuOpen(false);
+
+    if (shouldRestoreFocus) {
+      // Deferir para fora do ciclo do scheduler do React 19 (evita leitura de task.startTime undefined)
+      // Usa queueMicrotask quando disponível, fallback para setTimeout
+      const restore = () => {
+        try {
+          (active as HTMLElement).blur();
+        } catch {}
+        // trigger pode não existir se componente desmontou
+        triggerRef.current?.focus({ preventScroll: true });
+      };
+      if (typeof queueMicrotask === "function") {
+        queueMicrotask(() => requestAnimationFrame(restore));
+      } else {
+        setTimeout(restore, 0);
+      }
+    }
+  }, []);
   const toggleMenu = useCallback(() => setIsMenuOpen((p) => !p), []);
 
   // Garante renderização só no cliente (portal depende de document.body)
   useEffect(() => setMounted(true), []);
 
-  // inert via DOM
+  // inert via DOM — usa propriedade booleana quando disponível
   useEffect(() => {
     if (!drawerRef.current) return;
-    if (isMenuOpen) {
-      drawerRef.current.removeAttribute("inert");
-    } else {
-      drawerRef.current.setAttribute("inert", "");
+    const el = drawerRef.current as unknown as HTMLElement & { inert: boolean };
+    try {
+      el.inert = !isMenuOpen;
+    } catch {
+      if (isMenuOpen) el.removeAttribute("inert");
+      else el.setAttribute("inert", "");
     }
   }, [isMenuOpen]);
 
@@ -59,8 +89,8 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        e.preventDefault();
         closeMenu();
-        triggerRef.current?.focus();
         return;
       }
 
@@ -114,9 +144,11 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
             {/* Overlay — fora do header para blur/stacking corretos */}
             <button
               type="button"
-              tabIndex={-1}
-              aria-hidden="true"
+              aria-label={t.header.closeMenu}
               onClick={closeMenu}
+              tabIndex={-1}
+              aria-hidden={!isMenuOpen}
+              inert={!isMenuOpen}
               className={`
                 fixed inset-0 z-50
                 bg-black/60 backdrop-blur-sm
@@ -162,10 +194,7 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => {
-                    closeMenu();
-                    triggerRef.current?.focus();
-                  }}
+                  onClick={closeMenu}
                   aria-label={t.header.closeMenu}
                   className="h-11 w-11 rounded-xl text-foreground hover:bg-accent active:scale-95"
                 >

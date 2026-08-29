@@ -371,6 +371,12 @@ export type I18nDictionary = {
     previousLabel: string;
     nextLabel: string;
     pageOf: string;
+    withoutCard: string;
+    cardFilter: string;
+    pageSizeLabel: string;
+    cardNumber: string;
+    cardWith: string;
+    cardUnassigned: string;
     savingImage: string;
     saveChangesButton: string;
     savingTitle: string;

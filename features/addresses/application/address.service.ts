@@ -95,6 +95,8 @@ export async function getAddressByIdService({
   });
 }
 
+export type AddressWithCard = Awaited<ReturnType<typeof searchAddressesService>>[number];
+
 export async function searchAddressesService({
   organizationId,
   query,
@@ -119,6 +121,14 @@ export async function searchAddressesService({
         : {}),
     },
     orderBy: { createdAt: "desc" },
+    include: {
+      card: {
+        select: {
+          number: true,
+          assignedTo: { select: { name: true } },
+        },
+      },
+    },
   });
 }
 

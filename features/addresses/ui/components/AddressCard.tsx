@@ -1,9 +1,9 @@
 "use client";
 
+import type { AddressWithCard } from "@/features/addresses/application/address.service";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import type { Address } from "@prisma/client";
-import { Check, ChevronRight, MapPin, Trash2, X } from "lucide-react";
+import { Check, ChevronRight, Layers, MapPin, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { AddressTypeIcon } from "./AddressTypeIcon";
@@ -43,7 +43,7 @@ function StatusChip({
 }
 
 interface Props {
-  address: Address;
+  address: AddressWithCard;
   organizationSlug: string;
 }
 
@@ -106,6 +106,25 @@ export function AddressCard({ address, organizationSlug }: Props) {
           <MapPin className="mt-0.5 size-3.5 shrink-0 text-brand" aria-hidden />
           {address.neighborhood}, {address.city}
         </p>
+
+        {/* Vínculo com cartão — discreto, fonte pequena, sem destaque */}
+        {address.card ? (
+          <p className="flex items-center gap-1.5 text-xs font-light leading-none text-muted-foreground">
+            <Layers className="size-3 shrink-0" aria-hidden />
+            <span>{t.addresses.cardNumber.replace("{number}", String(address.card.number))}</span>
+            <span className="text-muted-foreground/60">—</span>
+            <span className="truncate">
+              {address.card.assignedTo
+                ? t.addresses.cardWith.replace("{name}", address.card.assignedTo.name)
+                : t.addresses.cardUnassigned}
+            </span>
+          </p>
+        ) : (
+          <p className="flex items-center gap-1.5 text-xs font-light leading-none text-muted-foreground">
+            <Layers className="size-3 shrink-0 opacity-60" aria-hidden />
+            {t.addresses.withoutCard}
+          </p>
+        )}
 
         {address.info && (
           <p className="line-clamp-2 text-sm text-muted-foreground">{address.info}</p>

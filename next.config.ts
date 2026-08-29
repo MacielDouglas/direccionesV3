@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "img-src 'self' data: blob: https://pub-20ea17ad5d694dbc94202efa1ea340ff.r2.dev https://api.mapbox.com https://events.mapbox.com https://upload.wikimedia.org https://lh3.googleusercontent.com",
               "connect-src 'self' https://api.mapbox.com https://events.mapbox.com https://pub-20ea17ad5d694dbc94202efa1ea340ff.r2.dev https://*.r2.cloudflarestorage.com",
-              "font-src 'self' data:",
+              "font-src 'self' data: https://fonts.gstatic.com",
               "style-src 'self' 'unsafe-inline'",
               "script-src 'self' 'unsafe-inline'",
               "worker-src 'self' blob:",
