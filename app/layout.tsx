@@ -109,7 +109,7 @@ export default async function RootLayout({
               href="#main-content"
               className="
               sr-only focus:not-sr-only
-              fixed top-2 left-2 
+              fixed left-2 top-[calc(0.5rem+env(safe-area-inset-top))] 
               rounded-md bg-background px-4 py-2
               text-sm font-medium text-foreground
               shadow-md ring-2 ring-ring

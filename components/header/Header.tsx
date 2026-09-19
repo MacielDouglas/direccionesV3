@@ -37,7 +37,10 @@ export default async function Header({
   const showControls = Boolean(organization?.slug) || isSuperUser || hasPerson;
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-border bg-background/80 backdrop-blur-md">
+    <header
+      className="sticky top-0 z-30 w-full border-b border-border bg-background/80 backdrop-blur-md"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:h-20 md:px-8">
         {showControls ? (
           <NavLink
