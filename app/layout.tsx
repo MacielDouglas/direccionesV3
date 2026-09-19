@@ -5,6 +5,9 @@ import { NavigationProvider } from "@/components/NavigationProvider";
 import { SchedulerErrorHandler } from "@/components/SchedulerErrorHandler";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalMapProvider } from "@/features/map/core/GlobalMapProvider";
+import { InstallPrompt } from "@/features/pwa/ui/InstallPrompt";
+import { OfflineIndicator } from "@/features/pwa/ui/OfflineIndicator";
+import { RegisterSW } from "@/features/pwa/ui/RegisterSW";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
 import { ThemeProvider } from "next-themes";
@@ -49,9 +52,15 @@ export const metadata: Metadata = {
 
   // Ícones
   icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png", // 180x180 recomendado
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
+  manifest: "/manifest.webmanifest",
+  metadataBase: undefined,
 };
 
 export const viewport: Viewport = {
@@ -112,6 +121,9 @@ export default async function RootLayout({
 
             <Toaster position="top-center" richColors closeButton />
             <SchedulerErrorHandler />
+            <RegisterSW />
+            <OfflineIndicator />
+            <InstallPrompt />
             <GlobalMapProvider>
               <NavigationProvider>{children}</NavigationProvider>
             </GlobalMapProvider>

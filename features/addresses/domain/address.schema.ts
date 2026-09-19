@@ -22,9 +22,9 @@ const defaultMessages: AddressFormMessages = {
 };
 
 export const addressImageSchema = z.object({
-  imageUrl: z.string().nullable().optional(),
+  imageUrl: z.string().max(2000).nullable().optional(),
   imageFile: z.any().optional(),
-  imageKey: z.string().nullable().optional(),
+  imageKey: z.string().max(500).nullable().optional(),
   isCustomImage: z.boolean().optional(),
 });
 
@@ -32,10 +32,10 @@ export function createAddressFormSchema(messages: AddressFormMessages = defaultM
   return z.object({
     addressType: z.enum(ADDRESS_TYPES),
 
-    street: z.string().min(2, messages.streetTooShort),
-    number: z.string().min(1, messages.numberRequired),
-    neighborhood: z.string().min(2, messages.neighborhoodRequired),
-    city: z.string().min(3, messages.cityRequired),
+    street: z.string().trim().min(2, messages.streetTooShort).max(200),
+    number: z.string().trim().min(1, messages.numberRequired).max(20),
+    neighborhood: z.string().trim().min(2, messages.neighborhoodRequired).max(200),
+    city: z.string().trim().min(3, messages.cityRequired).max(200),
 
     latitude: z
       .number()
@@ -52,8 +52,20 @@ export function createAddressFormSchema(messages: AddressFormMessages = defaultM
 
     image: addressImageSchema,
 
-    info: z.string().max(300, messages.infoTooLong).optional(),
-    businessName: z.string().nullable().optional(),
+    info: z
+      .string()
+      .trim()
+      .max(300, messages.infoTooLong)
+      .refine((v) => !/<\s*script/i.test(v), "Contenido no permitido.")
+      .refine((v) => !/javascript\s*:/i.test(v), "Contenido no permitido.")
+      .optional(),
+    businessName: z
+      .string()
+      .trim()
+      .max(200)
+      .refine((v) => !/<\s*script/i.test(v), "Contenido no permitido.")
+      .nullable()
+      .optional(),
 
     active: z.boolean(),
     confirmed: z.boolean(),
@@ -89,17 +101,21 @@ export const createAddressSchema = createAddressCreateSchema();
 export type CreateAddressInput = AddressFormData;
 
 // Schema de atualização — validação estrita server-side (.strict() rejeita campos extras)
+const xssFree = (v: string) =>
+  !/<\s*script/i.test(v) && !/javascript\s*:/i.test(v) && !/\son\w+\s*=/i.test(v);
+
 export const updateAddressSchema = z
   .object({
     addressType: z.enum(ADDRESS_TYPES),
-    street: z.string().min(2).max(200),
-    number: z.string().min(1).max(20),
-    neighborhood: z.string().min(2).max(200),
-    city: z.string().min(3).max(200),
+    street: z.string().trim().min(2).max(200).refine(xssFree, "Contenido no permitido."),
+    number: z.string().trim().min(1).max(20).refine(xssFree, "Contenido no permitido."),
+    neighborhood: z.string().trim().min(2).max(200).refine(xssFree, "Contenido no permitido."),
+    city: z.string().trim().min(3).max(200).refine(xssFree, "Contenido no permitido."),
     latitude: z.number().min(-90).max(90).nullable().optional(),
     longitude: z.number().min(-180).max(180).nullable().optional(),
     image: addressImageSchema.refine((image) => {
       if (!image.imageUrl) return true;
+      if (image.imageUrl.length > 2000) return false;
       try {
         const url = new URL(image.imageUrl);
         return url.protocol === "http:" || url.protocol === "https:";
@@ -107,8 +123,20 @@ export const updateAddressSchema = z
         return false;
       }
     }, "URL de imagen inválida."),
-    info: z.string().max(300).nullable().optional(),
-    businessName: z.string().max(200).nullable().optional(),
+    info: z
+      .string()
+      .trim()
+      .max(300)
+      .refine(xssFree, "Contenido no permitido.")
+      .nullable()
+      .optional(),
+    businessName: z
+      .string()
+      .trim()
+      .max(200)
+      .refine(xssFree, "Contenido no permitido.")
+      .nullable()
+      .optional(),
     active: z.boolean(),
     confirmed: z.boolean(),
   })

@@ -1,7 +1,15 @@
 import { deleteR2Object } from "@/infrastructure/storage/r2.service";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { getCurrentUser } from "@/server/users";
 import { NextResponse } from "next/server";
+import { z } from "zod";
+
+const deleteFileSchema = z
+  .object({
+    key: z.string().min(1).max(500),
+  })
+  .strict();
 
 export async function POST(req: Request) {
   const data = await getCurrentUser();
@@ -9,12 +17,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   }
 
-  try {
-    const { key } = await req.json();
+  if (!checkRateLimit(`delete-file:${data.user.id}`, { max: 20, windowMs: 10 * 60 * 1000 })) {
+    return NextResponse.json({ error: "Demasiadas solicitudes." }, { status: 429 });
+  }
 
-    if (!key || typeof key !== "string") {
+  try {
+    const raw = await req.json().catch(() => null);
+    const parsed = deleteFileSchema.safeParse(raw);
+    if (!parsed.success) {
       return NextResponse.json({ error: "Key required" }, { status: 400 });
     }
+    const { key } = parsed.data;
 
     // ✅ PROTEÇÃO SERVER-SIDE — dupla camada de segurança
     if (key.startsWith("security/")) {

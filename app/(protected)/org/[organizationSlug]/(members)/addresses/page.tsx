@@ -11,12 +11,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 type AddressPageProps = {
-  params: {
+  params: Promise<{
     organizationSlug: string;
-  };
-  searchParams: {
+  }>;
+  searchParams: Promise<{
     q?: string;
-  };
+  }>;
 };
 
 // Página para listar endereços e buscar endereços

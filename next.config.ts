@@ -7,25 +7,12 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
 
   async headers() {
+    // CSP dinâmica com nonce é aplicada em proxy.ts (por request).
+    // Aqui ficam apenas headers estáticos de hardening.
     return [
       {
         source: "/:path*",
         headers: [
-          {
-            key: "Content-Security-Policy",
-            value: [
-              "default-src 'self'",
-              "img-src 'self' data: blob: https://pub-20ea17ad5d694dbc94202efa1ea340ff.r2.dev https://api.mapbox.com https://events.mapbox.com https://upload.wikimedia.org https://lh3.googleusercontent.com",
-              "connect-src 'self' https://api.mapbox.com https://events.mapbox.com https://pub-20ea17ad5d694dbc94202efa1ea340ff.r2.dev https://*.r2.cloudflarestorage.com",
-              "font-src 'self' data: https://fonts.gstatic.com",
-              "style-src 'self' 'unsafe-inline'",
-              "script-src 'self' 'unsafe-inline'",
-              "worker-src 'self' blob:",
-              "frame-ancestors 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-            ].join("; "),
-          },
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -33,7 +20,22 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=(self), payment=()",
           },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+          { key: "Origin-Agent-Cluster", value: "?1" },
         ],
+      },
+      {
+        source: "/icons/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/manifest.webmanifest",
+        headers: [{ key: "Cache-Control", value: "public, max-age=86400" }],
       },
     ];
   },
@@ -78,8 +80,20 @@ export default withPWA({
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
   disable: process.env.NODE_ENV === "development", // ← SW só em produção
+  fallbacks: {
+    // App Router: precache de app/~offline/page.tsx como fallback de documento
+    document: "/~offline",
+  },
   workboxOptions: {
+    skipWaiting: true,
+    clientsClaim: true,
     runtimeCaching: [
+      {
+        // _next/static — StaleWhileRevalidate para navegação instantânea
+        urlPattern: /\/_next\/static\/.*/i,
+        handler: "StaleWhileRevalidate",
+        options: { cacheName: "next-static" },
+      },
       {
         // ✅ Imagens do R2 — cache local 30 dias, sem re-download
         urlPattern: /^https:\/\/pub-20ea17ad5d694dbc94202efa1ea340ff\.r2\.dev\/.*/i,
@@ -90,10 +104,11 @@ export default withPWA({
             maxEntries: 200,
             maxAgeSeconds: 60 * 60 * 24 * 30, // 30 dias
           },
+          cacheableResponse: { statuses: [0, 200] },
         },
       },
       {
-        // ✅ Tiles do Mapbox — cache local, crítico para mobile offline
+        // ✅ Tiles/styles/fonts/glyphs do Mapbox — crítico para mobile offline
         urlPattern: /^https:\/\/api\.mapbox\.com\/.*/i,
         handler: "CacheFirst",
         options: {
@@ -102,20 +117,28 @@ export default withPWA({
             maxEntries: 500,
             maxAgeSeconds: 60 * 60 * 24 * 7, // 7 dias
           },
+          cacheableResponse: { statuses: [0, 200] },
         },
       },
       {
-        // ✅ API interna — sempre tenta rede, fallback cache se offline
+        // ✅ API interna — tenta rede (3s), fallback cache se offline
         // (exclui /api/auth/* sessão e /api/upload-url URLs pré-assinadas)
         urlPattern: /^https?:\/\/.*\/api\/(?!auth\/|upload-url).*/i,
         handler: "NetworkFirst",
         options: {
           cacheName: "api-cache",
+          networkTimeoutSeconds: 3,
           expiration: {
             maxEntries: 100,
             maxAgeSeconds: 60 * 60, // 1 hora
           },
+          cacheableResponse: { statuses: [0, 200] },
         },
+      },
+      {
+        // Telemetria Mapbox — nunca bloqueia navegação offline
+        urlPattern: /^https:\/\/events\.mapbox\.com\/.*/i,
+        handler: "NetworkOnly",
       },
     ],
   },

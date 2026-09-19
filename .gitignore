@@ -47,4 +47,10 @@ scratch-test.tsx
 *.tsbuildinfo
 next-env.d.ts
 
+# pwa gerado no build (workbox)
+public/sw.js
+public/workbox-*.js
+public/swe-worker-*.js
+public/fallback-*.js
+
 /app/generated/prisma

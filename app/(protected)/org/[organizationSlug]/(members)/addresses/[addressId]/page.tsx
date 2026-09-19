@@ -11,10 +11,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 type AddressPageProps = {
-  params: {
+  params: Promise<{
     organizationSlug: string;
     addressId: string;
-  };
+  }>;
 };
 
 export default async function AddressPage({ params }: AddressPageProps) {

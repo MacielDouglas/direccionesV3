@@ -28,8 +28,8 @@ class MapPool {
     const free = this.entries.find((e) => !e.inUse);
     if (free) {
       free.inUse = true;
-      // Reanexa o container DOM ao novo target
-      target.innerHTML = "";
+      // Reanexa o container DOM ao novo target (sem innerHTML — evita XSS)
+      target.replaceChildren();
       target.appendChild(free.container);
       free.map.resize();
       return { map: free.map, isNew: false };

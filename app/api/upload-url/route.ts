@@ -1,19 +1,35 @@
 import { randomUUID } from "node:crypto";
 import { generateUploadUrl } from "@/infrastructure/storage/r2.service";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { getCurrentUser } from "@/server/users";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
-const ALLOWED_IMAGE_TYPES: Record<string, string> = {
+const ALLOWED_IMAGE_TYPES = {
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
   "image/gif": "gif",
   "image/heic": "heic",
   "image/heif": "heif",
-};
+} as const;
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
+const uploadUrlSchema = z
+  .object({
+    contentType: z.enum([
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "image/heic",
+      "image/heif",
+    ]),
+    maxSize: z.number().int().positive().max(MAX_FILE_SIZE),
+  })
+  .strict();
 
 export async function POST(req: Request) {
   const data = await getCurrentUser();
@@ -21,27 +37,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   }
 
-  const body = await req.json().catch(() => null);
+  if (!checkRateLimit(`upload-url:${data.user.id}`, { max: 20, windowMs: 10 * 60 * 1000 })) {
+    return NextResponse.json({ error: "Demasiadas solicitudes." }, { status: 429 });
+  }
 
-  if (!body || typeof body.contentType !== "string" || typeof body.maxSize !== "number") {
+  const raw = await req.json().catch(() => null);
+  const parsed = uploadUrlSchema.safeParse(raw);
+  if (!parsed.success) {
     return NextResponse.json(
       { error: "Campos requeridos: contentType, maxSize." },
       { status: 400 },
     );
   }
 
-  const { contentType, maxSize } = body;
-
-  // ✅ Valida MIME — apenas imagens permitidas (allowlist server-side)
+  const { contentType } = parsed.data;
   const extension = ALLOWED_IMAGE_TYPES[contentType];
-  if (!extension) {
-    return NextResponse.json({ error: "Tipo de archivo no permitido." }, { status: 400 });
-  }
-
-  // ✅ Valida tamanho máximo no servidor (o cliente não decide o limite)
-  if (!Number.isFinite(maxSize) || maxSize <= 0 || maxSize > MAX_FILE_SIZE) {
-    return NextResponse.json({ error: "Archivo demasiado grande." }, { status: 400 });
-  }
 
   const organizationId = data.person?.organizationId;
   if (!organizationId) {
@@ -52,7 +62,7 @@ export async function POST(req: Request) {
     where: { id: organizationId },
     select: { slug: true },
   });
-  if (!organization) {
+  if (!organization || !/^[a-z0-9-]+$/.test(organization.slug)) {
     return NextResponse.json({ error: "Sin permiso para esta organización." }, { status: 403 });
   }
 
