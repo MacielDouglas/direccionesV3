@@ -1,6 +1,7 @@
 "use client";
 
 import { useHaptic } from "@/app/hooks/useHaptic";
+import SessionTimer from "@/domains/auth/components/SessionTimer";
 import type { Role } from "@/domains/member/types/role.types";
 import { getNavigationByRole, navigationMenu } from "@/features/navigation/constants/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -11,14 +12,16 @@ import { createPortal } from "react-dom";
 import { LanguageSelector } from "../LanguageSelector";
 import LogoutButton from "../LogoutButton";
 import MenuItem from "../menu/MenuItem";
+import DarkModeButton from "../ui/DarkModeButton";
 import { Button } from "../ui/button";
 
 interface MenuMobileProps {
   role?: Role | null;
   orgSlug?: string;
+  sessionExpiresAt?: string | Date;
 }
 
-export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
+export default function MobileHeader({ role, orgSlug, sessionExpiresAt }: MenuMobileProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -200,6 +203,12 @@ export default function MobileHeader({ role, orgSlug }: MenuMobileProps) {
                 >
                   <X className="h-5 w-5" aria-hidden="true" />
                 </Button>
+              </div>
+
+              {/* Atalhos — tema e sessão, logo abaixo do título */}
+              <div className="flex items-center justify-between px-5 pb-3">
+                <DarkModeButton />
+                {sessionExpiresAt && <SessionTimer expiresAt={sessionExpiresAt} />}
               </div>
 
               <div className="mx-5 h-px bg-border" aria-hidden="true" />

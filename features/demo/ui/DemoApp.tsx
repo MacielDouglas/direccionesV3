@@ -270,10 +270,7 @@ export function DemoApp() {
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-md flex-col">
-      <header
-        className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
+      <header className="sticky top-[env(safe-area-inset-top)] z-40 flex items-center justify-between gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md">
         <div className="flex items-center gap-2.5">
           <Image
             src="/Logo.svg"

@@ -78,6 +78,19 @@ export type I18nDictionary = {
     mainMenu: string;
     goToHome: string;
   };
+  pwa: {
+    installTitle: string;
+    installDescription: string;
+    installNow: string;
+    installing: string;
+    later: string;
+    neverShow: string;
+    understood: string;
+    iosHint: string;
+    webviewHint: string;
+    devHint: string;
+    androidHint: string;
+  };
   footer: {
     tagline: string;
     terms: string;

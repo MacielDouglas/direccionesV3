@@ -76,6 +76,21 @@ const ptBR: I18nDictionary = {
     mainMenu: "Menu principal",
     goToHome: "Ir para o início",
   },
+  pwa: {
+    installTitle: "Instale o Direcciones no seu celular",
+    installDescription: "Acesso direto na tela inicial e leitura de mapas e fotos sem internet.",
+    installNow: "Instalar app agora",
+    installing: "Abrindo instalação…",
+    later: "Agora não",
+    neverShow: "Não mostrar novamente",
+    understood: "Entendi",
+    iosHint: "No Safari: toque em Compartilhar e depois em «Adicionar à Tela de Início».",
+    webviewHint:
+      "Abra esta página no Chrome e use o menu ⋮ → «Instalar app» para instalar com um toque.",
+    devHint:
+      "Você está em desenvolvimento (localhost, sem service worker): a instalação só aparece em produção.",
+    androidHint: "No Chrome: menu ⋮ → «Instalar app» para instalar com um toque.",
+  },
   footer: {
     tagline:
       "Um lugar para guardar, editar e armazenar endereços favoritos para facilitar a consulta.",

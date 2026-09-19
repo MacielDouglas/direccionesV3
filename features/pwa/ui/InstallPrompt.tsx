@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { Download } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type BeforeInstallPromptEvent = Event & {
@@ -73,11 +75,13 @@ function isLocalhost(): boolean {
 type ManualContext = "webview" | "dev" | "android";
 
 export function InstallPrompt() {
+  const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
   const [installed, setInstalled] = useState(false);
   const [never, setNever] = useState(false);
   const [snoozed, setSnoozed] = useState(false);
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installing, setInstalling] = useState(false);
   const [iosHint, setIosHint] = useState(false);
   const [manual, setManual] = useState<ManualContext | null>(null);
 
@@ -169,166 +173,103 @@ export function InstallPrompt() {
 
   if (!mounted || installed || never || snoozed) return null;
 
-  const cardClass =
-    "fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 rounded-xl border bg-background p-4 shadow-lg md:left-auto md:right-6 md:w-96";
+  const canInstall = deferred !== null;
 
-  if (iosHint) {
-    return (
-      <div className={cardClass}>
-        <p className="text-sm font-medium">Instalar Direcciones</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          En Safari: Compartir → Añadir a pantalla de inicio para usar offline.
-        </p>
-        <div className="mt-3 flex gap-2">
-          <button
-            type="button"
-            onClick={snooze}
-            className="inline-flex h-11 flex-1 items-center justify-center rounded-md border px-3 text-xs font-medium"
-          >
-            Ahora no
-          </button>
-          <button
-            type="button"
-            onClick={neverShow}
-            className="inline-flex h-11 items-center rounded-md px-3 text-xs text-muted-foreground"
-          >
-            No mostrar de nuevo
-          </button>
+  // Desktop aguarda o evento nativo; Android mostra após a pausa; iOS sempre orienta.
+  if (!iosHint && !canInstall && manual === null) return null;
+
+  // Instalação em 1 toque (diálogo nativo do navegador).
+  const handleInstall = async () => {
+    if (!deferred || installing) return;
+    setInstalling(true);
+    try {
+      await deferred.prompt();
+      const choice = await deferred.userChoice;
+      if (choice.outcome === "accepted") {
+        safeSet(INSTALLED_KEY, "1");
+        setInstalled(true);
+      }
+    } catch {
+      // prompt indisponível — ignora
+    } finally {
+      setInstalling(false);
+      setDeferred(null);
+    }
+  };
+
+  const hint = iosHint
+    ? t.pwa.iosHint
+    : manual === "webview"
+      ? t.pwa.webviewHint
+      : manual === "dev"
+        ? t.pwa.devHint
+        : manual === "android"
+          ? t.pwa.androidHint
+          : null;
+
+  return (
+    <section
+      aria-label={t.pwa.installTitle}
+      className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 rounded-2xl border bg-background p-5 shadow-xl md:left-auto md:right-6 md:w-96"
+    >
+      <div className="flex items-start gap-3">
+        <img
+          src="/icons/icon-192.png"
+          alt=""
+          width={52}
+          height={52}
+          className="size-[52px] shrink-0 rounded-xl"
+        />
+        <div className="min-w-0">
+          <p className="text-base font-semibold leading-snug">{t.pwa.installTitle}</p>
+          <p className="mt-1 text-sm leading-snug text-muted-foreground">
+            {t.pwa.installDescription}
+          </p>
         </div>
       </div>
-    );
-  }
 
-  if (deferred) {
-    return (
-      <div className={cardClass}>
-        <p className="text-sm font-medium">Instalar Direcciones</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Acceso rápido y lectura offline de mapas y fotos.
+      {hint && (
+        <p className="mt-3 rounded-lg bg-muted px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+          {hint}
         </p>
-        <div className="mt-3 flex gap-2">
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                await deferred.prompt();
-                const choice = await deferred.userChoice;
-                if (choice.outcome === "accepted") {
-                  safeSet(INSTALLED_KEY, "1");
-                  setInstalled(true);
-                }
-              } catch {
-                // prompt indisponível — ignora
-              } finally {
-                setDeferred(null);
-              }
-            }}
-            className="inline-flex h-11 flex-1 items-center justify-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground"
-          >
-            Instalar
-          </button>
-          <button
-            type="button"
-            onClick={snooze}
-            className="inline-flex h-11 items-center rounded-md border px-3 text-xs font-medium"
-          >
-            Ahora no
-          </button>
-          <button
-            type="button"
-            onClick={neverShow}
-            className="inline-flex h-11 items-center rounded-md px-3 text-xs text-muted-foreground"
-          >
-            No mostrar de nuevo
-          </button>
-        </div>
-      </div>
-    );
-  }
+      )}
 
-  if (manual === "webview") {
-    return (
-      <div className={cardClass}>
-        <p className="text-sm font-medium">Instalar Direcciones</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Abre esta página en Chrome y usa el menú ⋮ → Instalar app o Añadir a pantalla de inicio
-          para usar offline.
-        </p>
-        <div className="mt-3 flex gap-2">
-          <button
-            type="button"
-            onClick={snooze}
-            className="inline-flex h-11 flex-1 items-center justify-center rounded-md border px-3 text-xs font-medium"
-          >
-            Entendido
-          </button>
-          <button
-            type="button"
-            onClick={neverShow}
-            className="inline-flex h-11 items-center rounded-md px-3 text-xs text-muted-foreground"
-          >
-            No mostrar de nuevo
-          </button>
-        </div>
-      </div>
-    );
-  }
+      {canInstall ? (
+        <button
+          type="button"
+          onClick={() => void handleInstall()}
+          disabled={installing}
+          className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-base font-semibold text-primary-foreground transition active:scale-[0.99] disabled:opacity-70"
+        >
+          <Download className="size-5" aria-hidden="true" />
+          {installing ? t.pwa.installing : t.pwa.installNow}
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={snooze}
+          className="mt-4 inline-flex h-14 w-full items-center justify-center rounded-xl border border-border px-4 text-base font-semibold"
+        >
+          {t.pwa.understood}
+        </button>
+      )}
 
-  if (manual === "dev") {
-    return (
-      <div className={cardClass}>
-        <p className="text-sm font-medium">Instalar Direcciones</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Estás en desarrollo (localhost, sin service worker): la instalación PWA solo aparece en
-          producción. Abre la URL de producción en Chrome Android → menú ⋮ → Instalar app.
-        </p>
-        <div className="mt-3 flex gap-2">
-          <button
-            type="button"
-            onClick={snooze}
-            className="inline-flex h-11 flex-1 items-center justify-center rounded-md border px-3 text-xs font-medium"
-          >
-            Entendido
-          </button>
-          <button
-            type="button"
-            onClick={neverShow}
-            className="inline-flex h-11 items-center rounded-md px-3 text-xs text-muted-foreground"
-          >
-            No mostrar de nuevo
-          </button>
-        </div>
+      <div className="mt-2 flex items-center justify-center gap-5">
+        <button
+          type="button"
+          onClick={snooze}
+          className="inline-flex min-h-11 items-center px-2 text-xs text-muted-foreground"
+        >
+          {t.pwa.later}
+        </button>
+        <button
+          type="button"
+          onClick={neverShow}
+          className="inline-flex min-h-11 items-center px-2 text-xs text-muted-foreground"
+        >
+          {t.pwa.neverShow}
+        </button>
       </div>
-    );
-  }
-
-  if (manual === "android") {
-    return (
-      <div className={cardClass}>
-        <p className="text-sm font-medium">Instalar Direcciones</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          En Chrome Android: menú ⋮ → Instalar app o Añadir a pantalla de inicio para acceso rápido
-          y lectura offline.
-        </p>
-        <div className="mt-3 flex gap-2">
-          <button
-            type="button"
-            onClick={snooze}
-            className="inline-flex h-11 flex-1 items-center justify-center rounded-md border px-3 text-xs font-medium"
-          >
-            Ahora no
-          </button>
-          <button
-            type="button"
-            onClick={neverShow}
-            className="inline-flex h-11 items-center rounded-md px-3 text-xs text-muted-foreground"
-          >
-            No mostrar de nuevo
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return null;
+    </section>
+  );
 }
