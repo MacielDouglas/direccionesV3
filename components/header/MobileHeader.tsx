@@ -180,9 +180,10 @@ export default function MobileHeader({ role, orgSlug, sessionExpiresAt }: MenuMo
                 ${isMenuOpen ? "translate-x-0" : "translate-x-full"}
               `}
               style={{
-                paddingTop: "env(safe-area-inset-top)",
-                paddingBottom: "env(safe-area-inset-bottom)",
-                paddingRight: "env(safe-area-inset-right)",
+                // max() garante respiro mínimo onde env() = 0 (desktop/Android sem recorte)
+                paddingTop: "max(0.75rem, env(safe-area-inset-top, 0px))",
+                paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))",
+                paddingRight: "env(safe-area-inset-right, 0px)",
               }}
             >
               {/* Header */}

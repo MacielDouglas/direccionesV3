@@ -26,6 +26,11 @@ export default async function ProtectedLayout({
         {children}
       </main>
       <Footer organization={data.activeOrganization} />
+      {/* Respiro para a BottomTabBar fixa (h-16 + home indicator) só no mobile */}
+      <div
+        aria-hidden="true"
+        className="h-[calc(4rem+env(safe-area-inset-bottom,0px))] w-full shrink-0 bg-background md:hidden"
+      />
       {data.activeOrganization?.slug && (
         <BottomTabBar orgSlug={data.activeOrganization.slug} role={data.memberRole?.role ?? null} />
       )}

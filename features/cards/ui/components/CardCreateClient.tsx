@@ -198,7 +198,7 @@ export function CardCreateClient({
           <div
             className="flex flex-col-reverse gap-3 pt-2 sm:flex-row"
             style={{
-              paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+              paddingBottom: "max(1.5rem, env(safe-area-inset-bottom, 0px))",
             }}
           >
             <Button

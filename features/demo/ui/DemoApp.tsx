@@ -270,23 +270,32 @@ export function DemoApp() {
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-md flex-col">
-      <header className="sticky top-[env(safe-area-inset-top)] z-40 flex items-center justify-between gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md">
-        <div className="flex items-center gap-2.5">
-          <Image
-            src="/Logo.svg"
-            alt=""
-            width={28}
-            height={28}
-            unoptimized
-            className="rounded-lg"
-            aria-hidden="true"
-          />
-          <span className="text-sm font-semibold tracking-tight">{t.common.appName}</span>
+      <header
+        className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md"
+        style={{
+          paddingTop: "env(safe-area-inset-top, 0px)",
+          paddingLeft: "env(safe-area-inset-left, 0px)",
+          paddingRight: "env(safe-area-inset-right, 0px)",
+        }}
+      >
+        <div className="flex h-14 items-center justify-between gap-3 px-4">
+          <div className="flex items-center gap-2.5">
+            <Image
+              src="/Logo.svg"
+              alt=""
+              width={28}
+              height={28}
+              unoptimized
+              className="rounded-lg"
+              aria-hidden="true"
+            />
+            <span className="text-sm font-semibold tracking-tight">{t.common.appName}</span>
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1 text-[0.625rem] font-semibold uppercase tracking-widest text-brand">
+            <Sparkles className="size-3" aria-hidden="true" />
+            {t.demo.badge}
+          </span>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1 text-[0.625rem] font-semibold uppercase tracking-widest text-brand">
-          <Sparkles className="size-3" aria-hidden="true" />
-          {t.demo.badge}
-        </span>
       </header>
 
       <main className="flex-1 px-4 pb-32 pt-5">

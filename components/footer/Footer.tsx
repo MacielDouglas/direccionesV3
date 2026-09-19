@@ -15,7 +15,7 @@ export default async function Footer({ organization }: FooterProps) {
   return (
     <footer
       className="footer-fixed mt-auto w-full border-t border-white/10"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12 md:pb-16">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">

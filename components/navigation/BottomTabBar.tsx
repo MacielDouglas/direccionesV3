@@ -74,7 +74,7 @@ export function BottomTabBar({ orgSlug, role }: BottomTabBarProps) {
         "fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur-md text-foreground transition-transform duration-500 ease-in-out md:hidden",
         isHidden && "translate-y-full",
       )}
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <ul className="mx-auto flex h-16 max-w-md items-stretch justify-around px-2">
         {tabs.map(({ id, href, label, Icon }) => {

@@ -37,7 +37,9 @@ export const metadata: Metadata = {
   applicationName: "Direcciones",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent", // respeita safe area no iOS
+    // Telas claras: barra opaca com texto escuro funde com o tema.
+    // A tela de login (escura) sobrescreve para "black-translucent".
+    statusBarStyle: "default",
     title: "Direcciones",
   },
   formatDetection: {
@@ -88,6 +90,8 @@ export default async function RootLayout({
       <head>
         {/* Previne flash de conteúdo não estilizado no iOS PWA */}
         <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body
         className={`
@@ -109,7 +113,7 @@ export default async function RootLayout({
               href="#main-content"
               className="
               sr-only focus:not-sr-only
-              fixed left-2 top-[calc(0.5rem+env(safe-area-inset-top))] 
+              fixed left-2 top-[calc(0.5rem+env(safe-area-inset-top,0px))] 
               rounded-md bg-background px-4 py-2
               text-sm font-medium text-foreground
               shadow-md ring-2 ring-ring

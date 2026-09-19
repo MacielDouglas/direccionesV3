@@ -29,8 +29,18 @@ export default async function Header({
   const showControls = Boolean(organization?.slug) || isSuperUser || hasPerson;
 
   return (
-    <header className="sticky top-[env(safe-area-inset-top)] z-30 w-full border-b border-border bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:h-20 md:px-8">
+    // Padrão app nativo: gruda no topo do viewport (top-0) e o próprio
+    // header pinta a safe-area (notch/dynamic island/câmera Android) com o
+    // mesmo bg/blur — sem deslocar o fluxo nem somar inset duplo.
+    <header
+      className="sticky top-0 z-30 w-full border-b border-border bg-background/80 backdrop-blur-md"
+      style={{
+        paddingTop: "env(safe-area-inset-top, 0px)",
+        paddingLeft: "env(safe-area-inset-left, 0px)",
+        paddingRight: "env(safe-area-inset-right, 0px)",
+      }}
+    >
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 md:h-20 md:px-8">
         {showControls ? (
           <NavLink
             href="/"

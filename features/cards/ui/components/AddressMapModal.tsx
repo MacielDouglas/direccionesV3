@@ -46,7 +46,7 @@ export function AddressMapModal({ open, onClose, latitude, longitude }: Props) {
           type="button"
           onClick={onClose}
           aria-label={t.common.close}
-          className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-4 z-10 grid size-11 place-items-center rounded-full border border-border bg-card text-foreground shadow-lg transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+          className="absolute top-[calc(1rem+env(safe-area-inset-top,0px))] right-4 z-10 grid size-11 place-items-center rounded-full border border-border bg-card text-foreground shadow-lg transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
         >
           <X className="size-5" aria-hidden />
         </button>

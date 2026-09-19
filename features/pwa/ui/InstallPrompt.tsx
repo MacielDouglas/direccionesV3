@@ -210,7 +210,7 @@ export function InstallPrompt() {
   return (
     <section
       aria-label={t.pwa.installTitle}
-      className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 rounded-2xl border bg-background p-5 shadow-xl md:left-auto md:right-6 md:w-96"
+      className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] z-50 rounded-2xl border bg-background p-5 shadow-xl md:left-auto md:right-6 md:w-96"
     >
       <div className="flex items-start gap-3">
         <img
