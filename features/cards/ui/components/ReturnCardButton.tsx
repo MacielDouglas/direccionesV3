@@ -57,8 +57,7 @@ export function ReturnCardButton({
       <AlertDialogTrigger asChild>
         <Button
           variant={variant}
-          size="sm"
-          className={className}
+          className={`min-h-11 ${className ?? ""}`}
           disabled={isPending}
           aria-busy={isPending}
           aria-label={`${t.admin.returnCard} ${cardLabel}`}

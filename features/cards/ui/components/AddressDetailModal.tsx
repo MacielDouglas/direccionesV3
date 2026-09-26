@@ -509,7 +509,8 @@ function AddressContent({
             {address.updatedUser && (
               <>
                 {" "}
-                por <span className="font-medium text-foreground">{address.updatedUser.name}</span>
+                {t.addresses.updatedBy}{" "}
+                <span className="font-medium text-foreground">{address.updatedUser.name}</span>
               </>
             )}
           </p>

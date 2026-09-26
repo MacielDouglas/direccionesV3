@@ -19,6 +19,8 @@ export type I18nDictionary = {
     back: string;
     logout: string;
     logoutConfirm: string;
+    themeToLight: string;
+    themeToDark: string;
     sessionClosed: string;
     sessionCloseError: string;
     loading: string;
@@ -94,6 +96,7 @@ export type I18nDictionary = {
     offlineDescription: string;
     offlineRetry: string;
     offlineHome: string;
+    offlineBanner: string;
   };
   footer: {
     tagline: string;
@@ -107,6 +110,7 @@ export type I18nDictionary = {
     withGoogle: string;
     loginDescription: string;
     loginWithGoogle: string;
+    logoAlt: string;
     signingIn: string;
     loginError: string;
     chooseLanguage: string;
@@ -225,6 +229,7 @@ export type I18nDictionary = {
     searchHint: string;
     sendNew: string;
     searchPlaceholder: string;
+    searchLabel: string;
     status: string;
     type: string;
     active: string;
@@ -281,6 +286,7 @@ export type I18nDictionary = {
     inviteNotDelivered: string;
     inviteErrorOtherRequired: string;
     sentBy: string;
+    updatedBy: string;
     updatedAtLabel: string;
     unknownUser: string;
     editAddress: string;
@@ -690,6 +696,7 @@ export type I18nDictionary = {
     registryNoUsers: string;
     registryError: string;
     cardBadgeLabel: string;
+    mapOfCards: string;
     clearSelection: string;
     deselectPin: string;
     createCardNumber: string;
@@ -705,6 +712,7 @@ export type I18nDictionary = {
     savingCard: string;
     saveCardChanges: string;
     cardUpdated: string;
+    editCardHint: string;
     showAllAddresses: string;
     hideAllAddresses: string;
     linkedToOtherCard: string;

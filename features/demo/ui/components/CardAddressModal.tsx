@@ -193,7 +193,7 @@ export function CardAddressModal({ onClose }: { onClose: () => void }) {
                 {museumFlags.invite && (
                   <p className="flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
                     <CheckCircle2 className="size-3.5" aria-hidden="true" />
-                    {t.demo.flags.inviteDeliveredOn} 2026
+                    {t.demo.flags.inviteDeliveredOn} {museum.inviteYear}
                   </p>
                 )}
               </section>

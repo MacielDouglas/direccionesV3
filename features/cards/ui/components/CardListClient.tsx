@@ -182,7 +182,7 @@ export function CardListClient({ cards, persons, allAddresses, organizationSlug 
         {/* Mapa único — sticky */}
         {cards.length > 0 && (
           <section
-            aria-label={t.admin.cardsTitle}
+            aria-label={t.admin.mapOfCards}
             className="sticky top-14 z-20 overflow-hidden rounded-2xl border border-border bg-card shadow-sm md:top-20"
           >
             <div className="h-[45vh] w-full">
@@ -295,14 +295,31 @@ export function CardListClient({ cards, persons, allAddresses, organizationSlug 
           </h2>
 
           {cards.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-16 text-center text-sm text-muted-foreground">
+            <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed px-4 py-10 text-center text-sm text-muted-foreground">
               <CreditCard className="size-6" aria-hidden />
               <p>{t.admin.noCardsCreated}</p>
+              <Button asChild className="min-h-11">
+                <Link href={`/org/${organizationSlug}/admin/cards/new`}>
+                  <Plus className="mr-1.5 size-4" aria-hidden />
+                  {t.admin.newCard}
+                </Link>
+              </Button>
             </div>
           ) : filteredCards.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed py-16 text-center text-sm text-muted-foreground">
+            <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed px-4 py-10 text-center text-sm text-muted-foreground">
               <Search className="size-6" aria-hidden />
               <p>{t.admin.searchNoResults}</p>
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11"
+                onClick={() => {
+                  setQuery("");
+                  setFilter("all");
+                }}
+              >
+                {t.addresses.clearFilters}
+              </Button>
             </div>
           ) : (
             <ul className="flex flex-col gap-4" aria-label={t.admin.cardListAria}>

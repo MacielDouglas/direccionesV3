@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useCallback, useEffect, useState } from "react";
 
 async function hasConnection(): Promise<boolean> {
@@ -18,6 +19,7 @@ async function hasConnection(): Promise<boolean> {
 }
 
 export function OfflineIndicator() {
+  const { t } = useI18n();
   const [online, setOnline] = useState(true);
 
   const recheck = useCallback(async () => {
@@ -67,14 +69,14 @@ export function OfflineIndicator() {
   return (
     <div className="flex w-full items-center justify-center gap-3 bg-amber-500 px-4 py-2">
       <output aria-live="polite" className="text-center text-sm font-medium text-black">
-        Sin conexión — modo lectura. Los cambios necesitan internet.
+        {t.pwa.offlineBanner}
       </output>
       <button
         type="button"
         onClick={() => void recheck()}
-        className="inline-flex h-9 shrink-0 items-center rounded-md border border-black/20 px-3 text-xs font-semibold text-black"
+        className="inline-flex min-h-11 shrink-0 items-center rounded-md border border-black/20 px-4 text-xs font-semibold text-black"
       >
-        Reintentar
+        {t.pwa.offlineRetry}
       </button>
     </div>
   );

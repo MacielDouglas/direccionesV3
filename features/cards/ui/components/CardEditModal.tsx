@@ -145,7 +145,7 @@ export function CardEditModal({
       >
         <DialogHeader className="sr-only">
           <DialogTitle>{t.admin.editingCard}</DialogTitle>
-          <DialogDescription>{t.admin.availableAddresses}</DialogDescription>
+          <DialogDescription>{t.admin.editCardHint}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate>

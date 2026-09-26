@@ -17,7 +17,7 @@ export function LoginCard() {
         <header className="flex flex-col items-center gap-5 text-center">
           <Image
             src="/Logo.svg"
-            alt="Logotipo de Direcciones"
+            alt={t.login.logoAlt}
             width={96}
             height={96}
             unoptimized

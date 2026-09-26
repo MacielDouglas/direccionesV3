@@ -58,7 +58,11 @@ export default function ConfirmModal({
             className="gap-2"
           >
             {loading && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
-            {loading ? t.survey.confirmSaving : t.common.confirm}
+            {loading
+              ? t.survey.confirmSaving
+              : isSuggested
+                ? t.survey.sendMarkings
+                : t.survey.confirmMarking}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

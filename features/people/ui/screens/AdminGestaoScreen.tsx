@@ -133,7 +133,7 @@ export function AdminGestaoScreen({
       {/* Abas */}
       <div
         role="tablist"
-        aria-label={t.admin.dashboard}
+        aria-label={t.admin.gestaoTitle}
         onKeyDown={handleTabKeys}
         className="flex w-full rounded-full border border-border bg-card p-1"
       >
@@ -363,7 +363,7 @@ function PeopleTab({
               ) : (
                 <Check className="size-4" aria-hidden />
               )}
-              {t.common.confirm}
+              {creating ? t.people.creating : t.people.createButton}
             </Button>
           </div>
         </div>

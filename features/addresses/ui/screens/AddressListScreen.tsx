@@ -147,7 +147,7 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
             placeholder={t.addresses.searchPlaceholder}
             value={query}
             onChange={handleQueryChange}
-            aria-label={t.addresses.searchPlaceholder}
+            aria-label={t.addresses.searchLabel}
           />
         </div>
 

@@ -49,8 +49,7 @@ export function DeleteCardButton({ cardId, cardNumber, organizationSlug, classNa
       <DialogTrigger asChild>
         <Button
           variant="destructive"
-          size="sm"
-          className={className}
+          className={`min-h-11 ${className ?? ""}`}
           aria-label={`${t.admin.deleteCard} #${String(cardNumber).padStart(2, "0")}`}
         >
           <Trash2 className="size-4 mr-1.5" aria-hidden />

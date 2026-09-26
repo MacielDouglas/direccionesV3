@@ -30,12 +30,12 @@ export default async function AdminPage({ params }: Props) {
   }
 
   const isOwner = role === "owner" || data.isSuperUser;
-  const orgName = data.activeOrganization?.name ?? "Organización";
   const slug = data.activeOrganization?.slug ?? organizationSlug;
 
   const t = dictionaries[locale];
   const altLocale = locale === "pt" ? "es" : "pt";
   const tAlt = dictionaries[altLocale];
+  const orgName = data.activeOrganization?.name ?? t.admin.organizationsTitle;
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-6 md:py-10" aria-labelledby="admin-heading">

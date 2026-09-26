@@ -261,7 +261,7 @@ export function CardListItem({
           {/* ── Ações (grade 2×2, tamanhos iguais) ── */}
           <div className="mt-1 grid grid-cols-2 gap-2 border-t border-border/60 pt-3">
             {!isAssigned ? (
-              <Button size="sm" className="w-full" onClick={() => setAssignOpen(true)}>
+              <Button className="min-h-11 w-full" onClick={() => setAssignOpen(true)}>
                 <User className="mr-1.5 size-4" aria-hidden />
                 {t.admin.assignVerb}
               </Button>
@@ -275,9 +275,8 @@ export function CardListItem({
             )}
 
             <Button
-              size="sm"
               variant="ghost"
-              className="w-full text-muted-foreground hover:text-foreground"
+              className="min-h-11 w-full text-muted-foreground hover:text-foreground"
               onClick={() => setRegistryOpen(true)}
             >
               <History className="mr-1.5 size-4" aria-hidden />
@@ -285,9 +284,8 @@ export function CardListItem({
             </Button>
 
             <Button
-              size="sm"
               variant="ghost"
-              className="w-full text-muted-foreground hover:text-foreground"
+              className="min-h-11 w-full text-muted-foreground hover:text-foreground"
               onClick={() => onEditCard(card.id)}
             >
               <Pencil className="mr-1.5 size-4" aria-hidden />

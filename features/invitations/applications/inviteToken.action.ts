@@ -1,6 +1,7 @@
 "use server";
 
 import { createOrganizationService } from "@/domains/organization";
+import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getCurrentUser, requireOrgAdminOrOwner } from "@/server/users";
@@ -20,30 +21,31 @@ async function requireSuperUser() {
 
 // ── Usa token de convite — qualquer usuário logado ─────────────
 export async function applyInviteTokenAction(token: string) {
-  if (!tokenSchema.safeParse(token).success) throw new Error("Enlace no válido.");
+  const t = await getServerDictionary();
+  if (!tokenSchema.safeParse(token).success) throw new Error(t.invitations.tokenInvalid);
 
   const userData = await getCurrentUser();
-  if (!userData) throw new Error("No autorizado.");
+  if (!userData) throw new Error(t.invitations.tokenError);
 
   if (!checkRateLimit(`invite:${userData.user.id}`)) throw new Error("rate_limited");
-  if (userData.person.organizationId) throw new Error("Ya perteneces a una organización.");
+  if (userData.person.organizationId) throw new Error(t.invitations.alreadyInOrg);
 
   const invite = await prisma.inviteToken.findUnique({
     where: { token },
     include: { organization: true, person: true },
   });
 
-  if (!invite || invite.type !== "INVITE") throw new Error("Enlace no válido.");
-  if (invite.usedAt) throw new Error("Este enlace ya fue utilizado.");
-  if (invite.expiresAt < new Date()) throw new Error("Este enlace expiró.");
-  if (!invite.organizationId || !invite.organization) throw new Error("Enlace no válido.");
+  if (!invite || invite.type !== "INVITE") throw new Error(t.invitations.tokenInvalid);
+  if (invite.usedAt) throw new Error(t.invitations.tokenUsed);
+  if (invite.expiresAt < new Date()) throw new Error(t.invitations.tokenExpired);
+  if (!invite.organizationId || !invite.organization) throw new Error(t.invitations.tokenInvalid);
 
   // Todo token é vinculado a uma Pessoa pré-criada pelo admin/owner.
-  if (!invite.personId) throw new Error("Enlace no válido.");
+  if (!invite.personId) throw new Error(t.invitations.tokenInvalid);
 
   const person = invite.person;
-  if (!person) throw new Error("Enlace no válido.");
-  if (person.userId) throw new Error("Esta persona ya tiene un usuario vinculado.");
+  if (!person) throw new Error(t.invitations.tokenInvalid);
+  if (person.userId) throw new Error(t.invitations.tokenUsed);
 
   await prisma.$transaction(async (tx) => {
     // Remove a Person auto-criada do usuário (sem org e sem dados).

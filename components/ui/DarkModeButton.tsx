@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
@@ -16,6 +17,7 @@ function useIsMounted() {
 
 export default function DarkModeButton() {
   const { setTheme, theme } = useTheme();
+  const { t } = useI18n();
   const isMounted = useIsMounted();
 
   if (!isMounted) {
@@ -33,7 +35,7 @@ export default function DarkModeButton() {
       variant="ghost"
       size="icon"
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+      aria-label={isDark ? t.common.themeToLight : t.common.themeToDark}
     >
       <Sun
         className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90 text-muted-foreground"
