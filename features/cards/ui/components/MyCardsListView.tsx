@@ -3,7 +3,15 @@
 import { ADDRESS_TYPE_OPTIONS } from "@/features/addresses/domain/constants/address.constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { CircleAlert, Clock, CreditCard, MapPin, MapPinned } from "lucide-react";
+import {
+  ChevronRight,
+  CircleAlert,
+  Clock,
+  CreditCard,
+  Map as MapIcon,
+  MapPin,
+  MapPinned,
+} from "lucide-react";
 import { getCardColor } from "../../utils/cardColors";
 
 type CardAddress = {
@@ -15,6 +23,8 @@ type CardAddress = {
   city: string;
   businessName: string | null;
   pendingDeletionAt: Date | null;
+  latitude: number | null;
+  longitude: number | null;
   active: boolean;
 };
 
@@ -30,6 +40,7 @@ interface Props {
   organizationSlug: string;
   totalAddresses: number;
   onOpenAddress: (id: string) => void;
+  onOpenCardMap: (cardId: string) => void;
 }
 
 function formatSince(date: Date, locale: string) {
@@ -49,7 +60,7 @@ function neighborhoodsOf(addresses: CardAddress[]) {
   );
 }
 
-export function MyCardsListView({ cards, totalAddresses, onOpenAddress }: Props) {
+export function MyCardsListView({ cards, totalAddresses, onOpenAddress, onOpenCardMap }: Props) {
   const { t, locale } = useI18n();
   const activeAddresses = cards.reduce(
     (total, card) => total + card.addresses.filter((a) => a.active).length,
@@ -110,47 +121,59 @@ export function MyCardsListView({ cards, totalAddresses, onOpenAddress }: Props)
           const neighborhoods = neighborhoodsOf(card.addresses);
           const cardNumber = String(card.number).padStart(2, "0");
           const hasActive = card.addresses.some((a) => a.active);
+          const mappableCount = card.addresses.filter(
+            (a) => a.latitude != null && a.longitude != null,
+          ).length;
 
           return (
             <li key={card.id}>
               <article
                 aria-label={`${t.cards.title} #${cardNumber}`}
-                className="overflow-hidden rounded-2xl border border-border bg-card shadow-xs"
+                className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_12px_32px_-12px_rgba(0,0,0,0.35)] transition-shadow duration-300 hover:shadow-[0_20px_44px_-12px_rgba(0,0,0,0.45)]"
               >
-                {/* Banner estilo cartão de banco */}
+                {/* Cartão 3D estilo banco */}
                 <div
-                  className="relative overflow-hidden px-5 py-4 text-white"
+                  className="relative overflow-hidden px-5 pb-5 pt-4 text-white"
                   style={{
                     background: `linear-gradient(135deg, ${color} 0%, color-mix(in srgb, ${color} 55%, black) 100%)`,
                   }}
                 >
+                  {/* Luz superior + sombra inferior: volume */}
                   <div
-                    className="pointer-events-none absolute -right-10 -top-12 size-36 rounded-full bg-white/10"
+                    className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/25 via-white/5 to-black/30"
+                    aria-hidden="true"
+                  />
+                  {/* Reflexo diagonal */}
+                  <div
+                    className="pointer-events-none absolute -left-1/4 top-0 h-full w-1/2 rotate-[20deg] bg-gradient-to-r from-transparent via-white/15 to-transparent"
                     aria-hidden="true"
                   />
                   <div
-                    className="pointer-events-none absolute -right-2 top-8 size-16 rounded-full bg-white/10"
+                    className="pointer-events-none absolute -right-10 -top-12 size-36 rounded-full bg-white/10 blur-[1px]"
+                    aria-hidden="true"
+                  />
+                  <div
+                    className="pointer-events-none absolute -right-2 top-10 size-16 rounded-full bg-white/10"
+                    aria-hidden="true"
+                  />
+                  {/* Fio de luz no topo + base escura: borda 3D */}
+                  <div
+                    className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/50"
+                    aria-hidden="true"
+                  />
+                  <div
+                    className="pointer-events-none absolute inset-x-0 bottom-0 h-[3px] bg-black/25"
                     aria-hidden="true"
                   />
 
                   <div className="relative flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-white/15 text-sm font-bold tabular-nums backdrop-blur-sm">
-                        {cardNumber}
-                      </span>
-                      <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-white/70">
-                          {t.admin.cardBadgeLabel}
-                        </p>
-                        <p className="text-2xl font-bold leading-none tabular-nums tracking-tight">
-                          #{cardNumber}
-                        </p>
-                      </div>
-                    </div>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-white/70">
+                      {t.admin.cardBadgeLabel}
+                    </p>
 
                     <span
                       className={cn(
-                        "inline-flex shrink-0 items-center gap-1.5 rounded-full bg-black/20 px-3 py-1.5 text-xs font-semibold backdrop-blur-sm",
+                        "inline-flex shrink-0 items-center gap-1.5 rounded-full bg-black/20 px-3 py-1.5 text-xs font-semibold shadow-[0_2px_6px_rgba(0,0,0,0.35)] ring-1 ring-white/20 ring-inset backdrop-blur-sm",
                         hasActive ? "text-white" : "text-white/70",
                       )}
                     >
@@ -163,6 +186,12 @@ export function MyCardsListView({ cards, totalAddresses, onOpenAddress }: Props)
                       />
                       {t.cards.active}
                     </span>
+                  </div>
+
+                  <div className="relative mt-3">
+                    <p className="text-3xl font-bold leading-none tabular-nums tracking-tight drop-shadow-[0_2px_3px_rgba(0,0,0,0.45)]">
+                      #{cardNumber}
+                    </p>
                   </div>
                 </div>
 
@@ -235,6 +264,26 @@ export function MyCardsListView({ cards, totalAddresses, onOpenAddress }: Props)
                       );
                     })}
                   </ul>
+
+                  {/* Mapa do cartão */}
+                  {mappableCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenCardMap(card.id)}
+                      aria-label={`${t.cards.seeMap} — ${t.cards.cardNumber.replace("{number}", cardNumber)}`}
+                      className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-4 text-sm font-semibold text-foreground shadow-xs transition-colors hover:border-brand/50 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                    >
+                      <MapIcon className="size-4 shrink-0 text-brand" aria-hidden />
+                      {t.cards.seeMap}
+                      <span
+                        aria-hidden
+                        className="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-bold tabular-nums text-brand"
+                      >
+                        {mappableCount}
+                      </span>
+                      <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                    </button>
+                  )}
                 </div>
               </article>
             </li>

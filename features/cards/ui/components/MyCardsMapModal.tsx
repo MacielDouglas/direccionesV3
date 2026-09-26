@@ -11,17 +11,28 @@ import { CardViewMap } from "@/features/map/components/CardViewMap";
 import type { CardAddress } from "@/features/map/layers/CardAddressesLayer";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { X } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 
 interface Props {
   open: boolean;
   onClose: () => void;
   addresses: CardAddress[];
   onMarkerClick?: (id: string) => void;
+  title?: string;
+  subtitle?: string;
 }
 
-export function MyCardsMapModal({ open, onClose, addresses, onMarkerClick }: Props) {
+export function MyCardsMapModal({
+  open,
+  onClose,
+  addresses,
+  onMarkerClick,
+  title,
+  subtitle,
+}: Props) {
   const { t } = useI18n();
+  const heading = title ?? t.cards.mine;
+  const subheading = subtitle ?? t.cards.seeMap;
 
   return (
     <Dialog
@@ -38,8 +49,8 @@ export function MyCardsMapModal({ open, onClose, addresses, onMarkerClick }: Pro
         )}
       >
         <DialogHeader className="sr-only">
-          <DialogTitle>{t.cards.mine}</DialogTitle>
-          <DialogDescription>{t.cards.seeMap}</DialogDescription>
+          <DialogTitle>{heading}</DialogTitle>
+          <DialogDescription>{subheading}</DialogDescription>
         </DialogHeader>
 
         {addresses.length > 0 ? (
@@ -53,6 +64,21 @@ export function MyCardsMapModal({ open, onClose, addresses, onMarkerClick }: Pro
             {t.admin.noCoordinates}
           </div>
         )}
+
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t.common.back}
+          className="absolute top-4 left-4 z-10 flex max-w-[calc(100%-5.5rem)] items-center gap-2.5 rounded-2xl border border-border bg-background/90 py-2 pr-4 pl-3 text-left shadow-lg backdrop-blur transition-colors hover:bg-background active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        >
+          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-brand text-brand-foreground">
+            <ArrowLeft className="size-4" aria-hidden />
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold text-foreground">{heading}</span>
+            <span className="block truncate text-xs text-muted-foreground">{subheading}</span>
+          </span>
+        </button>
 
         <button
           type="button"

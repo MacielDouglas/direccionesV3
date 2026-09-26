@@ -30,6 +30,19 @@ type Card = {
   addresses: CardAddress[];
 };
 
+type MapAddress = {
+  id: string;
+  label: string;
+  latitude: number;
+  longitude: number;
+};
+
+type MapSelection = {
+  title: string;
+  subtitle: string;
+  addresses: MapAddress[];
+};
+
 interface Props {
   cards: Card[];
   organizationSlug: string;
@@ -41,7 +54,7 @@ export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props
   const [addressPromise, setAddressPromise] = useState<Promise<AddressWithUsers | null> | null>(
     null,
   );
-  const [mapOpen, setMapOpen] = useState(false);
+  const [mapSelection, setMapSelection] = useState<MapSelection | null>(null);
 
   const { allAddresses } = useMemo(() => {
     const addresses = cards
@@ -66,6 +79,38 @@ export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props
     setAddressPromise(fetchAddressWithUsers(id));
   };
 
+  const openAllAddressesMap = () => {
+    if (allAddresses.length === 0) return;
+    setMapSelection({
+      title: t.cards.mine,
+      subtitle: t.cards.addressesCount.replace("{count}", String(allAddresses.length)),
+      addresses: allAddresses,
+    });
+  };
+
+  const openCardMap = (cardId: string) => {
+    const card = cards.find((c) => c.id === cardId);
+    if (!card) return;
+    const addresses = card.addresses
+      .filter(
+        (a): a is typeof a & { latitude: number; longitude: number } =>
+          a.latitude != null && a.longitude != null,
+      )
+      .map((a) => ({
+        id: a.id,
+        label: a.businessName ?? `${a.street}, ${a.number}`,
+        latitude: a.latitude,
+        longitude: a.longitude,
+      }));
+    if (addresses.length === 0) return;
+    const cardNumber = String(card.number).padStart(2, "0");
+    setMapSelection({
+      title: t.cards.cardNumber.replace("{number}", cardNumber),
+      subtitle: t.cards.addressesCount.replace("{count}", String(addresses.length)),
+      addresses,
+    });
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <MyCardsListView
@@ -73,13 +118,14 @@ export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props
         organizationSlug={organizationSlug}
         totalAddresses={totalAddresses}
         onOpenAddress={openAddress}
+        onOpenCardMap={openCardMap}
       />
 
       <div className="flex flex-col items-stretch gap-4 sm:items-center">
         {allAddresses.length > 0 && (
           <button
             type="button"
-            onClick={() => setMapOpen(true)}
+            onClick={() => openAllAddressesMap()}
             aria-label={`${t.cards.seeMap} — ${t.cards.addressesCount.replace("{count}", String(allAddresses.length))}`}
             className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground shadow-xs transition-colors hover:bg-brand/90 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:w-auto sm:min-w-72"
           >
@@ -104,12 +150,14 @@ export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props
         )}
       </div>
 
-      {mapOpen && (
+      {mapSelection && (
         <MyCardsMapModal
-          open={mapOpen}
-          onClose={() => setMapOpen(false)}
-          addresses={allAddresses}
+          open
+          onClose={() => setMapSelection(null)}
+          addresses={mapSelection.addresses}
           onMarkerClick={openAddress}
+          title={mapSelection.title}
+          subtitle={mapSelection.subtitle}
         />
       )}
     </div>
