@@ -75,15 +75,22 @@ export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props
         onOpenAddress={openAddress}
       />
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col items-stretch gap-4 sm:items-center">
         {allAddresses.length > 0 && (
           <button
             type="button"
             onClick={() => setMapOpen(true)}
-            className="w-full sm:w-auto rounded-xl border border-border bg-card py-3 text-sm font-medium text-foreground shadow-sm hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            aria-label={`${t.cards.seeMap} — ${t.cards.addressesCount.replace("{count}", String(allAddresses.length))}`}
+            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground shadow-xs transition-colors hover:bg-brand/90 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:w-auto sm:min-w-72"
           >
-            <MapIcon className="size-4 text-brand mr-2" aria-hidden />
+            <MapIcon className="size-4 shrink-0" aria-hidden />
             {t.cards.seeMap}
+            <span
+              aria-hidden
+              className="rounded-full bg-black/15 px-2 py-0.5 text-xs font-bold tabular-nums"
+            >
+              {allAddresses.length}
+            </span>
           </button>
         )}
 
