@@ -49,7 +49,7 @@ export function LeaveOrganizationButton({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm" className="gap-2">
+        <Button variant="destructive" className="min-h-11 w-full gap-2 sm:w-auto">
           <LogOut className="size-4" aria-hidden />
           {t.user.leaveOrg}
         </Button>

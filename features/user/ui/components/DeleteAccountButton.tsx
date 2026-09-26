@@ -43,7 +43,7 @@ export function DeleteAccountButton({ userEmail }: { userEmail: string }) {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm" className="gap-2">
+        <Button variant="destructive" className="min-h-11 w-full gap-2 sm:w-auto">
           <Trash2 className="size-4" aria-hidden />
           {t.user.deleteAccount}
         </Button>

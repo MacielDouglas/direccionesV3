@@ -34,7 +34,10 @@ export default async function LoginLoading() {
 
         <Skeleton className="h-11 w-full rounded-full bg-white/15" />
 
-        <Skeleton className="h-8 w-24 rounded-full bg-white/10" />
+        <div className="flex w-full flex-col items-stretch gap-2.5 sm:flex-row sm:items-center sm:justify-center">
+          <Skeleton className="h-11 w-full rounded-full bg-white/10 sm:w-36" />
+          <Skeleton className="h-11 w-full rounded-full bg-white/10 sm:w-28" />
+        </div>
       </div>
     </div>
   );

@@ -123,9 +123,9 @@ export function CardCreateClient({
   };
 
   return (
-    <div className="w-full flex flex-1 flex-col overflow-hidden max-w-3xl mx-auto">
-      <div className="w-full h-96">
-        <LazyMapboxProvider className="h-96 w-full shrink-0">
+    <div className="mx-auto flex w-full max-w-3xl flex-col">
+      <div className="h-72 w-full sm:h-80">
+        <LazyMapboxProvider className="h-72 w-full shrink-0 sm:h-80">
           <SelectableAddressesLayer
             addresses={selectableAddresses}
             selectedIds={selectedIds}
@@ -134,10 +134,7 @@ export function CardCreateClient({
         </LazyMapboxProvider>
       </div>
 
-      <div
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
-        style={{ WebkitOverflowScrolling: "touch" }}
-      >
+      <div>
         <form
           onSubmit={handleSubmit(onSubmit)}
           noValidate
@@ -151,18 +148,6 @@ export function CardCreateClient({
               #{String(nextNumber).padStart(2, "0")}
             </span>
           </div>
-          {/* {selectedIds.length > 0 && ( */}
-          <Button
-            type="submit"
-            className="w-full sm:w-auto"
-            disabled={isPending || selectedIds.length === 0}
-            aria-busy={isPending}
-          >
-            {isPending
-              ? t.admin.creatingCard
-              : t.admin.createCardButton.replace("{number}", String(nextNumber).padStart(2, "0"))}
-          </Button>
-          {/* )} */}
           {/* ✅ Busca por nome/estabelecimento, rua, bairro ou cidade */}
           <div className="relative">
             <Search

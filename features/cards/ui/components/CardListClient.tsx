@@ -7,7 +7,7 @@ import { CardGroupedMap } from "@/features/map/components/CardGroupedMap";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { fetchAddressWithUsers } from "@/server/address/address.action";
-import { CreditCard, Plus, Search } from "lucide-react";
+import { CreditCard, Plus, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { getCardColor } from "../../utils/cardColors";
@@ -170,7 +170,7 @@ export function CardListClient({ cards, persons, allAddresses, organizationSlug 
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">{t.admin.cardsDescription}</p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href={`/org/${organizationSlug}/admin/cards/new`}>
             <Plus className="mr-1.5 size-4" aria-hidden />
             {t.admin.newCard}
@@ -183,7 +183,7 @@ export function CardListClient({ cards, persons, allAddresses, organizationSlug 
         {cards.length > 0 && (
           <section
             aria-label={t.admin.cardsTitle}
-            className="sticky top-0 z-20 overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+            className="sticky top-14 z-20 overflow-hidden rounded-2xl border border-border bg-card shadow-sm md:top-20"
           >
             <div className="h-[45vh] w-full">
               <CardGroupedMap
@@ -203,9 +203,10 @@ export function CardListClient({ cards, persons, allAddresses, organizationSlug 
                   setSelectedCardId(null);
                   setSelectedAddressId(null);
                 }}
-                className="absolute bottom-3 left-3 z-10 rounded-full bg-background/90 px-3 py-1.5 text-xs font-semibold shadow backdrop-blur-sm transition hover:bg-background"
+                className="absolute bottom-3 left-3 z-10 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-background/90 px-4 py-2 text-xs font-semibold shadow backdrop-blur-sm transition hover:bg-background"
               >
-                ✕ {t.admin.clearSelection}
+                <X className="size-3.5" aria-hidden />
+                {t.admin.clearSelection}
               </button>
             )}
 
@@ -214,9 +215,10 @@ export function CardListClient({ cards, persons, allAddresses, organizationSlug 
               <button
                 type="button"
                 onClick={() => setSelectedAddressId(null)}
-                className="absolute bottom-3 right-3 z-10 rounded-full bg-black/80 px-3 py-1.5 text-xs font-semibold text-white shadow backdrop-blur-sm transition hover:bg-black"
+                className="absolute bottom-3 right-3 z-10 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-black/80 px-4 py-2 text-xs font-semibold text-white shadow backdrop-blur-sm transition hover:bg-black"
               >
-                ✕ {t.admin.deselectPin}
+                <X className="size-3.5" aria-hidden />
+                {t.admin.deselectPin}
               </button>
             )}
           </section>

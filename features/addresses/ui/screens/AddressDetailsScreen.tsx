@@ -3,7 +3,7 @@ import { AddressViewMap } from "@/features/map/components/AddressViewMap";
 import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
 import { getUniquePerson } from "@/server/users";
 import type { Address } from "@prisma/client";
-import { ArrowLeft, CircleAlert } from "lucide-react";
+import { ArrowLeft, Check, CircleAlert, X } from "lucide-react";
 import Link from "next/link";
 import { ADDRESS_TYPE_OPTIONS } from "../../domain/constants/address.constants";
 import { AddressHeroImage } from "../components/AddressHeroImage";
@@ -48,15 +48,15 @@ export default async function AddressDetailsScreen({
         <Link
           href={`/org/${organizationSlug}/addresses`}
           aria-label={t.common.back}
-          className="mt-1 rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="grid min-h-11 min-w-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           <ArrowLeft className="h-6 w-6" aria-hidden="true" />
         </Link>
         <div className="min-w-0">
-          <h1 className="truncate text-2xl font-semibold tracking-tight text-foreground">
+          <h1 className="text-balance text-2xl font-semibold tracking-tight text-foreground">
             {title}
           </h1>
-          <p className="mt-0.5 truncate text-sm text-muted-foreground">{addressLine}</p>
+          <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{addressLine}</p>
         </div>
       </header>
 
@@ -98,7 +98,17 @@ export default async function AddressDetailsScreen({
                     : "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300"
                 }`}
               >
-                {address.confirmed ? `✓ ${t.addresses.confirmed}` : `✗ ${t.addresses.notConfirmed}`}
+                {address.confirmed ? (
+                  <>
+                    <Check className="size-3" aria-hidden />
+                    {t.addresses.confirmed}
+                  </>
+                ) : (
+                  <>
+                    <X className="size-3" aria-hidden />
+                    {t.addresses.notConfirmed}
+                  </>
+                )}
               </li>
               <li
                 className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
@@ -107,10 +117,32 @@ export default async function AddressDetailsScreen({
                     : "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300"
                 }`}
               >
-                {address.active ? `✓ ${t.addresses.active}` : `✗ ${t.addresses.inactive}`}
+                {address.active ? (
+                  <>
+                    <Check className="size-3" aria-hidden />
+                    {t.addresses.active}
+                  </>
+                ) : (
+                  <>
+                    <X className="size-3" aria-hidden />
+                    {t.addresses.inactive}
+                  </>
+                )}
               </li>
             </ul>
           </header>
+
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Link
+              href={`/org/${organizationSlug}/addresses/${address.id}/edit`}
+              className="sm:flex-1"
+            >
+              <Button className="h-11 w-full">{t.addresses.editAddress}</Button>
+            </Link>
+            <div className="sm:flex-1">
+              <DeleteAddressButton addressId={address.id} />
+            </div>
+          </div>
 
           {!address.confirmed && (
             <div className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3">
@@ -118,6 +150,13 @@ export default async function AddressDetailsScreen({
               <p className="text-sm font-medium text-destructive">
                 {t.addresses.notVerifiedWarning}
               </p>
+            </div>
+          )}
+
+          {!address.active && (
+            <div className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3">
+              <CircleAlert className="size-5 shrink-0 text-destructive" aria-hidden="true" />
+              <p className="text-sm font-medium text-destructive">{t.addresses.inactiveWarning}</p>
             </div>
           )}
 
@@ -148,13 +187,6 @@ export default async function AddressDetailsScreen({
             </div>
           </dl>
 
-          {!address.active && (
-            <div className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3">
-              <CircleAlert className="size-5 shrink-0 text-destructive" aria-hidden="true" />
-              <p className="text-sm font-medium text-destructive">{t.addresses.inactiveWarning}</p>
-            </div>
-          )}
-
           {address.info && (
             <section aria-labelledby="extra-info-title" className="rounded-xl bg-muted p-4">
               <h2
@@ -167,37 +199,23 @@ export default async function AddressDetailsScreen({
             </section>
           )}
 
-          <footer className="flex flex-col gap-4 border-t border-border pt-4">
-            <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs text-muted-foreground">
-                {t.addresses.sentBy}{" "}
-                <span className="font-medium text-foreground">
-                  {createdUser?.name ?? t.addresses.unknownUser}
-                </span>
-              </p>
-              <p className="flex flex-wrap gap-1 text-xs text-muted-foreground sm:text-end">
-                {t.addresses.updatedAtLabel}{" "}
-                <time dateTime={new Date(address.updatedAt).toISOString()}>
-                  {formatDate(address.updatedAt, locale)}
-                </time>
-                {updatedUser && (
-                  <span className="font-medium text-foreground">{updatedUser.name}</span>
-                )}
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Link
-                href={`/org/${organizationSlug}/addresses/${address.id}/edit`}
-                className="sm:flex-1"
-              >
-                <Button className="h-11 w-full">{t.addresses.editAddress}</Button>
-              </Link>
-              <div className="sm:flex-1">
-                <DeleteAddressButton addressId={address.id} />
-              </div>
-            </div>
-          </footer>
+          <details className="border-t border-border pt-4">
+            <summary className="min-h-11 cursor-pointer text-xs text-muted-foreground">
+              {t.addresses.sentBy}{" "}
+              <span className="font-medium text-foreground">
+                {createdUser?.name ?? t.addresses.unknownUser}
+              </span>
+            </summary>
+            <p className="mt-1 flex flex-wrap gap-1 text-xs text-muted-foreground sm:text-end">
+              {t.addresses.updatedAtLabel}{" "}
+              <time dateTime={new Date(address.updatedAt).toISOString()}>
+                {formatDate(address.updatedAt, locale)}
+              </time>
+              {updatedUser && (
+                <span className="font-medium text-foreground">{updatedUser.name}</span>
+              )}
+            </p>
+          </details>
         </section>
 
         {address.latitude && address.longitude && (

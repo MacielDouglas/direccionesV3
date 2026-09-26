@@ -39,7 +39,7 @@ export default async function PendingDeletionScreen({ addresses, organizationSlu
           <Link
             href={`/org/${organizationSlug}/admin/gestao`}
             aria-label={t.common.back}
-            className="mt-1 rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            className="grid min-h-11 min-w-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           >
             <ArrowLeft className="h-6 w-6" aria-hidden="true" />
           </Link>
@@ -51,8 +51,10 @@ export default async function PendingDeletionScreen({ addresses, organizationSlu
           </div>
         </header>
 
-        <div className="text-center py-16">
-          <p className="text-muted-foreground">{t.addresses.noPendingDeletions}</p>
+        <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-card px-4 py-10 text-center">
+          <p className="text-sm font-medium text-muted-foreground">
+            {t.addresses.noPendingDeletions}
+          </p>
         </div>
       </main>
     );
@@ -124,14 +126,14 @@ export default async function PendingDeletionScreen({ addresses, organizationSlu
                 </header>
 
                 {address.requestedBy && address.pendingDeletionAt && (
-                  <div className="flex items-center gap-2 rounded-xl bg-muted/50 px-3 py-2">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-muted/50 px-3 py-2">
                     <span className="text-xs text-muted-foreground">{t.addresses.requestedBy}</span>
-                    <span className="font-medium text-sm text-foreground">
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
                       {address.requestedBy.name ?? address.requestedBy.user?.email}
                     </span>
                     <time
                       dateTime={address.pendingDeletionAt.toISOString()}
-                      className="ml-auto text-xs text-muted-foreground"
+                      className="shrink-0 text-xs tabular-nums text-muted-foreground"
                     >
                       {formatDate(address.pendingDeletionAt, "pt-BR")}
                     </time>

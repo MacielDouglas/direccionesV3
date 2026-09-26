@@ -102,6 +102,25 @@ export function AddressCard({ address, organizationSlug }: Props) {
           />
         </header>
 
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusChip
+            ok={address.confirmed}
+            okLabel={t.addresses.confirmed}
+            notOkLabel={t.addresses.notConfirmed}
+          />
+          <StatusChip
+            ok={address.active}
+            okLabel={t.addresses.cardActive}
+            notOkLabel={t.addresses.cardInactive}
+          />
+          {address.pendingDeletionAt && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-destructive px-2.5 py-1 text-xs font-medium text-white">
+              <Trash2 className="size-3" aria-hidden />
+              {t.addresses.pendingDeletion}
+            </span>
+          )}
+        </div>
+
         <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
           <MapPin className="mt-0.5 size-3.5 shrink-0 text-brand" aria-hidden />
           {address.neighborhood}, {address.city}
@@ -129,25 +148,6 @@ export function AddressCard({ address, organizationSlug }: Props) {
         {address.info && (
           <p className="line-clamp-2 text-sm text-muted-foreground">{address.info}</p>
         )}
-
-        <div className="flex flex-wrap items-center gap-2">
-          <StatusChip
-            ok={address.confirmed}
-            okLabel={t.addresses.confirmed}
-            notOkLabel={t.addresses.notConfirmed}
-          />
-          <StatusChip
-            ok={address.active}
-            okLabel={t.addresses.cardActive}
-            notOkLabel={t.addresses.cardInactive}
-          />
-          {address.pendingDeletionAt && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-destructive px-2.5 py-1 text-xs font-medium text-white">
-              <Trash2 className="size-3" aria-hidden />
-              {t.addresses.pendingDeletion}
-            </span>
-          )}
-        </div>
       </article>
     </Link>
   );

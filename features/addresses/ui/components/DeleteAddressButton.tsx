@@ -55,7 +55,7 @@ export default function DeleteAddressButton({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="destructive" className="w-full gap-2">
+        <Button variant="destructive" className="min-h-11 w-full gap-2">
           <Trash2 className="h-4 w-4" aria-hidden="true" />
           {t.addresses.deleteAddress}
         </Button>

@@ -3,7 +3,18 @@
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { Clock, History, Info, MapPin, MapPinned, Pencil, Sparkles, Tag, User } from "lucide-react";
+import {
+  Clock,
+  Eye,
+  History,
+  Info,
+  MapPin,
+  MapPinned,
+  Pencil,
+  Sparkles,
+  Tag,
+  User,
+} from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import type {
@@ -48,20 +59,11 @@ export function AgendaEventItem({
   return (
     <>
       <article
-        onClick={onOpen}
-        onKeyDown={(e) => {
-          if (!onOpen) return;
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onOpen();
-          }
-        }}
         className={cn(
           "group-data-[highlight]:ring-2 group-data-[highlight]:ring-primary group-data-[highlight]:ring-offset-2 flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-xs transition-opacity",
           isNext &&
             "border-brand/50 bg-gradient-to-br from-brand/10 via-card to-card shadow-[0_12px_35px_-12px] shadow-brand/40 ring-1 ring-brand/30",
           isPast && "opacity-70",
-          onOpen && "cursor-pointer",
         )}
         aria-label={`${dateStr}, ${timeStr}`}
       >
@@ -117,8 +119,20 @@ export function AgendaEventItem({
             <p className="text-sm capitalize text-muted-foreground">{dateStr}</p>
           </div>
 
-          {(canEdit || canDelete) && (
+          {(onOpen || canEdit || canDelete) && (
             <div className="flex shrink-0 items-center gap-1">
+              {onOpen && (
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="size-11 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                  aria-label={t.agenda.viewEvent}
+                  onClick={onOpen}
+                >
+                  <Eye className="size-4" aria-hidden />
+                </Button>
+              )}
               {canEdit && (
                 <Button
                   type="button"

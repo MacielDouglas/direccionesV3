@@ -91,7 +91,10 @@ export function AddressDetailOverlay({
           />
         </div>
 
-        <div className="flex flex-col gap-5 px-4 py-5">
+        <div
+          className="flex flex-col gap-5 px-4 py-5"
+          style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom, 0px))" }}
+        >
           <div className="flex flex-col gap-2">
             <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1 text-[0.625rem] font-semibold uppercase tracking-widest text-brand">
               <Landmark className="size-3.5" aria-hidden="true" />

@@ -107,11 +107,10 @@ export function CardEditClient({
   };
 
   return (
-    <div className="flex flex-col h-dvh">
-      {/* Mapa fixo no topo */}
-
-      <div className="h-96 w-full overflow-hidden shadow-md">
-        <LazyMapboxProvider className="h-96">
+    <div className="flex flex-col">
+      {/* Mapa no topo */}
+      <div className="h-72 w-full overflow-hidden shadow-md sm:h-80">
+        <LazyMapboxProvider className="h-72 sm:h-80">
           <SelectableAddressesLayer
             addresses={allForMap}
             selectedIds={selectedIds}
@@ -120,8 +119,8 @@ export function CardEditClient({
         </LazyMapboxProvider>
       </div>
 
-      {/* Área rolável */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Área de conteúdo — rolagem única da página */}
+      <div>
         <form
           onSubmit={handleSubmit(onSubmit)}
           noValidate
@@ -184,7 +183,12 @@ export function CardEditClient({
           )}
 
           {/* Ações */}
-          <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2 pb-6">
+          <div
+            className="flex flex-col-reverse gap-3 pt-2 sm:flex-row"
+            style={{
+              paddingBottom: "max(1.5rem, env(safe-area-inset-bottom, 0px))",
+            }}
+          >
             <Button
               type="button"
               variant="outline"

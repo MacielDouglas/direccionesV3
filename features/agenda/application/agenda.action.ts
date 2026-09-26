@@ -92,8 +92,6 @@ export async function createAgendaEventAction(
     revalidatePath(`/org/${organizationSlug}/admin/agenda`);
     return {};
   } catch (err) {
-    // biome-ignore lint/suspicious/noConsole: log de erro intencional do servidor
-    console.error("[agenda] createAgendaEventAction", err);
     const t = await getServerDictionary();
     return { error: knownDomainError(err) ?? t.errors.generic };
   }
@@ -148,8 +146,6 @@ export async function updateAgendaEventAction(
     revalidatePath(`/org/${organizationSlug}/admin/agenda`);
     return {};
   } catch (err) {
-    // biome-ignore lint/suspicious/noConsole: log de erro intencional do servidor
-    console.error("[agenda] updateAgendaEventAction", err);
     const t = await getServerDictionary();
     return { error: knownDomainError(err) ?? t.errors.generic };
   }
@@ -177,8 +173,6 @@ export async function deleteAgendaEventAction(
     revalidatePath(`/org/${organizationSlug}/admin/agenda`);
     return {};
   } catch (err) {
-    // biome-ignore lint/suspicious/noConsole: log de erro intencional do servidor
-    console.error("[agenda] deleteAgendaEventAction", err);
     const t = await getServerDictionary();
     return { error: knownDomainError(err) ?? t.errors.generic };
   }

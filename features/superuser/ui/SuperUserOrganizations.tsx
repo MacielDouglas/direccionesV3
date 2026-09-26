@@ -52,9 +52,8 @@ export function SuperUserOrganizations({ organizations }: { organizations: Super
               </div>
               <Button
                 type="button"
-                size="sm"
                 onClick={() => router.push(`/org/${org.slug}`)}
-                className="gap-2"
+                className="min-h-11 w-full gap-2 sm:w-auto"
               >
                 <LogIn className="size-3.5" aria-hidden />
                 {t.superuser.enterOrg}

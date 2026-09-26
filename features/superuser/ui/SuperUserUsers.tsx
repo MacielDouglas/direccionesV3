@@ -116,14 +116,17 @@ export function SuperUserUsers({
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                   <Select
                     value={selectedOrgId[user.id] ?? ""}
                     onValueChange={(value) =>
                       setSelectedOrgId((prev) => ({ ...prev, [user.id]: value }))
                     }
                   >
-                    <SelectTrigger className="w-44" aria-label={t.superuser.selectOrgToSend}>
+                    <SelectTrigger
+                      className="h-11 w-full sm:w-44"
+                      aria-label={t.superuser.selectOrgToSend}
+                    >
                       <SelectValue placeholder={t.superuser.selectOrgPlaceholder} />
                     </SelectTrigger>
                     <SelectContent>
@@ -137,11 +140,10 @@ export function SuperUserUsers({
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
                     onClick={() => sendToOrg(user)}
                     disabled={isBusy || !selectedOrgId[user.id]}
                     aria-busy={isBusy}
-                    className="gap-1.5"
+                    className="min-h-11 gap-1.5"
                   >
                     {isBusy ? (
                       <Loader2 className="size-3.5 animate-spin" aria-hidden />
@@ -153,10 +155,9 @@ export function SuperUserUsers({
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
                     onClick={() => deleteUser(user)}
                     disabled={isBusy}
-                    className="gap-1.5 text-destructive hover:text-destructive"
+                    className="min-h-11 gap-1.5 text-destructive hover:text-destructive"
                   >
                     <Trash2 className="size-3.5" aria-hidden />
                     {t.superuser.deleteUser}

@@ -49,11 +49,10 @@ export function PendingDeletionActions({ addressId }: Props) {
   return (
     <>
       <Button
-        size="sm"
         variant="destructive"
         disabled={loading}
         onClick={handleConfirm}
-        className="gap-2"
+        className="min-h-11 gap-2"
       >
         {loading ? (
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -64,11 +63,10 @@ export function PendingDeletionActions({ addressId }: Props) {
       </Button>
 
       <Button
-        size="sm"
         variant="outline"
         disabled={loading}
         onClick={handleCancel}
-        className="gap-2"
+        className="min-h-11 gap-2"
       >
         <XCircle className="h-4 w-4" aria-hidden="true" />
         {t.addresses.cancelDeletion}

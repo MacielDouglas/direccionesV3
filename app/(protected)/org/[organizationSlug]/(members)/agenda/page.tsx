@@ -15,12 +15,12 @@ import { redirect } from "next/navigation";
 export const metadata: Metadata = { title: "Agenda" };
 
 interface Props {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ organizationSlug: string }>;
   searchParams: Promise<{ year?: string; month?: string }>;
 }
 
 export default async function AgendaPage({ params, searchParams }: Props) {
-  const { slug } = await params;
+  const { organizationSlug } = await params;
   const { year, month } = await searchParams;
   const [session, t, locale] = await Promise.all([
     getCurrentUser(),
@@ -58,7 +58,7 @@ export default async function AgendaPage({ params, searchParams }: Props) {
         year={activeYear}
         month={activeMonth}
         monthLabel={monthLabel}
-        organizationSlug={slug}
+        organizationSlug={organizationSlug}
         canDelete={isAdminOrOwner}
         canEdit={isAdminOrOwner}
         members={members}
@@ -67,7 +67,7 @@ export default async function AgendaPage({ params, searchParams }: Props) {
           isAdminOrOwner && fieldOptions ? (
             <AgendaAdminForm
               organizationId={person.organizationId}
-              organizationSlug={slug}
+              organizationSlug={organizationSlug}
               members={members}
               fieldOptions={fieldOptions}
             />

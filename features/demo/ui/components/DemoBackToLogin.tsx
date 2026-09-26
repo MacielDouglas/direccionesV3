@@ -10,7 +10,7 @@ export function DemoBackToLogin() {
   return (
     <Link
       href="/login"
-      className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+      className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-center text-sm font-medium leading-snug text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     >
       <ArrowLeft className="size-4" aria-hidden="true" />
       {t.demo.backToLogin}

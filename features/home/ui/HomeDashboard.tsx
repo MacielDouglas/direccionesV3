@@ -36,7 +36,7 @@ export async function HomeDashboard({
         {t.home.welcome} <span className="text-foreground">{userName}</span>
       </h1>
 
-      <div className="mt-6 space-y-6">
+      <div className="mt-6 space-y-8">
         {/* Hero — Saldo de Cards */}
         <Link
           href={`/org/${organizationSlug}/my-cards`}
@@ -76,6 +76,11 @@ export async function HomeDashboard({
           </Link>
         )}
 
+        {/* Exclusões pendentes — tarefa crítica do admin, logo após as ações */}
+        {isAdminOrOwner && (
+          <PendingDeletionBadge organizationId={organizationId} orgSlug={organizationSlug} />
+        )}
+
         {/* Enviar novo endereço */}
         <Link
           href={`/org/${organizationSlug}/addresses/new`}
@@ -97,7 +102,7 @@ export async function HomeDashboard({
             </h2>
             <Link
               href={`/org/${organizationSlug}/agenda`}
-              className="text-sm font-medium text-brand transition-colors hover:text-brand-muted"
+              className="inline-flex min-h-11 items-center text-sm font-medium text-brand transition-colors hover:text-brand-muted"
             >
               {t.agenda.title}
             </Link>
@@ -124,7 +129,7 @@ export async function HomeDashboard({
                       <p className="truncate text-xs font-medium text-foreground">
                         {event.tipo ?? event.territorio ?? event.saida ?? t.agenda.title}
                       </p>
-                      <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
                         {[event.territorio, event.saida, event.conductor?.name]
                           .filter(Boolean)
                           .join(" · ")}
@@ -139,17 +144,13 @@ export async function HomeDashboard({
               <p className="text-sm text-muted-foreground">{t.home.noEventsToday}</p>
               <Link
                 href={`/org/${organizationSlug}/agenda`}
-                className="mt-1.5 inline-block text-sm font-medium text-brand transition-colors hover:text-brand-muted"
+                className="mt-1.5 inline-flex min-h-11 items-center text-sm font-medium text-brand transition-colors hover:text-brand-muted"
               >
                 {t.home.viewAgenda}
               </Link>
             </div>
           )}
         </section>
-
-        {isAdminOrOwner && (
-          <PendingDeletionBadge organizationId={organizationId} orgSlug={organizationSlug} />
-        )}
       </div>
     </div>
   );

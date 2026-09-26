@@ -18,7 +18,7 @@ export function BackLink({ href, label, className }: Props) {
     <Link
       href={href}
       className={cn(
-        "inline-flex w-fit items-center gap-1.5 rounded-full text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
+        "inline-flex min-h-11 w-fit items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
         className,
       )}
     >

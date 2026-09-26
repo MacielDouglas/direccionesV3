@@ -29,7 +29,7 @@ export default async function AddressEditScreen({ organizationSlug, addressId }:
       <header className="flex items-center gap-3 px-4 pb-2 pt-4">
         <Link
           href={`/org/${organizationSlug}/addresses/${addressId}`}
-          className="rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="grid min-h-11 min-w-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           aria-label={t.addresses.backToDetailsAria}
         >
           <ArrowLeft className="h-5 w-5" aria-hidden="true" />

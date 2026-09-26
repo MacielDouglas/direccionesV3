@@ -23,11 +23,10 @@ export function AddressPagination({ page, total, pageSize, onChange }: Props) {
     >
       <Button
         variant="outline"
-        size="sm"
         onClick={() => onChange(page - 1)}
         disabled={page === 1}
         aria-label={t.addresses.previousPage}
-        className="gap-1"
+        className="min-h-11 gap-1"
       >
         <ChevronLeft className="size-4" aria-hidden />
         {t.addresses.previousLabel}
@@ -41,11 +40,10 @@ export function AddressPagination({ page, total, pageSize, onChange }: Props) {
 
       <Button
         variant="outline"
-        size="sm"
         onClick={() => onChange(page + 1)}
         disabled={page === totalPages}
         aria-label={t.addresses.nextPage}
-        className="gap-1"
+        className="min-h-11 gap-1"
       >
         {t.addresses.nextLabel}
         <ChevronRight className="size-4" aria-hidden />

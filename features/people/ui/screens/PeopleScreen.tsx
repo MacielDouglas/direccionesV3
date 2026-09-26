@@ -112,9 +112,9 @@ function roleLabel(t: ReturnType<typeof useI18n>["t"], role: string | null) {
 
 const roleBadgeClasses = (role: string | null) => {
   if (role === "owner" || role === "admin") {
-    return "inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand";
+    return "inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-brand";
   }
-  return "inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground";
+  return "inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground";
 };
 
 const cardCountBadge = (t: ReturnType<typeof useI18n>["t"], count: number) =>
@@ -236,7 +236,7 @@ function PersonCard({
           <ShieldCheck className="size-3" aria-hidden="true" />
           {roleLabel(t, person.role)}
         </span>
-        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <CreditCard className="size-3" aria-hidden="true" />
           {cardCountBadge(t, person.cardsCount)}
         </span>

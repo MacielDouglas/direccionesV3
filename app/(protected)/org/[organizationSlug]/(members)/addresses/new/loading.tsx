@@ -104,8 +104,10 @@ export default async function NewAddressLoading() {
       </section>
 
       {/* ── Botón submit ── */}
-      <div className="sticky bottom-0 border-t bg-background px-4 py-3 shadow-md">
-        <Skeleton className="h-10 w-full rounded-md" />
+      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] z-10 px-1 md:bottom-0">
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <Skeleton className="h-11 w-full rounded-md" />
+        </div>
       </div>
     </div>
   );

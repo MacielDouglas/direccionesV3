@@ -34,7 +34,7 @@ export default async function MyCardsPage({ params }: Props) {
         <Link
           href={`/org/${organizationSlug}/addresses`}
           aria-label={t.common.back}
-          className="mt-1 rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="grid min-h-11 min-w-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           <ArrowLeft className="h-6 w-6" aria-hidden="true" />
         </Link>

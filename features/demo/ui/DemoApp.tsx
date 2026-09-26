@@ -203,8 +203,10 @@ function AboutTab({ onStart }: { onStart: () => void }) {
         <p className="text-sm leading-relaxed text-muted-foreground">{t.demo.intro.subtitle}</p>
       </div>
 
-      <p className="text-sm leading-relaxed text-foreground">{t.demo.about.p1}</p>
-      <p className="text-sm leading-relaxed text-muted-foreground">{t.demo.about.p2}</p>
+      <div className="flex flex-col gap-2">
+        <p className="text-sm leading-relaxed text-foreground">{t.demo.about.p1}</p>
+        <p className="text-sm leading-relaxed text-muted-foreground">{t.demo.about.p2}</p>
+      </div>
 
       <div className="flex flex-col gap-2">
         <h2 className="text-sm font-semibold tracking-tight">{t.demo.intro.stepsTitle}</h2>
@@ -298,7 +300,7 @@ export function DemoApp() {
         </div>
       </header>
 
-      <main className="flex-1 px-4 pb-32 pt-5">
+      <main className="flex-1 px-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] pt-5">
         {tab === "cards" && <CardsTab onOpenCard={() => setCardOpen(true)} />}
         {tab === "addresses" && <AddressesTab onSelect={setSelectedId} />}
         {tab === "about" && <AboutTab onStart={() => setTab("cards")} />}

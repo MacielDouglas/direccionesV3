@@ -54,8 +54,8 @@ export function AddressFilterBar({ filters, onChange, total }: Props) {
   return (
     <div className="flex flex-col gap-2 rounded-lg border bg-muted/30 p-3">
       {/* Estado */}
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-xs text-muted-foreground font-medium w-10 shrink-0">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="w-14 shrink-0 text-xs font-medium text-muted-foreground">
           {t.admin.filterStatus}
         </span>
         {activeOptions.map((opt) => (
@@ -64,7 +64,7 @@ export function AddressFilterBar({ filters, onChange, total }: Props) {
             type="button"
             onClick={() => onChange({ ...filters, active: opt.value })}
             className={cn(
-              "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
+              "min-h-11 rounded-full border px-4 py-2 text-xs font-medium transition-colors",
               filters.active === opt.value
                 ? "bg-primary text-primary-foreground border-primary"
                 : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
@@ -76,8 +76,8 @@ export function AddressFilterBar({ filters, onChange, total }: Props) {
       </div>
 
       {/* Tipo */}
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-xs text-muted-foreground font-medium w-10 shrink-0">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="w-14 shrink-0 text-xs font-medium text-muted-foreground">
           {t.admin.filterType}
         </span>
         {typeOptions.map((opt) => {
@@ -88,7 +88,7 @@ export function AddressFilterBar({ filters, onChange, total }: Props) {
               type="button"
               onClick={() => toggleType(opt.value)}
               className={cn(
-                "flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border transition-colors",
+                "flex min-h-11 items-center gap-1 rounded-full border px-4 py-2 text-xs font-medium transition-colors",
                 isSelected
                   ? "bg-primary text-primary-foreground border-primary"
                   : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",

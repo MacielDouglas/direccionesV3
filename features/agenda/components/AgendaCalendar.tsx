@@ -166,7 +166,7 @@ export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
                           .replace("{day}", String(day))
                           .replace("{month}", monthName(locale, month))}
                         className={cn(
-                          "flex size-10 items-center justify-center rounded-full text-sm font-medium transition-all",
+                          "relative mx-auto flex size-11 items-center justify-center rounded-full text-sm font-medium transition-all",
                           isClickable && !isPending && "cursor-pointer",
                           isClickable &&
                             !isPending &&
@@ -180,16 +180,16 @@ export function AgendaCalendar({ events, year, month, onDayClick }: Props) {
                         )}
                       >
                         {day}
+                        {eventDay && (
+                          <span
+                            className={cn(
+                              "absolute bottom-1 size-1.5 rounded-full",
+                              todayDay ? "bg-brand-foreground/50" : "bg-primary",
+                            )}
+                            aria-hidden
+                          />
+                        )}
                       </button>
-                      {eventDay && (
-                        <span
-                          className={cn(
-                            "mt-0.5 block size-1.5 rounded-full",
-                            todayDay ? "bg-brand-foreground/50" : "bg-primary",
-                          )}
-                          aria-hidden
-                        />
-                      )}
                     </td>
                   );
                 })}

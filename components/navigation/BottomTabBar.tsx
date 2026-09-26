@@ -44,6 +44,12 @@ export function BottomTabBar({ orgSlug, role }: BottomTabBarProps) {
   ];
 
   useEffect(() => {
+    // Nas telas de admin a barra fica sempre visível: listas longas
+    // esconderiam a navegação sem pista de retorno.
+    if (pathname.includes("/admin")) {
+      setIsHidden(false);
+      return;
+    }
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       const delta = currentScrollY - lastScrollY.current;
@@ -60,7 +66,7 @@ export function BottomTabBar({ orgSlug, role }: BottomTabBarProps) {
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [pathname]);
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/" || pathname === `/org/${orgSlug}`;

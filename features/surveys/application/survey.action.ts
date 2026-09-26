@@ -33,8 +33,6 @@ export async function getSurveyPinsAction(
     const pins = await getSurveyPins(organizationId);
     return { success: true, data: pins };
   } catch (err) {
-    // biome-ignore lint/suspicious/noConsole: log de erro intencional do servidor
-    console.error("[surveys] getSurveyPinsAction", err);
     const t = await getServerDictionary();
     return { success: false, error: knownDomainError(err) ?? t.errors.generic };
   }
@@ -49,8 +47,6 @@ export async function createSurveyPinsAction(input: unknown): Promise<ActionResu
     const pins = await createSurveyPins(parsed.data, data.person.id);
     return { success: true, data: pins };
   } catch (err) {
-    // biome-ignore lint/suspicious/noConsole: log de erro intencional do servidor
-    console.error("[surveys] createSurveyPinsAction", err);
     const t = await getServerDictionary();
     return { success: false, error: knownDomainError(err) ?? t.errors.generic };
   }
@@ -72,8 +68,6 @@ export async function confirmSurveyPinAction(
     });
     return { success: true, data: pin };
   } catch (err) {
-    // biome-ignore lint/suspicious/noConsole: log de erro intencional do servidor
-    console.error("[surveys] confirmSurveyPinAction", err);
     const t = await getServerDictionary();
     return { success: false, error: knownDomainError(err) ?? t.errors.generic };
   }
@@ -95,8 +89,6 @@ export async function cancelSurveyPinAction(
     });
     return { success: true, data: pin };
   } catch (err) {
-    // biome-ignore lint/suspicious/noConsole: log de erro intencional do servidor
-    console.error("[surveys] cancelSurveyPinAction", err);
     const t = await getServerDictionary();
     return { success: false, error: knownDomainError(err) ?? t.errors.generic };
   }

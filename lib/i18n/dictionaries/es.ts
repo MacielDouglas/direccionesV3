@@ -91,6 +91,11 @@ const es: I18nDictionary = {
     devHint:
       "Estás en desarrollo (localhost, sin service worker): la instalación solo aparece en producción.",
     androidHint: "En Chrome: menú ⋮ → «Instalar app» para instalarla con un toque.",
+    offlineTitle: "Sin conexión",
+    offlineDescription:
+      "Estás offline. Las fotos, mapas y listas que ya abriste siguen disponibles. Las creaciones y ediciones necesitan internet.",
+    offlineRetry: "Intentar de nuevo",
+    offlineHome: "Ir al inicio",
   },
   footer: {
     tagline:
@@ -371,6 +376,22 @@ const es: I18nDictionary = {
     validateTitle: "Dirección no validada",
     validateDescription: "No se puede enviar una dirección no validada. Corrige lo que falta:",
     validateDismiss: "Entendido",
+    createErrorTitle: "No se pudo crear la dirección",
+    createErrorDescription: "La dirección no fue guardada. Mira abajo qué pasó y cómo corregirlo.",
+    createErrorMissingInfoTitle: "Faltan datos importantes",
+    createErrorMissingInfoDescription:
+      "Algunos campos obligatorios están incompletos o no son válidos (calle, número, barrio o ciudad). Revisa los datos del formulario e inténtalo de nuevo.",
+    createErrorGpsTitle: "Falta la ubicación GPS",
+    createErrorGpsDescription:
+      "La ubicación GPS no fue definida o no es válida. Toca en “Enviar ubicación GPS”, marca el punto en el mapa y confirma antes de intentarlo de nuevo.",
+    createErrorImageTitle: "Error al enviar la foto",
+    createErrorImageDescription:
+      "No pudimos enviar la foto del lugar. Verifica tu conexión, elige una imagen válida e inténtalo de nuevo. También puedes intentarlo sin foto.",
+    createErrorSaveTitle: "Error al guardar la dirección",
+    createErrorSaveDescription:
+      "Ocurrió un fallo al guardar en el servidor. Verifica tu conexión e inténtalo de nuevo en unos instantes.",
+    createErrorRetry: "Intentar de nuevo",
+    createErrorClose: "Cerrar",
     errorGps:
       "La ubicación GPS es obligatoria. Toca en \u201cEnviar ubicación GPS\u201d y confirma el punto en el mapa.",
     errorStreet: "La calle es obligatoria (mínimo 2 caracteres).",
@@ -761,6 +782,8 @@ const es: I18nDictionary = {
     usersDescription:
       "Ver todos los usuarios de la organización, generar invitaciones y gestionar accesos.",
     noOrganizations: "Aún no hay organizaciones.",
+    savedTexts: "Textos guardados",
+    savedTextsDescription: "Corrige barrios, ciudades, salidas, tipos y territorios duplicados.",
   },
   people: {
     title: "Personas",
@@ -946,6 +969,41 @@ const es: I18nDictionary = {
   errors: {
     generic: "Algo salió mal. Intente nuevamente.",
     sessionExpired: "Tu sesión expiró. Vuelve a iniciar sesión.",
+  },
+  savedTexts: {
+    title: "Textos guardados",
+    description: "Mira y corrige los textos que la app guarda para completar más rápido.",
+    hint: "Los textos de abajo se guardaron automáticamente al crear direcciones y eventos. Corrige la ortografía o une duplicados: los cambios valen para todos los registros.",
+    tabStreet: "Calles",
+    tabNeighborhood: "Barrios",
+    tabCity: "Ciudades",
+    tabSaida: "Salidas",
+    tabTipo: "Tipos",
+    tabTerritorio: "Territorios",
+    searchPlaceholder: "Buscar texto...",
+    selectAll: "Seleccionar todos",
+    clearSelection: "Limpiar selección",
+    selectedCount: "{count} seleccionados",
+    usageOne: "1 uso",
+    usageMany: "{count} usos",
+    unused: "sin uso",
+    emptyField: "Aún no hay textos guardados aquí.",
+    renameTitle: "Corregir ortografía",
+    renamePlaceholder: "Texto correcto...",
+    renameButton: "Guardar corrección",
+    mergeTitle: "Unir duplicados",
+    mergeHint:
+      "Selecciona 2 o más textos que son lo mismo, elige el texto correcto y une: todos los registros pasan a usar el texto correcto.",
+    mergeDestinationLabel: "Texto correcto",
+    mergeDestinationPlaceholder: "Elige o escribe el texto correcto...",
+    mergeButton: "Unir seleccionados",
+    mergeNeedsSelection: "Selecciona al menos 2 textos para unir.",
+    renameSuccess: "Texto corregido en todos los registros.",
+    mergeSuccess: "Textos unidos correctamente.",
+    fixHint: "Toca el lápiz para corregir la ortografía de un texto.",
+    duplicateHint: "Marca los textos duplicados y únelos en uno solo.",
+    cancel: "Cancelar",
+    saving: "Guardando...",
   },
 };
 

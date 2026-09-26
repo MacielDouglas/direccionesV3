@@ -22,6 +22,7 @@ import { createAddressAction } from "../../application/address.actions";
 import type { AddressFormData } from "../../domain/address.schema";
 import { useAddressForm } from "../../hooks/useAddressForm";
 import { uploadFile } from "../../utils/uploadFile";
+import AddressCreateErrorDialog, { type AddressCreateErrorKind } from "./AddressCreateErrorDialog";
 import AddressFields from "./AddressFields";
 
 interface Props {
@@ -53,6 +54,61 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
   const [validationErrors, setValidationErrors] = useState<{ label: string; message: string }[]>(
     [],
   );
+  const [createErrorOpen, setCreateErrorOpen] = useState(false);
+  const [createErrorKind, setCreateErrorKind] = useState<AddressCreateErrorKind>("save");
+  const [createErrorDetail, setCreateErrorDetail] = useState<string | null>(null);
+
+  function classifyCreateError(message: string): AddressCreateErrorKind {
+    const text = message.toLowerCase();
+    if (
+      text.includes("gps") ||
+      text.includes("lat") ||
+      text.includes("lng") ||
+      text.includes("long") ||
+      text.includes("coorden") ||
+      text.includes("ubicac") ||
+      text.includes("localiz")
+    ) {
+      return "gps";
+    }
+    if (
+      text.includes("foto") ||
+      text.includes("photo") ||
+      text.includes("imag") ||
+      text.includes("upload") ||
+      text.includes("firmada") ||
+      text.includes("signed") ||
+      text.includes("r2")
+    ) {
+      return "image";
+    }
+    if (
+      text.includes("calle") ||
+      text.includes("rua") ||
+      text.includes("street") ||
+      text.includes("número") ||
+      text.includes("numero") ||
+      text.includes("number") ||
+      text.includes("barrio") ||
+      text.includes("bairro") ||
+      text.includes("neighborhood") ||
+      text.includes("ciudad") ||
+      text.includes("cidade") ||
+      text.includes("city") ||
+      text.includes("caracter") ||
+      text.includes("obligatorio") ||
+      text.includes("obrigat")
+    ) {
+      return "missing-info";
+    }
+    return "save";
+  }
+
+  function showCreateError(kind: AddressCreateErrorKind, detail?: string | null) {
+    setCreateErrorKind(kind);
+    setCreateErrorDetail(detail ?? null);
+    setCreateErrorOpen(true);
+  }
 
   async function onSubmit(values: AddressFormData) {
     try {
@@ -60,14 +116,26 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
       let imageKey: string | null = null;
 
       if (values.image.imageFile instanceof File) {
-        setUploadProgress(0);
-        const uploaded = await uploadFile(
-          values.image.imageFile,
-          organization.slug,
-          setUploadProgress,
-        );
-        imageUrl = uploaded.publicUrl;
-        imageKey = uploaded.key;
+        try {
+          setUploadProgress(0);
+          const uploaded = await uploadFile(
+            values.image.imageFile,
+            organization.slug,
+            setUploadProgress,
+          );
+          imageUrl = uploaded.publicUrl;
+          imageKey = uploaded.key;
+        } catch (uploadErr) {
+          const detail = uploadErr instanceof Error ? uploadErr.message : null;
+          showCreateError("image", detail);
+          return;
+        }
+      }
+
+      // Defesa extra: GPS ausente no momento do envio
+      if (values.latitude == null || values.longitude == null) {
+        showCreateError("gps", null);
+        return;
       }
 
       const newAddress = await createAddressAction({
@@ -78,8 +146,9 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
 
       toast.success(t.addresses.addressCreated);
       router.push(`/org/${organization.slug}/addresses/${newAddress.id}`);
-    } catch {
-      toast.error(t.addresses.addressCreateError);
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : null;
+      showCreateError(detail ? classifyCreateError(detail) : "save", detail);
     } finally {
       setUploadProgress(0);
     }
@@ -112,6 +181,11 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
     return t.addresses.createTitle;
   };
 
+  function handleRetryCreate() {
+    setCreateErrorOpen(false);
+    form.handleSubmit(onSubmit, onInvalid)();
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="flex flex-col gap-8 pb-10">
@@ -120,8 +194,11 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
           existingCities={existingCities}
         />
 
-        <div className="sticky bottom-0 z-10">
-          <div className="rounded-2xl border border-border bg-card p-4 shadow-lg">
+        <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] z-10 md:bottom-0">
+          <div
+            className="rounded-2xl border border-border bg-card p-4 shadow-lg"
+            style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom, 0px))" }}
+          >
             {uploadProgress > 0 && uploadProgress < 100 && (
               <progress
                 value={uploadProgress}
@@ -134,7 +211,7 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
               type="submit"
               disabled={isSubmitting}
               aria-busy={isSubmitting}
-              className="w-full"
+              className="min-h-11 w-full"
             >
               {isSubmitting ? (
                 <>
@@ -189,6 +266,15 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modal — falha ao criar endereço (GPS / foto / dados / servidor) */}
+      <AddressCreateErrorDialog
+        open={createErrorOpen}
+        onOpenChange={setCreateErrorOpen}
+        kind={createErrorKind}
+        detail={createErrorDetail}
+        onRetry={handleRetryCreate}
+      />
     </Form>
   );
 }

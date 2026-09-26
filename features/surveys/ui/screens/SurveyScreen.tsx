@@ -13,8 +13,11 @@ export default async function SurveyScreen(props: Props) {
   const t = await getServerDictionary();
 
   return (
-    <main aria-label={t.survey.mapAria} className="relative h-svh w-full overflow-hidden">
+    <section
+      aria-label={t.survey.mapAria}
+      className="relative min-h-0 w-full flex-1 overflow-hidden"
+    >
       <LazySurveyMap {...props} />
-    </main>
+    </section>
   );
 }

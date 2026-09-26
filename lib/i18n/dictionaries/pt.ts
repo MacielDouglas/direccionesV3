@@ -90,6 +90,11 @@ const ptBR: I18nDictionary = {
     devHint:
       "Você está em desenvolvimento (localhost, sem service worker): a instalação só aparece em produção.",
     androidHint: "No Chrome: menu ⋮ → «Instalar app» para instalar com um toque.",
+    offlineTitle: "Sem conexão",
+    offlineDescription:
+      "Você está offline. Fotos, mapas e listas que você já abriu continuam disponíveis. Criações e edições precisam de internet.",
+    offlineRetry: "Tentar novamente",
+    offlineHome: "Ir para o início",
   },
   footer: {
     tagline:
@@ -369,6 +374,23 @@ const ptBR: I18nDictionary = {
     validateDescription:
       "Não é possível enviar um endereço não validado. Corrija o que está faltando:",
     validateDismiss: "Entendi",
+    createErrorTitle: "Não foi possível criar o endereço",
+    createErrorDescription:
+      "O endereço não foi salvo. Veja abaixo o que aconteceu e como corrigir.",
+    createErrorMissingInfoTitle: "Faltam informações importantes",
+    createErrorMissingInfoDescription:
+      "Alguns campos obrigatórios estão incompletos ou inválidos (rua, número, bairro ou cidade). Revise os dados do formulário e tente novamente.",
+    createErrorGpsTitle: "Falta a localização GPS",
+    createErrorGpsDescription:
+      "A localização GPS não foi definida ou é inválida. Toque em “Enviar localização GPS”, marque o ponto no mapa e confirme antes de tentar de novo.",
+    createErrorImageTitle: "Erro ao enviar a foto",
+    createErrorImageDescription:
+      "Não conseguimos enviar a foto do lugar. Verifique sua conexão, escolha uma imagem válida e tente novamente. Você também pode tentar sem foto.",
+    createErrorSaveTitle: "Erro ao salvar o endereço",
+    createErrorSaveDescription:
+      "Ocorreu uma falha ao salvar no servidor. Verifique sua conexão e tente novamente em alguns instantes.",
+    createErrorRetry: "Tentar novamente",
+    createErrorClose: "Fechar",
     errorGps:
       "A localização GPS é obrigatória. Toque em \u201cEnviar localização GPS\u201d e confirme o ponto no mapa.",
     errorStreet: "A rua é obrigatória (mínimo 2 caracteres).",
@@ -758,6 +780,8 @@ const ptBR: I18nDictionary = {
     typeRestaurant: "Restaurante",
     usersDescription: "Veja todos os usuários da organização, gere convites e gerencie acessos.",
     noOrganizations: "Nenhuma organização cadastrada.",
+    savedTexts: "Textos salvos",
+    savedTextsDescription: "Corrija bairros, cidades, saídas, tipos e territórios duplicados.",
   },
   people: {
     title: "Pessoas",
@@ -939,6 +963,41 @@ const ptBR: I18nDictionary = {
   errors: {
     generic: "Algo deu errado. Tente novamente.",
     sessionExpired: "Sua sessão expirou. Entre novamente.",
+  },
+  savedTexts: {
+    title: "Textos salvos",
+    description: "Veja e corrija os textos que o app salva para preencher mais rápido.",
+    hint: "Os textos abaixo foram salvos automaticamente ao criar endereços e eventos. Corrija a ortografia ou junte duplicados: as alterações valem para todos os registros.",
+    tabStreet: "Ruas",
+    tabNeighborhood: "Bairros",
+    tabCity: "Cidades",
+    tabSaida: "Saídas",
+    tabTipo: "Tipos",
+    tabTerritorio: "Territórios",
+    searchPlaceholder: "Buscar texto...",
+    selectAll: "Selecionar todos",
+    clearSelection: "Limpar seleção",
+    selectedCount: "{count} selecionados",
+    usageOne: "1 uso",
+    usageMany: "{count} usos",
+    unused: "sem uso",
+    emptyField: "Nenhum texto salvo aqui ainda.",
+    renameTitle: "Corrigir ortografia",
+    renamePlaceholder: "Texto correto...",
+    renameButton: "Salvar correção",
+    mergeTitle: "Juntar duplicados",
+    mergeHint:
+      "Selecione 2 ou mais textos que são a mesma coisa, escolha o texto correto e junte: todos os registros passam a usar o texto correto.",
+    mergeDestinationLabel: "Texto correto",
+    mergeDestinationPlaceholder: "Escolha ou digite o texto correto...",
+    mergeButton: "Juntar selecionados",
+    mergeNeedsSelection: "Selecione pelo menos 2 textos para juntar.",
+    renameSuccess: "Texto corrigido em todos os registros.",
+    mergeSuccess: "Textos juntados com sucesso.",
+    fixHint: "Toque no lápis para corrigir a ortografia de um texto.",
+    duplicateHint: "Marque os textos duplicados e junte em um só.",
+    cancel: "Cancelar",
+    saving: "Salvando...",
   },
 };
 

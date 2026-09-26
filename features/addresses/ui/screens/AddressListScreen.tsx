@@ -133,8 +133,8 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
         {t.addresses.sendNew}
       </Link>
 
-      {/* Busca */}
-      <section aria-label={t.common.search}>
+      {/* Busca + filtros */}
+      <section aria-label={t.common.search} className="flex flex-col gap-3">
         <div className="relative">
           <Search
             className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
@@ -150,94 +150,91 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
             aria-label={t.addresses.searchPlaceholder}
           />
         </div>
-      </section>
 
-      {/* Filtros */}
-      <section
-        aria-label={t.addresses.status}
-        className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-xs"
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="w-12 shrink-0 text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
-            {t.addresses.status}
-          </span>
-          {ACTIVE_OPTIONS.map((value) => {
-            const isActive = activeFilter === value;
-            const label =
-              value === undefined
-                ? t.common.all
-                : value
-                  ? t.addresses.active
-                  : t.addresses.inactive;
-            return (
-              <button
-                key={String(value)}
-                type="button"
-                onClick={() => handleActiveChange(value)}
-                aria-pressed={isActive}
-                className={cn(
-                  "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
-                  isActive
-                    ? "border-brand bg-brand text-brand-foreground"
-                    : "border-border text-muted-foreground hover:border-brand/50 hover:text-foreground",
-                )}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
+        {/* Filtros */}
+        <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="w-12 shrink-0 text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+              {t.addresses.status}
+            </span>
+            {ACTIVE_OPTIONS.map((value) => {
+              const isActive = activeFilter === value;
+              const label =
+                value === undefined
+                  ? t.common.all
+                  : value
+                    ? t.addresses.active
+                    : t.addresses.inactive;
+              return (
+                <button
+                  key={String(value)}
+                  type="button"
+                  onClick={() => handleActiveChange(value)}
+                  aria-pressed={isActive}
+                  className={cn(
+                    "min-h-11 rounded-full border px-4 py-2 text-xs font-medium transition-colors",
+                    isActive
+                      ? "border-brand bg-brand text-brand-foreground"
+                      : "border-border text-muted-foreground hover:border-brand/50 hover:text-foreground",
+                  )}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="w-12 shrink-0 text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
-            {t.addresses.type}
-          </span>
-          {ADDRESS_TYPE_OPTIONS.map((opt) => {
-            const Icon = opt.icon;
-            const isSelected = typeFilters.includes(opt.value as AddressType);
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => toggleType(opt.value as AddressType)}
-                aria-pressed={isSelected}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
-                  isSelected
-                    ? "border-brand bg-brand text-brand-foreground"
-                    : "border-border text-muted-foreground hover:border-brand/50 hover:text-foreground",
-                )}
-              >
-                <Icon className={cn("size-3.5", opt.color)} aria-hidden />
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="w-12 shrink-0 text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+              {t.addresses.type}
+            </span>
+            {ADDRESS_TYPE_OPTIONS.map((opt) => {
+              const Icon = opt.icon;
+              const isSelected = typeFilters.includes(opt.value as AddressType);
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => toggleType(opt.value as AddressType)}
+                  aria-pressed={isSelected}
+                  className={cn(
+                    "flex min-h-11 items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-medium transition-colors",
+                    isSelected
+                      ? "border-brand bg-brand text-brand-foreground"
+                      : "border-border text-muted-foreground hover:border-brand/50 hover:text-foreground",
+                  )}
+                >
+                  <Icon className={cn("size-3.5", opt.color)} aria-hidden />
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="w-12 shrink-0 text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
-            {t.addresses.cardFilter}
-          </span>
-          <button
-            type="button"
-            onClick={handleWithoutCardToggle}
-            aria-pressed={withoutCardOnly}
-            className={cn(
-              "flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
-              withoutCardOnly
-                ? "border-brand bg-brand text-brand-foreground"
-                : "border-border text-muted-foreground hover:border-brand/50 hover:text-foreground",
-            )}
-          >
-            <Layers className="size-3.5" aria-hidden />
-            {t.addresses.withoutCard}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="w-12 shrink-0 text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+              {t.addresses.cardFilter}
+            </span>
+            <button
+              type="button"
+              onClick={handleWithoutCardToggle}
+              aria-pressed={withoutCardOnly}
+              className={cn(
+                "flex min-h-11 items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-medium transition-colors",
+                withoutCardOnly
+                  ? "border-brand bg-brand text-brand-foreground"
+                  : "border-border text-muted-foreground hover:border-brand/50 hover:text-foreground",
+              )}
+            >
+              <Layers className="size-3.5" aria-hidden />
+              {t.addresses.withoutCard}
+            </button>
+          </div>
         </div>
       </section>
 
       {/* Contador + seletor de tamanho de página */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <p
           className="text-sm font-medium tabular-nums text-muted-foreground"
           aria-live="polite"
@@ -266,7 +263,7 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
                   aria-pressed={isActive}
                   aria-label={`${size} ${t.addresses.pageSizeLabel.toLowerCase()}`}
                   className={cn(
-                    "min-h-[32px] min-w-[40px] rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums transition-colors",
+                    "min-h-11 min-w-11 rounded-full px-3 py-2 text-xs font-semibold tabular-nums transition-colors",
                     isActive
                       ? "bg-brand text-brand-foreground shadow-xs"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -310,7 +307,6 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
           {hasActiveFilters && (
             <Button
               variant="ghost"
-              size="sm"
               onClick={() => {
                 setQuery("");
                 setActive(undefined);
@@ -318,6 +314,7 @@ export default function AddressListScreen({ addresses, organizationSlug }: Props
                 setWithoutCardOnly(false);
                 setPage(1);
               }}
+              className="min-h-11"
             >
               {t.addresses.clearFilters}
             </Button>

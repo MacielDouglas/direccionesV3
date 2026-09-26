@@ -42,54 +42,57 @@ export function JoinScreen({ token }: { token: string }) {
     }
   }
 
-  if (status === "success") {
-    return (
-      <main className="flex min-h-svh flex-col items-center justify-center gap-4 px-4 text-center">
-        <CheckCircle className="h-12 w-12 text-green-500" />
-        <h1 className="text-xl font-semibold tracking-tight">
-          {t.invitations.welcomeTitle.replace("{orgName}", orgName ?? "")}
-        </h1>
-        <p className="text-sm text-muted-foreground">{t.invitations.redirecting}</p>
-      </main>
-    );
-  }
-
-  if (status === "error") {
-    return (
-      <main className="flex min-h-svh flex-col items-center justify-center gap-4 px-4 text-center">
-        <XCircle className="h-12 w-12 text-destructive" />
-        <h1 className="text-xl font-semibold tracking-tight">{t.invitations.invalidLink}</h1>
-        <p className="text-sm text-muted-foreground">{errorMsg}</p>
-        <Button variant="outline" onClick={() => router.push("/")}>
-          {t.invitations.backToHome}
-        </Button>
-      </main>
-    );
-  }
-
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center px-4">
-      <article className="flex w-full max-w-sm flex-col gap-5 rounded-2xl border bg-card p-6 text-center shadow-xs">
-        <div className="flex flex-col items-center gap-3">
-          <div className="rounded-full bg-brand/10 p-4">
-            <Users className="h-8 w-8 text-brand" aria-hidden />
-          </div>
-          <h1 className="text-xl font-semibold tracking-tight">{t.invitations.joinTitle}</h1>
-          <p className="text-sm text-muted-foreground">{t.invitations.joinDescription}</p>
-        </div>
+    <main
+      className="flex min-h-svh flex-col items-center justify-center px-4 py-10"
+      style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom, 0px))" }}
+    >
+      <article className="flex w-full max-w-sm flex-col items-center gap-4 rounded-2xl border bg-card p-6 text-center shadow-xs">
+        {status === "success" ? (
+          <>
+            <CheckCircle className="h-12 w-12 text-green-500" aria-hidden />
+            <h1 className="text-balance text-xl font-semibold tracking-tight">
+              {t.invitations.welcomeTitle.replace("{orgName}", orgName ?? "")}
+            </h1>
+            <p className="text-sm text-muted-foreground">{t.invitations.redirecting}</p>
+          </>
+        ) : status === "error" ? (
+          <>
+            <XCircle className="h-12 w-12 text-destructive" aria-hidden />
+            <h1 className="text-balance text-xl font-semibold tracking-tight">
+              {t.invitations.invalidLink}
+            </h1>
+            <p className="text-sm text-muted-foreground">{errorMsg}</p>
+            <Button variant="outline" onClick={() => router.push("/")} className="min-h-11 w-full">
+              {t.invitations.backToHome}
+            </Button>
+          </>
+        ) : (
+          <>
+            <div className="flex flex-col items-center gap-3">
+              <div className="rounded-full bg-brand/10 p-4">
+                <Users className="h-8 w-8 text-brand" aria-hidden />
+              </div>
+              <h1 className="text-balance text-xl font-semibold tracking-tight">
+                {t.invitations.joinTitle}
+              </h1>
+              <p className="text-sm text-muted-foreground">{t.invitations.joinDescription}</p>
+            </div>
 
-        <Button
-          onClick={handleJoin}
-          disabled={status === "loading"}
-          className="w-full gap-2 rounded-full"
-        >
-          {status === "loading" ? (
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-          ) : (
-            <Users className="h-4 w-4" aria-hidden />
-          )}
-          {t.invitations.acceptAndJoin}
-        </Button>
+            <Button
+              onClick={handleJoin}
+              disabled={status === "loading"}
+              className="min-h-11 w-full gap-2 rounded-full"
+            >
+              {status === "loading" ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              ) : (
+                <Users className="h-4 w-4" aria-hidden />
+              )}
+              {t.invitations.acceptAndJoin}
+            </Button>
+          </>
+        )}
       </article>
     </main>
   );

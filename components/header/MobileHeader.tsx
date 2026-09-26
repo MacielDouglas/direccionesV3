@@ -25,7 +25,7 @@ export default function MobileHeader({ role, orgSlug, sessionExpiresAt }: MenuMo
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const drawerRef = useRef<HTMLElement>(null);
+  const drawerRef = useRef<HTMLDialogElement>(null);
   const { t } = useI18n();
   const { vibrate } = useHaptic();
 
@@ -160,17 +160,18 @@ export default function MobileHeader({ role, orgSlug, sessionExpiresAt }: MenuMo
               `}
             />
 
-            {/* Drawer — <aside> em vez de <dialog>: top layer do Safari iOS
-                não pinta itens intermediários (bug conhecido WebKit) */}
-            <aside
+            {/* Drawer — <dialog> com `open` inline (sem showModal/top layer):
+                o Safari iOS não pinta itens intermediários no top layer
+                (bug WebKit), então o drawer vive no fluxo normal do DOM */}
+            <dialog
               ref={drawerRef}
+              open
               id="mobile-menu"
-              // biome-ignore lint/a11y/useSemanticElements: <dialog> no top layer não pinta itens no Safari iOS (WebKit 276727/296925); <aside role="dialog"> é o workaround
-              role="dialog"
               aria-modal="true"
               aria-label={t.header.navigation}
               className={`
                 fixed inset-y-0 right-0 left-auto z-60
+                m-0 max-w-none
                 flex flex-col
                 w-[min(100vw,22rem)]
                 border-l border-border bg-background p-0 text-foreground
@@ -269,7 +270,7 @@ export default function MobileHeader({ role, orgSlug, sessionExpiresAt }: MenuMo
                 <LanguageSelector />
                 <LogoutButton />
               </div>
-            </aside>
+            </dialog>
           </>,
           document.body,
         )}

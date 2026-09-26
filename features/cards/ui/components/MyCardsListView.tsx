@@ -12,6 +12,7 @@ import {
   MapPin,
   MapPinned,
 } from "lucide-react";
+import Link from "next/link";
 import { getCardColor } from "../../utils/cardColors";
 
 type CardAddress = {
@@ -41,6 +42,8 @@ interface Props {
   totalAddresses: number;
   onOpenAddress: (id: string) => void;
   onOpenCardMap: (cardId: string) => void;
+  onOpenAllMap: () => void;
+  allAddressesCount: number;
 }
 
 function formatSince(date: Date, locale: string) {
@@ -60,7 +63,15 @@ function neighborhoodsOf(addresses: CardAddress[]) {
   );
 }
 
-export function MyCardsListView({ cards, totalAddresses, onOpenAddress, onOpenCardMap }: Props) {
+export function MyCardsListView({
+  cards,
+  organizationSlug,
+  totalAddresses,
+  onOpenAddress,
+  onOpenCardMap,
+  onOpenAllMap,
+  allAddressesCount,
+}: Props) {
   const { t, locale } = useI18n();
   const activeAddresses = cards.reduce(
     (total, card) => total + card.addresses.filter((a) => a.active).length,
@@ -81,6 +92,13 @@ export function MyCardsListView({ cards, totalAddresses, onOpenAddress, onOpenCa
             {t.cards.emptyDescription}
           </p>
         </div>
+        <Link
+          href={`/org/${organizationSlug}/addresses`}
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-brand-foreground shadow-xs transition-colors hover:bg-brand/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        >
+          <MapPin className="size-4 shrink-0" aria-hidden />
+          {t.common.addresses}
+        </Link>
       </div>
     );
   }
@@ -114,6 +132,24 @@ export function MyCardsListView({ cards, totalAddresses, onOpenAddress, onOpenCa
         </div>
       </section>
 
+      {allAddressesCount > 0 && (
+        <button
+          type="button"
+          onClick={onOpenAllMap}
+          aria-label={`${t.cards.seeMap} — ${t.cards.addressesCount.replace("{count}", String(allAddressesCount))}`}
+          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground shadow-xs transition-colors hover:bg-brand/90 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        >
+          <MapIcon className="size-4 shrink-0" aria-hidden />
+          {t.cards.seeMap}
+          <span
+            aria-hidden
+            className="rounded-full bg-black/15 px-2 py-0.5 text-xs font-bold tabular-nums"
+          >
+            {allAddressesCount}
+          </span>
+        </button>
+      )}
+
       {/* Lista de cards */}
       <ul className="flex flex-col gap-4" aria-label={t.cards.mine}>
         {cards.map((card, index) => {
@@ -128,8 +164,9 @@ export function MyCardsListView({ cards, totalAddresses, onOpenAddress, onOpenCa
           return (
             <li key={card.id}>
               <article
+                id={`card-${card.id}`}
                 aria-label={`${t.cards.title} #${cardNumber}`}
-                className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_12px_32px_-12px_rgba(0,0,0,0.35)] transition-shadow duration-300 hover:shadow-[0_20px_44px_-12px_rgba(0,0,0,0.45)]"
+                className="scroll-mt-20 overflow-hidden rounded-2xl border border-border bg-card shadow-[0_12px_32px_-12px_rgba(0,0,0,0.35)] transition-shadow duration-300 hover:shadow-[0_20px_44px_-12px_rgba(0,0,0,0.45)]"
               >
                 {/* Cartão 3D estilo banco */}
                 <div

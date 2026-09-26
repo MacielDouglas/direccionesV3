@@ -90,6 +90,10 @@ export type I18nDictionary = {
     webviewHint: string;
     devHint: string;
     androidHint: string;
+    offlineTitle: string;
+    offlineDescription: string;
+    offlineRetry: string;
+    offlineHome: string;
   };
   footer: {
     tagline: string;
@@ -355,6 +359,18 @@ export type I18nDictionary = {
     validateTitle: string;
     validateDescription: string;
     validateDismiss: string;
+    createErrorTitle: string;
+    createErrorDescription: string;
+    createErrorMissingInfoTitle: string;
+    createErrorMissingInfoDescription: string;
+    createErrorGpsTitle: string;
+    createErrorGpsDescription: string;
+    createErrorImageTitle: string;
+    createErrorImageDescription: string;
+    createErrorSaveTitle: string;
+    createErrorSaveDescription: string;
+    createErrorRetry: string;
+    createErrorClose: string;
     errorGps: string;
     errorStreet: string;
     errorNumber: string;
@@ -725,6 +741,8 @@ export type I18nDictionary = {
     typeRestaurant: string;
     usersDescription: string;
     noOrganizations: string;
+    savedTexts: string;
+    savedTextsDescription: string;
   };
   people: {
     title: string;
@@ -897,5 +915,39 @@ export type I18nDictionary = {
   errors: {
     generic: string;
     sessionExpired: string;
+  };
+  savedTexts: {
+    title: string;
+    description: string;
+    hint: string;
+    tabStreet: string;
+    tabNeighborhood: string;
+    tabCity: string;
+    tabSaida: string;
+    tabTipo: string;
+    tabTerritorio: string;
+    searchPlaceholder: string;
+    selectAll: string;
+    clearSelection: string;
+    selectedCount: string;
+    usageOne: string;
+    usageMany: string;
+    unused: string;
+    emptyField: string;
+    renameTitle: string;
+    renamePlaceholder: string;
+    renameButton: string;
+    mergeTitle: string;
+    mergeHint: string;
+    mergeDestinationLabel: string;
+    mergeDestinationPlaceholder: string;
+    mergeButton: string;
+    mergeNeedsSelection: string;
+    renameSuccess: string;
+    mergeSuccess: string;
+    fixHint: string;
+    duplicateHint: string;
+    cancel: string;
+    saving: string;
   };
 };

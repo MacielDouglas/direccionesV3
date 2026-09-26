@@ -49,8 +49,8 @@ export function EditNameForm({ currentName, personId, organizationId, organizati
 
   if (!editing) {
     return (
-      <div className="flex items-center gap-2">
-        <span className="text-2xl font-semibold">{currentName}</span>
+      <div className="flex min-w-0 items-center gap-2">
+        <span className="min-w-0 break-words text-2xl font-semibold">{currentName}</span>
         <Button
           variant="ghost"
           size="icon"
@@ -67,7 +67,7 @@ export function EditNameForm({ currentName, personId, organizationId, organizati
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-center gap-2"
+      className="flex w-full min-w-0 items-center gap-2"
       aria-label={t.user.editNameFormAria}
     >
       <Input
@@ -76,7 +76,7 @@ export function EditNameForm({ currentName, personId, organizationId, organizati
         autoFocus
         maxLength={80}
         aria-label={t.user.newNameAria}
-        className="h-11 w-48 border-white/25 bg-transparent text-base text-white placeholder:text-white/50 focus-visible:border-white/40"
+        className="h-11 min-w-0 flex-1 border-white/25 bg-transparent text-base text-white placeholder:text-white/50 focus-visible:border-white/40"
         disabled={isPending}
       />
       <Button

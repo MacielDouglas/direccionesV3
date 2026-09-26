@@ -125,16 +125,19 @@ export function AgendaEventList({
           )}
 
           {upcomingEvents.map(renderEvent)}
-
-          {pastEvents.length > 0 && (
-            <li className="mt-2 flex flex-col gap-3" aria-label={t.agenda.pastEvents}>
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                {t.agenda.pastEvents}
-              </h3>
-              <ul className="flex flex-col gap-3">{pastEvents.map(renderEvent)}</ul>
-            </li>
-          )}
         </ul>
+
+        {pastEvents.length > 0 && (
+          <section aria-labelledby="past-heading" className="mt-6">
+            <h3
+              id="past-heading"
+              className="text-sm font-semibold uppercase tracking-wide text-muted-foreground"
+            >
+              {t.agenda.pastEvents}
+            </h3>
+            <ul className="mt-3 flex flex-col gap-3">{pastEvents.map(renderEvent)}</ul>
+          </section>
+        )}
       </section>
 
       <AgendaEventModal event={modalEvent} onClose={() => setModalEvent(null)} />

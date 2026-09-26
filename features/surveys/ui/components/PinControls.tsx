@@ -35,7 +35,7 @@ export default function PinControls({
     <div
       role="toolbar"
       aria-label={t.survey.controlsAria}
-      className="absolute left-1/2 top-4 z-10 flex -translate-x-1/2 flex-col items-center gap-2"
+      className="absolute left-1/2 top-[max(1rem,env(safe-area-inset-top))] z-10 flex w-full max-w-md -translate-x-1/2 flex-col items-center gap-2 px-4"
     >
       {/* Badge contador */}
       {localPinsCount > 0 && (
@@ -58,7 +58,7 @@ export default function PinControls({
               onClick={onOpenConfirmModal}
               disabled={loading}
               aria-label={t.survey.confirmMarkingsAria}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
             >
               <Check className="size-4" aria-hidden />
               {t.survey.confirmMarking}
@@ -68,7 +68,7 @@ export default function PinControls({
               onClick={onClearLocalPins}
               disabled={loading}
               aria-label={t.survey.clearPinsAria}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background/90 px-3 py-2 text-sm font-semibold text-foreground shadow-lg backdrop-blur-sm transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-background/90 px-3 py-2.5 text-sm font-semibold text-foreground shadow-lg backdrop-blur-sm transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
             >
               <Eraser className="size-4" aria-hidden />
               {t.survey.clear}
@@ -87,7 +87,7 @@ export default function PinControls({
               aria-label={
                 isAddingMode ? t.survey.disableSuggestionMode : t.survey.enableSuggestionMode
               }
-              className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold shadow-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 ${
+              className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold shadow-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 ${
                 isAddingMode
                   ? "bg-amber-500 text-white hover:bg-amber-600 focus-visible:ring-amber-500"
                   : "bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-ring"
@@ -112,7 +112,7 @@ export default function PinControls({
                 onClick={onOpenConfirmModal}
                 disabled={loading}
                 aria-label={t.survey.sendSuggestionsAria.replace("{count}", String(localPinsCount))}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-500 disabled:opacity-50"
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-500 disabled:opacity-50"
               >
                 <Plus className="size-4" aria-hidden />
                 {suggestionsLabel}

@@ -11,9 +11,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LeaveOrganizationButton } from "./_components/LeaveOrganizationButton";
 
-export const metadata: Metadata = {
-  title: "Perfil de Usuario",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getServerDictionary();
+  return { title: t.user.title };
+}
 
 interface Props {
   params: Promise<{ organizationSlug: string }>;
@@ -139,7 +140,7 @@ export default async function UserPage({ params }: Props) {
                 {cards.map((card) => (
                   <li key={card.id}>
                     <Link
-                      href={`/org/${organizationSlug}/my-cards`}
+                      href={`/org/${organizationSlug}/my-cards#card-${card.id}`}
                       className="
                     flex items-center gap-3
                     rounded-2xl border bg-card px-4 py-3.5

@@ -46,7 +46,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 export type GestaoToken = {
@@ -83,8 +83,8 @@ function roleLabel(t: ReturnType<typeof useI18n>["t"], role: string | null) {
 
 const roleBadgeClasses = (role: string | null) =>
   role === "owner" || role === "admin"
-    ? "inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand"
-    : "inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground";
+    ? "inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-brand"
+    : "inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground";
 
 const cardCountBadge = (t: ReturnType<typeof useI18n>["t"], count: number) =>
   count === 1
@@ -111,6 +111,22 @@ export function AdminGestaoScreen({
 }: Props) {
   const { t } = useI18n();
   const [tab, setTab] = useState<"people" | "invites">("people");
+  const peopleTabRef = useRef<HTMLButtonElement>(null);
+  const invitesTabRef = useRef<HTMLButtonElement>(null);
+
+  function handleTabKeys(event: React.KeyboardEvent) {
+    const order = ["people", "invites"] as const;
+    const current = order.indexOf(tab);
+    let next: number | null = null;
+    if (event.key === "ArrowRight") next = (current + 1) % order.length;
+    else if (event.key === "ArrowLeft") next = (current - 1 + order.length) % order.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = order.length - 1;
+    if (next === null) return;
+    event.preventDefault();
+    setTab(order[next]);
+    (order[next] === "people" ? peopleTabRef : invitesTabRef).current?.focus();
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6">
@@ -118,15 +134,20 @@ export function AdminGestaoScreen({
       <div
         role="tablist"
         aria-label={t.admin.dashboard}
+        onKeyDown={handleTabKeys}
         className="flex w-full rounded-full border border-border bg-card p-1"
       >
         <button
           type="button"
+          ref={peopleTabRef}
           role="tab"
+          id="gestao-tab-people"
           aria-selected={tab === "people"}
+          aria-controls="gestao-panel-people"
+          tabIndex={tab === "people" ? 0 : -1}
           onClick={() => setTab("people")}
           className={cn(
-            "flex-1 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors",
+            "min-h-11 flex-1 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors",
             tab === "people"
               ? "bg-brand text-brand-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground",
@@ -136,11 +157,15 @@ export function AdminGestaoScreen({
         </button>
         <button
           type="button"
+          ref={invitesTabRef}
           role="tab"
+          id="gestao-tab-invites"
           aria-selected={tab === "invites"}
+          aria-controls="gestao-panel-invites"
+          tabIndex={tab === "invites" ? 0 : -1}
           onClick={() => setTab("invites")}
           className={cn(
-            "flex-1 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors",
+            "min-h-11 flex-1 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors",
             tab === "invites"
               ? "bg-brand text-brand-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground",
@@ -151,22 +176,26 @@ export function AdminGestaoScreen({
       </div>
 
       {tab === "people" ? (
-        <PeopleTab
-          persons={sortPersons(persons)}
-          organizationId={organizationId}
-          organizationSlug={organizationSlug}
-          currentRole={currentRole}
-          isSuperUser={isSuperUser}
-          currentUserId={currentUserId}
-        />
+        <div role="tabpanel" id="gestao-panel-people" aria-labelledby="gestao-tab-people">
+          <PeopleTab
+            persons={sortPersons(persons)}
+            organizationId={organizationId}
+            organizationSlug={organizationSlug}
+            currentRole={currentRole}
+            isSuperUser={isSuperUser}
+            currentUserId={currentUserId}
+          />
+        </div>
       ) : (
-        <InvitesTab
-          persons={persons}
-          tokens={tokens}
-          organizationId={organizationId}
-          organizationSlug={organizationSlug}
-          organizationName={organizationName}
-        />
+        <div role="tabpanel" id="gestao-panel-invites" aria-labelledby="gestao-tab-invites">
+          <InvitesTab
+            persons={persons}
+            tokens={tokens}
+            organizationId={organizationId}
+            organizationSlug={organizationSlug}
+            organizationName={organizationName}
+          />
+        </div>
       )}
     </div>
   );
@@ -342,7 +371,7 @@ function PeopleTab({
 
       <ul className="flex flex-col gap-3">
         {persons.map((person) => {
-          const isSelf = person.id === currentUserId;
+          const isSelf = person.userId === currentUserId;
           const canManage = isSuperUser || currentRole === "admin" || currentRole === "owner";
           const canRemove =
             canManage && !isSelf && !(currentRole === "admin" && person.role === "owner");
@@ -372,13 +401,12 @@ function PeopleTab({
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:flex sm:flex-wrap sm:items-center">
                 {!person.userId && canManage && (
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
-                    className="gap-1.5"
+                    className="min-h-11 justify-center gap-1.5 px-3"
                     onClick={() => setLinkTarget(person)}
                   >
                     <UserPlus className="size-3.5" aria-hidden />
@@ -390,8 +418,7 @@ function PeopleTab({
                     <Button
                       type="button"
                       variant="outline"
-                      size="sm"
-                      className="gap-1.5"
+                      className="min-h-11 justify-center gap-1.5 px-3"
                       onClick={() => openEdit(person)}
                     >
                       <Pencil className="size-3.5" aria-hidden />
@@ -400,8 +427,7 @@ function PeopleTab({
                     <Button
                       type="button"
                       variant="outline"
-                      size="sm"
-                      className="gap-1.5"
+                      className="min-h-11 justify-center gap-1.5 px-3"
                       onClick={() => openAdminCards(person)}
                     >
                       <CreditCard className="size-3.5" aria-hidden />
@@ -413,8 +439,7 @@ function PeopleTab({
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
-                    className="gap-1.5 text-destructive hover:text-destructive"
+                    className="min-h-11 justify-center gap-1.5 px-3 text-destructive hover:text-destructive"
                     onClick={() => setRemoveTarget(person)}
                   >
                     <Trash2 className="size-3.5" aria-hidden />
@@ -793,7 +818,7 @@ function TokenHistoryList({
               <div className="flex flex-wrap items-center gap-2">
                 <span
                   className={cn(
-                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide",
+                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wide",
                     status === "active" && "bg-amber-500/10 text-amber-600",
                     status === "used" && "bg-green-500/10 text-green-600",
                     status === "expired" && "bg-muted text-muted-foreground",

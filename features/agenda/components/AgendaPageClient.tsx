@@ -66,9 +66,9 @@ export function AgendaPageClient({
     <div className="flex flex-col gap-6">
       <AgendaHero events={events} monthLabel={monthLabel} />
 
-      <AgendaCalendar events={events} year={year} month={month} onDayClick={handleDayClick} />
-
       {adminContent}
+
+      <AgendaCalendar events={events} year={year} month={month} onDayClick={handleDayClick} />
 
       <AgendaEventList
         events={events}

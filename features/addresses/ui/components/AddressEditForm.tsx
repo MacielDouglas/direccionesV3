@@ -103,40 +103,46 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
           />
         </div>
 
-        <div className="sticky bottom-0 z-10 flex items-center justify-between gap-3 border-t bg-background px-4 py-3 shadow-md">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.back()}
-            disabled={isSubmitting || isSaving}
+        <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] z-10 md:bottom-0">
+          <div
+            className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-lg"
+            style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom, 0px))" }}
           >
-            {t.common.cancel}
-          </Button>
-
-          <div className="flex flex-col items-end gap-1">
-            {uploadProgress > 0 && uploadProgress < 100 && (
-              <progress
-                value={uploadProgress}
-                max={100}
-                className="w-32 h-2"
-                aria-label={t.addresses.savingImage.replace("{progress}", String(uploadProgress))}
-              />
-            )}
             <Button
-              type="submit"
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
               disabled={isSubmitting || isSaving}
-              aria-busy={isSubmitting || isSaving}
-              className="min-w-32"
+              className="min-h-11 flex-1"
             >
-              {isSubmitting || isSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" aria-hidden="true" />
-                  <span>{submitLabel()}</span>
-                </>
-              ) : (
-                t.addresses.saveChangesButton
-              )}
+              {t.common.cancel}
             </Button>
+
+            <div className="flex flex-1 flex-col gap-1">
+              {uploadProgress > 0 && uploadProgress < 100 && (
+                <progress
+                  value={uploadProgress}
+                  max={100}
+                  className="h-2 w-full"
+                  aria-label={t.addresses.savingImage.replace("{progress}", String(uploadProgress))}
+                />
+              )}
+              <Button
+                type="submit"
+                disabled={isSubmitting || isSaving}
+                aria-busy={isSubmitting || isSaving}
+                className="min-h-11 w-full"
+              >
+                {isSubmitting || isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                    <span>{submitLabel()}</span>
+                  </>
+                ) : (
+                  t.addresses.saveChangesButton
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </form>

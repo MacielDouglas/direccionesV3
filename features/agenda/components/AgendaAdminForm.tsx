@@ -183,7 +183,7 @@ export function AgendaAdminForm({
           </DialogHeader>
 
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-            <div className="flex-wrap gap-3 md:grid md:grid-cols-2">
+            <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="event-date">{t.agenda.date}</Label>
                 <Input id="event-date" type="date" {...register("date")} />

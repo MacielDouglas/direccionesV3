@@ -3,7 +3,6 @@
 import type { AddressWithUsers } from "@/features/addresses/types/address.types";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { fetchAddressWithUsers } from "@/server/address/address.action";
-import { Map as MapIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AddressDetailModal } from "./AddressDetailModal";
 import { MyCardsListView } from "./MyCardsListView";
@@ -119,27 +118,11 @@ export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props
         totalAddresses={totalAddresses}
         onOpenAddress={openAddress}
         onOpenCardMap={openCardMap}
+        onOpenAllMap={openAllAddressesMap}
+        allAddressesCount={allAddresses.length}
       />
 
       <div className="flex flex-col items-stretch gap-4 sm:items-center">
-        {allAddresses.length > 0 && (
-          <button
-            type="button"
-            onClick={() => openAllAddressesMap()}
-            aria-label={`${t.cards.seeMap} — ${t.cards.addressesCount.replace("{count}", String(allAddresses.length))}`}
-            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground shadow-xs transition-colors hover:bg-brand/90 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:w-auto sm:min-w-72"
-          >
-            <MapIcon className="size-4 shrink-0" aria-hidden />
-            {t.cards.seeMap}
-            <span
-              aria-hidden
-              className="rounded-full bg-black/15 px-2 py-0.5 text-xs font-bold tabular-nums"
-            >
-              {allAddresses.length}
-            </span>
-          </button>
-        )}
-
         {addressPromise && (
           <AddressDetailModal
             promise={addressPromise}

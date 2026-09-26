@@ -83,6 +83,13 @@ export function WelcomeScreen({ userEmail }: WelcomeScreenProps) {
     router.refresh();
   };
 
+  const footer = (
+    <div className="flex w-full flex-col gap-3 border-t border-border pt-4">
+      <LogoutButton />
+      <DeleteAccountButton userEmail={userEmail} />
+    </div>
+  );
+
   if (successOrg) {
     return (
       <div className="flex flex-col items-center gap-5 text-foreground">
@@ -97,10 +104,7 @@ export function WelcomeScreen({ userEmail }: WelcomeScreenProps) {
           {t.invitations.goToOrg.replace("{orgName}", successOrg.name)}
         </Button>
 
-        <div className="flex w-full flex-col gap-3 border-t border-border pt-4">
-          <LogoutButton />
-          <DeleteAccountButton userEmail={userEmail} />
-        </div>
+        {footer}
       </div>
     );
   }
@@ -112,8 +116,8 @@ export function WelcomeScreen({ userEmail }: WelcomeScreenProps) {
         <p className="text-sm text-muted-foreground">{t.invitations.notInOrg}</p>
       </div>
 
-      <div className="flex flex-col items-center gap-2 text-left">
-        <label htmlFor="welcome-token" className="self-start text-sm font-medium">
+      <div className="flex flex-col items-stretch gap-2">
+        <label htmlFor="welcome-token" className="text-sm font-medium">
           {t.invitations.tokenLabel}
         </label>
         <InputOTP
@@ -176,10 +180,7 @@ export function WelcomeScreen({ userEmail }: WelcomeScreenProps) {
         {loading ? t.invitations.entering : t.invitations.enterWithToken}
       </Button>
 
-      <div className="flex flex-col gap-3 border-t border-border pt-4">
-        <LogoutButton />
-        <DeleteAccountButton userEmail={userEmail} />
-      </div>
+      {footer}
     </div>
   );
 }

@@ -14,11 +14,6 @@ export function SchedulerErrorHandler() {
       const msg = event.message || event.error?.message || "";
       if (isStartTimeError(msg)) {
         event.preventDefault();
-        // mantém visível apenas em dev para debug, sem quebrar a UI
-        if (process.env.NODE_ENV === "development") {
-          // biome-ignore lint/suspicious/noConsole: log intencional para debug suprimido
-          console.warn("[suppressed] Scheduler startTime error", event.error || msg);
-        }
       }
     };
 
@@ -26,10 +21,6 @@ export function SchedulerErrorHandler() {
       const msg = (event.reason as Error)?.message || String(event.reason || "");
       if (isStartTimeError(msg)) {
         event.preventDefault();
-        if (process.env.NODE_ENV === "development") {
-          // biome-ignore lint/suspicious/noConsole: log intencional para debug suprimido
-          console.warn("[suppressed] Scheduler startTime rejection", event.reason);
-        }
       }
     };
 
@@ -63,10 +54,6 @@ export function SchedulerErrorHandler() {
               } catch (err) {
                 const m = (err as Error)?.message || "";
                 if (isStartTimeError(m)) {
-                  if (process.env.NODE_ENV === "development") {
-                    // biome-ignore lint/suspicious/noConsole: log intencional para debug suprimido
-                    console.warn("[suppressed] PerformanceObserver startTime", err);
-                  }
                   return;
                 }
                 throw err;

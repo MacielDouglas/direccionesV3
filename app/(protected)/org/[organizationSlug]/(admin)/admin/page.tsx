@@ -8,6 +8,7 @@ import {
   KeyRound,
   Plus,
   ShieldCheck,
+  Type,
   UserPlus,
 } from "lucide-react";
 import Link from "next/link";
@@ -107,6 +108,15 @@ export default async function AdminPage({ params }: Props) {
               titleAlt={tAlt.admin.gestaoTitle}
               description={t.admin.gestaoDescription}
               descriptionAlt={tAlt.admin.gestaoDescription}
+              cta={t.admin.open}
+            />
+            <AdminAction
+              href={`/org/${slug}/admin/textos`}
+              icon={<Type className="size-5 text-brand" aria-hidden="true" />}
+              title={t.admin.savedTexts}
+              titleAlt={tAlt.admin.savedTexts}
+              description={t.admin.savedTextsDescription}
+              descriptionAlt={tAlt.admin.savedTextsDescription}
               cta={t.admin.open}
             />
             {isOwner && (
