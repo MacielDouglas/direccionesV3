@@ -1,4 +1,5 @@
 import { deleteR2Object } from "@/infrastructure/storage/r2.service";
+import { organizationKeyPrefix } from "@/infrastructure/storage/storage-key";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getCurrentUser } from "@/server/users";
@@ -59,7 +60,9 @@ export async function POST(req: Request) {
       where: { id: organizationId },
       select: { slug: true },
     });
-    if (!organization || !key.startsWith(`organizations/${organization.slug}/`)) {
+    // ✅ Mesma normalização do upload — slug com "_" usa o prefixo sanitizado
+    const prefix = organization ? organizationKeyPrefix(organization.slug) : null;
+    if (!prefix || !key.startsWith(prefix)) {
       return NextResponse.json(
         { error: "Sin permiso para eliminar esta imagen." },
         { status: 403 },

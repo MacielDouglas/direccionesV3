@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { generateUploadUrl } from "@/infrastructure/storage/r2.service";
+import { buildAddressImageKey } from "@/infrastructure/storage/storage-key";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getCurrentUser } from "@/server/users";
@@ -62,12 +63,15 @@ export async function POST(req: Request) {
     where: { id: organizationId },
     select: { slug: true },
   });
-  if (!organization || !/^[a-z0-9-]+$/.test(organization.slug)) {
+
+  // ✅ Key montada 100% no servidor com slug sanitizado — o cliente nunca escolhe o caminho.
+  // Slugs legítimos podem conter "_" (gerados por createSlug), então normaliza em vez de rejeitar.
+  const key = organization
+    ? buildAddressImageKey(organization.slug, randomUUID(), extension)
+    : null;
+  if (!key) {
     return NextResponse.json({ error: "Sin permiso para esta organización." }, { status: 403 });
   }
-
-  // ✅ Key montada 100% no servidor — o cliente nunca escolhe o caminho
-  const key = `organizations/${organization.slug}/addresses/${randomUUID()}.${extension}`;
 
   try {
     const url = await generateUploadUrl(key, contentType);
