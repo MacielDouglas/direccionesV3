@@ -40,6 +40,7 @@ export default function DeleteAddressButton({
   }
 
   function handleConfirm() {
+    if (isPending) return;
     startTransition(async () => {
       const result = await requestAddressDeletionAction(addressId);
       if (result?.error) {
@@ -48,7 +49,7 @@ export default function DeleteAddressButton({
       }
       toast.success(t.addresses.deletionRequested);
       setOpen(false);
-      router.back();
+      router.refresh();
     });
   }
 

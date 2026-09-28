@@ -4,13 +4,25 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useCallback, useEffect, useState } from "react";
 
 async function hasConnection(): Promise<boolean> {
-  if (typeof navigator !== "undefined" && navigator.onLine) return true;
+  if (typeof navigator !== "undefined" && navigator.onLine) {
+    try {
+      const res = await fetch("/manifest.webmanifest", {
+        method: "HEAD",
+        cache: "no-store",
+        signal: AbortSignal.timeout(3000),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
   // navigator.onLine = false pode ser falso-positivo (WebView/adb) —
   // confirma com uma requisição real antes de mostrar o modo leitura.
   try {
     const res = await fetch("/manifest.webmanifest", {
       method: "HEAD",
       cache: "no-store",
+      signal: AbortSignal.timeout(3000),
     });
     return res.ok;
   } catch {
@@ -33,7 +45,9 @@ export function OfflineIndicator() {
       if (!cancelled) setOnline(ok);
     });
 
-    const onOnline = () => setOnline(true);
+    const onOnline = () => {
+      void recheck();
+    };
     const onOffline = () => {
       void hasConnection().then((ok) => {
         if (!cancelled) setOnline(ok);

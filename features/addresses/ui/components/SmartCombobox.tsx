@@ -14,6 +14,7 @@ interface Props {
   label?: string;
   error?: string;
   inputClassName?: string;
+  maxLength?: number;
 }
 
 const normalize = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
@@ -26,6 +27,7 @@ export function SmartCombobox({
   label,
   error,
   inputClassName,
+  maxLength,
 }: Props) {
   const { t } = useI18n();
   const id = useId();
@@ -100,6 +102,7 @@ export function SmartCombobox({
           onFocus={() => setOpen(true)}
           placeholder={resolvedPlaceholder}
           autoComplete="off"
+          maxLength={maxLength}
           className={cn(
             "flex h-10 w-full bg-background px-3 py-2 pr-9 text-sm",
             "ring-offset-background placeholder:text-muted-foreground",

@@ -34,6 +34,7 @@ export type I18nDictionary = {
     activateMap: string;
     mapPreviewAlt: string;
     tapToInteract: string;
+    mapUnavailable: string;
     loadingLabels: {
       home: string;
       login: string;
@@ -345,6 +346,7 @@ export type I18nDictionary = {
     gpsCurrent: string;
     gpsUnsupported: string;
     gpsFailed: string;
+    gpsTimeout: string;
     imageTitle: string;
     imageHint: string;
     imageSelectAria: string;
@@ -352,6 +354,9 @@ export type I18nDictionary = {
     imageChange: string;
     imageRemove: string;
     imageProcessing: string;
+    imageInvalidFile: string;
+    imageTooLarge: string;
+    imageProcessError: string;
     imageUploading: string;
     addressCreated: string;
     addressCreateError: string;
@@ -560,6 +565,7 @@ export type I18nDictionary = {
     cancelPin: string;
     pinAria: string;
     mapAria: string;
+    mapUnavailable: string;
   };
   user: {
     title: string;
@@ -923,6 +929,7 @@ export type I18nDictionary = {
   errors: {
     generic: string;
     sessionExpired: string;
+    retry: string;
   };
   savedTexts: {
     title: string;

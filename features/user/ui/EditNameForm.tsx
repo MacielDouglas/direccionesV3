@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { resolveActionError } from "@/lib/action-error";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { updatePersonName } from "@/server/person";
 import { Check, Loader2, Pencil, X } from "lucide-react";
@@ -37,7 +38,7 @@ export function EditNameForm({ currentName, personId, organizationId, organizati
         setEditing(false);
         router.refresh();
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : t.errors.generic);
+        toast.error(resolveActionError(err, t));
       }
     });
   };

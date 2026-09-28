@@ -16,6 +16,7 @@ import type { AddressWithUsers } from "@/features/addresses/types/address.types"
 import { AddressHeroImage } from "@/features/addresses/ui/components/AddressHeroImage";
 import DeleteAddressButton from "@/features/addresses/ui/components/DeleteAddressButton";
 import { NavigateAddressButtons } from "@/features/addresses/ui/components/NavigateAddressButtons";
+import { resolveActionError } from "@/lib/action-error";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import {
@@ -38,7 +39,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { Suspense, use, useEffect, useState } from "react";
+import { Suspense, use, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AddressMapModal } from "./AddressMapModal";
 
@@ -74,6 +75,12 @@ interface Props {
 
 export function AddressDetailModal({ promise, onClose, organizationSlug, myCards = false }: Props) {
   const { t } = useI18n();
+  // Rejeição vira null: o conteúdo mostra "não encontrado" em vez de
+  // estourar o Suspense sem boundary
+  const safePromise = useMemo(
+    () => promise?.then((data) => data).catch(() => null) ?? null,
+    [promise],
+  );
 
   return (
     <Dialog
@@ -88,10 +95,10 @@ export function AddressDetailModal({ promise, onClose, organizationSlug, myCards
           <DialogDescription>{t.admin.addressDetailDescription}</DialogDescription>
         </DialogHeader>
 
-        {promise && (
+        {safePromise && (
           <Suspense fallback={<AddressDetailSkeleton />}>
             <AddressContent
-              promise={promise}
+              promise={safePromise}
               organizationSlug={organizationSlug}
               onClose={onClose}
               myCards={myCards}
@@ -209,7 +216,7 @@ function AddressContent({
       toast.success(t.addresses.flagSaved);
       setFlagTarget(null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t.errors.generic);
+      toast.error(resolveActionError(err, t));
     } finally {
       setIsSavingFlag(false);
     }
@@ -679,6 +686,7 @@ function InviteDialogContent({
   const [saving, setSaving] = useState(false);
 
   const handleSave = () => {
+    if (saving) return;
     const other = otherLabel.trim();
     if (type === "OTHER" && !other) {
       setError(t.addresses.inviteErrorOtherRequired);
@@ -691,7 +699,7 @@ function InviteDialogContent({
         if (result.success) onInviteCreated(result.invite);
       })
       .catch((err) => {
-        toast.error(err instanceof Error ? err.message : t.errors.generic);
+        toast.error(resolveActionError(err, t));
       })
       .finally(() => setSaving(false));
   };
@@ -713,7 +721,7 @@ function InviteDialogContent({
           type="button"
           onClick={onClose}
           aria-label={t.common.close}
-          className="grid size-9 shrink-0 place-items-center rounded-full border border-border text-foreground transition-colors hover:bg-muted"
+          className="grid size-11 shrink-0 place-items-center rounded-full border border-border text-foreground transition-colors hover:bg-muted"
         >
           <X className="size-4" aria-hidden />
         </button>

@@ -1,5 +1,5 @@
 import { getUserLanguage } from "@/server/users";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { LOCALE_COOKIE_NAME } from "./I18nProvider";
 import { dictionaries } from "./dictionaries";
 import type { I18nDictionary, Locale } from "./types";
@@ -31,7 +31,7 @@ export async function getServerLocale(): Promise<Locale> {
   const fromDb = await getUserLanguage();
   if (fromDb) return fromDb;
 
-  const acceptLanguage = store.get("Accept-Language")?.value;
+  const acceptLanguage = (await headers()).get("accept-language");
   return resolveLocale("pt", acceptLanguage ?? undefined);
 }
 

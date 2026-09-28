@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { resolveActionError } from "@/lib/action-error";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CheckCircle, Loader2, Users, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -32,11 +33,8 @@ export function JoinScreen({ token }: { token: string }) {
       }, 1500);
     } catch (e) {
       const isRateLimited = e instanceof Error && e.message === "rate_limited";
-      const msg = isRateLimited
-        ? t.invitations.tooManyAttempts
-        : e instanceof Error
-          ? e.message
-          : t.invitations.joinError;
+      // Mensagens localizadas do servidor passam; técnicas viram genérica
+      const msg = isRateLimited ? t.invitations.tooManyAttempts : resolveActionError(e, t);
       setErrorMsg(msg);
       setStatus("error");
     }
@@ -51,7 +49,7 @@ export function JoinScreen({ token }: { token: string }) {
         {status === "success" ? (
           <>
             <CheckCircle className="h-12 w-12 text-green-500" aria-hidden />
-            <h1 className="text-balance text-xl font-semibold tracking-tight">
+            <h1 className="max-w-full break-words text-balance text-xl font-semibold tracking-tight">
               {t.invitations.welcomeTitle.replace("{orgName}", orgName ?? "")}
             </h1>
             <p className="text-sm text-muted-foreground">{t.invitations.redirecting}</p>
@@ -62,7 +60,7 @@ export function JoinScreen({ token }: { token: string }) {
             <h1 className="text-balance text-xl font-semibold tracking-tight">
               {t.invitations.invalidLink}
             </h1>
-            <p className="text-sm text-muted-foreground">{errorMsg}</p>
+            <p className="max-w-full break-words text-sm text-muted-foreground">{errorMsg}</p>
             <Button variant="outline" onClick={() => router.push("/")} className="min-h-11 w-full">
               {t.invitations.backToHome}
             </Button>

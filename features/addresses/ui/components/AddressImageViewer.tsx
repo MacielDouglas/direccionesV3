@@ -19,18 +19,21 @@ type Props = { src: string; alt: string };
 export function AddressImageViewer({ src, alt }: Props) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
+  const safeSrc = imgFailed ? "/images/address-placeholder.jpg" : src;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <figure className="relative h-40 w-full sm:h-80 md:h-96">
         <DialogTrigger asChild>
           <Image
-            src={src}
+            src={safeSrc}
             alt={alt}
             fill
             priority
             className="cursor-pointer rounded-xl object-cover"
             sizes="(max-width: 768px) 100vw, 50vw"
+            onError={() => setImgFailed(true)}
           />
         </DialogTrigger>
       </figure>
@@ -46,7 +49,15 @@ export function AddressImageViewer({ src, alt }: Props) {
 
         {/* ✅ Container relativo — botão e imagem dentro do mesmo contexto */}
         <div className="relative h-full w-full">
-          <Image src={src} alt={alt} fill priority sizes="100vw" className="object-contain" />
+          <Image
+            src={safeSrc}
+            alt={alt}
+            fill
+            priority
+            sizes="100vw"
+            onError={() => setImgFailed(true)}
+            className="object-contain"
+          />
 
           {/* ✅ absolute dentro do container, não fixed */}
           <Button

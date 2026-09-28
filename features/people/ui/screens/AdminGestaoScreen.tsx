@@ -72,7 +72,12 @@ interface Props {
 }
 
 function errorMessage(err: unknown, fallback: string) {
-  return err instanceof Error && err.message.trim() ? err.message : fallback;
+  if (!(err instanceof Error)) return fallback;
+  const message = err.message.trim();
+  if (!message || message.length > 200 || /[{["]|P20\d\d|Zod|Prisma/.test(message)) {
+    return fallback;
+  }
+  return message;
 }
 
 function roleLabel(t: ReturnType<typeof useI18n>["t"], role: string | null) {
@@ -674,7 +679,12 @@ function PersonTokenGenerator({
 
   const handleCopy = async (kind: "token" | "message") => {
     const text = kind === "token" ? (token ?? "") : message;
-    await navigator.clipboard.writeText(text);
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      toast.error(t.errors.generic);
+      return;
+    }
     setCopied(kind);
     toast.success(kind === "token" ? t.admin.tokenCopied : t.admin.tokenMessageCopied);
     setTimeout(() => setCopied(null), 2000);

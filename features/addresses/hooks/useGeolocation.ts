@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 type GeolocationState = "idle" | "granted" | "denied" | "prompt" | "unsupported";
-type GeolocationErrorReason = "unsupported" | "failed";
+type GeolocationErrorReason = "unsupported" | "denied" | "timeout" | "failed";
 
 function getInitialState(): GeolocationState {
   if (typeof window === "undefined") return "idle";
@@ -62,9 +62,11 @@ export function useGeolocation() {
         onSuccess(pos.coords.latitude, pos.coords.longitude);
         onLoading(false);
       },
-      () => {
+      (err) => {
         setState("denied");
-        onError("failed");
+        if (err.code === 1) onError("denied");
+        else if (err.code === 3) onError("timeout");
+        else onError("failed");
         onLoading(false);
       },
       { enableHighAccuracy: true, timeout: 10000 },

@@ -118,21 +118,22 @@ export async function renameSavedText(params: {
   }
 
   const agendaColumn = AGENDA_COLUMNS[field];
-  const events = await prisma.agendaEvent.updateMany({
-    where: { organizationId, [agendaColumn]: from },
-    data: { [agendaColumn]: to },
-  });
-  await prisma.$transaction([
-    prisma.agendaFieldOption.upsert({
+  const { count } = await prisma.$transaction(async (tx) => {
+    const events = await tx.agendaEvent.updateMany({
+      where: { organizationId, [agendaColumn]: from },
+      data: { [agendaColumn]: to },
+    });
+    await tx.agendaFieldOption.upsert({
       where: { organizationId_field_value: { organizationId, field, value: to } },
       create: { organizationId, field, value: to },
       update: {},
-    }),
-    prisma.agendaFieldOption.deleteMany({
+    });
+    await tx.agendaFieldOption.deleteMany({
       where: { organizationId, field, value: from },
-    }),
-  ]);
-  return { updated: events.count };
+    });
+    return { count: events.count };
+  });
+  return { updated: count };
 }
 
 export async function mergeSavedTexts(params: {
@@ -152,23 +153,24 @@ export async function mergeSavedTexts(params: {
   }
 
   const agendaColumn = AGENDA_COLUMNS[field];
-  const events = await prisma.agendaEvent.updateMany({
-    where: { organizationId, [agendaColumn]: { in: froms } },
-    data: { [agendaColumn]: to },
-  });
-  await prisma.$transaction([
-    prisma.agendaFieldOption.upsert({
+  const { count } = await prisma.$transaction(async (tx) => {
+    const events = await tx.agendaEvent.updateMany({
+      where: { organizationId, [agendaColumn]: { in: froms } },
+      data: { [agendaColumn]: to },
+    });
+    await tx.agendaFieldOption.upsert({
       where: { organizationId_field_value: { organizationId, field, value: to } },
       create: { organizationId, field, value: to },
       update: {},
-    }),
-    prisma.agendaFieldOption.deleteMany({
+    });
+    await tx.agendaFieldOption.deleteMany({
       where: {
         organizationId,
         field,
         value: { in: froms.filter((v) => v !== to) },
       },
-    }),
-  ]);
-  return { updated: events.count };
+    });
+    return { count: events.count };
+  });
+  return { updated: count };
 }

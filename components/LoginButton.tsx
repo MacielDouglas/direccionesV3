@@ -6,6 +6,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -32,13 +33,21 @@ function GoogleIcon({ className }: { className?: string }) {
 
 export default function LoginButton() {
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/";
+  const rawNext = searchParams.get("next") ?? "/";
+  // Anti open-redirect: só aceita caminho interno relativo
+  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
   const [loading, setLoading] = useState(false);
   const { t } = useI18n();
 
-  const handleClick = () => {
-    signIn(next);
+  const handleClick = async () => {
+    if (loading) return;
     setLoading(true);
+    try {
+      await signIn(next);
+    } catch {
+      toast.error(t.login.loginError);
+      setLoading(false);
+    }
   };
 
   return (

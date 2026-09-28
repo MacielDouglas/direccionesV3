@@ -40,7 +40,9 @@ export function proxy(req: NextRequest): NextResponse {
     if (req.nextUrl.pathname.startsWith("/demo") || req.nextUrl.pathname === "/login") {
       res = NextResponse.next({ request: { headers: requestHeaders } });
     } else {
-      res = NextResponse.redirect(new URL("/login", req.url));
+      // Preserva o destino para voltar após o login (validado no LoginButton)
+      const next = encodeURIComponent(`${req.nextUrl.pathname}${req.nextUrl.search}`);
+      res = NextResponse.redirect(new URL(`/login?next=${next}`, req.url));
     }
   } else {
     res = NextResponse.next({ request: { headers: requestHeaders } });

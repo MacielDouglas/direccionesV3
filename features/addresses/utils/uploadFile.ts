@@ -10,18 +10,25 @@ export async function uploadFile(
     body: JSON.stringify({ contentType: file.type, maxSize: file.size }),
   });
 
-  if (!res.ok) throw new Error(`Error al obtener URL firmada: ${res.status}`);
-  const { url, key } = await res.json();
+  if (!res.ok) throw new Error(`UPLOAD_SIGNED_URL_${res.status}`);
+
+  const { url, key } = (await res.json()) as { url: string; key: string };
+  if (!url || !key) throw new Error("UPLOAD_SIGNED_URL_INVALID");
 
   await new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", url);
+    xhr.timeout = 30000;
     xhr.setRequestHeader("Content-Type", file.type);
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
     };
-    xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject());
-    xhr.onerror = reject;
+    xhr.onload = () =>
+      xhr.status >= 200 && xhr.status < 300
+        ? resolve()
+        : reject(new Error(`UPLOAD_PUT_${xhr.status}`));
+    xhr.onerror = () => reject(new Error("UPLOAD_NETWORK"));
+    xhr.ontimeout = () => reject(new Error("UPLOAD_TIMEOUT"));
     xhr.send(file);
   });
 

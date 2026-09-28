@@ -27,17 +27,20 @@ type Props = {
 export function AddressHeroImage({ src, alt, name, street, typeLabel, typeIcon }: Props) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
+  const safeSrc = imgFailed ? "/images/address-placeholder.jpg" : src;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <figure className="relative aspect-video w-full cursor-pointer overflow-hidden rounded-2xl">
           <Image
-            src={src}
+            src={safeSrc}
             alt={alt}
             fill
             priority
             sizes="(max-width: 768px) 100vw, 50vw"
+            onError={() => setImgFailed(true)}
             className="object-cover transition-transform duration-300 hover:scale-[1.02]"
           />
           <div
@@ -69,7 +72,15 @@ export function AddressHeroImage({ src, alt, name, street, typeLabel, typeIcon }
 
         {/* ✅ Container relativo — botão e imagem dentro do mesmo contexto */}
         <div className="relative h-full w-full">
-          <Image src={src} alt={alt} fill priority sizes="100vw" className="object-contain" />
+          <Image
+            src={safeSrc}
+            alt={alt}
+            fill
+            priority
+            sizes="100vw"
+            onError={() => setImgFailed(true)}
+            className="object-contain"
+          />
 
           {/* ✅ absolute dentro do container, não fixed */}
           <Button

@@ -2,6 +2,7 @@
 
 import { deleteR2Object } from "@/infrastructure/storage/r2.service";
 import { prisma } from "@/lib/prisma";
+import { resolveServerActionError } from "@/server/action-error";
 import { requireAdminOrOwner, requireAuthContext } from "@/server/users";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -88,9 +89,7 @@ export async function requestAddressDeletionAction(addressId: string): Promise<{
     revalidatePath(`/org/${data.activeOrganization?.slug}/addresses`);
     return {};
   } catch (err) {
-    return {
-      error: err instanceof Error ? err.message : "Error al solicitar eliminación.",
-    };
+    return { error: await resolveServerActionError(err) };
   }
 }
 

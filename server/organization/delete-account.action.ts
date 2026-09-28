@@ -43,13 +43,15 @@ export async function deleteAccountAction() {
 
   // ✅ A pessoa permanece na organização intacta (nome, papel, cards e ownership) —
   // apenas o vínculo com a conta é removido e a conta do usuário é excluída.
-  await prisma.person.update({
-    where: { id: person.id },
-    data: { userId: null },
-  });
-
-  // O cascade de User remove session/account; a Person já foi desvinculada.
-  await prisma.user.delete({ where: { id: userId } });
+  // Transação única: nunca desvincula sem excluir (nem o inverso).
+  await prisma.$transaction([
+    prisma.person.update({
+      where: { id: person.id },
+      data: { userId: null },
+    }),
+    // O cascade de User remove session/account; a Person já foi desvinculada.
+    prisma.user.delete({ where: { id: userId } }),
+  ]);
 
   redirect("/login");
 }

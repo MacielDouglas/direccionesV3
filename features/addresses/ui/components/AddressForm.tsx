@@ -15,13 +15,13 @@ import type { I18nDictionary } from "@/lib/i18n/types";
 import { useTenant } from "@/providers/TenantProvider";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 import { createAddressAction } from "../../application/address.actions";
 import type { AddressFormData } from "../../domain/address.schema";
 import { useAddressForm } from "../../hooks/useAddressForm";
-import { uploadFile } from "../../utils/uploadFile";
+import { deleteFile, uploadFile } from "../../utils/uploadFile";
 import AddressCreateErrorDialog, { type AddressCreateErrorKind } from "./AddressCreateErrorDialog";
 import AddressFields from "./AddressFields";
 
@@ -57,6 +57,17 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
   const [createErrorOpen, setCreateErrorOpen] = useState(false);
   const [createErrorKind, setCreateErrorKind] = useState<AddressCreateErrorKind>("save");
   const [createErrorDetail, setCreateErrorDetail] = useState<string | null>(null);
+  const submittingRef = useRef(false);
+
+  // Detalhe legível para o modal: JSON técnico (Zod/Prisma) e códigos
+  // internos (UPLOAD_*) nunca são exibidos — a descrição do diálogo orienta
+  function humanErrorDetail(err: unknown): string | null {
+    if (!(err instanceof Error)) return null;
+    const message = err.message.trim();
+    if (!message || message.length > 300 || /^[[{]/.test(message)) return null;
+    if (/^[A-Z][A-Z0-9_]+$/.test(message)) return null;
+    return message;
+  }
 
   function classifyCreateError(message: string): AddressCreateErrorKind {
     const text = message.toLowerCase();
@@ -111,10 +122,11 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
   }
 
   async function onSubmit(values: AddressFormData) {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    let imageUrl = values.image.imageUrl ?? null;
+    let imageKey: string | null = null;
     try {
-      let imageUrl = values.image.imageUrl ?? null;
-      let imageKey: string | null = null;
-
       if (values.image.imageFile instanceof File) {
         try {
           setUploadProgress(0);
@@ -126,8 +138,7 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
           imageUrl = uploaded.publicUrl;
           imageKey = uploaded.key;
         } catch (uploadErr) {
-          const detail = uploadErr instanceof Error ? uploadErr.message : null;
-          showCreateError("image", detail);
+          showCreateError("image", humanErrorDetail(uploadErr));
           return;
         }
       }
@@ -147,10 +158,19 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
       toast.success(t.addresses.addressCreated);
       router.push(`/org/${organization.slug}/addresses/${newAddress.id}`);
     } catch (err) {
-      const detail = err instanceof Error ? err.message : null;
+      // Upload ok mas criação falhou → remove o objeto órfão do R2
+      if (imageKey) {
+        try {
+          await deleteFile(imageKey);
+        } catch {
+          // limpeza best-effort
+        }
+      }
+      const detail = humanErrorDetail(err);
       showCreateError(detail ? classifyCreateError(detail) : "save", detail);
     } finally {
       setUploadProgress(0);
+      submittingRef.current = false;
     }
   }
 

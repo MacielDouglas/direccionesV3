@@ -1,6 +1,6 @@
 "use server";
 
-import { getServerDictionary } from "@/lib/i18n/server";
+import { resolveServerActionError } from "@/server/action-error";
 import { requireOrgAdminOrOwner } from "@/server/users";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -33,8 +33,7 @@ export async function renameSavedTextAction(
     await revalidateSavedTextPaths(organizationSlug);
     return {};
   } catch (err) {
-    const t = await getServerDictionary();
-    return { error: err instanceof Error ? err.message : t.errors.generic };
+    return { error: await resolveServerActionError(err) };
   }
 }
 
@@ -55,7 +54,6 @@ export async function mergeSavedTextsAction(
     await revalidateSavedTextPaths(organizationSlug);
     return {};
   } catch (err) {
-    const t = await getServerDictionary();
-    return { error: err instanceof Error ? err.message : t.errors.generic };
+    return { error: await resolveServerActionError(err) };
   }
 }

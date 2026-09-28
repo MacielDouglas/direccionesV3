@@ -1,5 +1,6 @@
 "use client";
 
+import { resolveActionError } from "@/lib/action-error";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { I18nDictionary } from "@/lib/i18n/types";
 import mapboxgl from "mapbox-gl";
@@ -17,11 +18,9 @@ import type { PinStatus, SurveyPin } from "../../types/survey.types";
 
 const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
-if (!token) {
-  throw new Error("NEXT_PUBLIC_MAPBOX_TOKEN is not configured.");
+if (token) {
+  mapboxgl.accessToken = token;
 }
-
-mapboxgl.accessToken = token;
 
 interface LocalPin {
   tmpId: string;
@@ -106,12 +105,16 @@ export default function SurveyMap({ organizationId, userRole, initialPins }: Pro
           setServerPins((prev) =>
             prev.map((p) => (p.id === pinId ? { ...p, status: "CONFIRMED" } : p)),
           );
+        } else {
+          toast.error(result.error);
         }
+      } catch (err) {
+        toast.error(resolveActionError(err, t));
       } finally {
         setLoading(false);
       }
     },
-    [organizationId],
+    [organizationId, t],
   );
 
   // ── Cancelar pin do servidor ─────────────────────────────────────────────
@@ -127,12 +130,16 @@ export default function SurveyMap({ organizationId, userRole, initialPins }: Pro
           const marker = serverMarkersRef.current.get(pinId);
           marker?.remove();
           serverMarkersRef.current.delete(pinId);
+        } else {
+          toast.error(result.error);
         }
+      } catch (err) {
+        toast.error(resolveActionError(err, t));
       } finally {
         setLoading(false);
       }
     },
-    [organizationId],
+    [organizationId, t],
   );
 
   // ── Remove pin local ─────────────────────────────────────────────────────
@@ -229,7 +236,7 @@ export default function SurveyMap({ organizationId, userRole, initialPins }: Pro
 
   // ── Salvar pins locais como CONFIRMED ou SUGGESTED ───────────────────────
   const handleSavePins = async () => {
-    if (!localPins.length) return;
+    if (!localPins.length || loading) return;
     setLoading(true);
 
     const status = isAddingMode && isAdminOrOwner ? "SUGGESTED" : "CONFIRMED";
@@ -254,7 +261,7 @@ export default function SurveyMap({ organizationId, userRole, initialPins }: Pro
         toast.error(result.error);
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t.errors.generic);
+      toast.error(resolveActionError(err, t));
     } finally {
       setLoading(false);
     }
@@ -264,6 +271,14 @@ export default function SurveyMap({ organizationId, userRole, initialPins }: Pro
     for (const { marker } of localPins) marker.remove();
     setLocalPins([]);
   };
+
+  if (!token) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center gap-2 p-6 text-center">
+        <p className="max-w-xs text-sm font-medium">{t.survey.mapUnavailable}</p>
+      </div>
+    );
+  }
 
   return (
     <>

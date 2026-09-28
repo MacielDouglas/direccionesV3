@@ -17,8 +17,8 @@ export default async function JoinPage({ params }: Props) {
   const { token } = await params;
   const data = await getCurrentUser();
 
-  // ✅ Não logado → Google obrigatório
-  if (!data) redirect(`/login?next=/join/${token}`);
+  // ✅ Não logado → Google obrigatório (token codificado; destino validado no login)
+  if (!data) redirect(`/login?next=${encodeURIComponent(`/join/${token}`)}`);
 
   return <JoinScreen token={token} />;
 }

@@ -40,7 +40,12 @@ export function OwnerTokenGenerator({
 
   async function copyToken() {
     if (!newToken) return;
-    await navigator.clipboard.writeText(newToken.token);
+    try {
+      await navigator.clipboard.writeText(newToken.token);
+    } catch {
+      toast.error(t.errors.generic);
+      return;
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   }

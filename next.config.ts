@@ -121,6 +121,19 @@ export default withPWA({
         },
       },
       {
+        // ✅ Fotos da demo (Wikimedia) — CacheFirst para abrir offline
+        urlPattern: /^https:\/\/upload\.wikimedia\.org\/.*/i,
+        handler: "CacheFirst",
+        options: {
+          cacheName: "demo-images",
+          expiration: {
+            maxEntries: 100,
+            maxAgeSeconds: 60 * 60 * 24 * 30, // 30 dias
+          },
+          cacheableResponse: { statuses: [0, 200] },
+        },
+      },
+      {
         // ✅ API interna — tenta rede (3s), fallback cache se offline
         // (exclui /api/auth/* sessão e /api/upload-url URLs pré-assinadas)
         urlPattern: /^https?:\/\/.*\/api\/(?!auth\/|upload-url).*/i,

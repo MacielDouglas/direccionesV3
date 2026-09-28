@@ -34,6 +34,20 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
   const resolveLabel = (key: keyof I18nDictionary["addresses"]) => t.addresses[key];
   const resolvePlaceholder = (key?: keyof I18nDictionary["addresses"]) =>
     key ? t.addresses[key] : undefined;
+  // Limites iguais aos do schema Zod — bloqueiam digitação além do permitido
+  const maxLengthFor = (name: string): number | undefined => {
+    switch (name) {
+      case "street":
+      case "neighborhood":
+      case "city":
+      case "businessName":
+        return 200;
+      case "number":
+        return 20;
+      default:
+        return undefined;
+    }
+  };
 
   return (
     <section className="space-y-4 py-5">
@@ -68,6 +82,7 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
                       placeholder={resolvePlaceholder(item.placeholderKey)}
                       error={fieldState.error?.message}
                       inputClassName={comboboxInputStyle}
+                      maxLength={maxLengthFor("neighborhood")}
                     />
                   </FormItem>
                 )}
@@ -93,6 +108,7 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
                       placeholder={resolvePlaceholder(item.placeholderKey)}
                       error={fieldState.error?.message}
                       inputClassName={comboboxInputStyle}
+                      maxLength={maxLengthFor("city")}
                     />
                   </FormItem>
                 )}
@@ -155,6 +171,7 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
                                 sub.placeholderKey ? t.addresses[sub.placeholderKey] : undefined
                               }
                               error={fieldState.error?.message}
+                              maxLength={maxLengthFor("neighborhood")}
                             />
                           </FormItem>
                         )}
@@ -180,6 +197,7 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
                               placeholder={
                                 sub.placeholderKey ? t.addresses[sub.placeholderKey] : undefined
                               }
+                              maxLength={maxLengthFor(sub.name)}
                             />
                           </FormControl>
                           <FormMessage />
@@ -250,6 +268,7 @@ export default function AddressFormFields({ existingNeighborhoods, existingCitie
                       value={String(field.value ?? "")}
                       placeholder={resolvePlaceholder(item.placeholderKey)}
                       className={inputStyle}
+                      maxLength={item.name === "info" ? undefined : maxLengthFor(item.name)}
                     />
                   </FormControl>
                   <FormMessage />

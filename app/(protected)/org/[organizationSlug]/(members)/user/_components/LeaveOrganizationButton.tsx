@@ -13,9 +13,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import type { Role } from "@/domains/member/types/role.types";
+import { resolveActionError } from "@/lib/action-error";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { leaveOrganizationAction } from "@/server/organization/leave-organization.action";
 import { Loader2, LogOut } from "lucide-react";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -38,7 +40,8 @@ export function LeaveOrganizationButton({
       setIsLoading(true);
       await leaveOrganizationAction(organizationId);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t.user.leaveError);
+      if (isRedirectError(error)) throw error;
+      toast.error(resolveActionError(error, t));
       setIsLoading(false);
     }
   }

@@ -48,16 +48,7 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
       let imageUrl = values.image.imageUrl ?? null;
       let imageKey = values.image.imageKey ?? null;
 
-      // ✅ 1. DELETA IMAGEM ANTERIOR
-      if (hasNewImageFile && oldImageKey) {
-        try {
-          await deleteFile(oldImageKey);
-        } catch {
-          // ⚠️ falha no delete não é crítica — banco/upload seguem
-        }
-      }
-
-      // ✅ 2. UPLOAD NOVA IMAGEM
+      // ✅ 1. UPLOAD NOVA IMAGEM (antes de tocar na anterior)
       if (hasNewImageFile) {
         setUploadProgress(0);
         const uploaded = await uploadFile(
@@ -69,12 +60,21 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
         imageKey = uploaded.key;
       }
 
-      // ✅ 3. ATUALIZA BANCO
+      // ✅ 2. ATUALIZA BANCO
       await updateAddressAction(address.id, {
         ...values,
         businessName: values.addressType === "House" ? null : values.businessName,
         image: { imageUrl, imageKey, isCustomImage: !!imageKey },
       });
+
+      // ✅ 3. SÓ ENTÃO DELETA A ANTERIOR (banco já aponta para a nova)
+      if (hasNewImageFile && oldImageKey && oldImageKey !== imageKey) {
+        try {
+          await deleteFile(oldImageKey);
+        } catch {
+          // ⚠️ falha no delete não é crítica — banco já está consistente
+        }
+      }
 
       toast.success(t.addresses.addressUpdated);
       router.push(`/org/${organization.slug}/addresses/${address.id}`);

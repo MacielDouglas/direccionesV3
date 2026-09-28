@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 const organizationIdSchema = z.string().min(1);
-const tokenSchema = z.string().min(1);
+const tokenSchema = z.string().trim().min(1).max(128);
 
 async function requireSuperUser() {
   const currentUser = await getCurrentUser();
@@ -20,14 +20,15 @@ async function requireSuperUser() {
 }
 
 // ── Usa token de convite — qualquer usuário logado ─────────────
-export async function applyInviteTokenAction(token: string) {
+export async function applyInviteTokenAction(token: string, opts?: { skipRateLimit?: boolean }) {
   const t = await getServerDictionary();
   if (!tokenSchema.safeParse(token).success) throw new Error(t.invitations.tokenInvalid);
 
   const userData = await getCurrentUser();
   if (!userData) throw new Error(t.invitations.tokenError);
 
-  if (!checkRateLimit(`invite:${userData.user.id}`)) throw new Error("rate_limited");
+  if (!opts?.skipRateLimit && !checkRateLimit(`invite:${userData.user.id}`))
+    throw new Error("rate_limited");
   if (userData.person.organizationId) throw new Error(t.invitations.alreadyInOrg);
 
   const invite = await prisma.inviteToken.findUnique({
@@ -48,6 +49,13 @@ export async function applyInviteTokenAction(token: string) {
   if (person.userId) throw new Error(t.invitations.tokenUsed);
 
   await prisma.$transaction(async (tx) => {
+    // Claim atômico: só um resgate concorrente marca usedAt=null → usado.
+    const claimed = await tx.inviteToken.updateMany({
+      where: { token, usedAt: null },
+      data: { usedAt: new Date(), usedByPersonId: person.id },
+    });
+    if (claimed.count === 0) throw new Error(t.invitations.tokenUsed);
+
     // Remove a Person auto-criada do usuário (sem org e sem dados).
     if (userData.person.id !== person.id) {
       await tx.person.deleteMany({
@@ -61,11 +69,6 @@ export async function applyInviteTokenAction(token: string) {
         userId: userData.user.id,
         lastActiveAt: new Date(),
       },
-    });
-
-    await tx.inviteToken.update({
-      where: { token },
-      data: { usedAt: new Date(), usedByPersonId: person.id },
     });
   });
 
@@ -179,7 +182,7 @@ export async function redeemWelcomeTokenAction(data: {
   if (!currentUser) return { kind: "error", code: "unauthorized" };
   if (currentUser.person.organizationId) return { kind: "error", code: "already_in_org" };
 
-  const org = await applyInviteTokenAction(data.token);
+  const org = await applyInviteTokenAction(data.token, { skipRateLimit: true });
 
   return { kind: "invite", org };
 }

@@ -14,6 +14,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useEffect, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -42,15 +43,16 @@ export function EditAgendaEventModal({
   fieldOptions,
 }: Props) {
   const { t } = useI18n();
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const editSchema = z.object({
     date: z.string().min(1, t.agenda.date),
     time: z.string().min(1, t.agenda.time),
     conductorId: z.string().nullable().optional(),
-    saida: z.string().optional(),
-    tipo: z.string().optional(),
-    territorio: z.string().optional(),
+    saida: z.string().max(100).optional(),
+    tipo: z.string().max(100).optional(),
+    territorio: z.string().max(100).optional(),
     info: z.string().max(500, t.agenda.infoField).optional(),
   });
 
@@ -90,6 +92,7 @@ export function EditAgendaEventModal({
       }
       toast.success(t.agenda.updatedSuccess);
       onClose();
+      router.refresh();
     });
   };
 
@@ -101,7 +104,7 @@ export function EditAgendaEventModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-          <div className="flex-wrap gap-3 md:grid md:grid-cols-2">
+          <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="edit-date">{t.agenda.date}</Label>
               <Input
@@ -171,6 +174,7 @@ export function EditAgendaEventModal({
                   onChange={field.onChange}
                   options={fieldOptions?.saida ?? []}
                   placeholder={t.agenda.saidaPlaceholder}
+                  maxLength={100}
                 />
               )}
             />
@@ -191,6 +195,7 @@ export function EditAgendaEventModal({
                   onChange={field.onChange}
                   options={fieldOptions?.tipo ?? []}
                   placeholder={t.agenda.tipoPlaceholder}
+                  maxLength={100}
                 />
               )}
             />
@@ -211,6 +216,7 @@ export function EditAgendaEventModal({
                   onChange={field.onChange}
                   options={fieldOptions?.territorio ?? []}
                   placeholder={t.agenda.territorioPlaceholder}
+                  maxLength={100}
                 />
               )}
             />

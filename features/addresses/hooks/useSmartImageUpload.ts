@@ -4,6 +4,9 @@ import { useState } from "react";
 
 const MAX_SIZE_MB = 5;
 const MAX_DIMENSION = 1920;
+const MAX_INPUT_BYTES = 25 * 1024 * 1024;
+
+export type ImageProcessErrorCode = "invalid-file" | "too-large" | "process-failed";
 
 async function getImageCompression() {
   const mod = await import("browser-image-compression");
@@ -25,14 +28,18 @@ async function normalizeHeic(file: File): Promise<File> {
 
   if (!isHeic) return file;
 
-  const heic2any = await getHeic2Any();
-  const converted = await heic2any({
-    blob: file,
-    toType: "image/jpeg",
-    quality: 0.95,
-  });
-  const blob = Array.isArray(converted) ? converted[0] : (converted as Blob);
-  return new File([blob], `${crypto.randomUUID()}.jpg`, { type: "image/jpeg" });
+  try {
+    const heic2any = await getHeic2Any();
+    const converted = await heic2any({
+      blob: file,
+      toType: "image/jpeg",
+      quality: 0.95,
+    });
+    const blob = Array.isArray(converted) ? converted[0] : (converted as Blob);
+    return new File([blob], `${crypto.randomUUID()}.jpg`, { type: "image/jpeg" });
+  } catch {
+    throw new Error("process-failed");
+  }
 }
 
 async function fixOrientation(file: File): Promise<File> {
@@ -55,26 +62,35 @@ async function resizeAndCompress(
   onProgress: (p: number) => void,
 ): Promise<File> {
   if (!originalFile.type.startsWith("image/")) {
-    throw new Error(`Tipo no soportado: ${originalFile.type || "desconocido"}`);
+    throw new Error("invalid-file");
   }
 
-  const imageCompression = await getImageCompression();
+  let imageCompression: Awaited<ReturnType<typeof getImageCompression>>;
+  try {
+    imageCompression = await getImageCompression();
+  } catch {
+    throw new Error("process-failed");
+  }
   let quality = 0.9;
   let compressed = originalFile;
 
-  while (true) {
-    compressed = await imageCompression(compressed, {
-      maxSizeMB: MAX_SIZE_MB,
-      maxWidthOrHeight: MAX_DIMENSION,
-      useWebWorker: true,
-      fileType: "image/webp",
-      initialQuality: quality,
-      onProgress,
-    });
+  try {
+    while (true) {
+      compressed = await imageCompression(compressed, {
+        maxSizeMB: MAX_SIZE_MB,
+        maxWidthOrHeight: MAX_DIMENSION,
+        useWebWorker: true,
+        fileType: "image/webp",
+        initialQuality: quality,
+        onProgress,
+      });
 
-    if (compressed.size <= MAX_SIZE_MB * 1024 * 1024) break;
-    quality -= 0.1;
-    if (quality <= 0.4) break;
+      if (compressed.size <= MAX_SIZE_MB * 1024 * 1024) break;
+      quality -= 0.1;
+      if (quality <= 0.4) break;
+    }
+  } catch {
+    throw new Error("process-failed");
   }
 
   return new File([compressed], `${crypto.randomUUID()}.webp`, {
@@ -85,11 +101,15 @@ async function resizeAndCompress(
 export function useSmartImageUpload() {
   const [processingProgress, setProcessingProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<ImageProcessErrorCode | null>(null);
 
   // Retorna o File processado — SEM fazer upload
   async function processImage(file: File): Promise<File | null> {
-    setError(null);
+    setErrorCode(null);
+    if (file.size > MAX_INPUT_BYTES) {
+      setErrorCode("too-large");
+      return null;
+    }
     setIsProcessing(true);
     setProcessingProgress(0);
 
@@ -99,13 +119,17 @@ export function useSmartImageUpload() {
       const compressed = await resizeAndCompress(oriented, setProcessingProgress);
       return compressed;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Error al procesar.";
-      setError(message);
+      const code = err instanceof Error ? err.message : "";
+      setErrorCode(
+        code === "invalid-file" || code === "too-large" || code === "process-failed"
+          ? code
+          : "process-failed",
+      );
       return null;
     } finally {
       setIsProcessing(false);
     }
   }
 
-  return { processImage, processingProgress, isProcessing, error };
+  return { processImage, processingProgress, isProcessing, errorCode };
 }

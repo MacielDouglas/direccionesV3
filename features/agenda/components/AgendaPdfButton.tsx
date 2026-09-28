@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { resolveActionError } from "@/lib/action-error";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { FileDown, Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -76,20 +77,16 @@ function formatDateShort(date: Date): string {
   return `${String(date.getUTCDate()).padStart(2, "0")}/${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
-function countEventLines(event: AgendaEventItem): number {
-  let lines = 1;
-  if (event.saida) lines++;
-  if (event.conductor?.name) lines++;
-  if (event.territorio) lines++;
-  if (event.tipo) lines++;
-  return lines;
-}
-
 export function AgendaPdfButton({ events, monthLabel: monthLabelProp, month, year }: Props) {
   const { t, locale } = useI18n();
   const [loading, setLoading] = useState(false);
 
   async function handleGeneratePdf() {
+    if (loading) return;
+    if (events.length === 0) {
+      toast.error(t.agenda.noEvents);
+      return;
+    }
     setLoading(true);
 
     try {
@@ -169,7 +166,36 @@ export function AgendaPdfButton({ events, monthLabel: monthLabelProp, month, yea
           const dayEvents = weeks[w]?.[wd] ?? [];
           if (dayEvents.length === 0) continue;
 
-          const totalLines = dayEvents.reduce((acc, e) => acc + countEventLines(e), 0);
+          type PdfLine = { text: string; bold?: boolean; color: [number, number, number] };
+          const maxTextW = Math.max(cellW - 6, 10);
+          const eventLines: PdfLine[][] = dayEvents.map((event) => {
+            const dateStr = formatDateShort(event.date);
+            const timeStr = event.time ? ` ${event.time}` : "";
+            const lines: PdfLine[] = [
+              {
+                text: `${t.agenda.date}: ${dateStr}, ${t.agenda.time}:${timeStr}`,
+                bold: true,
+                color: [30, 30, 30],
+              },
+            ];
+            const wrap = (text: string): string[] =>
+              doc.splitTextToSize(text, maxTextW) as string[];
+            if (event.saida)
+              for (const text of wrap(`${t.agenda.exit}: ${event.saida}`))
+                lines.push({ text, color: [80, 80, 80] });
+            if (event.conductor?.name)
+              for (const text of wrap(event.conductor.name))
+                lines.push({ text, color: [60, 60, 120] });
+            if (event.territorio)
+              for (const text of wrap(`${t.agenda.territory}: ${event.territorio}`))
+                lines.push({ text, color: [30, 30, 30] });
+            if (event.tipo)
+              for (const text of wrap(`${t.agenda.type}: ${event.tipo}`))
+                lines.push({ text, color: [30, 30, 30] });
+            return lines;
+          });
+
+          const totalLines = eventLines.reduce((acc, lines) => acc + lines.length, 0);
           const totalSeps = dayEvents.length - 1;
 
           let scale = getFontScale(dayEvents.length);
@@ -186,45 +212,16 @@ export function AgendaPdfButton({ events, monthLabel: monthLabelProp, month, yea
 
           let lineY = contentStartY;
 
-          dayEvents.forEach((event, eventIndex) => {
-            const dateStr = formatDateShort(event.date);
-            const timeStr = event.time ? ` ${event.time}` : "";
-
-            doc.setFontSize(scale.fontSize);
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(30, 30, 30);
-            doc.text(`${t.agenda.date}: ${dateStr}, ${t.agenda.time}:${timeStr}`, x + 2, lineY);
-            lineY += scale.lineH;
-
-            if (event.saida) {
-              doc.setFont("helvetica", "normal");
-              doc.setTextColor(80, 80, 80);
-              doc.text(`${t.agenda.exit}: ${event.saida}`, x + 2, lineY);
+          eventLines.forEach((lines, eventIndex) => {
+            for (const line of lines) {
+              doc.setFontSize(scale.fontSize);
+              doc.setFont("helvetica", line.bold ? "bold" : "normal");
+              doc.setTextColor(...line.color);
+              doc.text(line.text, x + 2, lineY);
               lineY += scale.lineH;
             }
 
-            if (event.conductor?.name) {
-              doc.setFont("helvetica", "italic");
-              doc.setTextColor(60, 60, 120);
-              doc.text(event.conductor.name, x + 2, lineY);
-              lineY += scale.lineH;
-            }
-
-            if (event.territorio) {
-              doc.setFont("helvetica", "normal");
-              doc.setTextColor(30, 30, 30);
-              doc.text(`${t.agenda.territory}: ${event.territorio}`, x + 2, lineY);
-              lineY += scale.lineH;
-            }
-
-            if (event.tipo) {
-              doc.setFont("helvetica", "normal");
-              doc.setTextColor(30, 30, 30);
-              doc.text(`${t.agenda.type}: ${event.tipo}`, x + 2, lineY);
-              lineY += scale.lineH;
-            }
-
-            if (eventIndex < dayEvents.length - 1) {
+            if (eventIndex < eventLines.length - 1) {
               lineY += scale.sepH * 0.4;
               doc.setDrawColor(180, 180, 180);
               doc.setLineWidth(0.2);
@@ -255,7 +252,7 @@ export function AgendaPdfButton({ events, monthLabel: monthLabelProp, month, yea
 
       doc.save(`${t.agenda.title}_${monthName(locale, month)}_${year}.pdf`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t.errors.generic);
+      toast.error(resolveActionError(err, t));
     } finally {
       setLoading(false);
     }

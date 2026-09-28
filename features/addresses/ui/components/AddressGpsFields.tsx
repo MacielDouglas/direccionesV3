@@ -136,7 +136,16 @@ export default function AddressGpsFields() {
   const handleGetUserLocation = () => {
     requestPermission(
       (lat, lng) => updateGps(lat, lng),
-      (reason) => setError(t.addresses[reason === "unsupported" ? "gpsUnsupported" : "gpsFailed"]),
+      (reason) =>
+        setError(
+          reason === "unsupported"
+            ? t.addresses.gpsUnsupported
+            : reason === "denied"
+              ? t.addresses.gpsBlockedHint
+              : reason === "timeout"
+                ? t.addresses.gpsTimeout
+                : t.addresses.gpsFailed,
+        ),
       setIsFetchingGps,
     );
   };
@@ -302,7 +311,7 @@ export default function AddressGpsFields() {
             <Button
               type="button"
               onClick={handleConfirm}
-              disabled={isFetchingGps}
+              disabled={isFetchingGps || !draft}
               className="ml-auto w-full sm:w-auto"
             >
               <SatelliteDish aria-hidden="true" />

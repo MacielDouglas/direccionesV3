@@ -14,9 +14,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { resolveActionError } from "@/lib/action-error";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { deleteAccountAction } from "@/server/organization/delete-account.action";
 import { Loader2, Trash2 } from "lucide-react";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -34,7 +36,8 @@ export function DeleteAccountButton({ userEmail }: { userEmail: string }) {
       setIsLoading(true);
       await deleteAccountAction();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t.user.deleteAccountError);
+      if (isRedirectError(error)) throw error;
+      toast.error(resolveActionError(error, t));
       setIsLoading(false);
       setOpen(false);
     }

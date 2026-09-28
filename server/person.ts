@@ -163,29 +163,32 @@ export const removePersonFromOrganization = async (
     throw new Error("No puedes eliminarte a ti mismo.");
   }
 
-  // ✅ Sempre: desatribui cards atribuídos a ela (ficam livres na mesma org)
-  await prisma.card.updateMany({
-    where: { assignedPersonId: target.id, organizationId },
-    data: { assignedPersonId: null },
-  });
-
-  if (target.role === "member") {
-    // ✅ Membro comum: libera a ownership dos cards e a condução de eventos
-    await prisma.card.updateMany({
-      where: { ownerPersonId: target.id, organizationId },
-      data: { ownerPersonId: null },
-    });
-    await prisma.agendaEvent.updateMany({
-      where: { conductorPersonId: target.id, organizationId },
-      data: { conductorPersonId: null },
-    });
-  }
-  // Admin/owner: ownership de cards e condução da agenda são mantidos
-
-  await prisma.person.update({
-    where: { id: target.id },
-    data: { organizationId: null, role: null, lastActiveAt: new Date() },
-  });
+  // ✅ Sempre: desatribui cards atribuídos a ela (ficam livres na mesma org).
+  // Transação única: nunca libera pela metade.
+  await prisma.$transaction([
+    prisma.card.updateMany({
+      where: { assignedPersonId: target.id, organizationId },
+      data: { assignedPersonId: null },
+    }),
+    ...(target.role === "member"
+      ? [
+          // ✅ Membro comum: libera a ownership dos cards e a condução de eventos
+          prisma.card.updateMany({
+            where: { ownerPersonId: target.id, organizationId },
+            data: { ownerPersonId: null },
+          }),
+          prisma.agendaEvent.updateMany({
+            where: { conductorPersonId: target.id, organizationId },
+            data: { conductorPersonId: null },
+          }),
+        ]
+      : []),
+    // Admin/owner: ownership de cards e condução da agenda são mantidos
+    prisma.person.update({
+      where: { id: target.id },
+      data: { organizationId: null, role: null, lastActiveAt: new Date() },
+    }),
+  ]);
 
   return { success: true, removed: target.user?.email ?? target.name };
 };
@@ -205,8 +208,8 @@ export const createOrgPersonAction = async (organizationId: string, name: string
   }
 
   const parsedName = name.trim();
-  if (parsedName.length < 2) {
-    throw new Error("El nombre debe tener al menos 2 caracteres.");
+  if (parsedName.length < 2 || parsedName.length > 80) {
+    throw new Error("El nombre debe tener entre 2 y 80 caracteres.");
   }
 
   const existing = await prisma.person.findFirst({
@@ -444,6 +447,12 @@ export const deletePersonAction = async (
   if (requesterRole === "admin" && target.role === "owner") {
     throw new Error("Los administradores no pueden eliminar al owner.");
   }
+  if (target.role === "owner") {
+    const ownerCount = await prisma.person.count({
+      where: { organizationId, role: "owner" },
+    });
+    if (ownerCount <= 1) throw new Error("No se puede eliminar al único owner.");
+  }
 
   const requesterPersonId = currentUser.person.id;
 
@@ -527,8 +536,8 @@ export const updatePersonName = async (
   }
 
   const parsedName = name.trim();
-  if (parsedName.length < 2) {
-    throw new Error("El nombre debe tener al menos 2 caracteres.");
+  if (parsedName.length < 2 || parsedName.length > 80) {
+    throw new Error("El nombre debe tener entre 2 y 80 caracteres.");
   }
 
   const existing = await prisma.person.findFirst({
@@ -537,8 +546,14 @@ export const updatePersonName = async (
   });
   if (existing) throw new Error("Ya existe una persona con este nombre en la organización.");
 
-  await prisma.person.update({
+  const target = await prisma.person.findFirst({
     where: { id: personId, organizationId },
+    select: { id: true },
+  });
+  if (!target) throw new Error("Persona no encontrada en la organización.");
+
+  await prisma.person.update({
+    where: { id: target.id },
     data: { name: parsedName },
   });
 

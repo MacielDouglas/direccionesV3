@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Check, ChevronRight, Layers, MapPin, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { AddressTypeIcon } from "./AddressTypeIcon";
 
 const ADDRESS_PLACEHOLDER = "/images/address-placeholder.jpg";
@@ -49,6 +50,7 @@ interface Props {
 
 export function AddressCard({ address, organizationSlug }: Props) {
   const { t } = useI18n();
+  const [imgFailed, setImgFailed] = useState(false);
   const label = `${address.businessName ?? address.street}, ${address.number} — ${address.neighborhood}, ${address.city}`;
 
   return (
@@ -59,11 +61,12 @@ export function AddressCard({ address, organizationSlug }: Props) {
     >
       <div className="relative aspect-video w-full overflow-hidden bg-muted">
         <Image
-          src={address.image ?? ADDRESS_PLACEHOLDER}
+          src={imgFailed ? ADDRESS_PLACEHOLDER : (address.image ?? ADDRESS_PLACEHOLDER)}
           alt=""
           aria-hidden
           fill
           sizes="(max-width: 448px) 100vw, 448px"
+          onError={() => setImgFailed(true)}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
       </div>

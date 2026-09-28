@@ -32,6 +32,7 @@ const ptBR: I18nDictionary = {
     activateMap: "Ativar mapa interativo",
     mapPreviewAlt: "Prévia do mapa",
     tapToInteract: "Toque para interagir",
+    mapUnavailable: "Mapa indisponível. Verifique a conexão e recarregue.",
     loadingLabels: {
       home: "Carregando início",
       login: "Carregando início de sessão",
@@ -357,6 +358,7 @@ const ptBR: I18nDictionary = {
     gpsCurrent: "Localização atual",
     gpsUnsupported: "Geolocalização não suportada neste dispositivo.",
     gpsFailed: "Não foi possível obter sua localização. Verifique as permissões.",
+    gpsTimeout: "Demorou para obter a localização. Tente de novo em local aberto.",
     imageTitle: "Imagem do lugar",
     imageHint: "A foto da fachada ajuda a achar o local. Opcional.",
     imageSelectAria: "Selecionar imagem",
@@ -364,6 +366,9 @@ const ptBR: I18nDictionary = {
     imageChange: "Trocar foto",
     imageRemove: "Remover imagem",
     imageProcessing: "Processando {percent}%",
+    imageInvalidFile: "Arquivo inválido. Escolha uma foto.",
+    imageTooLarge: "Foto muito grande (máx. 25 MB).",
+    imageProcessError: "Não foi possível preparar a foto. Tente outra imagem.",
     imageUploading: "Enviando imagem {percent}%",
     addressCreated: "Endereço criado com sucesso!",
     addressCreateError: "Erro ao criar o endereço. Tente novamente.",
@@ -583,6 +588,7 @@ const ptBR: I18nDictionary = {
     cancelPin: "Cancelar pin",
     pinAria: "Pin de localização",
     mapAria: "Mapa interativo de levantamento",
+    mapUnavailable: "Mapa indisponível no momento. Verifique a conexão e tente de novo.",
   },
   user: {
     title: "Perfil",
@@ -967,6 +973,7 @@ const ptBR: I18nDictionary = {
   errors: {
     generic: "Algo deu errado. Confira a conexão e tente de novo.",
     sessionExpired: "Sua sessão expirou. Entre novamente.",
+    retry: "Tentar novamente",
   },
   savedTexts: {
     title: "Textos salvos",

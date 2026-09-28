@@ -41,7 +41,16 @@ export default function AddressImageField() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
 
-  const { processImage, processingProgress, isProcessing, error } = useSmartImageUpload();
+  const { processImage, processingProgress, isProcessing, errorCode } = useSmartImageUpload();
+
+  const processError =
+    errorCode === "too-large"
+      ? t.addresses.imageTooLarge
+      : errorCode === "invalid-file"
+        ? t.addresses.imageInvalidFile
+        : errorCode === "process-failed"
+          ? t.addresses.imageProcessError
+          : null;
 
   // Aplica imagem default quando não há customização
   useEffect(() => {
@@ -58,6 +67,12 @@ export default function AddressImageField() {
   async function handleFile(file?: File) {
     if (!file) return;
 
+    // Guarda a anterior: em falha, restaura em vez de descartar
+    const previousUrl = watch("image.imageUrl");
+    const previousFile = watch("image.imageFile");
+    const previousKey = watch("image.imageKey");
+    const wasCustom = watch("image.isCustomImage");
+
     // Preview imediato via base64
     setValue("image.imageUrl", await fileToBase64(file));
     setValue("image.isCustomImage", true);
@@ -65,7 +80,10 @@ export default function AddressImageField() {
 
     const processed = await processImage(file);
     if (!processed) {
-      handleRemove();
+      setValue("image.imageUrl", previousUrl);
+      setValue("image.imageFile", previousFile);
+      setValue("image.imageKey", previousKey);
+      setValue("image.isCustomImage", wasCustom);
       return;
     }
     setValue("image.imageFile", processed);
@@ -187,9 +205,9 @@ export default function AddressImageField() {
               )}
             </div>
 
-            {error && (
+            {processError && (
               <p role="alert" className="mt-1 text-sm text-destructive">
-                {error}
+                {processError}
               </p>
             )}
 

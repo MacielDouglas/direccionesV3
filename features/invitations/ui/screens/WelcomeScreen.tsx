@@ -156,7 +156,7 @@ export function WelcomeScreen({ userEmail }: WelcomeScreenProps) {
             value={orgName}
             onChange={(e) => setOrgName(e.target.value)}
             placeholder={t.invitations.orgNamePlaceholder}
-            maxLength={80}
+            maxLength={50}
             autoFocus
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSubmit();

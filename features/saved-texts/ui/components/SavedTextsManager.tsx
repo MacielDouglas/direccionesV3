@@ -35,6 +35,9 @@ export default function SavedTextsManager({
   const [renameText, setRenameText] = useState("");
   const [mergeDest, setMergeDest] = useState("");
   const [mergeArmed, setMergeArmed] = useState(false);
+  const [renamePending, setRenamePending] = useState<string | null>(null);
+  const [mergePending, setMergePending] = useState(false);
+  const busy = isPending || renamePending !== null || mergePending;
 
   const tabLabels: Record<SavedTextField, string> = {
     street: t.savedTexts.tabStreet,
@@ -80,49 +83,59 @@ export default function SavedTextsManager({
 
   function handleRename(from: string) {
     const to = renameText.trim();
-    if (!to || to === from) {
-      setEditing(null);
+    if (!to || to === from || renamePending !== null) {
+      if (to === from) setEditing(null);
       return;
     }
+    setRenamePending(from);
     startTransition(async () => {
-      const { error } = await renameSavedTextAction(organizationId, organizationSlug, {
-        field: activeField,
-        from,
-        to,
-      });
-      if (error) {
-        toast.error(error);
-        return;
+      try {
+        const { error } = await renameSavedTextAction(organizationId, organizationSlug, {
+          field: activeField,
+          from,
+          to,
+        });
+        if (error) {
+          toast.error(error);
+          return;
+        }
+        toast.success(t.savedTexts.renameSuccess);
+        setEditing(null);
+        setSelected((prev) => prev.map((v) => (v === from ? to : v)));
+        router.refresh();
+      } finally {
+        setRenamePending(null);
       }
-      toast.success(t.savedTexts.renameSuccess);
-      setEditing(null);
-      setSelected((prev) => prev.map((v) => (v === from ? to : v)));
-      router.refresh();
     });
   }
 
   function handleMerge() {
     const to = mergeDest.trim();
-    if (selected.length < 2 || !to) return;
+    if (selected.length < 2 || !to || mergePending) return;
     if (!mergeArmed) {
       setMergeArmed(true);
       return;
     }
+    setMergePending(true);
     startTransition(async () => {
-      const { error } = await mergeSavedTextsAction(organizationId, organizationSlug, {
-        field: activeField,
-        froms: selected,
-        to,
-      });
-      if (error) {
-        toast.error(error);
-        return;
+      try {
+        const { error } = await mergeSavedTextsAction(organizationId, organizationSlug, {
+          field: activeField,
+          froms: selected,
+          to,
+        });
+        if (error) {
+          toast.error(error);
+          return;
+        }
+        toast.success(t.savedTexts.mergeSuccess);
+        setSelected([]);
+        setMergeDest("");
+        setMergeArmed(false);
+        router.refresh();
+      } finally {
+        setMergePending(false);
       }
-      toast.success(t.savedTexts.mergeSuccess);
-      setSelected([]);
-      setMergeDest("");
-      setMergeArmed(false);
-      router.refresh();
     });
   }
 
@@ -259,20 +272,18 @@ export default function SavedTextsManager({
                         type="button"
                         size="sm"
                         onClick={() => handleRename(item.value)}
-                        disabled={
-                          isPending || !renameText.trim() || renameText.trim() === item.value
-                        }
+                        disabled={busy || !renameText.trim() || renameText.trim() === item.value}
                         className="min-h-11 flex-1"
                       >
                         <Check className="size-4" aria-hidden="true" />
-                        {isPending ? t.savedTexts.saving : t.savedTexts.renameButton}
+                        {busy ? t.savedTexts.saving : t.savedTexts.renameButton}
                       </Button>
                       <Button
                         type="button"
                         size="sm"
                         variant="outline"
                         onClick={() => setEditing(null)}
-                        disabled={isPending}
+                        disabled={busy}
                         className="min-h-11"
                         aria-label={t.savedTexts.cancel}
                       >
@@ -366,11 +377,11 @@ export default function SavedTextsManager({
           <Button
             type="button"
             onClick={handleMerge}
-            disabled={isPending || !canMerge}
+            disabled={busy || !canMerge}
             className="min-h-11 w-full"
           >
             <Merge className="size-4" aria-hidden="true" />
-            {isPending
+            {busy
               ? t.savedTexts.saving
               : mergeArmed
                 ? `${t.savedTexts.mergeButton} — ${mergeDest.trim()}?`

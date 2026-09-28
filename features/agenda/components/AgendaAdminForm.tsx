@@ -89,9 +89,9 @@ export function AgendaAdminForm({
     date: z.string().min(1, t.agenda.date),
     time: z.string().min(1, t.agenda.time),
     conductorId: z.string().nullable().optional(),
-    saida: z.string().optional(),
-    tipo: z.string().optional(),
-    territorio: z.string().optional(),
+    saida: z.string().max(100).optional(),
+    tipo: z.string().max(100).optional(),
+    territorio: z.string().max(100).optional(),
     info: z.string().max(500).optional(),
     recurring: z.boolean(),
   });
@@ -302,6 +302,7 @@ export function AgendaAdminForm({
                     onChange={field.onChange}
                     options={fieldOptions.saida}
                     placeholder={t.agenda.saidaPlaceholder}
+                    maxLength={100}
                   />
                 )}
               />
@@ -322,6 +323,7 @@ export function AgendaAdminForm({
                     onChange={field.onChange}
                     options={fieldOptions.tipo}
                     placeholder={t.agenda.tipoPlaceholder}
+                    maxLength={100}
                   />
                 )}
               />
@@ -342,6 +344,7 @@ export function AgendaAdminForm({
                     onChange={field.onChange}
                     options={fieldOptions.territorio}
                     placeholder={t.agenda.territorioPlaceholder}
+                    maxLength={100}
                   />
                 )}
               />

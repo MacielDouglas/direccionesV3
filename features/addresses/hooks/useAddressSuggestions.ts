@@ -16,6 +16,8 @@ interface Suggestion {
 
 const normalize = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
 
+const MAX_SUGGESTIONS = 50;
+
 export function useAddressSuggestions({ existing, query, threshold = 0.4 }: Options) {
   const fuse = useMemo(
     () =>
@@ -30,11 +32,11 @@ export function useAddressSuggestions({ existing, query, threshold = 0.4 }: Opti
 
   const suggestions = useMemo((): Suggestion[] => {
     if (!query.trim()) {
-      // Sem digitação — lista todos os existentes
-      return existing.map((v) => ({ value: v, isNew: false, score: 1 }));
+      // Sem digitação — amostra dos existentes (dropdown gigante trava o mobile)
+      return existing.slice(0, MAX_SUGGESTIONS).map((v) => ({ value: v, isNew: false, score: 1 }));
     }
 
-    const results = fuse.search(normalize(query));
+    const results = fuse.search(normalize(query)).slice(0, MAX_SUGGESTIONS);
     const matched = results.map((r) => ({
       value: r.item,
       isNew: false,

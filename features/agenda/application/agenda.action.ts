@@ -24,24 +24,28 @@ function knownDomainError(err: unknown): string | null {
   return null;
 }
 
-// ✅ Salva valor como opção se ainda não existir
+// ✅ Salva valor como opção se ainda não existir (corrida → P2002 ignorado)
 async function saveFieldOption(
   organizationId: string,
   field: string,
   value: string | null | undefined,
 ) {
   if (!value?.trim()) return;
-  await prisma.agendaFieldOption.upsert({
-    where: {
-      organizationId_field_value: {
-        organizationId,
-        field,
-        value: value.trim(),
+  try {
+    await prisma.agendaFieldOption.upsert({
+      where: {
+        organizationId_field_value: {
+          organizationId,
+          field,
+          value: value.trim(),
+        },
       },
-    },
-    create: { organizationId, field, value: value.trim() },
-    update: {}, // já existe — não faz nada
-  });
+      create: { organizationId, field, value: value.trim() },
+      update: {}, // já existe — não faz nada
+    });
+  } catch (err) {
+    if ((err as { code?: string }).code !== "P2002") throw err;
+  }
 }
 
 async function createEvent(organizationId: string, input: AgendaEventInput) {
@@ -52,25 +56,28 @@ async function createEvent(organizationId: string, input: AgendaEventInput) {
   // A hora exibida vem do campo `time` (string "HH:MM"), nunca do DateTime.
   const localDate = new Date(Date.UTC(year, month - 1, day, 12, 0));
 
-  await prisma.agendaEvent.create({
-    data: {
-      organizationId,
-      date: localDate,
-      time: time ?? null,
-      conductorPersonId: conductorId ?? null,
-      saida: saida?.trim() ?? null,
-      tipo: tipo?.trim() ?? null,
-      territorio: territorio?.trim() ?? null,
-      info: info?.trim() ?? null,
-    },
-  });
+  // Transação única: evento + opções nunca ficam pela metade
+  await prisma.$transaction(async (tx) => {
+    await tx.agendaEvent.create({
+      data: {
+        organizationId,
+        date: localDate,
+        time: time ?? null,
+        conductorPersonId: conductorId ?? null,
+        saida: saida?.trim() ?? null,
+        tipo: tipo?.trim() ?? null,
+        territorio: territorio?.trim() ?? null,
+        info: info?.trim() ?? null,
+      },
+    });
 
-  // ✅ Persiste novas opções automaticamente
-  await Promise.all([
-    saveFieldOption(organizationId, "saida", saida),
-    saveFieldOption(organizationId, "tipo", tipo),
-    saveFieldOption(organizationId, "territorio", territorio),
-  ]);
+    // ✅ Persiste novas opções automaticamente
+    await Promise.all([
+      saveFieldOption(organizationId, "saida", saida),
+      saveFieldOption(organizationId, "tipo", tipo),
+      saveFieldOption(organizationId, "territorio", territorio),
+    ]);
+  });
 }
 
 export async function createAgendaEventAction(

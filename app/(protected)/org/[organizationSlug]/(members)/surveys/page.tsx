@@ -26,7 +26,7 @@ export default async function SurveysPage({ params }: Props) {
   if (!org) redirect("/");
 
   const person = data.person;
-  if (person.organizationId !== org.id) redirect("/");
+  if (!data.isSuperUser && person.organizationId !== org.id) redirect("/");
 
   const pins = await prisma.surveyPin.findMany({
     where: { survey: { organizationId: org.id } },

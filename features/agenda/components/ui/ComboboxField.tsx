@@ -13,9 +13,18 @@ interface Props {
   options: string[];
   placeholder?: string;
   disabled?: boolean;
+  maxLength?: number;
 }
 
-export function ComboboxField({ id, value, onChange, options, placeholder, disabled }: Props) {
+export function ComboboxField({
+  id,
+  value,
+  onChange,
+  options,
+  placeholder,
+  disabled,
+  maxLength,
+}: Props) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState(value);
@@ -57,6 +66,7 @@ export function ComboboxField({ id, value, onChange, options, placeholder, disab
           placeholder={placeholder}
           disabled={disabled}
           autoComplete="off"
+          maxLength={maxLength}
           className="pr-8"
         />
         {options.length > 0 && (

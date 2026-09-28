@@ -123,7 +123,12 @@ const cardCountBadge = (t: ReturnType<typeof useI18n>["t"], count: number) =>
     : t.people.cardCountMany.replace("{count}", String(count));
 
 function errorMessage(err: unknown, fallback: string) {
-  return err instanceof Error && err.message.trim() ? err.message : fallback;
+  if (!(err instanceof Error)) return fallback;
+  const message = err.message.trim();
+  if (!message || message.length > 200 || /[{["]|P20\d\d|Zod|Prisma/.test(message)) {
+    return fallback;
+  }
+  return message;
 }
 
 export function ModalOverlay({

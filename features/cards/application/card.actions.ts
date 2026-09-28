@@ -1,7 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { requireAdminOrOwner, requireOrgAdminOrOwner } from "@/server/users";
+import { resolveServerActionError } from "@/server/action-error";
+import { requireOrgAdminOrOwner } from "@/server/users";
 import { revalidatePath } from "next/cache";
 import { createCardSchema, editCardSchema } from "../domain/card.schema";
 import { getNextCardNumber } from "./card.service";
@@ -19,48 +20,62 @@ export async function createCardAction(
   try {
     const data = await requireOrgAdminOrOwner(organizationId);
 
-    const result = await prisma.$transaction(async (tx) => {
-      const addresses = await tx.address.findMany({
-        where: {
-          id: { in: addressIds },
-          organizationId,
-          cardId: null,
-          // active: true,
-          pendingDeletion: false,
-        },
-        select: { id: true },
-      });
+    // Retry em corrida de número: max+1 concorrente gera P2002 no unique
+    let result: { id: string; number: number } | null = null;
+    let lastError: unknown = null;
+    for (let attempt = 0; attempt < 2 && !result; attempt += 1) {
+      try {
+        result = await prisma.$transaction(async (tx) => {
+          const addresses = await tx.address.findMany({
+            where: {
+              id: { in: addressIds },
+              organizationId,
+              cardId: null,
+              // active: true,
+              pendingDeletion: false,
+            },
+            select: { id: true },
+          });
 
-      if (addresses.length !== addressIds.length) {
-        throw new Error("Una o más direcciones no son válidas o ya están en uso.");
+          if (addresses.length !== addressIds.length) {
+            throw new Error("Una o más direcciones no son válidas o ya están en uso.");
+          }
+
+          const number = await getNextCardNumber(organizationId);
+
+          return tx.card.create({
+            data: {
+              number,
+              organizationId,
+              createdByPersonId: data.person.id,
+              addresses: { connect: addressIds.map((id) => ({ id })) },
+            },
+          });
+        });
+      } catch (err) {
+        lastError = err;
+        if ((err as { code?: string }).code !== "P2002") throw err;
       }
-
-      const number = await getNextCardNumber(organizationId);
-
-      return tx.card.create({
-        data: {
-          number,
-          organizationId,
-          createdByPersonId: data.person.id,
-          addresses: { connect: addressIds.map((id) => ({ id })) },
-        },
-      });
-    });
+    }
+    if (!result) throw lastError;
 
     revalidatePath(`/org/${organizationSlug}/admin/cards`);
     return { success: true, cardId: result.id, cardNumber: result.number };
   } catch (err) {
-    return {
-      error: err instanceof Error ? err.message : "Error al crear la tarjeta.",
-    };
+    return { error: await resolveServerActionError(err) };
   }
 }
 
 export async function assignCardAction(cardId: string, personId: string, organizationSlug: string) {
   try {
-    const data = await requireAdminOrOwner();
-    const organizationId = data.person?.organizationId;
-    if (!organizationId) throw new Error("Sin organización activa.");
+    // Org do cartão (não só a ativa): impede ação cruzada entre orgs
+    const scope = await prisma.card.findUnique({
+      where: { id: cardId },
+      select: { organizationId: true },
+    });
+    if (!scope) throw new Error("Tarjeta no encontrada.");
+    const data = await requireOrgAdminOrOwner(scope.organizationId);
+    const organizationId = scope.organizationId;
 
     await prisma.$transaction(async (tx) => {
       const card = await tx.card.findFirst({
@@ -98,17 +113,19 @@ export async function assignCardAction(cardId: string, personId: string, organiz
     revalidatePath(`/org/${organizationSlug}/admin/cards`);
     return { success: true };
   } catch (err) {
-    return {
-      error: err instanceof Error ? err.message : "Error al asignar tarjeta.",
-    };
+    return { error: await resolveServerActionError(err) };
   }
 }
 
 export async function returnCardAction(cardId: string, organizationSlug: string) {
   try {
-    const data = await requireAdminOrOwner();
-    const organizationId = data.person?.organizationId;
-    if (!organizationId) throw new Error("Sin organización activa.");
+    const scope = await prisma.card.findUnique({
+      where: { id: cardId },
+      select: { organizationId: true },
+    });
+    if (!scope) throw new Error("Tarjeta no encontrada.");
+    const data = await requireOrgAdminOrOwner(scope.organizationId);
+    const organizationId = scope.organizationId;
 
     await prisma.$transaction(async (tx) => {
       const card = await tx.card.findFirst({
@@ -142,17 +159,19 @@ export async function returnCardAction(cardId: string, organizationSlug: string)
     revalidatePath(`/org/${organizationSlug}/my-cards`);
     return { success: true };
   } catch (err) {
-    return {
-      error: err instanceof Error ? err.message : "Error al devolver la tarjeta.",
-    };
+    return { error: await resolveServerActionError(err) };
   }
 }
 
 export async function getCardRegistryAction(cardId: string) {
   try {
-    const data = await requireAdminOrOwner();
-    const organizationId = data.person?.organizationId;
-    if (!organizationId) throw new Error("Sin organización activa.");
+    const scope = await prisma.card.findUnique({
+      where: { id: cardId },
+      select: { organizationId: true },
+    });
+    if (!scope) throw new Error("Tarjeta no encontrada.");
+    await requireOrgAdminOrOwner(scope.organizationId);
+    const organizationId = scope.organizationId;
 
     const card = await prisma.card.findFirst({
       where: { id: cardId, organizationId },
@@ -190,17 +209,19 @@ export async function getCardRegistryAction(cardId: string) {
       })),
     };
   } catch (err) {
-    return {
-      error: err instanceof Error ? err.message : "Error al cargar el registro.",
-    };
+    return { error: await resolveServerActionError(err) };
   }
 }
 
 export async function deleteCardAction(cardId: string, organizationSlug: string) {
   try {
-    const data = await requireAdminOrOwner();
-    const organizationId = data.person?.organizationId;
-    if (!organizationId) return { error: "Sin organización activa." };
+    const scope = await prisma.card.findUnique({
+      where: { id: cardId },
+      select: { organizationId: true },
+    });
+    if (!scope) return { error: "Tarjeta no encontrada." };
+    await requireOrgAdminOrOwner(scope.organizationId);
+    const organizationId = scope.organizationId;
 
     const card = await prisma.card.findFirst({
       where: { id: cardId, organizationId },
@@ -219,9 +240,7 @@ export async function deleteCardAction(cardId: string, organizationSlug: string)
     revalidatePath(`/org/${organizationSlug}/admin/cards`);
     return { success: true };
   } catch (err) {
-    return {
-      error: err instanceof Error ? err.message : "Error al eliminar la tarjeta.",
-    };
+    return { error: await resolveServerActionError(err) };
   }
 }
 
@@ -285,8 +304,6 @@ export async function updateCardAction(
     revalidatePath(`/org/${organizationSlug}/admin/cards/${cardId}/edit`);
     return { success: true };
   } catch (err) {
-    return {
-      error: err instanceof Error ? err.message : "Error al actualizar la tarjeta.",
-    };
+    return { error: await resolveServerActionError(err) };
   }
 }

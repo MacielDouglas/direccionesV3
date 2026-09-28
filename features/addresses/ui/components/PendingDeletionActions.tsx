@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { resolveActionError } from "@/lib/action-error";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -21,26 +22,28 @@ export function PendingDeletionActions({ addressId }: Props) {
   const router = useRouter();
 
   async function handleConfirm() {
+    if (loading) return;
     try {
       setLoading(true);
       await confirmAddressDeletionAction(addressId);
       toast.success(t.addresses.deletionConfirmed);
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t.addresses.deleteError);
+      toast.error(resolveActionError(error, t));
     } finally {
       setLoading(false);
     }
   }
 
   async function handleCancel() {
+    if (loading) return;
     try {
       setLoading(true);
       await cancelAddressDeletionAction(addressId);
       toast.success(t.addresses.deletionCancelled);
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t.addresses.cancelDeletionError);
+      toast.error(resolveActionError(error, t));
     } finally {
       setLoading(false);
     }
