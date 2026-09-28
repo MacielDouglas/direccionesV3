@@ -14,6 +14,7 @@ import type { AddressFormData } from "../../domain/address.schema";
 import { useAddressEditForm } from "../../hooks/useAddressEditForm";
 import { deleteFile, uploadFile } from "../../utils/uploadFile";
 import AddressFields from "./AddressFields";
+import { isLocalPreview } from "./AddressImageFields";
 
 interface Props {
   address: Address;
@@ -41,6 +42,11 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
   const oldImageKey = useMemo(() => extractKeyFromUrl(address.image), [address.image]);
 
   async function onSubmit(values: AddressFormData) {
+    // Foto ainda processando (comum no iPhone) — o preview local nunca pode ir ao servidor.
+    if (isLocalPreview(values.image.imageUrl) && !(values.image.imageFile instanceof File)) {
+      toast.error(t.addresses.imageProcessing.replace("{percent}", "…"));
+      return;
+    }
     setIsSaving(true);
 
     try {
@@ -86,9 +92,16 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
     }
   }
 
+  // Desabilita o salvar enquanto a foto está sendo processada (iPhone é lento aqui)
+  const imagePreview = form.watch("image.imageUrl");
+  const imageFile = form.watch("image.imageFile");
+  const isImagePending = isLocalPreview(imagePreview) && !(imageFile instanceof File);
+  const isBusy = isSubmitting || isSaving || isImagePending;
+
   const submitLabel = () => {
     if (uploadProgress > 0 && uploadProgress < 100)
       return t.addresses.savingImage.replace("{progress}", String(uploadProgress));
+    if (isImagePending) return t.addresses.imageProcessing.replace("{percent}", "…");
     if (isSubmitting || isSaving) return t.addresses.savingTitle;
     return t.addresses.saveChangesButton;
   };
@@ -129,11 +142,11 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
               )}
               <Button
                 type="submit"
-                disabled={isSubmitting || isSaving}
-                aria-busy={isSubmitting || isSaving}
+                disabled={isBusy}
+                aria-busy={isBusy}
                 className="min-h-11 w-full"
               >
-                {isSubmitting || isSaving ? (
+                {isBusy ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                     <span>{submitLabel()}</span>

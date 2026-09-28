@@ -24,6 +24,7 @@ import { useAddressForm } from "../../hooks/useAddressForm";
 import { deleteFile, uploadFile } from "../../utils/uploadFile";
 import AddressCreateErrorDialog, { type AddressCreateErrorKind } from "./AddressCreateErrorDialog";
 import AddressFields from "./AddressFields";
+import { isLocalPreview } from "./AddressImageFields";
 
 interface Props {
   existingNeighborhoods: string[];
@@ -124,6 +125,13 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
   async function onSubmit(values: AddressFormData) {
     if (submittingRef.current) return;
     submittingRef.current = true;
+    // Foto ainda processando (comum no iPhone: HEIC→JPEG→WebP demora) — o preview
+    // local nunca pode ir ao servidor. Bloqueia com mensagem clara em vez de falhar.
+    if (isLocalPreview(values.image.imageUrl) && !(values.image.imageFile instanceof File)) {
+      showCreateError("image", t.addresses.imageProcessing.replace("{percent}", "…"));
+      submittingRef.current = false;
+      return;
+    }
     let imageUrl = values.image.imageUrl ?? null;
     let imageKey: string | null = null;
     try {
@@ -197,6 +205,7 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
   const submitLabel = () => {
     if (uploadProgress > 0 && uploadProgress < 100)
       return t.addresses.imageUploading.replace("{percent}", String(uploadProgress));
+    if (isImagePending) return t.addresses.imageProcessing.replace("{percent}", "…");
     if (isSubmitting) return t.addresses.addressCreating;
     return t.addresses.createTitle;
   };
@@ -205,6 +214,11 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
     setCreateErrorOpen(false);
     form.handleSubmit(onSubmit, onInvalid)();
   }
+
+  // Desabilita o salvar enquanto a foto está sendo processada (iPhone é lento aqui)
+  const imagePreview = form.watch("image.imageUrl");
+  const imageFile = form.watch("image.imageFile");
+  const isImagePending = isLocalPreview(imagePreview) && !(imageFile instanceof File);
 
   return (
     <Form {...form}>
@@ -229,11 +243,11 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
             )}
             <Button
               type="submit"
-              disabled={isSubmitting}
-              aria-busy={isSubmitting}
+              disabled={isSubmitting || isImagePending}
+              aria-busy={isSubmitting || isImagePending}
               className="min-h-11 w-full"
             >
-              {isSubmitting ? (
+              {isSubmitting || isImagePending || uploadProgress > 0 ? (
                 <>
                   <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                   <span>{submitLabel()}</span>

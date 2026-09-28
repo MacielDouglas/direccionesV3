@@ -14,18 +14,25 @@ import { getDefaultAddressImage } from "../../utils/getDefaultAddressImage";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+// Previews locais (nunca enviados ao servidor). O valor do form só recebe a URL
+// final após o processamento — data:/blob: no form significa "ainda processando".
+export const isLocalPreview = (url?: string | null) =>
+  !!url && (url.startsWith("data:") || url.startsWith("blob:"));
+
+function revokeLocalPreview(url?: string | null) {
+  if (url?.startsWith("blob:")) {
+    try {
+      URL.revokeObjectURL(url);
+    } catch {
+      // best-effort
+    }
+  }
 }
 
 const DEFAULT_URLS = new Set<string>(DEFAULT_ADDRESS_IMAGES.map((i) => i.url));
 const isDefault = (url?: string | null) => !!url && DEFAULT_URLS.has(url);
 const isBase64 = (url?: string | null) => !!url && url.startsWith("data:");
+const isBlob = (url?: string | null) => !!url && url.startsWith("blob:");
 const isRemote = (url?: string | null) => !!url && url.startsWith("http");
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -73,23 +80,37 @@ export default function AddressImageField() {
     const previousKey = watch("image.imageKey");
     const wasCustom = watch("image.isCustomImage");
 
-    // Preview imediato via base64
-    setValue("image.imageUrl", await fileToBase64(file));
+    // Preview imediato via object URL (leve — sem base64 gigante no estado do form,
+    // o que estourava o limite do Server Action e a validação do servidor no iPhone)
+    const pendingUrl = URL.createObjectURL(file);
+    localPreviewRef.current = pendingUrl;
+    setValue("image.imageUrl", pendingUrl);
     setValue("image.isCustomImage", true);
     setValue("image.imageKey", null);
 
     const processed = await processImage(file);
     if (!processed) {
+      revokeLocalPreview(pendingUrl);
+      localPreviewRef.current = previousUrl?.startsWith("blob:") ? previousUrl : null;
       setValue("image.imageUrl", previousUrl);
       setValue("image.imageFile", previousFile);
       setValue("image.imageKey", previousKey);
       setValue("image.isCustomImage", wasCustom);
       return;
     }
+    // Troca o preview pendente pelo do arquivo final (processado)
+    revokeLocalPreview(pendingUrl);
+    const finalUrl = URL.createObjectURL(processed);
+    revokeLocalPreview(previousUrl);
+    localPreviewRef.current = finalUrl;
+    setValue("image.imageUrl", finalUrl);
     setValue("image.imageFile", processed);
   }
 
   function handleRemove() {
+    const current = watch("image.imageUrl");
+    revokeLocalPreview(current);
+    localPreviewRef.current = null;
     const def = getDefaultAddressImage(addressType);
     setValue("image.imageFile", undefined);
     setValue("image.imageUrl", def ?? undefined);
@@ -97,11 +118,19 @@ export default function AddressImageField() {
     setValue("image.isCustomImage", false);
   }
 
+  // Revoga object URLs ao desmontar para não vazar memória no mobile
+  const localPreviewRef = useRef<string | null>(null);
+  useEffect(() => {
+    return () => {
+      revokeLocalPreview(localPreviewRef.current);
+    };
+  }, []);
+
   // ─── Flags de estado visual ────────────────────────────────────────────────
 
   const hasImage = !!preview;
   const isCustomRemote = isRemote(preview) && !isDefault(preview);
-  const canRemove = isBase64(preview) || isCustomRemote;
+  const canRemove = isBase64(preview) || isBlob(preview) || isCustomRemote;
 
   // ─── Render ────────────────────────────────────────────────────────────────
 

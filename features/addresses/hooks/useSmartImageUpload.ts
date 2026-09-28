@@ -8,6 +8,16 @@ const MAX_INPUT_BYTES = 25 * 1024 * 1024;
 
 export type ImageProcessErrorCode = "invalid-file" | "too-large" | "process-failed";
 
+// ─── iOS Safari costuma entregar fotos com `file.type === ""` ────────────────
+// Aceita como imagem quando o MIME é image/* OU a extensão é de imagem conhecida.
+const IMAGE_EXTENSIONS = /\.(jpe?g|png|webp|gif|heic|heif)$/i;
+
+function looksLikeImage(file: File): boolean {
+  if (file.type.startsWith("image/")) return true;
+  if (!file.type && IMAGE_EXTENSIONS.test(file.name)) return true;
+  return false;
+}
+
 async function getImageCompression() {
   const mod = await import("browser-image-compression");
   return mod.default;
@@ -23,8 +33,12 @@ async function getExif() {
 }
 
 async function normalizeHeic(file: File): Promise<File> {
+  // iOS pode enviar HEIC com `type === ""` — detecta também pela extensão.
   const isHeic =
-    file.type === "image/heic" || file.type === "image/heif" || /\.(heic|heif)$/i.test(file.name);
+    file.type === "image/heic" ||
+    file.type === "image/heif" ||
+    (!file.type && /\.(heic|heif)$/i.test(file.name)) ||
+    /\.(heic|heif)$/i.test(file.name);
 
   if (!isHeic) return file;
 
@@ -61,7 +75,7 @@ async function resizeAndCompress(
   originalFile: File,
   onProgress: (p: number) => void,
 ): Promise<File> {
-  if (!originalFile.type.startsWith("image/")) {
+  if (!looksLikeImage(originalFile)) {
     throw new Error("invalid-file");
   }
 
@@ -74,28 +88,38 @@ async function resizeAndCompress(
   let quality = 0.9;
   let compressed = originalFile;
 
-  try {
-    while (true) {
-      compressed = await imageCompression(compressed, {
-        maxSizeMB: MAX_SIZE_MB,
-        maxWidthOrHeight: MAX_DIMENSION,
-        useWebWorker: true,
-        fileType: "image/webp",
-        initialQuality: quality,
-        onProgress,
-      });
+  // iOS antigo não suporta `canvas.toBlob("image/webp")` — tenta WebP e cai para JPEG.
+  const outputTypes = ["image/webp", "image/jpeg"] as const;
+  let lastError: unknown = null;
 
-      if (compressed.size <= MAX_SIZE_MB * 1024 * 1024) break;
-      quality -= 0.1;
-      if (quality <= 0.4) break;
+  for (const outputType of outputTypes) {
+    try {
+      quality = 0.9;
+      compressed = originalFile;
+      while (true) {
+        compressed = await imageCompression(compressed, {
+          maxSizeMB: MAX_SIZE_MB,
+          maxWidthOrHeight: MAX_DIMENSION,
+          useWebWorker: true,
+          fileType: outputType,
+          initialQuality: quality,
+          onProgress,
+        });
+
+        if (compressed.size <= MAX_SIZE_MB * 1024 * 1024) break;
+        quality -= 0.1;
+        if (quality <= 0.4) break;
+      }
+      const extension = outputType === "image/webp" ? "webp" : "jpg";
+      return new File([compressed], `${crypto.randomUUID()}.${extension}`, {
+        type: outputType,
+      });
+    } catch (err) {
+      lastError = err;
     }
-  } catch {
-    throw new Error("process-failed");
   }
 
-  return new File([compressed], `${crypto.randomUUID()}.webp`, {
-    type: "image/webp",
-  });
+  throw lastError instanceof Error ? lastError : new Error("process-failed");
 }
 
 export function useSmartImageUpload() {
