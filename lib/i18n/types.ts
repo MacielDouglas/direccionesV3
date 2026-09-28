@@ -378,6 +378,10 @@ export type I18nDictionary = {
     createErrorGpsDescription: string;
     createErrorImageTitle: string;
     createErrorImageDescription: string;
+    imageStagePrepare: string;
+    imageStageSend: string;
+    imageStageNetwork: string;
+    imageStageTimeout: string;
     createErrorSaveTitle: string;
     createErrorSaveDescription: string;
     createErrorRetry: string;

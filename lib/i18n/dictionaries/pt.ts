@@ -394,6 +394,10 @@ const ptBR: I18nDictionary = {
     createErrorImageTitle: "Erro ao enviar a foto",
     createErrorImageDescription:
       "Não conseguimos enviar a foto do lugar. Verifique sua conexão, escolha uma imagem válida e tente novamente. Você também pode tentar sem foto.",
+    imageStagePrepare: "Etapa: preparar o envio no servidor.",
+    imageStageSend: "Etapa: enviar o arquivo da foto.",
+    imageStageNetwork: "Etapa: enviar o arquivo — a conexão falhou.",
+    imageStageTimeout: "Etapa: enviar o arquivo — demorou demais (tempo esgotado).",
     createErrorSaveTitle: "Erro ao salvar o endereço",
     createErrorSaveDescription:
       "Ocorreu uma falha ao salvar no servidor. Verifique sua conexão e tente novamente em alguns instantes.",

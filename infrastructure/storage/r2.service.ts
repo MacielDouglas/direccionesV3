@@ -60,7 +60,8 @@ export async function generateUploadUrl(key: string, contentType: string): Promi
     Key: key,
     ContentType: contentType,
   });
-  return getSignedUrl(getS3Client(), command, { expiresIn: 60 });
+  // Expiração folgada (5 min): upload de até 5 MB no 4G/iPhone é lento
+  return getSignedUrl(getS3Client(), command, { expiresIn: 300 });
 }
 
 // ✅ USA o mesmo client s3 (R2_BUCKET_NAME, não CLOUDFLARE_R2_BUCKET_NAME)

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { updateAddressAction } from "../../application/address.actions";
 import type { AddressFormData } from "../../domain/address.schema";
 import { useAddressEditForm } from "../../hooks/useAddressEditForm";
+import { getUploadErrorDetail } from "../../utils/uploadError";
 import { deleteFile, uploadFile } from "../../utils/uploadFile";
 import AddressCreateErrorDialog, { type AddressCreateErrorKind } from "./AddressCreateErrorDialog";
 import AddressFields from "./AddressFields";
@@ -103,7 +104,10 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
           imageUrl = uploaded.publicUrl;
           imageKey = uploaded.key;
         } catch (uploadErr) {
-          showUpdateError("image", humanErrorDetail(uploadErr));
+          showUpdateError(
+            "image",
+            getUploadErrorDetail(uploadErr, t.addresses) ?? humanErrorDetail(uploadErr),
+          );
           return;
         }
       }

@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { createAddressAction } from "../../application/address.actions";
 import type { AddressFormData } from "../../domain/address.schema";
 import { useAddressForm } from "../../hooks/useAddressForm";
+import { getUploadErrorDetail } from "../../utils/uploadError";
 import { deleteFile, uploadFile } from "../../utils/uploadFile";
 import AddressCreateErrorDialog, { type AddressCreateErrorKind } from "./AddressCreateErrorDialog";
 import AddressFields from "./AddressFields";
@@ -146,7 +147,10 @@ export default function AddressForm({ existingNeighborhoods, existingCities }: P
           imageUrl = uploaded.publicUrl;
           imageKey = uploaded.key;
         } catch (uploadErr) {
-          showCreateError("image", humanErrorDetail(uploadErr));
+          showCreateError(
+            "image",
+            getUploadErrorDetail(uploadErr, t.addresses) ?? humanErrorDetail(uploadErr),
+          );
           return;
         }
       }
