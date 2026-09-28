@@ -18,7 +18,8 @@ export async function uploadFile(
   await new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", url);
-    xhr.timeout = 30000;
+    // Rede móvel (4G) com arquivo de até 5 MB precisa de margem maior que 30 s
+    xhr.timeout = 120000;
     xhr.setRequestHeader("Content-Type", file.type);
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));

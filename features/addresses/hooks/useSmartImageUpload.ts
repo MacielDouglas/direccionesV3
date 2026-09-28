@@ -5,8 +5,34 @@ import { useState } from "react";
 const MAX_SIZE_MB = 5;
 const MAX_DIMENSION = 1920;
 const MAX_INPUT_BYTES = 25 * 1024 * 1024;
+// Trava de segurança: o pipeline nunca pode pendurar o salvar para sempre no iOS.
+const PROCESS_TIMEOUT_MS = 60000;
 
 export type ImageProcessErrorCode = "invalid-file" | "too-large" | "process-failed";
+
+// ─── Web Worker trava no Safari iOS (hang conhecido do browser-image-compression)
+// Desliga o worker em iPhone/iPad — mais lento, mas sempre termina.
+function isIOSDevice(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  if (/iPad|iPhone|iPod/.test(ua)) return true;
+  // iPadOS 13+ se apresenta como MacIntel com toque
+  return navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+}
+
+function shouldUseWorker(): boolean {
+  return !isIOSDevice();
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error("process-failed")), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timer) clearTimeout(timer);
+  });
+}
 
 // ─── iOS Safari costuma entregar fotos com `file.type === ""` ────────────────
 // Aceita como imagem quando o MIME é image/* OU a extensão é de imagem conhecida.
@@ -63,7 +89,7 @@ async function fixOrientation(file: File): Promise<File> {
     if (!orientation || orientation === 1) return file;
     return imageCompression(file, {
       maxSizeMB: 50,
-      useWebWorker: true,
+      useWebWorker: shouldUseWorker(),
       exifOrientation: orientation,
     });
   } catch {
@@ -100,7 +126,7 @@ async function resizeAndCompress(
         compressed = await imageCompression(compressed, {
           maxSizeMB: MAX_SIZE_MB,
           maxWidthOrHeight: MAX_DIMENSION,
-          useWebWorker: true,
+          useWebWorker: shouldUseWorker(),
           fileType: outputType,
           initialQuality: quality,
           onProgress,
@@ -138,9 +164,14 @@ export function useSmartImageUpload() {
     setProcessingProgress(0);
 
     try {
-      const heic = await normalizeHeic(file);
-      const oriented = await fixOrientation(heic);
-      const compressed = await resizeAndCompress(oriented, setProcessingProgress);
+      const compressed = await withTimeout(
+        (async () => {
+          const heic = await normalizeHeic(file);
+          const oriented = await fixOrientation(heic);
+          return resizeAndCompress(oriented, setProcessingProgress);
+        })(),
+        PROCESS_TIMEOUT_MS,
+      );
       return compressed;
     } catch (err) {
       const code = err instanceof Error ? err.message : "";

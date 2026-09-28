@@ -13,6 +13,7 @@ import { updateAddressAction } from "../../application/address.actions";
 import type { AddressFormData } from "../../domain/address.schema";
 import { useAddressEditForm } from "../../hooks/useAddressEditForm";
 import { deleteFile, uploadFile } from "../../utils/uploadFile";
+import AddressCreateErrorDialog, { type AddressCreateErrorKind } from "./AddressCreateErrorDialog";
 import AddressFields from "./AddressFields";
 import { isLocalPreview } from "./AddressImageFields";
 
@@ -36,34 +37,75 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
   const { isSubmitting } = form.formState;
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+  const [updateErrorOpen, setUpdateErrorOpen] = useState(false);
+  const [updateErrorKind, setUpdateErrorKind] = useState<AddressCreateErrorKind>("save");
+  const [updateErrorDetail, setUpdateErrorDetail] = useState<string | null>(null);
   const { t } = useI18n();
 
   // ✅ Captura key da imagem ATUAL do banco na montagem (imutável)
   const oldImageKey = useMemo(() => extractKeyFromUrl(address.image), [address.image]);
 
+  // Detalhe legível para o modal: JSON técnico (Zod/Prisma) e códigos
+  // internos (UPLOAD_*) nunca são exibidos
+  function humanErrorDetail(err: unknown): string | null {
+    if (!(err instanceof Error)) return null;
+    const message = err.message.trim();
+    if (!message || message.length > 300 || /^[[{]/.test(message)) return null;
+    if (/^[A-Z][A-Z0-9_]+$/.test(message)) return null;
+    return message;
+  }
+
+  function classifyUpdateError(message: string): AddressCreateErrorKind {
+    const text = message.toLowerCase();
+    if (
+      text.includes("foto") ||
+      text.includes("photo") ||
+      text.includes("imag") ||
+      text.includes("upload") ||
+      text.includes("firmada") ||
+      text.includes("signed") ||
+      text.includes("r2")
+    ) {
+      return "image";
+    }
+    return "save";
+  }
+
+  function showUpdateError(kind: AddressCreateErrorKind, detail?: string | null) {
+    setUpdateErrorKind(kind);
+    setUpdateErrorDetail(detail ?? null);
+    setUpdateErrorOpen(true);
+  }
+
   async function onSubmit(values: AddressFormData) {
     // Foto ainda processando (comum no iPhone) — o preview local nunca pode ir ao servidor.
     if (isLocalPreview(values.image.imageUrl) && !(values.image.imageFile instanceof File)) {
-      toast.error(t.addresses.imageProcessing.replace("{percent}", "…"));
+      showUpdateError("image", t.addresses.imageProcessing.replace("{percent}", "…"));
       return;
     }
     setIsSaving(true);
 
+    let imageKey: string | null = null;
     try {
       const hasNewImageFile = values.image.imageFile instanceof File;
       let imageUrl = values.image.imageUrl ?? null;
-      let imageKey = values.image.imageKey ?? null;
+      imageKey = values.image.imageKey ?? null;
 
       // ✅ 1. UPLOAD NOVA IMAGEM (antes de tocar na anterior)
       if (hasNewImageFile) {
         setUploadProgress(0);
-        const uploaded = await uploadFile(
-          values.image.imageFile,
-          organization.slug,
-          setUploadProgress,
-        );
-        imageUrl = uploaded.publicUrl;
-        imageKey = uploaded.key;
+        try {
+          const uploaded = await uploadFile(
+            values.image.imageFile,
+            organization.slug,
+            setUploadProgress,
+          );
+          imageUrl = uploaded.publicUrl;
+          imageKey = uploaded.key;
+        } catch (uploadErr) {
+          showUpdateError("image", humanErrorDetail(uploadErr));
+          return;
+        }
       }
 
       // ✅ 2. ATUALIZA BANCO
@@ -84,8 +126,17 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
 
       toast.success(t.addresses.addressUpdated);
       router.push(`/org/${organization.slug}/addresses/${address.id}`);
-    } catch {
-      toast.error(t.addresses.addressUpdateError);
+    } catch (err) {
+      // Upload ok mas atualização falhou → remove o objeto órfão do R2
+      if (imageKey) {
+        try {
+          await deleteFile(imageKey);
+        } catch {
+          // limpeza best-effort
+        }
+      }
+      const detail = humanErrorDetail(err);
+      showUpdateError(detail ? classifyUpdateError(detail) : "save", detail);
     } finally {
       setIsSaving(false);
       setUploadProgress(0);
@@ -105,6 +156,11 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
     if (isSubmitting || isSaving) return t.addresses.savingTitle;
     return t.addresses.saveChangesButton;
   };
+
+  function handleRetryUpdate() {
+    setUpdateErrorOpen(false);
+    form.handleSubmit(onSubmit)();
+  }
 
   return (
     <Form {...form}>
@@ -159,6 +215,15 @@ export default function AddressEditForm({ address, existingNeighborhoods, existi
           </div>
         </div>
       </form>
+
+      {/* Modal — falha ao guardar (foto / upload / servidor) */}
+      <AddressCreateErrorDialog
+        open={updateErrorOpen}
+        onOpenChange={setUpdateErrorOpen}
+        kind={updateErrorKind}
+        detail={updateErrorDetail}
+        onRetry={handleRetryUpdate}
+      />
     </Form>
   );
 }
