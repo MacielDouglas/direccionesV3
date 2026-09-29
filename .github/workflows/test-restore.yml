@@ -1,4 +1,4 @@
-name: Test Neon Backup Restore
+name: Test Encrypted Backup Restore
 
 on:
   workflow_dispatch:
@@ -55,26 +55,32 @@ jobs:
           echo "$RCLONE_CONFIG_B64" | base64 --decode > "$HOME/.config/rclone/rclone.conf"
           chmod 600 "$HOME/.config/rclone/rclone.conf"
 
-      - name: Find latest backup
+      - name: Test encrypted Google Drive
         run: |
-          LATEST=$(rclone lsf "gdrive:Neon Backups" \
+          rclone lsf "gdrive-crypt:" --max-depth 1
+
+      - name: Find latest encrypted backup
+        run: |
+          LATEST=$(rclone lsf "gdrive-crypt:" \
             --files-only \
             --include "*.dump" | sort | tail -n 1)
 
           if [ -z "$LATEST" ]; then
-            echo "Nenhum backup encontrado."
+            echo "Nenhum backup criptografado encontrado."
             exit 1
           fi
 
           echo "Backup selecionado: $LATEST"
           echo "LATEST_BACKUP=$LATEST" >> "$GITHUB_ENV"
 
-      - name: Download latest backup
+      - name: Download latest encrypted backup
         run: |
           mkdir -p restore
+
           rclone copyto \
-            "gdrive:Neon Backups/$LATEST_BACKUP" \
-            "restore/backup.dump"
+            "gdrive-crypt:$LATEST_BACKUP" \
+            "restore/backup.dump" \
+            --progress
 
           ls -lh restore/backup.dump
 
