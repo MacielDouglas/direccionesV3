@@ -1,6 +1,8 @@
 name: Backup Neon Database
 
 on:
+  schedule:
+    - cron: '0 6 * * *' # Todos os dias às 06:00 UTC (03:00 em Brasília)
   workflow_dispatch:
 
 jobs:
@@ -14,18 +16,18 @@ jobs:
           sudo apt-get install -y wget ca-certificates lsb-release gnupg
 
           sudo install -d -m 0755 /usr/share/postgresql-common/pgdg
-          sudo wget --quiet -O /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
 
-          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo wget --quiet \
+            -O /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list
 
           sudo apt-get update
           sudo apt-get install -y postgresql-client-17
 
-          # Garante que o pg_dump 17 seja o padrão (remove conflito com o 16 pré-instalado)
-          sudo update-alternatives --set pg_dump /usr/lib/postgresql/17/bin/pg_dump || sudo ln -sf /usr/lib/postgresql/17/bin/pg_dump /usr/bin/pg_dump
-
-          pg_dump --version
-          which pg_dump
+          /usr/lib/postgresql/17/bin/pg_dump --version
 
       - name: Install rclone
         run: |
@@ -53,12 +55,15 @@ jobs:
           TIMESTAMP=$(date -u +"%Y-%m-%d-%H-%M-%S")
           BACKUP_FILE="backup/neon-${TIMESTAMP}.dump"
 
-          pg_dump "$NEON_DATABASE_URL" \
+          /usr/lib/postgresql/17/bin/pg_dump \
+            "$NEON_DATABASE_URL" \
             --format=custom \
             --file="$BACKUP_FILE"
 
           echo "Backup criado:"
           ls -lh "$BACKUP_FILE"
+
+          test -s "$BACKUP_FILE"
 
       - name: Upload backup to Google Drive
         run: |
@@ -67,3 +72,7 @@ jobs:
       - name: Verify backup
         run: |
           rclone lsf "gdrive:Neon Backups" --max-depth 1
+
+      - name: Remove backups older than 30 days
+        run: |
+          rclone delete "gdrive:Neon Backups" --min-age 30d
