@@ -73,6 +73,6 @@ jobs:
         run: |
           rclone lsf "gdrive-crypt:" --max-depth 1
 
-      - name: Remove backups older than 30 days
+      - name: Remove encrypted backups older than 30 days
         run: |
-          rclone delete "gdrive:Neon Backups" --min-age 30d
+          rclone delete "gdrive-crypt:" --min-age 30d
