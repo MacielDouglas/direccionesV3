@@ -120,3 +120,133 @@ jobs:
           test -s restore/contents.txt
 
           echo "Backup validado com sucesso."
+
+  restore:
+    name: Restore production Neon database
+    needs: prepare
+    runs-on: ubuntu-latest
+
+    environment:
+      name: production-restore
+
+    steps:
+      - name: Install PostgreSQL 17 client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget ca-certificates lsb-release gnupg
+
+          sudo install -d -m 0755 /usr/share/postgresql-common/pgdg
+
+          sudo wget --quiet \
+            -O /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list
+
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+
+          /usr/lib/postgresql/17/bin/pg_dump --version
+          /usr/lib/postgresql/17/bin/pg_restore --version
+
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+          rclone version
+
+      - name: Configure rclone
+        env:
+          RCLONE_CONFIG_B64: ${{ secrets.RCLONE_CONFIG_B64 }}
+        run: |
+          mkdir -p "$HOME/.config/rclone"
+
+          echo "$RCLONE_CONFIG_B64" \
+            | base64 --decode \
+            > "$HOME/.config/rclone/rclone.conf"
+
+          chmod 600 "$HOME/.config/rclone/rclone.conf"
+
+      - name: Create safety backup of current Neon database
+        env:
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          mkdir -p safety-backup
+
+          TIMESTAMP=$(date -u +"%Y-%m-%d-%H-%M-%S")
+          SAFETY_BACKUP="pre-restore-neon-${TIMESTAMP}.dump"
+
+          /usr/lib/postgresql/17/bin/pg_dump \
+            "$NEON_DATABASE_URL" \
+            --format=custom \
+            --file="safety-backup/$SAFETY_BACKUP"
+
+          echo "Backup de segurança criado:"
+          ls -lh "safety-backup/$SAFETY_BACKUP"
+
+          test -s "safety-backup/$SAFETY_BACKUP"
+
+          echo "SAFETY_BACKUP=$SAFETY_BACKUP" >> "$GITHUB_ENV"
+
+      - name: Upload safety backup to encrypted Google Drive
+        env:
+          SAFETY_BACKUP: ${{ env.SAFETY_BACKUP }}
+        run: |
+          rclone copyto \
+            "safety-backup/$SAFETY_BACKUP" \
+            "gdrive-crypt:$SAFETY_BACKUP" \
+            --progress
+
+          echo "Backup de segurança enviado para o Google Drive criptografado."
+
+      - name: Download selected backup
+        env:
+          BACKUP_FILE: ${{ inputs.backup_file }}
+        run: |
+          mkdir -p restore
+
+          rclone copyto \
+            "gdrive-crypt:$BACKUP_FILE" \
+            "restore/backup.dump" \
+            --progress
+
+          ls -lh restore/backup.dump
+
+      - name: Validate selected backup again
+        run: |
+          /usr/lib/postgresql/17/bin/pg_restore \
+            --list \
+            restore/backup.dump \
+            > restore/contents.txt
+
+          echo "Quantidade de objetos:"
+          wc -l restore/contents.txt
+
+          test -s restore/contents.txt
+
+      - name: Restore Neon production database
+        env:
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          echo "INICIANDO RESTAURAÇÃO DO BANCO DE PRODUÇÃO."
+
+          /usr/lib/postgresql/17/bin/pg_restore \
+            --dbname="$NEON_DATABASE_URL" \
+            --clean \
+            --if-exists \
+            --no-owner \
+            --no-acl \
+            --exit-on-error \
+            restore/backup.dump
+
+          echo "Restauração concluída."
+
+      - name: Verify restored database
+        env:
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          echo "Quantidade de tabelas após restauração:"
+
+          /usr/lib/postgresql/17/bin/psql \
+            "$NEON_DATABASE_URL" \
+            -tAc "SELECT count(*) FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog', 'information_schema');"
