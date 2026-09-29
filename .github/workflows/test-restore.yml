@@ -1,6 +1,8 @@
 name: Test Encrypted Backup Restore
 
 on:
+  schedule:
+    - cron: '0 4 * * 0'  # Executa diariamente à meia-noite UTC
   workflow_dispatch:
 
 jobs:
