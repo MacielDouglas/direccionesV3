@@ -65,13 +65,13 @@ jobs:
 
           test -s "$BACKUP_FILE"
 
-      - name: Upload backup to Google Drive
+      - name: Upload backup to encrypted Google Drive
         run: |
-          rclone copy "backup" "gdrive:Neon Backups" --progress
+           rclone copy "backup" "gdrive-crypt:" --progress
 
       - name: Verify backup
         run: |
-          rclone lsf "gdrive:Neon Backups" --max-depth 1
+          rclone lsf "gdrive-crypt:" --max-depth 1
 
       - name: Remove backups older than 30 days
         run: |
