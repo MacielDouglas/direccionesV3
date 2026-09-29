@@ -1,0 +1,131 @@
+name: Test Neon Backup Restore
+
+on:
+  workflow_dispatch:
+
+jobs:
+  restore-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_USER: postgres
+          POSTGRES_DB: restore_test
+        options: >-
+          --health-cmd "pg_isready -U postgres -d restore_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Install PostgreSQL 17 client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget ca-certificates lsb-release gnupg
+
+          sudo install -d -m 0755 /usr/share/postgresql-common/pgdg
+
+          sudo wget --quiet \
+            -O /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list
+
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+
+          /usr/lib/postgresql/17/bin/pg_restore --version
+
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+          rclone version
+
+      - name: Configure rclone
+        env:
+          RCLONE_CONFIG_B64: ${{ secrets.RCLONE_CONFIG_B64 }}
+        run: |
+          mkdir -p "$HOME/.config/rclone"
+          echo "$RCLONE_CONFIG_B64" | base64 --decode > "$HOME/.config/rclone/rclone.conf"
+          chmod 600 "$HOME/.config/rclone/rclone.conf"
+
+      - name: Find latest backup
+        run: |
+          LATEST=$(rclone lsf "gdrive:Neon Backups" \
+            --files-only \
+            --include "*.dump" | sort | tail -n 1)
+
+          if [ -z "$LATEST" ]; then
+            echo "Nenhum backup encontrado."
+            exit 1
+          fi
+
+          echo "Backup selecionado: $LATEST"
+          echo "LATEST_BACKUP=$LATEST" >> "$GITHUB_ENV"
+
+      - name: Download latest backup
+        run: |
+          mkdir -p restore
+          rclone copyto \
+            "gdrive:Neon Backups/$LATEST_BACKUP" \
+            "restore/backup.dump"
+
+          ls -lh restore/backup.dump
+
+      - name: Check backup contents
+        run: |
+          /usr/lib/postgresql/17/bin/pg_restore \
+            --list \
+            restore/backup.dump > restore/contents.txt
+
+          echo "Itens encontrados no backup:"
+          wc -l restore/contents.txt
+
+          test -s restore/contents.txt
+
+      - name: Restore backup
+        env:
+          PGPASSWORD: testpassword
+        run: |
+          /usr/lib/postgresql/17/bin/pg_restore \
+            --host=localhost \
+            --port=5432 \
+            --username=postgres \
+            --dbname=restore_test \
+            --no-owner \
+            --no-acl \
+            --exit-on-error \
+            restore/backup.dump
+
+      - name: Verify restored database
+        env:
+          PGPASSWORD: testpassword
+        run: |
+          echo "Schemas:"
+          psql \
+            -h localhost \
+            -U postgres \
+            -d restore_test \
+            -c "\dn"
+
+          echo ""
+          echo "Tabelas:"
+          psql \
+            -h localhost \
+            -U postgres \
+            -d restore_test \
+            -c "\dt *.*"
+
+          echo ""
+          echo "Quantidade de tabelas:"
+          psql \
+            -h localhost \
+            -U postgres \
+            -d restore_test \
+            -tAc "SELECT count(*) FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog', 'information_schema');"
