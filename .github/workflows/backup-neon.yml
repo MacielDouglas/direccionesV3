@@ -1,0 +1,55 @@
+name: Backup Neon Database
+
+on:
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+          rclone version
+
+      - name: Configure rclone
+        env:
+          RCLONE_CONFIG_B64: ${{ secrets.RCLONE_CONFIG_B64 }}
+        run: |
+          mkdir -p "$HOME/.config/rclone"
+          echo "$RCLONE_CONFIG_B64" | base64 --decode > "$HOME/.config/rclone/rclone.conf"
+          chmod 600 "$HOME/.config/rclone/rclone.conf"
+
+      - name: Test Google Drive
+        run: |
+          rclone lsd gdrive:
+
+      - name: Create backup
+        env:
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          mkdir -p backup
+
+          TIMESTAMP=$(date -u +"%Y-%m-%d-%H-%M-%S")
+          BACKUP_FILE="backup/neon-${TIMESTAMP}.dump"
+
+          pg_dump "$NEON_DATABASE_URL" \
+            --format=custom \
+            --file="$BACKUP_FILE"
+
+          echo "Backup criado:"
+          ls -lh "$BACKUP_FILE"
+
+      - name: Upload backup to Google Drive
+        run: |
+          rclone copy "backup" "gdrive:Neon Backups" --progress
+
+      - name: Verify backup
+        run: |
+          rclone lsf "gdrive:Neon Backups" --max-depth 1
