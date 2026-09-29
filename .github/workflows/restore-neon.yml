@@ -14,7 +14,7 @@ on:
 
 jobs:
   prepare:
-    name: Prepare and validate backup
+    name: Validate backup
     runs-on: ubuntu-latest
 
     steps:
@@ -60,11 +60,41 @@ jobs:
         run: |
           if [ "$CONFIRMATION" != "RESTORE_PRODUCTION" ]; then
             echo "Confirmação inválida."
-            echo "Para continuar, digite exatamente: RESTORE_PRODUCTION"
             exit 1
           fi
 
-      - name: Download encrypted backup
+      - name: Validate backup filename
+        env:
+          BACKUP_FILE: ${{ inputs.backup_file }}
+        run: |
+          if [[ "$BACKUP_FILE" != *.dump ]]; then
+            echo "O arquivo informado não é um backup .dump."
+            exit 1
+          fi
+
+          if [[ "$BACKUP_FILE" == */* ]]; then
+            echo "O nome do backup não pode conter subpastas."
+            exit 1
+          fi
+
+      - name: Check backup exists
+        env:
+          BACKUP_FILE: ${{ inputs.backup_file }}
+        run: |
+          echo "Procurando backup: $BACKUP_FILE"
+
+          if ! rclone lsf "gdrive-crypt:" \
+            --files-only \
+            --include "*.dump" \
+            | grep -Fx -- "$BACKUP_FILE"; then
+
+            echo "Backup não encontrado no Google Drive criptografado."
+            exit 1
+          fi
+
+          echo "Backup encontrado."
+
+      - name: Download backup for validation
         env:
           BACKUP_FILE: ${{ inputs.backup_file }}
         run: |
@@ -77,7 +107,7 @@ jobs:
 
           ls -lh restore/backup.dump
 
-      - name: Validate backup
+      - name: Validate backup contents
         run: |
           /usr/lib/postgresql/17/bin/pg_restore \
             --list \
@@ -89,61 +119,4 @@ jobs:
 
           test -s restore/contents.txt
 
-      - name: Upload validated backup as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: validated-neon-backup
-          path: restore/backup.dump
-          retention-days: 1
-
-  restore:
-    name: Restore production Neon database
-    needs: prepare
-    runs-on: ubuntu-latest
-    environment:
-      name: production-restore
-
-    steps:
-      - name: Install PostgreSQL 17 client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget ca-certificates lsb-release gnupg
-
-          sudo install -d -m 0755 /usr/share/postgresql-common/pgdg
-
-          sudo wget --quiet \
-            -O /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
-            https://www.postgresql.org/media/keys/ACCC4CF8.asc
-
-          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
-            | sudo tee /etc/apt/sources.list.d/pgdg.list
-
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client-17
-
-      - name: Download validated backup artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: validated-neon-backup
-          path: restore
-
-      - name: Restore database
-        env:
-          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
-        run: |
-          /usr/lib/postgresql/17/bin/pg_restore \
-            "$NEON_DATABASE_URL" \
-            --clean \
-            --if-exists \
-            --no-owner \
-            --no-acl \
-            --exit-on-error \
-            restore/backup.dump
-
-      - name: Verify restored database
-        env:
-          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
-        run: |
-          /usr/lib/postgresql/17/bin/psql \
-            "$NEON_DATABASE_URL" \
-            -tAc "SELECT count(*) FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog', 'information_schema');"
+          echo "Backup validado com sucesso."
