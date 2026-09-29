@@ -1,0 +1,149 @@
+name: Restore Neon Database
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup_file:
+        description: "Nome do backup criptografado no Google Drive"
+        required: true
+        type: string
+      confirmation:
+        description: "Digite RESTORE_PRODUCTION para confirmar"
+        required: true
+        type: string
+
+jobs:
+  prepare:
+    name: Prepare and validate backup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install PostgreSQL 17 client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget ca-certificates lsb-release gnupg
+
+          sudo install -d -m 0755 /usr/share/postgresql-common/pgdg
+
+          sudo wget --quiet \
+            -O /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list
+
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+
+          /usr/lib/postgresql/17/bin/pg_restore --version
+
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+          rclone version
+
+      - name: Configure rclone
+        env:
+          RCLONE_CONFIG_B64: ${{ secrets.RCLONE_CONFIG_B64 }}
+        run: |
+          mkdir -p "$HOME/.config/rclone"
+
+          echo "$RCLONE_CONFIG_B64" \
+            | base64 --decode \
+            > "$HOME/.config/rclone/rclone.conf"
+
+          chmod 600 "$HOME/.config/rclone/rclone.conf"
+
+      - name: Validate confirmation
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          if [ "$CONFIRMATION" != "RESTORE_PRODUCTION" ]; then
+            echo "Confirmação inválida."
+            echo "Para continuar, digite exatamente: RESTORE_PRODUCTION"
+            exit 1
+          fi
+
+      - name: Download encrypted backup
+        env:
+          BACKUP_FILE: ${{ inputs.backup_file }}
+        run: |
+          mkdir -p restore
+
+          rclone copyto \
+            "gdrive-crypt:$BACKUP_FILE" \
+            "restore/backup.dump" \
+            --progress
+
+          ls -lh restore/backup.dump
+
+      - name: Validate backup
+        run: |
+          /usr/lib/postgresql/17/bin/pg_restore \
+            --list \
+            restore/backup.dump \
+            > restore/contents.txt
+
+          echo "Quantidade de objetos no backup:"
+          wc -l restore/contents.txt
+
+          test -s restore/contents.txt
+
+      - name: Upload validated backup as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: validated-neon-backup
+          path: restore/backup.dump
+          retention-days: 1
+
+  restore:
+    name: Restore production Neon database
+    needs: prepare
+    runs-on: ubuntu-latest
+    environment:
+      name: production-restore
+
+    steps:
+      - name: Install PostgreSQL 17 client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget ca-certificates lsb-release gnupg
+
+          sudo install -d -m 0755 /usr/share/postgresql-common/pgdg
+
+          sudo wget --quiet \
+            -O /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list
+
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+
+      - name: Download validated backup artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: validated-neon-backup
+          path: restore
+
+      - name: Restore database
+        env:
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          /usr/lib/postgresql/17/bin/pg_restore \
+            "$NEON_DATABASE_URL" \
+            --clean \
+            --if-exists \
+            --no-owner \
+            --no-acl \
+            --exit-on-error \
+            restore/backup.dump
+
+      - name: Verify restored database
+        env:
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          /usr/lib/postgresql/17/bin/psql \
+            "$NEON_DATABASE_URL" \
+            -tAc "SELECT count(*) FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog', 'information_schema');"
