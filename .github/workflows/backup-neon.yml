@@ -3,8 +3,9 @@ name: Backup Neon Database
 on:
   schedule:
     - cron: '7 6 * * *' # Todos os dias às 06:07 UTC (03:07 em Brasília) — fora do pico :00 para evitar descarte do scheduler
-    - cron: '30 11 * * *' # TESTE TEMPORÁRIO: hoje 11:30 UTC (08:30 BRT) — REMOVER após validar
   workflow_dispatch:
+  repository_dispatch:
+    types: [backup-neon]
 
 jobs:
   backup:
