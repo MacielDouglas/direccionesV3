@@ -28,7 +28,7 @@ export default async function AddressDetailsScreen({
   organizationSlug,
 }: AddressDetailsScreenProps) {
   const [createdUser, updatedUser, t, locale] = await Promise.all([
-    getUniquePerson(address.createdByPersonId),
+    address.createdByPersonId ? getUniquePerson(address.createdByPersonId) : null,
     address.updatedByPersonId ? getUniquePerson(address.updatedByPersonId) : null,
     getServerDictionary(),
     getServerLocale(),

@@ -20,10 +20,12 @@ export async function fetchAddressWithUsers(id: string): Promise<AddressWithUser
   if (address.organizationId !== data.person.organizationId) return null;
 
   const [createdPerson, updatedPerson] = await Promise.all([
-    prisma.person.findUnique({
-      where: { id: address.createdByPersonId },
-      select: personSelect,
-    }),
+    address.createdByPersonId
+      ? prisma.person.findUnique({
+          where: { id: address.createdByPersonId },
+          select: personSelect,
+        })
+      : null,
     address.updatedByPersonId
       ? prisma.person.findUnique({
           where: { id: address.updatedByPersonId },

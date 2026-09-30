@@ -22,7 +22,7 @@ type CardListClientCard = {
   createdAt: Date;
   updatedAt: Date;
   ownerPersonId: string | null;
-  createdByPersonId: string;
+  createdByPersonId: string | null;
   updatedByPersonId: string | null;
   assignedPersonId: string | null;
   startDate: Date | null;
