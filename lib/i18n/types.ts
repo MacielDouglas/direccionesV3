@@ -455,6 +455,12 @@ export type I18nDictionary = {
     assign: string;
     return: string;
     assignSuccess: string;
+    returnCard: string;
+    returningCard: string;
+    cardReturned: string;
+    returnConfirmTitle: string;
+    returnConfirmDescription: string;
+    confirmReturn: string;
     mine: string;
     assignedUnit: string;
     assignedUnitSingular: string;

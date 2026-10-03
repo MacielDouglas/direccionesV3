@@ -38,7 +38,7 @@ export function ReturnMyCardButton({ cardId, cardNumber, organizationSlug, class
         toast.error(result.error);
         return;
       }
-      toast.success(t.admin.cardReturned.replace("{number}", String(cardNumber).padStart(2, "0")));
+      toast.success(t.cards.cardReturned.replace("{number}", String(cardNumber).padStart(2, "0")));
       router.refresh();
     });
   };
@@ -50,22 +50,22 @@ export function ReturnMyCardButton({ cardId, cardNumber, organizationSlug, class
       <AlertDialogTrigger asChild>
         <Button
           variant="outline"
-          className={`min-h-11 w-full ${className ?? ""}`}
+          className={`h-auto min-h-11 w-full whitespace-normal py-2.5 text-center leading-snug ${className ?? ""}`}
           disabled={isPending}
           aria-busy={isPending}
-          aria-label={`${t.admin.returnCard} ${cardLabel}`}
+          aria-label={`${t.cards.returnCard} ${cardLabel}`}
         >
-          <Undo2 className="size-4 mr-1.5" aria-hidden />
-          {isPending ? t.admin.returningCard : t.admin.returnCard}
+          <Undo2 className="size-4" aria-hidden />
+          <span>{isPending ? t.cards.returningCard : t.cards.returnCard}</span>
         </Button>
       </AlertDialogTrigger>
 
       <AlertDialogContent size="sm">
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {t.admin.returnConfirmTitle.replace("{number}", cardLabel)}
+            {t.cards.returnConfirmTitle.replace("{number}", cardLabel)}
           </AlertDialogTitle>
-          <AlertDialogDescription>{t.admin.returnConfirmDescription}</AlertDialogDescription>
+          <AlertDialogDescription>{t.cards.returnConfirmDescription}</AlertDialogDescription>
         </AlertDialogHeader>
 
         <AlertDialogFooter>
@@ -74,10 +74,10 @@ export function ReturnMyCardButton({ cardId, cardNumber, organizationSlug, class
             onClick={handleReturn}
             disabled={isPending}
             aria-busy={isPending}
-            className="gap-2"
+            className="h-auto min-h-11 gap-2 whitespace-normal py-2.5 text-center leading-snug"
           >
             <Undo2 className="size-4" aria-hidden />
-            {isPending ? t.admin.returningCard : t.admin.confirmReturn}
+            <span>{isPending ? t.cards.returningCard : t.cards.confirmReturn}</span>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
