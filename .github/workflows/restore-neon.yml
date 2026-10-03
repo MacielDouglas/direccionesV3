@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       backup_file:
-        description: "Nome do backup criptografado no Google Drive"
+        description: "Nome do backup: real (neon-....dump) ou criptografado (como aparece no Google Drive)"
         required: true
         type: string
       confirmation:
@@ -16,6 +16,8 @@ jobs:
   prepare:
     name: Validate backup
     runs-on: ubuntu-latest
+    outputs:
+      backup_file: ${{ steps.resolve.outputs.backup_file }}
 
     steps:
       - name: Install PostgreSQL 17 client
@@ -63,23 +65,42 @@ jobs:
             exit 1
           fi
 
-      - name: Validate backup filename
+      - name: Resolve backup filename
+        id: resolve
         env:
-          BACKUP_FILE: ${{ inputs.backup_file }}
+          INPUT_FILE: ${{ inputs.backup_file }}
         run: |
-          if [[ "$BACKUP_FILE" != *.dump ]]; then
-            echo "O arquivo informado não é um backup .dump."
-            exit 1
+          INPUT_FILE=$(printf '%s' "$INPUT_FILE" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
+          if [[ "$INPUT_FILE" == *.dump ]]; then
+            if [[ "$INPUT_FILE" == */* ]]; then
+              echo "O nome do backup não pode conter subpastas."
+              exit 1
+            fi
+
+            RESOLVED="$INPUT_FILE"
+          else
+            echo "Nome criptografado informado; decodificando..."
+
+            if ! RESOLVED=$(rclone backend decode "gdrive-crypt:" "$INPUT_FILE" | tail -n 1); then
+              echo "Não foi possível decodificar o nome informado: $INPUT_FILE"
+              echo "Use o nome real (ex.: neon-2026-10-01-06-07-00.dump) ou o nome exato do Drive."
+              exit 1
+            fi
+
+            if [[ "$RESOLVED" != *.dump ]]; then
+              echo "O nome decodificado não é um backup .dump: $RESOLVED"
+              exit 1
+            fi
+
+            echo "Nome real do backup: $RESOLVED"
           fi
 
-          if [[ "$BACKUP_FILE" == */* ]]; then
-            echo "O nome do backup não pode conter subpastas."
-            exit 1
-          fi
+          echo "Usando backup: $RESOLVED"
+          echo "backup_file=$RESOLVED" >> "$GITHUB_OUTPUT"
+          echo "BACKUP_FILE=$RESOLVED" >> "$GITHUB_ENV"
 
       - name: Check backup exists
-        env:
-          BACKUP_FILE: ${{ inputs.backup_file }}
         run: |
           echo "Procurando backup: $BACKUP_FILE"
 
@@ -95,8 +116,6 @@ jobs:
           echo "Backup encontrado."
 
       - name: Download backup for validation
-        env:
-          BACKUP_FILE: ${{ inputs.backup_file }}
         run: |
           mkdir -p restore
 
@@ -125,6 +144,8 @@ jobs:
     name: Restore production Neon database
     needs: prepare
     runs-on: ubuntu-latest
+    env:
+      BACKUP_FILE: ${{ needs.prepare.outputs.backup_file }}
 
     environment:
       name: production-restore
@@ -200,8 +221,6 @@ jobs:
           echo "Backup de segurança enviado para o Google Drive criptografado."
 
       - name: Download selected backup
-        env:
-          BACKUP_FILE: ${{ inputs.backup_file }}
         run: |
           mkdir -p restore
 
