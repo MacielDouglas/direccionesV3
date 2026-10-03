@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { resolveServerActionError } from "@/server/action-error";
-import { requireOrgAdminOrOwner } from "@/server/users";
+import { requireAuthContext, requireOrgAdminOrOwner } from "@/server/users";
 import { revalidatePath } from "next/cache";
 import { createCardSchema, editCardSchema } from "../domain/card.schema";
 import { getNextCardNumber } from "./card.service";
@@ -140,7 +140,9 @@ export async function returnCardAction(cardId: string, organizationSlug: string)
         where: { id: cardId },
         data: {
           assignedPersonId: null,
+          startDate: null,
           endDate: new Date(),
+          lastWorkedByPersonId: assignedPersonId,
         },
       });
 
@@ -157,6 +159,50 @@ export async function returnCardAction(cardId: string, organizationSlug: string)
 
     revalidatePath(`/org/${organizationSlug}/admin/cards`);
     revalidatePath(`/org/${organizationSlug}/my-cards`);
+    return { success: true };
+  } catch (err) {
+    return { error: await resolveServerActionError(err) };
+  }
+}
+
+// ✅ Devolução self-service ("Mis Tarjetas"): só o membro dono da designação
+export async function returnMyCardAction(cardId: string, organizationSlug: string) {
+  try {
+    const current = await requireAuthContext();
+    const personId = current.person?.id;
+    const organizationId = current.person?.organizationId;
+    if (!personId || !organizationId) throw new Error("Sin permiso.");
+
+    await prisma.$transaction(async (tx) => {
+      const card = await tx.card.findFirst({
+        where: { id: cardId, organizationId, assignedPersonId: personId },
+        select: { id: true },
+      });
+      if (!card) throw new Error("Tarjeta no encontrada.");
+
+      await tx.card.update({
+        where: { id: cardId },
+        data: {
+          assignedPersonId: null,
+          startDate: null,
+          endDate: new Date(),
+          lastWorkedByPersonId: personId,
+        },
+      });
+
+      await tx.cardEvent.create({
+        data: {
+          id: crypto.randomUUID(),
+          cardId,
+          personId,
+          actorPersonId: personId,
+          action: "RETURNED",
+        },
+      });
+    });
+
+    revalidatePath(`/org/${organizationSlug}/my-cards`);
+    revalidatePath(`/org/${organizationSlug}/admin/cards`);
     return { success: true };
   } catch (err) {
     return { error: await resolveServerActionError(err) };

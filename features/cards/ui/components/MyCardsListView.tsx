@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { getCardColor } from "../../utils/cardColors";
+import { ReturnMyCardButton } from "./ReturnMyCardButton";
 
 type CardAddress = {
   id: string;
@@ -321,6 +322,13 @@ export function MyCardsListView({
                       <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
                     </button>
                   )}
+
+                  {/* Devolução da tarjeta pelo próprio membro */}
+                  <ReturnMyCardButton
+                    cardId={card.id}
+                    cardNumber={card.number}
+                    organizationSlug={organizationSlug}
+                  />
                 </div>
               </article>
             </li>

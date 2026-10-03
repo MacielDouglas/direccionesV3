@@ -62,59 +62,6 @@ model Person {
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // ── Perfil Meeting (branch meeting) ─────────────────────────────
-  // Espelha `persons` do projeto Meeting para elegibilidade de
-  // designações (partes, limpeza, duties). Decisões:
-  // - `name` é a fonte de exibição/unicidade (equivale ao
-  //   `firstName` do Meeting).
-  // - `sex` é `Sex` ("Male" | "Female") com default "Male".
-  // - Excluídos: `userId` (já existe), `unavailableNotes` e
-  //   `audienceAnalysis` (só formulário, sem filtro SQL).
-  // - Cascatas do Meeting mantidas na aplicação: female zera 22 flags,
-  //   !baptized zera privilégios, elder × ministerialServant exclusivos.
-  //   (As listas originais citam `audienceAnalysis`: removê-lo ao portar.)
-  sex Sex @default(Male)
-
-  familyHead     Boolean @default(false)
-  familyMemberId String?
-
-  cleaning    Boolean @default(true)
-  young       Boolean @default(false)
-  helper      Boolean @default(true)
-  baptized    Boolean @default(false)
-  unavailable Boolean @default(false)
-
-  // Capacidades de partes da reunião
-  startConversations  Boolean @default(true)
-  returnVisits        Boolean @default(true)
-  makeDisciples       Boolean @default(true)
-  explainBeliefs      Boolean @default(true)
-  betterSpeech        Boolean @default(false)
-  bibleReading        Boolean @default(false)
-  prayer              Boolean @default(false)
-  midweekChairman     Boolean @default(false)
-  treasuresTalk       Boolean @default(false)
-  pearlsQuest         Boolean @default(false)
-  analysisTalk        Boolean @default(false)
-  bibleStudy          Boolean @default(false)
-  studyReader         Boolean @default(false)
-  publicChairman      Boolean @default(false)
-  publicTalk          Boolean @default(false)
-  watchtowerConductor Boolean @default(false)
-  watchtowerReader    Boolean @default(false)
-
-  // Duties (som/microfone/palco) e privilégios
-  sound              Boolean @default(false)
-  video              Boolean @default(false)
-  platform           Boolean @default(false)
-  microphone         Boolean @default(false)
-  usher              Boolean @default(false)
-  elder              Boolean @default(false)
-  ministerialServant Boolean @default(false)
-
-  // Rodízio de designações de reuniões
-  lastAssignmentAt DateTime?
-
   // Card
   cardsOwned      Card[]      @relation("CardOwner")
   cardsAssigned   Card[]      @relation("CardAssignedTo")
@@ -122,6 +69,7 @@ model Person {
   updatedCards    Card[]      @relation("CardUpdatedBy")
   cardEvents      CardEvent[] @relation("CardEventWorker")
   actorCardEvents CardEvent[] @relation("CardEventActor")
+  lastWorkedCards Card[]      @relation("CardLastWorkedBy")
 
   // Address
   createdAddresses Address[]       @relation("AddressCreatedBy")
@@ -142,13 +90,7 @@ model Person {
   inviteTokens        InviteToken[] @relation("InviteTokenPerson")
 
   @@index([organizationId])
-  @@index([familyMemberId])
   @@map("person")
-}
-
-enum Sex {
-  Male
-  Female
 }
 
 //////////////////////////////////////////////////////
@@ -264,6 +206,10 @@ model Card {
   assignedPersonId String?
   assignedTo       Person? @relation("CardAssignedTo", fields: [assignedPersonId], references: [id], onDelete: SetNull)
 
+  // Última pessoa que trabalhou na tarjeta (registrada na devolução)
+  lastWorkedByPersonId String?
+  lastWorkedBy         Person? @relation("CardLastWorkedBy", fields: [lastWorkedByPersonId], references: [id], onDelete: SetNull)
+
   // Relações
   addresses Address[]
   events    CardEvent[]
@@ -276,6 +222,7 @@ model Card {
 
   @@unique([organizationId, number])
   @@index([assignedPersonId])
+  @@index([lastWorkedByPersonId])
   @@index([ownerPersonId])
   @@index([organizationId])
   @@map("card")

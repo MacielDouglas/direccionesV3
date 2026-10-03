@@ -704,7 +704,12 @@ export const adminReturnCardsAction = async (
     for (const card of cards) {
       await tx.card.update({
         where: { id: card.id },
-        data: { assignedPersonId: null, startDate: null, endDate: now },
+        data: {
+          assignedPersonId: null,
+          startDate: null,
+          endDate: now,
+          lastWorkedByPersonId: person.id,
+        },
       });
       await tx.cardEvent.create({
         data: {
@@ -761,7 +766,12 @@ export const adminTransferCardAction = async (
   await prisma.$transaction(async (tx) => {
     await tx.card.update({
       where: { id: card.id },
-      data: { assignedPersonId: person.id, startDate: now, endDate: null },
+      data: {
+        assignedPersonId: person.id,
+        startDate: now,
+        endDate: null,
+        lastWorkedByPersonId: card.assignedPersonId,
+      },
     });
     // Devolução do card para a pessoa que o tinha e nova designação para o destino.
     await tx.cardEvent.create({
