@@ -340,17 +340,23 @@ export function MeetingWeekView({
             <p className="truncate text-sm font-medium text-foreground">{texts.cleaningTitle}</p>
           </div>
           <div className="flex flex-col divide-y divide-border px-4">
-            {week.cleaning.map((item, itemIndex) => (
-              <DutyRow
-                key={`${item.date}-${item.sectorName}-${itemIndex}`}
-                date={item.date}
-                post={item.sectorName}
-                detail={item.task}
-                person={item.personName}
-                locale={locale}
-                badgeClassName="bg-muted text-foreground"
-              />
-            ))}
+            {week.cleaning.map((item, itemIndex) => {
+              // Espanhol quando cadastrado; senão cai no texto original.
+              const sectorLabel =
+                locale === "es" ? item.sectorNameEs || item.sectorName : item.sectorName;
+              const taskText = locale === "es" ? item.taskEs || item.task : item.task;
+              return (
+                <DutyRow
+                  key={`${item.date}-${item.sectorName}-${itemIndex}`}
+                  date={item.date}
+                  post={sectorLabel}
+                  detail={taskText}
+                  person={item.personName}
+                  locale={locale}
+                  badgeClassName="bg-muted text-foreground"
+                />
+              );
+            })}
           </div>
         </section>
       ) : null}
