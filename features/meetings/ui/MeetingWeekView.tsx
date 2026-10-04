@@ -128,12 +128,14 @@ function PartRow({
 function DutyRow({
   date,
   post,
+  detail,
   person,
   locale,
   badgeClassName = "bg-brand text-brand-foreground",
 }: {
   date: string;
   post: string;
+  detail?: string;
   person: string;
   locale: MeetingLocale;
   badgeClassName?: string;
@@ -146,6 +148,9 @@ function DutyRow({
       <TimeBadge className={badgeClassName}>{formatShortDay(date, locale)}</TimeBadge>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold text-foreground">{post}</span>
+        {detail ? (
+          <span className="mt-0.5 block truncate text-xs text-muted-foreground">{detail}</span>
+        ) : null}
         {person ? (
           <span className="mt-0.5 block text-right">
             <span className="block truncate text-sm font-semibold text-foreground">{person}</span>
@@ -340,6 +345,7 @@ export function MeetingWeekView({
                 key={`${item.date}-${item.sectorName}-${itemIndex}`}
                 date={item.date}
                 post={item.sectorName}
+                detail={item.task}
                 person={item.personName}
                 locale={locale}
                 badgeClassName="bg-muted text-foreground"

@@ -100,6 +100,8 @@ const meetingDutySchema = z.object({
 const meetingCleaningSchema = z.object({
   date: z.string(),
   sectorName: z.string(),
+  // Presente desde o Meeting novo; payloads antigos não trazem a chave.
+  task: z.string().optional().default(""),
   personName: z.string(),
 });
 
