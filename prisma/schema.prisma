@@ -310,6 +310,9 @@ model Organization {
 
   inviteTokens InviteToken[]
 
+  meetingConnection  MeetingConnection?
+  meetingWeekPrograms MeetingWeekProgram[]
+
   @@map("organization")
 }
 
@@ -453,4 +456,38 @@ model InviteToken {
 enum TokenType {
   OWNER_ONBOARDING
   INVITE
+}
+
+//////////////////////////////////////////////////////
+// MEETING (programação semanal via enlace público)
+//////////////////////////////////////////////////////
+
+// Conexão com o app Meeting: uma por organização. O token fica legível
+// porque ele é a chave AES que decifra o programa (só o servidor o usa).
+model MeetingConnection {
+  id             String   @id @default(uuid())
+  organizationId String   @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  baseUrl        String
+  token          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("meeting_connection")
+}
+
+// Foto da semana decifrada: busca no Meeting só quando inicia uma semana
+// sem programação salva; depois serve do banco.
+model MeetingWeekProgram {
+  id               String   @id @default(uuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  weekStart        String
+  weekEnd          String
+  congregationName String   @default("")
+  payload          Json
+  fetchedAt        DateTime @default(now())
+
+  @@unique([organizationId, weekStart])
+  @@map("meeting_week_program")
 }

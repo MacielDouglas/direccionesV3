@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Type,
   UserPlus,
+  UsersRound,
 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -119,6 +120,17 @@ export default async function AdminPage({ params }: Props) {
               descriptionAlt={tAlt.admin.savedTextsDescription}
               cta={t.admin.open}
             />
+            {isOwner && (
+              <AdminAction
+                href={`/org/${slug}/admin/reunioes`}
+                icon={<UsersRound className="size-5 text-brand" aria-hidden="true" />}
+                title={t.admin.meetings}
+                titleAlt={tAlt.admin.meetings}
+                description={t.admin.meetingsDescription}
+                descriptionAlt={tAlt.admin.meetingsDescription}
+                cta={t.admin.open}
+              />
+            )}
             {isOwner && (
               <AdminAction
                 href={`/org/${slug}/admin/organizations`}
