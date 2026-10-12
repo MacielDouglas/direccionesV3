@@ -233,6 +233,14 @@ const ptBR: I18nDictionary = {
     eventsToday: "{count} eventos hoje",
     cardsAddresses: "veja seus endereços",
     goToCards: "Ir para meus cartões",
+    nextMeeting: {
+      title: "Próxima reunião",
+      partsCount: "{count} partes",
+      partsCountSingular: "1 parte",
+      yourParts: "Suas designações",
+      viewDetails: "Ver programação completa",
+      timeToBeDefined: "Horário a definir",
+    },
   },
   addresses: {
     allTitle: "Todos os endereços",

@@ -236,6 +236,14 @@ const es: I18nDictionary = {
     eventsToday: "{count} eventos hoy",
     cardsAddresses: "ver tus direcciones",
     goToCards: "Ir a mis tarjetas",
+    nextMeeting: {
+      title: "Próxima reunión",
+      partsCount: "{count} partes",
+      partsCountSingular: "1 parte",
+      yourParts: "Tus asignaciones",
+      viewDetails: "Ver programa completo",
+      timeToBeDefined: "Horario por definir",
+    },
   },
   addresses: {
     allTitle: "Todas las direcciones",

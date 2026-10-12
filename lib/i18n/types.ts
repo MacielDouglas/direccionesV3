@@ -225,6 +225,14 @@ export type I18nDictionary = {
     eventsToday: string;
     cardsAddresses: string;
     goToCards: string;
+    nextMeeting: {
+      title: string;
+      partsCount: string;
+      partsCountSingular: string;
+      yourParts: string;
+      viewDetails: string;
+      timeToBeDefined: string;
+    };
   };
   addresses: {
     allTitle: string;

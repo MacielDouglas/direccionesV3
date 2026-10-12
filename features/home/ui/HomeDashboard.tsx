@@ -2,9 +2,11 @@ import { PendingDeletionBadge } from "@/features/addresses/ui/components/Pending
 import { getAgendaEventsByDay } from "@/features/agenda/application/agenda.service";
 import { eventTime, todayInBrasiliaDateOnly } from "@/features/agenda/utils/agenda-time";
 import { countMyCards, countMyTotalAddresses } from "@/features/cards/application/card.service";
+import { NextMeetingCard } from "@/features/meetings/ui/NextMeetingCard";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { CalendarDays, ChevronRight, CreditCard, Plus, Shield } from "lucide-react";
 import Link from "next/link";
+import { Suspense } from "react";
 
 interface HomeDashboardProps {
   organizationId: string;
@@ -151,6 +153,25 @@ export async function HomeDashboard({
             </div>
           )}
         </section>
+
+        {/* Próxima reunião — streaming isolado: não bloqueia o resto em rede lenta */}
+        <Suspense
+          fallback={
+            <output
+              aria-label={t.home.nextMeeting.title}
+              className="mt-3 block animate-pulse rounded-xl border border-border bg-card p-4"
+            >
+              <div className="h-4 w-2/3 rounded bg-muted" />
+              <div className="mt-2 h-3 w-1/2 rounded bg-muted" />
+            </output>
+          }
+        >
+          <NextMeetingCard
+            organizationId={organizationId}
+            organizationSlug={organizationSlug}
+            userName={userName}
+          />
+        </Suspense>
       </div>
     </div>
   );
