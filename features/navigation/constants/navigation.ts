@@ -10,6 +10,7 @@ import {
   Search,
   Shield,
   User,
+  UserRoundGroup,
 } from "lucide-react";
 import type { ElementType } from "react";
 
@@ -82,6 +83,13 @@ export const navigationMenu: NavigationItem[] = [
     label: "agendaLabel",
     href: "/agenda",
     icon: CalendarDays,
+  },
+  {
+    id: "reunioes",
+    name: "Reuniões",
+    label: "meetingsLabel",
+    href: "/reunioes",
+    icon: UserRoundGroup,
   },
   {
     id: "admin",
