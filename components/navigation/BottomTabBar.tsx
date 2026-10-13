@@ -86,7 +86,7 @@ export function BottomTabBar({ orgSlug, role }: BottomTabBarProps) {
         {tabs.map(({ id, href, label, Icon }) => {
           const active = isActive(href);
           return (
-            <li key={id} className="flex-1">
+            <li key={id} className="min-w-0 flex-1">
               <Link
                 href={href === "/" ? "/" : `/org/${orgSlug}${href}`}
                 onClick={() => vibrate("light")}
@@ -104,7 +104,9 @@ export function BottomTabBar({ orgSlug, role }: BottomTabBarProps) {
                   )}
                   aria-hidden="true"
                 />
-                <span className="text-xs font-medium leading-none">{label}</span>
+                <span className="max-w-full truncate px-0.5 text-xs font-medium leading-none">
+                  {label}
+                </span>
               </Link>
             </li>
           );

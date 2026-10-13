@@ -9,19 +9,29 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  type MeetingAssignment,
-  type MeetingLocale,
   meetingSectionMetaOf,
   splitMeetingBlocks,
 } from "@/features/meetings/domain/meeting-section";
 import type { MeetingDetail, MeetingDuty } from "@/features/meetings/domain/meeting.schema";
-import { SECTION_ICONS } from "@/features/meetings/ui/section-icons";
+import {
+  MEETING_SHEET_CLASSES,
+  ProgramPartRow,
+  ProgramPresidentRow,
+  ProgramSectionHeader,
+} from "@/features/meetings/ui/program-parts";
+import { sectionIconOf } from "@/features/meetings/ui/section-icons";
+import {
+  firstStartTime,
+  formatLongDate,
+  formatWeekRange,
+  isCongregationBibleStudy,
+  shortWeekday,
+} from "@/features/meetings/utils/meeting-format";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { CalendarDays, ChevronRight, Clock, Crown, UserRoundGroup, X } from "lucide-react";
+import { CalendarDays, ChevronRight, Clock, UserRoundGroup, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { FaBookOpen } from "react-icons/fa";
 
 type MeetingKind = "midweek" | "weekend";
 
@@ -35,119 +45,10 @@ interface NextMeetingSectionProps {
   organizationSlug: string;
 }
 
-/** Bottom-sheet mobile (mesmo padrão do AddressDetailModal). */
-const SHEET_CLASSES = cn(
-  "fixed z-50 gap-0",
-  "max-h-[92dvh] w-full max-w-full overflow-x-hidden overflow-y-auto p-0",
-  "left-0! right-0! bottom-0! top-auto! rounded-t-3xl! border-0!",
-  "translate-x-0! translate-y-0!",
-  "sm:left-1/2! sm:right-auto! sm:top-1/2! sm:bottom-auto! sm:-translate-x-1/2! sm:-translate-y-1/2!",
-  "sm:max-w-lg! sm:rounded-3xl! sm:border! sm:max-h-[90dvh]",
-);
-
-function parseDay(iso: string): Date {
-  const [year, month, day] = iso.split("-").map(Number);
-  return new Date(year ?? 1970, (month ?? 1) - 1, day ?? 1);
-}
-
-function formatLongDate(iso: string, locale: MeetingLocale): string {
-  const text = new Intl.DateTimeFormat(locale === "es" ? "es" : "pt-BR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  }).format(parseDay(iso));
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
-/** Faixa da semana no topo do modal (ex.: "5 – 11 de outubro"). */
-function formatWeekRange(startIso: string, endIso: string, locale: MeetingLocale): string {
-  const start = parseDay(startIso);
-  const end = parseDay(endIso);
-  const tag = locale === "es" ? "es" : "pt-BR";
-  if (start.getMonth() === end.getMonth()) {
-    const month = new Intl.DateTimeFormat(tag, { month: "long" }).format(end);
-    return `${start.getDate()} – ${end.getDate()} de ${month}`;
-  }
-  const short = (date: Date) =>
-    new Intl.DateTimeFormat(tag, { month: "short" }).format(date).replace(/\./g, "");
-  return `${start.getDate()} ${short(start)} – ${end.getDate()} ${short(end)}`;
-}
-
-function shortWeekday(iso: string, locale: MeetingLocale): string {
-  return new Intl.DateTimeFormat(locale === "es" ? "es" : "pt-BR", { weekday: "short" })
-    .format(parseDay(iso))
-    .replace(/\./g, "");
-}
-
-function firstStartTime(meeting: MeetingDetail): string | null {
-  return meeting.assignments.find((a) => a.startTime.trim() !== "")?.startTime ?? null;
-}
-
-/** Estudo bíblico da congregação: o segundo designado é o leitor, não o ajudante. */
-function isCongregationBibleStudy(section: string): boolean {
-  const normalized = section
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toUpperCase();
-  return normalized.includes("BIBLICO") && normalized.includes("CONGREGACION");
-}
-
-function PartRow({
-  part,
-  number,
-  color,
-  songLabel,
-  helperLabel,
-}: {
-  part: MeetingAssignment;
-  number: number;
-  color: string;
-  songLabel: string;
-  helperLabel: string;
-}) {
-  const names = [
-    part.personName,
-    part.helperPersonName ? `${helperLabel}: ${part.helperPersonName}` : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  const title = part.songNumber ? `${songLabel} ${part.songNumber}` : part.title;
-  const subtitle = [
-    part.subtitle,
-    part.songTheme,
-    part.speakerCongregation ? `(${part.speakerCongregation})` : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  return (
-    <li className="flex items-start gap-3 py-2.5">
-      <span className="mt-0.5 w-5 shrink-0 text-sm font-bold tabular-nums" style={{ color }}>
-        {number}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="flex min-w-0 items-baseline justify-between gap-2">
-          <span className="min-w-0 truncate text-sm font-semibold text-foreground">{title}</span>
-          {part.durationMinutes ? (
-            <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-              {part.durationMinutes} min
-            </span>
-          ) : null}
-        </span>
-        {subtitle ? (
-          <span className="mt-0.5 block truncate text-xs text-muted-foreground">{subtitle}</span>
-        ) : null}
-        {names ? (
-          <span className="mt-0.5 block truncate text-sm font-medium text-foreground">{names}</span>
-        ) : null}
-      </span>
-    </li>
-  );
-}
-
 /**
  * Seção Reuniões da home: card claro com acento azul (#1c69d4) da próxima
- * reunião + bottom-sheet com o programa (seções coloridas, partes numeradas,
- * presidente e apoio), no estilo do programa do Meeting.
+ * reunião + bottom-sheet com o programa (seções coloridas, partes numeradas
+ * e presidente), no estilo do programa do Meeting.
  */
 export function NextMeetingSection({
   weekStart,
@@ -219,7 +120,7 @@ export function NextMeetingSection({
               {t.home.nextMeeting.viewProgram}
             </button>
           </DialogTrigger>
-          <DialogContent showCloseButton={false} className={SHEET_CLASSES}>
+          <DialogContent showCloseButton={false} className={MEETING_SHEET_CLASSES}>
             <DialogHeader className="sr-only">
               <DialogTitle>{kindTitle}</DialogTitle>
               <DialogDescription>
@@ -286,29 +187,7 @@ export function NextMeetingSection({
                   </span>
                 </div>
 
-                {presidentDuties.length > 0 ? (
-                  <ul className="px-4">
-                    {presidentDuties.map((duty, dutyIndex) => (
-                      <li
-                        key={`${duty.date}-${duty.dutyKey}-${dutyIndex}`}
-                        className="flex items-center gap-3 border-b border-border py-2.5"
-                      >
-                        <span
-                          aria-hidden
-                          className="grid size-9 shrink-0 place-items-center rounded-xl bg-meeting/10 text-meeting-text"
-                        >
-                          <Crown className="size-4.5" />
-                        </span>
-                        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
-                          {duty.postLabel}
-                        </span>
-                        <span className="min-w-0 max-w-[45%] flex-none truncate text-right text-sm font-medium text-meeting-text">
-                          {duty.personName}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
+                <ProgramPresidentRow duties={presidentDuties} />
 
                 {meeting.assignments.length === 0 ? (
                   <p className="px-4 py-4 text-sm text-muted-foreground">
@@ -318,35 +197,19 @@ export function NextMeetingSection({
 
                 {blocksWithNumbers.map((block, blockIndex) => {
                   const meta = meetingSectionMetaOf(block.section, locale);
-                  const SectionIcon = SECTION_ICONS[block.section] ?? FaBookOpen;
-                  // Sem livro aberto no modal: seções sem ícone próprio (ex.: estudo
-                  // bíblico da congregação) ou mapeadas para o livro mostram só o título.
-                  const showSectionIcon = SectionIcon !== FaBookOpen;
                   return (
                     <section
                       key={`${block.section}-${blockIndex}`}
                       className="flex min-w-0 flex-col px-4 pt-2"
                     >
-                      <div className="flex items-center gap-3 py-2">
-                        {showSectionIcon ? (
-                          <span
-                            aria-hidden
-                            className="grid size-10 shrink-0 place-items-center rounded-xl text-white"
-                            style={{ backgroundColor: meta.color }}
-                          >
-                            <SectionIcon size={20} />
-                          </span>
-                        ) : null}
-                        <h3
-                          className="min-w-0 flex-1 break-words text-xl font-bold uppercase leading-tight tracking-tight"
-                          style={{ color: meta.color }}
-                        >
-                          {meta.label}
-                        </h3>
-                      </div>
+                      <ProgramSectionHeader
+                        label={meta.label}
+                        color={meta.color}
+                        icon={sectionIconOf(block.section)}
+                      />
                       <ul className="divide-y divide-border">
                         {block.parts.map(({ part, number }) => (
-                          <PartRow
+                          <ProgramPartRow
                             key={part.partKey}
                             part={part}
                             number={number}

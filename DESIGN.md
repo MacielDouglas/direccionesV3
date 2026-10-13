@@ -202,7 +202,7 @@ Cantos generosos: radius base `0.875rem` (`--radius`). Botões e controles `roun
 ### Navigation
 - **Desktop header:** `bg-background/80 backdrop-blur-md`, logo "Direcciones" sem moldura, LanguageSelector + toggle de tema + botão de menu.
 - **Mobile:** drawer deslizante (superfícies do tema) com itens `rounded-2xl`, LanguageSelector e LogoutButton; haptic + overlay `bg-black/60 backdrop-blur-sm`.
-- **Bottom tab bar (mobile):** fixa na base, `bg-background/95 backdrop-blur-md`, 5 itens (home, my-cards, addresses, agenda, user); ativo `text-brand` com ícone `scale-110`.
+- **Bottom tab bar (mobile):** fixa na base, `bg-background/95 backdrop-blur-md`, 5 itens (home, my-cards, addresses, agenda, admin/user); ativo `text-brand` com ícone `scale-110`; rótulos com `truncate`.
 - **Home menu:** tiles grandes `rounded-2xl p-4 pl-6 shadow-xs`; item admin em `bg-brand text-brand-foreground`, demais em `bg-card`.
 
 ### Signature Component — Card visual de endereço

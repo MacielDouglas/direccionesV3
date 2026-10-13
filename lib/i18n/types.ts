@@ -914,11 +914,12 @@ export type I18nDictionary = {
     midweekShort: string;
     weekendTitle: string;
     weekendShort: string;
-    dutiesTitle: string;
+    designationsLabel: string;
     cleaningTitle: string;
     song: string;
     helperLabel: string;
     readerLabel: string;
+    attendantLabel: string;
     noAssignments: string;
     noProgram: string;
     fetchedAt: string;

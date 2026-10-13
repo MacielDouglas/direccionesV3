@@ -1,56 +1,49 @@
 "use client";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import type { StoredWeekProgram } from "@/features/meetings/application/meeting.service";
 import {
-  type MeetingAssignment,
   type MeetingLocale,
   meetingSectionMetaOf,
   splitMeetingBlocks,
 } from "@/features/meetings/domain/meeting-section";
-import type { MeetingDetail } from "@/features/meetings/domain/meeting.schema";
-import { DEFAULT_SECTION_ICON, SECTION_ICONS } from "@/features/meetings/ui/section-icons";
+import type { MeetingDetail, MeetingDuty } from "@/features/meetings/domain/meeting.schema";
+import {
+  MEETING_SHEET_DESIGNATIONS_CLASSES,
+  MEETING_SHEET_NARROW_CLASSES,
+  type ProgramIcon,
+  ProgramPartRow,
+  ProgramPresidentRow,
+  ProgramSectionHeader,
+  cleaningIconFor,
+  dutyIconFor,
+} from "@/features/meetings/ui/program-parts";
+import { sectionIconOf } from "@/features/meetings/ui/section-icons";
+import {
+  firstStartTime,
+  formatAttendantPost,
+  formatLongDate,
+  formatShortDay,
+  formatWeekRange,
+  isCongregationBibleStudy,
+  shortWeekday,
+} from "@/features/meetings/utils/meeting-format";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { I18nDictionary } from "@/lib/i18n/types";
+import { cn } from "@/lib/utils";
+import { BrushCleaning, X } from "lucide-react";
 import { type CSSProperties, useState } from "react";
-import type { IconType } from "react-icons";
 import { FaHandsHelping } from "react-icons/fa";
 
 type Texts = I18nDictionary["meetings"];
 type MeetingKind = "midweek" | "weekend";
-
-function parseDay(iso: string): Date {
-  const [year, month, day] = iso.split("-").map(Number);
-  return new Date(year ?? 1970, (month ?? 1) - 1, day ?? 1);
-}
-
-function shortMonth(date: Date, locale: MeetingLocale): string {
-  return new Intl.DateTimeFormat(locale === "es" ? "es" : "pt-BR", { month: "short" })
-    .format(date)
-    .replace(/\./g, "")
-    .toLowerCase();
-}
-
-function formatRange(startIso: string, endIso: string, locale: MeetingLocale): string {
-  const start = parseDay(startIso);
-  const end = parseDay(endIso);
-  if (start.getMonth() === end.getMonth()) {
-    return `${start.getDate()} – ${end.getDate()} ${shortMonth(end, locale)}`;
-  }
-  return `${start.getDate()} ${shortMonth(start, locale)} – ${end.getDate()} ${shortMonth(end, locale)}`;
-}
-
-function formatLong(iso: string, locale: MeetingLocale): string {
-  const text = new Intl.DateTimeFormat(locale === "es" ? "es" : "pt-BR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  }).format(parseDay(iso));
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
-function formatShortDay(iso: string, locale: MeetingLocale): string {
-  const date = parseDay(iso);
-  return `${date.getDate()} ${shortMonth(date, locale)}`;
-}
 
 function TimeBadge({
   children,
@@ -71,56 +64,13 @@ function TimeBadge({
   );
 }
 
-function PartRow({
-  part,
-  color,
-  texts,
-}: {
-  part: MeetingAssignment;
-  color: string;
-  texts: Texts;
-}) {
-  const names = [part.personName, part.helperPersonName].filter(Boolean).join(" · ");
-  const title = part.songNumber ? `${texts.song} ${part.songNumber}` : part.title;
-  const subtitle = [
-    part.subtitle,
-    part.songTheme,
-    part.speakerCongregation ? `(${part.speakerCongregation})` : "",
-    part.durationMinutes ? `${part.durationMinutes} min` : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  return (
-    <article
-      aria-label={names ? `${title} — ${names}` : title}
-      className="flex w-full items-start gap-3 py-3"
-    >
-      <TimeBadge className="text-white" style={{ backgroundColor: color }}>
-        {part.startTime}
-      </TimeBadge>
-      <span className="min-w-0 flex-1">
-        <span title={title} className="block truncate text-sm font-semibold text-foreground">
-          {title}
-        </span>
-        {subtitle ? (
-          <span className="mt-0.5 block text-xs text-muted-foreground">{subtitle}</span>
-        ) : null}
-        {names ? (
-          <span className="mt-0.5 block text-right">
-            <span className="block truncate text-sm font-semibold text-foreground">{names}</span>
-          </span>
-        ) : null}
-      </span>
-    </article>
-  );
-}
-
 function DutyRow({
   date,
   post,
   detail,
   person,
   locale,
+  icon,
   badgeClassName = "bg-brand text-brand-foreground",
 }: {
   date: string;
@@ -128,14 +78,24 @@ function DutyRow({
   detail?: string;
   person: string;
   locale: MeetingLocale;
+  icon?: ProgramIcon | null;
   badgeClassName?: string;
 }) {
+  const Icon = icon;
   return (
     <article
       aria-label={person ? `${post} — ${person}` : post}
-      className="flex w-full items-start gap-3 py-3"
+      className="flex w-full min-w-0 items-start gap-3 py-3"
     >
       <TimeBadge className={badgeClassName}>{formatShortDay(date, locale)}</TimeBadge>
+      {Icon ? (
+        <span
+          aria-hidden
+          className="grid size-9 shrink-0 place-items-center self-center rounded-xl bg-meeting/10 text-meeting-text"
+        >
+          <Icon size={18} />
+        </span>
+      ) : null}
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold text-foreground">{post}</span>
         {detail ? (
@@ -151,96 +111,82 @@ function DutyRow({
   );
 }
 
-function SectionHeader({
-  label,
-  color,
-  icon: Icon,
-}: {
-  label: string;
-  color: string;
-  icon: IconType;
-}) {
-  return (
-    <div className="flex items-center gap-3 py-4">
-      <span
-        aria-hidden
-        className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-white"
-        style={{ backgroundColor: color }}
-      >
-        <Icon size={30} />
-      </span>
-      <span className="text-2xl font-semibold leading-tight tracking-tight" style={{ color }}>
-        {label}
-      </span>
-    </div>
-  );
-}
-
 function MeetingPanel({
   meeting,
   title,
-  dutyItems,
+  presidentDuties,
   texts,
   locale,
 }: {
   meeting: MeetingDetail;
   title: string;
-  dutyItems: { date: string; post: string; person: string }[];
+  presidentDuties: MeetingDuty[];
   texts: Texts;
   locale: MeetingLocale;
 }) {
   const blocks = splitMeetingBlocks(meeting.assignments);
+  let partNumber = 0;
+  const blocksWithNumbers = blocks.map((block) => ({
+    ...block,
+    parts: block.parts.map((part) => {
+      partNumber += 1;
+      return { part, number: partNumber };
+    }),
+  }));
   return (
     <section
       aria-label={title}
-      className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xs"
+      className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card pb-3 shadow-xs"
     >
-      <div className="sticky top-0 z-10 flex items-baseline justify-between gap-3 border-b border-border bg-card/95 px-4 py-3 backdrop-blur">
-        <p className="truncate text-sm font-medium text-muted-foreground">{title}</p>
-        <p className="shrink-0 text-sm font-medium tabular-nums text-muted-foreground">
-          <time dateTime={meeting.date}>{formatShortDay(meeting.date, locale)}</time>
-        </p>
+      <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+        <span className="flex w-14 shrink-0 flex-col items-center rounded-xl bg-meeting/10 py-1.5 text-meeting-text">
+          <span className="text-xs font-semibold uppercase leading-none tracking-wide">
+            {shortWeekday(meeting.date, locale)}
+          </span>
+          <span className="mt-1 text-base font-bold leading-none tabular-nums">
+            {firstStartTime(meeting) ?? "--:--"}
+          </span>
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-semibold text-foreground">{title}</span>
+          <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+            {formatLongDate(meeting.date, locale)}
+          </span>
+        </span>
       </div>
-      <div className="flex flex-col divide-y divide-border px-4">
-        {meeting.assignments.length === 0 ? (
-          <p className="py-4 text-sm text-muted-foreground">{texts.noAssignments}</p>
-        ) : null}
-        {blocks.map((block, blockIndex) => {
-          const meta = meetingSectionMetaOf(block.section, locale);
-          const SectionIcon = SECTION_ICONS[block.section] ?? DEFAULT_SECTION_ICON;
-          return (
-            <div key={`${block.section}-${blockIndex}`}>
-              <SectionHeader label={meta.label} color={meta.color} icon={SectionIcon} />
-              {block.parts.map((part, partIndex) => (
-                <PartRow
-                  key={`${part.partKey}-${partIndex}`}
+
+      <ProgramPresidentRow duties={presidentDuties} />
+
+      {meeting.assignments.length === 0 ? (
+        <p className="px-4 py-4 text-sm text-muted-foreground">{texts.noAssignments}</p>
+      ) : null}
+
+      {blocksWithNumbers.map((block, blockIndex) => {
+        const meta = meetingSectionMetaOf(block.section, locale);
+        return (
+          <div key={`${block.section}-${blockIndex}`} className="flex min-w-0 flex-col px-4 pt-2">
+            <ProgramSectionHeader
+              label={meta.label}
+              color={meta.color}
+              icon={sectionIconOf(block.section)}
+            />
+            <ul className="divide-y divide-border">
+              {block.parts.map(({ part, number }) => (
+                <ProgramPartRow
+                  key={part.partKey}
                   part={part}
+                  number={number}
                   color={meta.color}
-                  texts={texts}
+                  songLabel={texts.song}
+                  helperLabel={
+                    isCongregationBibleStudy(block.section) ? texts.readerLabel : texts.helperLabel
+                  }
                 />
               ))}
-            </div>
-          );
-        })}
-        {dutyItems.length > 0 ? (
-          <div>
-            <SectionHeader
-              label={texts.dutiesTitle}
-              color="var(--color-brand)"
-              icon={FaHandsHelping}
-            />
-            {dutyItems.map((duty, dutyIndex) => (
-              <DutyRow
-                key={`${duty.date}-${duty.post}-${dutyIndex}`}
-                date={duty.date}
-                post={duty.post}
-                person={duty.person}
-                locale={locale}
-              />
-            ))}
+            </ul>
           </div>
-        ) : null}
-      </div>
+        );
+      })}
     </section>
   );
 }
@@ -254,54 +200,174 @@ export function MeetingWeekView({
   texts: Texts;
   locale: MeetingLocale;
 }) {
+  const { t } = useI18n();
   const kinds: MeetingKind[] = [
     ...(week.midweek ? (["midweek"] as const) : []),
     ...(week.weekend ? (["weekend"] as const) : []),
   ];
   const [kind, setKind] = useState<MeetingKind>(kinds[0] ?? "midweek");
+  const [designationsOpen, setDesignationsOpen] = useState(false);
+  const [cleaningOpen, setCleaningOpen] = useState(false);
   const meeting = kind === "midweek" ? week.midweek : week.weekend;
+  const hasBoth = week.midweek !== null && week.weekend !== null;
   const title = kind === "midweek" ? texts.midweekTitle : texts.weekendTitle;
-  const shortLabel = kind === "midweek" ? texts.midweekShort : texts.weekendShort;
-  const dutyItems = week.duties
-    .filter((duty) => duty.meetingKind === kind)
-    .map((duty) => ({ date: duty.date, post: duty.postLabel, person: duty.personName }));
+  const kindDuties = week.duties.filter((duty) => duty.meetingKind === kind);
+  const presidentDuties = kindDuties.filter((duty) => /president/i.test(duty.postLabel));
+  const otherDuties = kindDuties.filter((duty) => !/president/i.test(duty.postLabel));
+  // Limpeza só da reunião selecionada (a semana pode ter dias das duas reuniões).
+  const meetingCleaning = meeting ? week.cleaning.filter((item) => item.date === meeting.date) : [];
+  const showActions = meeting !== null && (otherDuties.length > 0 || meetingCleaning.length > 0);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-w-0 flex-col gap-4">
       {(week.midweek || week.weekend) && (
-        <fieldset className="flex rounded-xl bg-muted p-1">
-          <legend className="sr-only">{texts.title}</legend>
-          {(["midweek", "weekend"] as const).map((option) => {
-            const present = kinds.includes(option);
-            const active = kind === option;
-            return (
-              <button
-                key={option}
-                type="button"
-                aria-pressed={active}
-                disabled={!present}
-                onClick={() => setKind(option)}
-                className={`h-11 flex-1 rounded-lg text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-50 ${
-                  active
-                    ? "bg-card font-semibold text-foreground shadow-sm"
-                    : "font-medium text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {option === "midweek" ? texts.midweekShort : texts.weekendShort}
-              </button>
-            );
-          })}
-        </fieldset>
+        <div className="flex min-w-0 flex-col rounded-2xl bg-meeting px-4 pb-3 pt-5 text-white shadow-xs">
+          <p className="text-center text-base font-semibold tracking-tight">
+            {formatWeekRange(week.weekStart, week.weekEnd, locale)}
+          </p>
+          {hasBoth ? (
+            <fieldset className="mt-3 flex min-w-0 rounded-xl bg-white/15 p-1">
+              <legend className="sr-only">{texts.title}</legend>
+              {(["midweek", "weekend"] as const).map((option) => {
+                const active = kind === option;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setKind(option)}
+                    className={cn(
+                      "h-11 min-w-0 flex-1 rounded-lg text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+                      active
+                        ? "bg-white font-semibold text-meeting shadow-sm"
+                        : "font-medium text-white hover:bg-white/10",
+                    )}
+                  >
+                    {option === "midweek" ? texts.midweekShort : texts.weekendShort}
+                  </button>
+                );
+              })}
+            </fieldset>
+          ) : null}
+        </div>
       )}
 
-      {meeting ? (
-        <div className="flex min-w-0 flex-col items-center gap-1 py-1 text-center">
-          <p className="truncate text-2xl font-semibold leading-none tracking-tight text-foreground">
-            {formatRange(week.weekStart, week.weekEnd, locale)}
-          </p>
-          <p className="truncate text-sm font-medium text-muted-foreground">
-            {shortLabel} · {formatLong(meeting.date, locale)}
-          </p>
+      {meeting && showActions ? (
+        <div className="flex gap-2">
+          {otherDuties.length > 0 ? (
+            <Dialog open={designationsOpen} onOpenChange={setDesignationsOpen}>
+              <DialogTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-full bg-meeting px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-meeting/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-meeting"
+                >
+                  <FaHandsHelping size={16} aria-hidden="true" />
+                  {texts.designationsLabel}
+                </button>
+              </DialogTrigger>
+              <DialogContent showCloseButton={false} className={MEETING_SHEET_DESIGNATIONS_CLASSES}>
+                <DialogHeader className="sr-only">
+                  <DialogTitle>{texts.designationsLabel}</DialogTitle>
+                  <DialogDescription>
+                    {title} · {formatLongDate(meeting.date, locale)}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="sticky top-0 z-10 flex min-w-0 items-center justify-center bg-meeting px-12 py-4 text-white">
+                  <p className="truncate text-center text-base font-semibold tracking-tight">
+                    {texts.designationsLabel}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setDesignationsOpen(false)}
+                    aria-label={t.common.close}
+                    className="absolute top-1/2 right-3 grid size-9 -translate-y-1/2 place-items-center rounded-full text-white/90 transition-colors hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  >
+                    <X className="size-5" aria-hidden="true" />
+                  </button>
+                </div>
+                <ul className="divide-y divide-border px-4 pb-4">
+                  {otherDuties.map((duty, dutyIndex) => {
+                    const DutyIcon = dutyIconFor(duty.postLabel);
+                    return (
+                      <li
+                        key={`${duty.date}-${duty.dutyKey}-${dutyIndex}`}
+                        className="flex items-center gap-3 py-2.5"
+                      >
+                        <span
+                          aria-hidden
+                          className="grid size-9 shrink-0 place-items-center rounded-xl bg-meeting/10 text-meeting-text"
+                        >
+                          <DutyIcon size={18} />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-foreground">
+                            {formatAttendantPost(duty.postLabel, texts.attendantLabel)}
+                          </p>
+                          <p className="mt-0.5 truncate text-right text-sm text-muted-foreground">
+                            {duty.personName}
+                          </p>
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </DialogContent>
+            </Dialog>
+          ) : null}
+          {meetingCleaning.length > 0 ? (
+            <Dialog open={cleaningOpen} onOpenChange={setCleaningOpen}>
+              <DialogTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-4 text-sm font-semibold text-foreground shadow-xs transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-meeting"
+                >
+                  <BrushCleaning size={16} aria-hidden="true" className="text-meeting" />
+                  {texts.cleaningTitle}
+                </button>
+              </DialogTrigger>
+              <DialogContent showCloseButton={false} className={MEETING_SHEET_NARROW_CLASSES}>
+                <DialogHeader className="sr-only">
+                  <DialogTitle>{texts.cleaningTitle}</DialogTitle>
+                  <DialogDescription>
+                    {title} · {formatLongDate(meeting.date, locale)}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="sticky top-0 z-10 flex min-w-0 items-center justify-center bg-meeting px-12 py-4 text-white">
+                  <p className="truncate text-center text-base font-semibold tracking-tight">
+                    {texts.cleaningTitle}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setCleaningOpen(false)}
+                    aria-label={t.common.close}
+                    className="absolute top-1/2 right-3 grid size-9 -translate-y-1/2 place-items-center rounded-full text-white/90 transition-colors hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  >
+                    <X className="size-5" aria-hidden="true" />
+                  </button>
+                </div>
+                <div className="flex min-w-0 flex-col divide-y divide-border px-4 pb-4">
+                  {meetingCleaning.map((item, itemIndex) => {
+                    // Espanhol quando cadastrado; senão cai no texto original.
+                    const sectorLabel =
+                      locale === "es" ? item.sectorNameEs || item.sectorName : item.sectorName;
+                    const taskText = locale === "es" ? item.taskEs || item.task : item.task;
+                    return (
+                      <DutyRow
+                        key={`${item.date}-${item.sectorName}-${itemIndex}`}
+                        date={item.date}
+                        post={sectorLabel}
+                        detail={taskText}
+                        person={item.personName}
+                        locale={locale}
+                        icon={cleaningIconFor(item.sectorName)}
+                        badgeClassName="bg-muted text-foreground"
+                      />
+                    );
+                  })}
+                </div>
+              </DialogContent>
+            </Dialog>
+          ) : null}
         </div>
       ) : null}
 
@@ -315,40 +381,10 @@ export function MeetingWeekView({
         <MeetingPanel
           meeting={meeting}
           title={title}
-          dutyItems={dutyItems}
+          presidentDuties={presidentDuties}
           texts={texts}
           locale={locale}
         />
-      ) : null}
-
-      {week.cleaning.length > 0 ? (
-        <section
-          aria-label={texts.cleaningTitle}
-          className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xs"
-        >
-          <div className="flex items-baseline justify-between gap-3 border-b border-border px-4 py-3">
-            <p className="truncate text-sm font-medium text-foreground">{texts.cleaningTitle}</p>
-          </div>
-          <div className="flex flex-col divide-y divide-border px-4">
-            {week.cleaning.map((item, itemIndex) => {
-              // Espanhol quando cadastrado; senão cai no texto original.
-              const sectorLabel =
-                locale === "es" ? item.sectorNameEs || item.sectorName : item.sectorName;
-              const taskText = locale === "es" ? item.taskEs || item.task : item.task;
-              return (
-                <DutyRow
-                  key={`${item.date}-${item.sectorName}-${itemIndex}`}
-                  date={item.date}
-                  post={sectorLabel}
-                  detail={taskText}
-                  person={item.personName}
-                  locale={locale}
-                  badgeClassName="bg-muted text-foreground"
-                />
-              );
-            })}
-          </div>
-        </section>
       ) : null}
 
       <p className="text-xs text-muted-foreground">
