@@ -30,7 +30,7 @@ import {
   firstStartTime,
   formatAttendantPost,
   formatLongDate,
-  formatShortDay,
+  formatShortNumeric,
   formatWeekRange,
   isCongregationBibleStudy,
   shortWeekday,
@@ -39,47 +39,22 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { I18nDictionary } from "@/lib/i18n/types";
 import { cn } from "@/lib/utils";
 import { BrushCleaning, X } from "lucide-react";
-import { type CSSProperties, useState } from "react";
+import { useState } from "react";
 import { FaHandsHelping } from "react-icons/fa";
 
 type Texts = I18nDictionary["meetings"];
 type MeetingKind = "midweek" | "weekend";
 
-function TimeBadge({
-  children,
-  className = "",
-  style,
-}: {
-  children: string;
-  className?: string;
-  style?: CSSProperties;
-}) {
-  return (
-    <span
-      className={`shrink-0 rounded-lg px-2 py-1 text-xs font-semibold tabular-nums ${className}`}
-      style={style}
-    >
-      {children}
-    </span>
-  );
-}
-
 function DutyRow({
-  date,
   post,
   detail,
   person,
-  locale,
   icon,
-  badgeClassName = "bg-brand text-brand-foreground",
 }: {
-  date: string;
   post: string;
   detail?: string;
   person: string;
-  locale: MeetingLocale;
   icon?: ProgramIcon | null;
-  badgeClassName?: string;
 }) {
   const Icon = icon;
   return (
@@ -87,7 +62,6 @@ function DutyRow({
       aria-label={person ? `${post} — ${person}` : post}
       className="flex w-full min-w-0 items-start gap-3 py-3"
     >
-      <TimeBadge className={badgeClassName}>{formatShortDay(date, locale)}</TimeBadge>
       {Icon ? (
         <span
           aria-hidden
@@ -99,7 +73,7 @@ function DutyRow({
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold text-foreground">{post}</span>
         {detail ? (
-          <span className="mt-0.5 block truncate text-xs text-muted-foreground">{detail}</span>
+          <span className="mt-0.5 block break-words text-xs text-muted-foreground">{detail}</span>
         ) : null}
         {person ? (
           <span className="mt-0.5 block text-right">
@@ -327,14 +301,16 @@ export function MeetingWeekView({
               </DialogTrigger>
               <DialogContent showCloseButton={false} className={MEETING_SHEET_NARROW_CLASSES}>
                 <DialogHeader className="sr-only">
-                  <DialogTitle>{texts.cleaningTitle}</DialogTitle>
+                  <DialogTitle>
+                    {texts.cleaningTitle} {formatShortNumeric(meeting.date)}
+                  </DialogTitle>
                   <DialogDescription>
                     {title} · {formatLongDate(meeting.date, locale)}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="sticky top-0 z-10 flex min-w-0 items-center justify-center bg-meeting px-12 py-4 text-white">
                   <p className="truncate text-center text-base font-semibold tracking-tight">
-                    {texts.cleaningTitle}
+                    {texts.cleaningTitle} {formatShortNumeric(meeting.date)}
                   </p>
                   <button
                     type="button"
@@ -354,13 +330,10 @@ export function MeetingWeekView({
                     return (
                       <DutyRow
                         key={`${item.date}-${item.sectorName}-${itemIndex}`}
-                        date={item.date}
                         post={sectorLabel}
                         detail={taskText}
                         person={item.personName}
-                        locale={locale}
                         icon={cleaningIconFor(item.sectorName)}
-                        badgeClassName="bg-muted text-foreground"
                       />
                     );
                   })}

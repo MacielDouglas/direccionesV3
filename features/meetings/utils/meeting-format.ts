@@ -54,6 +54,14 @@ export function formatShortDay(iso: string, locale: MeetingLocale): string {
   return `${date.getDate()} ${shortMonth(date, locale)}`;
 }
 
+/** Data curta numérica (ex.: "15/10"). */
+export function formatShortNumeric(iso: string): string {
+  const date = parseDay(iso);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${day}/${month}`;
+}
+
 /** Hora da primeira parte com horário (HH:MM) ou null. */
 export function firstStartTime(meeting: MeetingDetail): string | null {
   return meeting.assignments.find((a) => a.startTime.trim() !== "")?.startTime ?? null;
