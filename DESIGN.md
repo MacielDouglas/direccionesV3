@@ -5,6 +5,8 @@ colors:
   brand: "#ff6828"
   brand-foreground: "#2a1405"
   brand-muted: "#8a6a55"
+  meeting: "#1c69d4"
+  meeting-text-dark: "#7ab5f0"
   background-light: "#faf8f5"
   background-dark: "#161310"
   surface-elevated-light: "#ffffff"
@@ -116,6 +118,10 @@ Paleta dual-theme com neutros quentes e um acento de marca que também é a aç�
 
 ### Primary
 - **Laranja Direcciones** (`#ff6828`): marca + ação primária. Usado em botões `default`, foco (`--ring`), tab bar ativa, dia "hoje" no calendário, badge de tipo, item admin do menu. **Foreground** em laranja é sempre `#2a1405` (marrom-escuro de alto contraste) — nunca `text-white`.
+
+### Meeting (Reuniões)
+- **Azul Meeting** (`#1c69d4`, token `--color-meeting`): cor de destaque de tudo que é do módulo Reuniões — cabeçalho da seção na home, botão sólido "Ver programação", header sticky e abas do bottom-sheet, link "Ver programação completa", fundo tint (`bg-meeting/10`–`/20`) do card e do skeleton. **Texto azul** usa `--color-meeting-text` (`text-meeting-text`): `#1c69d4` no claro (≈5.2:1) e `#7ab5f0` no escuro (≈6.9:1) — nunca `text-meeting` cru para texto no dark mode.
+- **Cores de seção do programa** (Tesouros, Seamos, etc.) vêm do domínio (`meetingSectionMetaOf`) e não mudam; em texto pequeno use `text-xl font-bold uppercase` (large text ≥3:1).
 
 ### Neutral
 - **Off-white** (`#faf8f5`): fundo claro de página (`--background`).

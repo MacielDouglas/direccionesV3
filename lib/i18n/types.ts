@@ -231,6 +231,7 @@ export type I18nDictionary = {
       partsCountSingular: string;
       yourParts: string;
       viewDetails: string;
+      viewProgram: string;
       timeToBeDefined: string;
     };
   };
@@ -916,6 +917,8 @@ export type I18nDictionary = {
     dutiesTitle: string;
     cleaningTitle: string;
     song: string;
+    helperLabel: string;
+    readerLabel: string;
     noAssignments: string;
     noProgram: string;
     fetchedAt: string;

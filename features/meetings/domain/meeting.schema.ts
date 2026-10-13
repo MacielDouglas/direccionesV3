@@ -97,6 +97,8 @@ const meetingDutySchema = z.object({
   personName: z.string(),
 });
 
+export type MeetingDuty = z.infer<typeof meetingDutySchema>;
+
 const meetingCleaningSchema = z.object({
   date: z.string(),
   sectorName: z.string(),

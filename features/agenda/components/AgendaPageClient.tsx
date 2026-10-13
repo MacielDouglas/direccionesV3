@@ -21,7 +21,7 @@ interface Props {
   members?: AgendaMember[];
   fieldOptions?: AgendaFieldOptions | null;
   adminContent?: React.ReactNode;
-  footerContent?: React.ReactNode;
+  calendarActions?: React.ReactNode;
 }
 
 export function AgendaPageClient({
@@ -35,7 +35,7 @@ export function AgendaPageClient({
   members,
   fieldOptions,
   adminContent,
-  footerContent,
+  calendarActions,
 }: Props) {
   const { locale } = useI18n();
   const [highlightEventId, setHighlightEventId] = useState<string | null>(null);
@@ -70,6 +70,8 @@ export function AgendaPageClient({
 
       <AgendaCalendar events={events} year={year} month={month} onDayClick={handleDayClick} />
 
+      {calendarActions}
+
       <AgendaEventList
         events={events}
         monthLabel={monthLabel}
@@ -81,8 +83,6 @@ export function AgendaPageClient({
         highlightEventId={highlightEventId}
         onHighlightConsumed={() => setHighlightEventId(null)}
       />
-
-      {footerContent}
 
       <AgendaNoEventModal
         open={!!noEventDate}

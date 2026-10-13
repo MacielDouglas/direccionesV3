@@ -8,24 +8,14 @@ import {
   splitMeetingBlocks,
 } from "@/features/meetings/domain/meeting-section";
 import type { MeetingDetail } from "@/features/meetings/domain/meeting.schema";
+import { DEFAULT_SECTION_ICON, SECTION_ICONS } from "@/features/meetings/ui/section-icons";
 import type { I18nDictionary } from "@/lib/i18n/types";
 import { type CSSProperties, useState } from "react";
 import type { IconType } from "react-icons";
-import { FaBookOpen, FaHandsHelping, FaMicrophone } from "react-icons/fa";
-import { GiSheep } from "react-icons/gi";
-import { IoDiamond } from "react-icons/io5";
-import { LuWheat } from "react-icons/lu";
+import { FaHandsHelping } from "react-icons/fa";
 
 type Texts = I18nDictionary["meetings"];
 type MeetingKind = "midweek" | "weekend";
-
-const SECTION_ICONS: Record<string, IconType> = {
-  "TESOROS DE LA BIBLIA": IoDiamond,
-  "SEAMOS MEJORES MAESTROS": LuWheat,
-  "NUESTRA VIDA CRISTIANA": GiSheep,
-  "PUBLIC TALK": FaMicrophone,
-  "ESTUDIO DE LA ATALAYA": FaBookOpen,
-};
 
 function parseDay(iso: string): Date {
   const [year, month, day] = iso.split("-").map(Number);
@@ -217,7 +207,7 @@ function MeetingPanel({
         ) : null}
         {blocks.map((block, blockIndex) => {
           const meta = meetingSectionMetaOf(block.section, locale);
-          const SectionIcon = SECTION_ICONS[block.section] ?? FaBookOpen;
+          const SectionIcon = SECTION_ICONS[block.section] ?? DEFAULT_SECTION_ICON;
           return (
             <div key={`${block.section}-${blockIndex}`}>
               <SectionHeader label={meta.label} color={meta.color} icon={SectionIcon} />

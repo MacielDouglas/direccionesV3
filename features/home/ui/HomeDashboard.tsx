@@ -39,7 +39,7 @@ export async function HomeDashboard({
       </h1>
 
       <div className="mt-6 space-y-8">
-        {/* Hero — Saldo de Cards */}
+        {/* 1 — Meus cartões */}
         <Link
           href={`/org/${organizationSlug}/my-cards`}
           className="group flex items-center justify-between gap-4 rounded-xl bg-black p-6 text-white shadow-md shadow-black/20 transition-transform active:scale-[0.99]"
@@ -67,23 +67,7 @@ export async function HomeDashboard({
           </span>
         </Link>
 
-        {/* Administração */}
-        {isAdminOrOwner && (
-          <Link
-            href={`/org/${organizationSlug}/admin`}
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-xs transition-colors hover:bg-muted active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-          >
-            <Shield className="size-4 text-brand" aria-hidden="true" />
-            {t.navigation.administration}
-          </Link>
-        )}
-
-        {/* Exclusões pendentes — tarefa crítica do admin, logo após as ações */}
-        {isAdminOrOwner && (
-          <PendingDeletionBadge organizationId={organizationId} orgSlug={organizationSlug} />
-        )}
-
-        {/* Enviar novo endereço */}
+        {/* 2 — Cadastrar um novo endereço */}
         <Link
           href={`/org/${organizationSlug}/addresses/new`}
           className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-brand px-5 py-3.5 text-sm font-semibold text-brand-foreground shadow-sm transition-colors hover:bg-brand/90 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
@@ -92,7 +76,7 @@ export async function HomeDashboard({
           {t.addresses.sendNew}
         </Link>
 
-        {/* Programação de hoje */}
+        {/* 3 — Programação de hoje */}
         <section aria-labelledby="today-agenda">
           <div className="flex items-center justify-between">
             <h2
@@ -154,12 +138,26 @@ export async function HomeDashboard({
           )}
         </section>
 
-        {/* Próxima reunião — streaming isolado: não bloqueia o resto em rede lenta */}
+        {/* 4 — Administração (só owner/admin): botão admin + aviso de exclusão */}
+        {isAdminOrOwner && (
+          <div className="space-y-3">
+            <Link
+              href={`/org/${organizationSlug}/admin`}
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-xs transition-colors hover:bg-muted active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            >
+              <Shield className="size-4 text-brand" aria-hidden="true" />
+              {t.navigation.administration}
+            </Link>
+            <PendingDeletionBadge organizationId={organizationId} orgSlug={organizationSlug} />
+          </div>
+        )}
+
+        {/* 5 — Reuniões: próxima reunião + modal com a programação — streaming isolado: não bloqueia o resto em rede lenta */}
         <Suspense
           fallback={
             <output
               aria-label={t.home.nextMeeting.title}
-              className="mt-3 block animate-pulse rounded-xl border border-border bg-card p-4"
+              className="mt-3 block animate-pulse rounded-xl border border-meeting/25 bg-meeting/20 p-4"
             >
               <div className="h-4 w-2/3 rounded bg-muted" />
               <div className="mt-2 h-3 w-1/2 rounded bg-muted" />

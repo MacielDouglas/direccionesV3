@@ -82,7 +82,7 @@ export default async function AdminAgendaPage({ params, searchParams }: Props) {
             fieldOptions={fieldOptions}
           />
         }
-        footerContent={
+        calendarActions={
           <div className="flex items-center justify-center">
             <AgendaPdfButton
               events={events}
