@@ -32,6 +32,7 @@ import {
   formatLongDate,
   formatShortNumeric,
   formatWeekRange,
+  groupCleaningBySector,
   isCongregationBibleStudy,
   shortWeekday,
 } from "@/features/meetings/utils/meeting-format";
@@ -322,18 +323,18 @@ export function MeetingWeekView({
                   </button>
                 </div>
                 <div className="flex min-w-0 flex-col divide-y divide-border px-4 pb-4">
-                  {meetingCleaning.map((item, itemIndex) => {
+                  {groupCleaningBySector(meetingCleaning).map((group) => {
                     // Espanhol quando cadastrado; senão cai no texto original.
                     const sectorLabel =
-                      locale === "es" ? item.sectorNameEs || item.sectorName : item.sectorName;
-                    const taskText = locale === "es" ? item.taskEs || item.task : item.task;
+                      locale === "es" ? group.sectorNameEs || group.sectorName : group.sectorName;
+                    const taskText = locale === "es" ? group.taskEs || group.task : group.task;
                     return (
                       <DutyRow
-                        key={`${item.date}-${item.sectorName}-${itemIndex}`}
+                        key={group.key}
                         post={sectorLabel}
                         detail={taskText}
-                        person={item.personName}
-                        icon={cleaningIconFor(item.sectorName)}
+                        person={group.people.join(" · ")}
+                        icon={cleaningIconFor(group.sectorName)}
                       />
                     );
                   })}

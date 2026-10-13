@@ -1,5 +1,5 @@
 import type { MeetingLocale } from "@/features/meetings/domain/meeting-section";
-import type { MeetingDetail } from "@/features/meetings/domain/meeting.schema";
+import type { MeetingCleaning, MeetingDetail } from "@/features/meetings/domain/meeting.schema";
 
 export function parseDay(iso: string): Date {
   const [year, month, day] = iso.split("-").map(Number);
@@ -60,6 +60,42 @@ export function formatShortNumeric(iso: string): string {
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
   return `${day}/${month}`;
+}
+
+export interface GroupedCleaning {
+  key: string;
+  sectorName: string;
+  sectorNameEs: string;
+  task: string;
+  taskEs: string;
+  people: string[];
+}
+
+/**
+ * Agrupa a limpeza por setor: um setor com várias pessoas (ex.: Salón,
+ * sempre em dupla) vira uma única linha com todas as pessoas.
+ */
+export function groupCleaningBySector(items: MeetingCleaning[]): GroupedCleaning[] {
+  const groups = new Map<string, GroupedCleaning>();
+  for (const item of items) {
+    const key = `${item.date}__${item.sectorName.trim().toLowerCase()}`;
+    const existing = groups.get(key);
+    if (existing) {
+      if (item.personName && !existing.people.includes(item.personName)) {
+        existing.people.push(item.personName);
+      }
+    } else {
+      groups.set(key, {
+        key,
+        sectorName: item.sectorName,
+        sectorNameEs: item.sectorNameEs,
+        task: item.task,
+        taskEs: item.taskEs,
+        people: item.personName ? [item.personName] : [],
+      });
+    }
+  }
+  return [...groups.values()];
 }
 
 /** Hora da primeira parte com horário (HH:MM) ou null. */
