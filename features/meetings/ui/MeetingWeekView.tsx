@@ -12,12 +12,14 @@ import type { StoredWeekProgram } from "@/features/meetings/application/meeting.
 import {
   type MeetingLocale,
   meetingSectionMetaOf,
+  numberProgramParts,
   splitMeetingBlocks,
 } from "@/features/meetings/domain/meeting-section";
 import type { MeetingDetail, MeetingDuty } from "@/features/meetings/domain/meeting.schema";
 import {
   MEETING_SHEET_DESIGNATIONS_CLASSES,
   MEETING_SHEET_NARROW_CLASSES,
+  ProgramFramingRow,
   type ProgramIcon,
   ProgramPartRow,
   ProgramPresidentRow,
@@ -29,12 +31,14 @@ import { sectionIconOf } from "@/features/meetings/ui/section-icons";
 import {
   firstStartTime,
   formatAttendantPost,
+  formatFullNumeric,
   formatLongDate,
-  formatShortNumeric,
   formatWeekRange,
   groupCleaningBySector,
-  isCongregationBibleStudy,
+  isReaderPart,
+  isSeamosSection,
   shortWeekday,
+  timeProgramParts,
 } from "@/features/meetings/utils/meeting-format";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { I18nDictionary } from "@/lib/i18n/types";
@@ -99,15 +103,10 @@ function MeetingPanel({
   texts: Texts;
   locale: MeetingLocale;
 }) {
-  const blocks = splitMeetingBlocks(meeting.assignments);
-  let partNumber = 0;
-  const blocksWithNumbers = blocks.map((block) => ({
-    ...block,
-    parts: block.parts.map((part) => {
-      partNumber += 1;
-      return { part, number: partNumber };
-    }),
-  }));
+  const timedBlocks = timeProgramParts(
+    meeting,
+    numberProgramParts(splitMeetingBlocks(meeting.assignments)),
+  );
   return (
     <section
       aria-label={title}
@@ -130,34 +129,45 @@ function MeetingPanel({
         </span>
       </div>
 
-      <ProgramPresidentRow duties={presidentDuties} />
+      <ProgramPresidentRow duties={presidentDuties} time={firstStartTime(meeting)} />
 
       {meeting.assignments.length === 0 ? (
         <p className="px-4 py-4 text-sm text-muted-foreground">{texts.noAssignments}</p>
       ) : null}
 
-      {blocksWithNumbers.map((block, blockIndex) => {
+      {timedBlocks.map((block, blockIndex) => {
         const meta = meetingSectionMetaOf(block.section, locale);
         return (
           <div key={`${block.section}-${blockIndex}`} className="flex min-w-0 flex-col px-4 pt-2">
-            <ProgramSectionHeader
-              label={meta.label}
-              color={meta.color}
-              icon={sectionIconOf(block.section)}
-            />
-            <ul className="divide-y divide-border">
-              {block.parts.map(({ part, number }) => (
-                <ProgramPartRow
-                  key={part.partKey}
-                  part={part}
-                  number={number}
-                  color={meta.color}
-                  songLabel={texts.song}
-                  helperLabel={
-                    isCongregationBibleStudy(block.section) ? texts.readerLabel : texts.helperLabel
-                  }
-                />
-              ))}
+            {block.hasCounted ? (
+              <ProgramSectionHeader
+                label={meta.label}
+                color={meta.color}
+                icon={sectionIconOf(block.section)}
+              />
+            ) : null}
+            <ul className={block.placement === "opening" ? undefined : "divide-y divide-border"}>
+              {block.parts.map(({ part, number, startTime }) =>
+                number === null ? (
+                  <ProgramFramingRow
+                    key={part.partKey}
+                    part={part}
+                    startTime={startTime}
+                    songLabel={texts.song}
+                  />
+                ) : (
+                  <ProgramPartRow
+                    key={part.partKey}
+                    part={part}
+                    number={number}
+                    startTime={startTime}
+                    songLabel={texts.song}
+                    helperLabel={isReaderPart(part) ? texts.readerLabel : texts.helperLabel}
+                    multilineSubtitle={isSeamosSection(block.section)}
+                    mutedHelper={isSeamosSection(block.section) || isReaderPart(part)}
+                  />
+                ),
+              )}
             </ul>
           </div>
         );
@@ -186,6 +196,7 @@ export function MeetingWeekView({
   const meeting = kind === "midweek" ? week.midweek : week.weekend;
   const hasBoth = week.midweek !== null && week.weekend !== null;
   const title = kind === "midweek" ? texts.midweekTitle : texts.weekendTitle;
+  const shortLabel = kind === "midweek" ? texts.midweekShort : texts.weekendShort;
   const kindDuties = week.duties.filter((duty) => duty.meetingKind === kind);
   const presidentDuties = kindDuties.filter((duty) => /president/i.test(duty.postLabel));
   const otherDuties = kindDuties.filter((duty) => !/president/i.test(duty.postLabel));
@@ -242,14 +253,16 @@ export function MeetingWeekView({
               </DialogTrigger>
               <DialogContent showCloseButton={false} className={MEETING_SHEET_DESIGNATIONS_CLASSES}>
                 <DialogHeader className="sr-only">
-                  <DialogTitle>{texts.designationsLabel}</DialogTitle>
+                  <DialogTitle>
+                    {texts.designationsLabel} - {shortLabel} - {formatFullNumeric(meeting.date)}
+                  </DialogTitle>
                   <DialogDescription>
                     {title} · {formatLongDate(meeting.date, locale)}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="sticky top-0 z-10 flex min-w-0 items-center justify-center bg-meeting px-12 py-4 text-white">
-                  <p className="truncate text-center text-base font-semibold tracking-tight">
-                    {texts.designationsLabel}
+                  <p className="break-words text-center text-base font-semibold tracking-tight">
+                    {texts.designationsLabel} - {shortLabel} - {formatFullNumeric(meeting.date)}
                   </p>
                   <button
                     type="button"
@@ -274,13 +287,11 @@ export function MeetingWeekView({
                         >
                           <DutyIcon size={18} />
                         </span>
-                        <span className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-foreground">
-                            {formatAttendantPost(duty.postLabel, texts.attendantLabel)}
-                          </p>
-                          <p className="mt-0.5 truncate text-right text-sm text-muted-foreground">
-                            {duty.personName}
-                          </p>
+                        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
+                          {formatAttendantPost(duty.postLabel, texts.attendantLabel)}
+                        </span>
+                        <span className="min-w-0 max-w-[45%] flex-none truncate text-right text-sm text-muted-foreground">
+                          {duty.personName}
                         </span>
                       </li>
                     );
@@ -303,15 +314,15 @@ export function MeetingWeekView({
               <DialogContent showCloseButton={false} className={MEETING_SHEET_NARROW_CLASSES}>
                 <DialogHeader className="sr-only">
                   <DialogTitle>
-                    {texts.cleaningTitle} {formatShortNumeric(meeting.date)}
+                    {texts.cleaningTitle} - {shortLabel} - {formatFullNumeric(meeting.date)}
                   </DialogTitle>
                   <DialogDescription>
                     {title} · {formatLongDate(meeting.date, locale)}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="sticky top-0 z-10 flex min-w-0 items-center justify-center bg-meeting px-12 py-4 text-white">
-                  <p className="truncate text-center text-base font-semibold tracking-tight">
-                    {texts.cleaningTitle} {formatShortNumeric(meeting.date)}
+                  <p className="break-words text-center text-base font-semibold tracking-tight">
+                    {texts.cleaningTitle} - {shortLabel} - {formatFullNumeric(meeting.date)}
                   </p>
                   <button
                     type="button"

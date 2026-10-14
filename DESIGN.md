@@ -122,6 +122,8 @@ Paleta dual-theme com neutros quentes e um acento de marca que também é a aç�
 ### Meeting (Reuniões)
 - **Azul Meeting** (`#1c69d4`, token `--color-meeting`): cor de destaque de tudo que é do módulo Reuniões — cabeçalho da seção na home, botão sólido "Ver programação", header sticky e abas do bottom-sheet, link "Ver programação completa", fundo tint (`bg-meeting/10`–`/20`) do card e do skeleton. **Texto azul** usa `--color-meeting-text` (`text-meeting-text`): `#1c69d4` no claro (≈5.2:1) e `#7ab5f0` no escuro (≈6.9:1) — nunca `text-meeting` cru para texto no dark mode.
 - **Cores de seção do programa** (Tesouros, Seamos, etc.) vêm do domínio (`meetingSectionMetaOf`) e não mudam; em texto pequeno use `text-xl font-bold uppercase` (large text ≥3:1).
+- **Numeração do programa** (`numberProgramParts` em `features/meetings/domain`): só partes de conteúdo ganham número, em sequência contínua (é esse total que o card da home exibe); cânticos e moldura (`president`, `opening-song/comments`, `concluding-comments/song`, `middle/watchtower-song`) ficam sem número; blocos sem parte numerada não mostram cabeçalho e a abertura (`placement: opening`) não tem divisórias — espelha o impresso do Meeting.
+- **Relógio do programa** (`timeProgramParts` em `features/meetings/utils`): cada linha mostra a hora de início (base = início da reunião + durações), com +1 min posterior na leitura da Bíblia e em toda parte de Seamos; número vai inline no título ("4. Empiece"), sem selo separado.
 
 ### Neutral
 - **Off-white** (`#faf8f5`): fundo claro de página (`--background`).
@@ -201,7 +203,7 @@ Cantos generosos: radius base `0.875rem` (`--radius`). Botões e controles `roun
 
 ### Navigation
 - **Desktop header:** `bg-background/80 backdrop-blur-md`, logo "Direcciones" sem moldura, LanguageSelector + toggle de tema + botão de menu.
-- **Mobile:** drawer deslizante (superfícies do tema) com itens `rounded-2xl`, LanguageSelector e LogoutButton; haptic + overlay `bg-black/60 backdrop-blur-sm`.
+- **Mobile:** drawer deslizante com itens `rounded-2xl` (ícone em caixa, rota ativa com `bg-brand/10` + `aria-current`), Home sem duplicar, e rodapé fixo (`shrink-0 border-t`, nav com `min-h-0`) com LanguageSelector e Sair sempre visíveis; haptic + overlay `bg-black/60 backdrop-blur-sm`.
 - **Bottom tab bar (mobile):** fixa na base, `bg-background/95 backdrop-blur-md`, 5 itens (home, my-cards, addresses, agenda, admin/user); ativo `text-brand` com ícone `scale-110`; rótulos com `truncate`.
 - **Home menu:** tiles grandes `rounded-2xl p-4 pl-6 shadow-xs`; item admin em `bg-brand text-brand-foreground`, demais em `bg-card`.
 

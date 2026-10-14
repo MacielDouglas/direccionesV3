@@ -1,7 +1,8 @@
 import type { MeetingAssignment } from "@/features/meetings/domain/meeting-section";
 import type { MeetingDuty } from "@/features/meetings/domain/meeting.schema";
+import { dedupePhrases } from "@/features/meetings/utils/meeting-format";
 import { cn } from "@/lib/utils";
-import { BrushCleaning, Crown, MicVocal, Toilet, Trash, createLucideIcon } from "lucide-react";
+import { BrushCleaning, MicVocal, Toilet, Trash, createLucideIcon } from "lucide-react";
 import type { ComponentType } from "react";
 import {
   FaChair,
@@ -97,38 +98,114 @@ export function cleaningIconFor(sectorName: string): ProgramIcon {
   return BrushCleaning;
 }
 
-export function ProgramPartRow({
-  part,
-  number,
-  color,
-  songLabel,
-  helperLabel,
-}: {
-  part: MeetingAssignment;
-  number: number;
-  color: string;
-  songLabel: string;
-  helperLabel: string;
-}) {
-  const names = [
-    part.personName,
-    part.helperPersonName ? `${helperLabel}: ${part.helperPersonName}` : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  const title = part.songNumber ? `${songLabel} ${part.songNumber}` : part.title;
-  const subtitle = [
+function rowTitle(part: MeetingAssignment, number: number | null, songLabel: string): string {
+  const base = part.songNumber ? `${songLabel} ${part.songNumber}` : part.title;
+  return number !== null ? `${number}. ${base}` : base;
+}
+
+function rowSubtitle(part: MeetingAssignment): string {
+  return dedupePhrases([
     part.subtitle,
     part.songTheme,
     part.speakerCongregation ? `(${part.speakerCongregation})` : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  ]).join(" · ");
+}
+
+function RowTime({ value }: { value: string | null }) {
+  if (!value) return null;
+  return (
+    <span className="mt-0.5 w-10 shrink-0 text-xs font-semibold tabular-nums text-muted-foreground">
+      {value}
+    </span>
+  );
+}
+
+export function ProgramPartRow({
+  part,
+  number,
+  startTime,
+  songLabel,
+  helperLabel,
+  multilineSubtitle = false,
+  mutedHelper = false,
+}: {
+  part: MeetingAssignment;
+  /** null nas partes sem número (cânticos, abertura, encerramento). */
+  number: number | null;
+  /** Hora de início pelo relógio (null quando a reunião não tem horário). */
+  startTime: string | null;
+  songLabel: string;
+  helperLabel: string;
+  /** Subtítulo com wrap em vez de truncate (partes de Seamos). */
+  multilineSubtitle?: boolean;
+  /** Ajudante em tom suave #5b5b5b (Seamos e estudo bíblico). */
+  mutedHelper?: boolean;
+}) {
+  const holderName = part.personName.trim();
+  const helperName = part.helperPersonName.trim();
+  const title = rowTitle(part, number, songLabel);
+  const subtitle = rowSubtitle(part);
   return (
     <li className="flex items-start gap-3 py-2.5">
-      <span className="mt-0.5 w-5 shrink-0 text-sm font-bold tabular-nums" style={{ color }}>
-        {number}
+      <RowTime value={startTime} />
+      <span className="min-w-0 flex-1">
+        <span className="flex min-w-0 items-baseline justify-between gap-2">
+          <span className="min-w-0 truncate text-sm font-semibold text-foreground">{title}</span>
+          {part.durationMinutes ? (
+            <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+              {part.durationMinutes} min
+            </span>
+          ) : null}
+        </span>
+        {subtitle ? (
+          <span
+            className={cn(
+              "mt-0.5 block text-xs text-muted-foreground",
+              multilineSubtitle ? "break-words" : "truncate",
+            )}
+          >
+            {subtitle}
+          </span>
+        ) : null}
+        {holderName || helperName ? (
+          <span className="mt-0.5 block truncate text-sm font-medium text-foreground">
+            {holderName}
+            {helperName ? (
+              <>
+                {holderName ? " · " : ""}
+                <span
+                  className={mutedHelper ? "text-[#5b5b5b] dark:text-muted-foreground" : undefined}
+                >
+                  {helperLabel}: {helperName}
+                </span>
+              </>
+            ) : null}
+          </span>
+        ) : null}
       </span>
+    </li>
+  );
+}
+
+/**
+ * Linha da moldura (cânticos, palavras de abertura/encerramento): mesma
+ * anatomia das partes numeradas, sem número e sem ícone.
+ */
+export function ProgramFramingRow({
+  part,
+  startTime,
+  songLabel,
+}: {
+  part: MeetingAssignment;
+  startTime: string | null;
+  songLabel: string;
+}) {
+  const title = rowTitle(part, null, songLabel);
+  const subtitle = rowSubtitle(part);
+  const names = [part.personName, part.helperPersonName].filter(Boolean).join(" · ");
+  return (
+    <li className="flex items-start gap-3 py-2.5">
+      <RowTime value={startTime} />
       <span className="min-w-0 flex-1">
         <span className="flex min-w-0 items-baseline justify-between gap-2">
           <span className="min-w-0 truncate text-sm font-semibold text-foreground">{title}</span>
@@ -186,21 +263,23 @@ export function ProgramSectionHeader({
   );
 }
 
-export function ProgramPresidentRow({ duties }: { duties: MeetingDuty[] }) {
+export function ProgramPresidentRow({
+  duties,
+  time,
+}: {
+  duties: MeetingDuty[];
+  /** Hora de início da reunião (null quando não há horário). */
+  time: string | null;
+}) {
   if (duties.length === 0) return null;
   return (
     <ul className="px-4">
       {duties.map((duty, dutyIndex) => (
         <li
           key={`${duty.date}-${duty.dutyKey}-${dutyIndex}`}
-          className="flex items-center gap-3 border-b border-border py-2.5"
+          className="flex items-center gap-3 py-2.5"
         >
-          <span
-            aria-hidden
-            className="grid size-9 shrink-0 place-items-center rounded-xl bg-meeting/10 text-meeting-text"
-          >
-            <Crown className="size-4.5" />
-          </span>
+          <RowTime value={time} />
           <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
             {duty.postLabel}
           </span>

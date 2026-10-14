@@ -9,12 +9,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  isCountedPart,
   meetingSectionMetaOf,
+  numberProgramParts,
   splitMeetingBlocks,
 } from "@/features/meetings/domain/meeting-section";
 import type { MeetingDetail, MeetingDuty } from "@/features/meetings/domain/meeting.schema";
 import {
   MEETING_SHEET_CLASSES,
+  ProgramFramingRow,
   ProgramPartRow,
   ProgramPresidentRow,
   ProgramSectionHeader,
@@ -24,8 +27,10 @@ import {
   firstStartTime,
   formatLongDate,
   formatWeekRange,
-  isCongregationBibleStudy,
+  isReaderPart,
+  isSeamosSection,
   shortWeekday,
+  timeProgramParts,
 } from "@/features/meetings/utils/meeting-format";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
@@ -69,23 +74,18 @@ export function NextMeetingSection({
   const hasBoth = midweek !== null && weekend !== null;
 
   const kindTitle = kind === "midweek" ? t.meetings.midweekTitle : t.meetings.weekendTitle;
+  const countedParts = defaultMeeting.assignments.filter(isCountedPart).length;
   const partsLabel =
-    defaultMeeting.assignments.length === 1
+    countedParts === 1
       ? t.home.nextMeeting.partsCountSingular
-      : t.home.nextMeeting.partsCount.replace("{count}", String(defaultMeeting.assignments.length));
+      : t.home.nextMeeting.partsCount.replace("{count}", String(countedParts));
 
   const kindDuties = duties.filter((duty) => duty.meetingKind === kind);
   const presidentDuties = kindDuties.filter((duty) => /president/i.test(duty.postLabel));
 
-  const blocks = splitMeetingBlocks(meeting?.assignments ?? []);
-  let partNumber = 0;
-  const blocksWithNumbers = blocks.map((block) => ({
-    ...block,
-    parts: block.parts.map((part) => {
-      partNumber += 1;
-      return { part, number: partNumber };
-    }),
-  }));
+  const timedBlocks = meeting
+    ? timeProgramParts(meeting, numberProgramParts(splitMeetingBlocks(meeting.assignments)))
+    : [];
 
   return (
     <section aria-labelledby="home-reunioes">
@@ -187,7 +187,7 @@ export function NextMeetingSection({
                   </span>
                 </div>
 
-                <ProgramPresidentRow duties={presidentDuties} />
+                <ProgramPresidentRow duties={presidentDuties} time={firstStartTime(meeting)} />
 
                 {meeting.assignments.length === 0 ? (
                   <p className="px-4 py-4 text-sm text-muted-foreground">
@@ -195,33 +195,48 @@ export function NextMeetingSection({
                   </p>
                 ) : null}
 
-                {blocksWithNumbers.map((block, blockIndex) => {
+                {timedBlocks.map((block, blockIndex) => {
                   const meta = meetingSectionMetaOf(block.section, locale);
                   return (
                     <section
                       key={`${block.section}-${blockIndex}`}
                       className="flex min-w-0 flex-col px-4 pt-2"
                     >
-                      <ProgramSectionHeader
-                        label={meta.label}
-                        color={meta.color}
-                        icon={sectionIconOf(block.section)}
-                      />
-                      <ul className="divide-y divide-border">
-                        {block.parts.map(({ part, number }) => (
-                          <ProgramPartRow
-                            key={part.partKey}
-                            part={part}
-                            number={number}
-                            color={meta.color}
-                            songLabel={t.meetings.song}
-                            helperLabel={
-                              isCongregationBibleStudy(block.section)
-                                ? t.meetings.readerLabel
-                                : t.meetings.helperLabel
-                            }
-                          />
-                        ))}
+                      {block.hasCounted ? (
+                        <ProgramSectionHeader
+                          label={meta.label}
+                          color={meta.color}
+                          icon={sectionIconOf(block.section)}
+                        />
+                      ) : null}
+                      <ul
+                        className={
+                          block.placement === "opening" ? undefined : "divide-y divide-border"
+                        }
+                      >
+                        {block.parts.map(({ part, number, startTime }) =>
+                          number === null ? (
+                            <ProgramFramingRow
+                              key={part.partKey}
+                              part={part}
+                              startTime={startTime}
+                              songLabel={t.meetings.song}
+                            />
+                          ) : (
+                            <ProgramPartRow
+                              key={part.partKey}
+                              part={part}
+                              number={number}
+                              startTime={startTime}
+                              songLabel={t.meetings.song}
+                              helperLabel={
+                                isReaderPart(part) ? t.meetings.readerLabel : t.meetings.helperLabel
+                              }
+                              multilineSubtitle={isSeamosSection(block.section)}
+                              mutedHelper={isSeamosSection(block.section) || isReaderPart(part)}
+                            />
+                          ),
+                        )}
                       </ul>
                     </section>
                   );

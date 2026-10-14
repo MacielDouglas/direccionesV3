@@ -20,16 +20,16 @@ const SECTION_COLORS: Record<string, string> = {
 
 const SECTION_LABELS: Record<MeetingLocale, Record<string, string>> = {
   es: {
-    "TESOROS DE LA BIBLIA": "Tesoros de la Biblia",
-    "SEAMOS MEJORES MAESTROS": "Seamos mejores maestros",
-    "NUESTRA VIDA CRISTIANA": "Nuestra vida cristiana",
+    "TESOROS DE LA BIBLIA": "TESOROS DE LA BIBLIA",
+    "SEAMOS MEJORES MAESTROS": "SEAMOS MEJORES MAESTROS",
+    "NUESTRA VIDA CRISTIANA": "NUESTRA VIDA CRISTIANA",
     "PUBLIC TALK": "Discurso público",
     "ESTUDIO DE LA ATALAYA": "Estudio de la Atalaya",
   },
   pt: {
-    "TESOROS DE LA BIBLIA": "Tesouros da Bíblia",
-    "SEAMOS MEJORES MAESTROS": "Sejamos melhores professores",
-    "NUESTRA VIDA CRISTIANA": "Nossa vida cristã",
+    "TESOROS DE LA BIBLIA": "TESOUROS DA PALAVRA DE DEUS",
+    "SEAMOS MEJORES MAESTROS": "FAÇA SEU MELHOR NO MINISTÉRIO",
+    "NUESTRA VIDA CRISTIANA": "NOSSA VIDA CRISTÃ",
     "PUBLIC TALK": "Discurso público",
     "ESTUDIO DE LA ATALAYA": "Estudo de A Sentinela",
   },
@@ -61,4 +61,71 @@ export function splitMeetingBlocks(assignments: MeetingAssignment[]): MeetingBlo
     }
   }
   return blocks;
+}
+
+/** Partes sem número no programa (espelha UNNUMBERED_KEYS do impresso do Meeting). */
+const UNNUMBERED_PART_KEYS = new Set([
+  "opening-song",
+  "middle-song",
+  "closing-song",
+  "watchtower-song",
+  "opening-comments",
+  "concluding-comments",
+]);
+
+/** Moldura do programa (nunca numerada, nunca com cabeçalho de seção). */
+const FRAMING_PART_KEYS = new Set([
+  "president",
+  "opening-song",
+  "opening-comments",
+  "concluding-comments",
+  "closing-song",
+]);
+
+/** Parte de conteúdo: tem número (cânticos e moldura ficam de fora). */
+export function isCountedPart(part: MeetingAssignment): boolean {
+  return (
+    part.songNumber === null &&
+    !UNNUMBERED_PART_KEYS.has(part.partKey) &&
+    !FRAMING_PART_KEYS.has(part.partKey)
+  );
+}
+
+export interface NumberedPart {
+  part: MeetingAssignment;
+  number: number | null;
+}
+
+export type BlockPlacement = "opening" | "content" | "closing";
+
+export interface NumberedBlock {
+  section: string;
+  parts: NumberedPart[];
+  /** Bloco com pelo menos uma parte numerada (únicos com cabeçalho). */
+  hasCounted: boolean;
+  /** Moldura antes do primeiro bloco numerado (abertura) ou após o último. */
+  placement: BlockPlacement;
+}
+
+/** Numeração contínua das partes de conteúdo, na ordem do programa. */
+export function numberProgramParts(blocks: MeetingBlock[]): NumberedBlock[] {
+  let counter = 0;
+  const numbered = blocks.map((block) => {
+    const parts: NumberedPart[] = block.parts.map((item) => {
+      if (!isCountedPart(item)) return { part: item, number: null };
+      counter += 1;
+      return { part: item, number: counter };
+    });
+    return { section: block.section, parts, hasCounted: parts.some((p) => p.number !== null) };
+  });
+  const firstCounted = numbered.findIndex((block) => block.hasCounted);
+  const lastCounted = numbered.map((block) => block.hasCounted).lastIndexOf(true);
+  return numbered.map((block, index) => {
+    let placement: BlockPlacement = "content";
+    if (!block.hasCounted && firstCounted !== -1) {
+      if (index < firstCounted) placement = "opening";
+      else if (index > lastCounted) placement = "closing";
+    }
+    return { ...block, placement };
+  });
 }

@@ -69,7 +69,7 @@ const ptBR: I18nDictionary = {
     agendaLabel: "Agenda",
     meetingsLabel: "Reuniões",
     profileLabel: "Perfil",
-    surveyLabel: "Levantamento",
+    surveyLabel: "Censo",
     newAddress: "Novo Endereço",
     allAddresses: "Todos os Endereços",
     administration: "Admin",

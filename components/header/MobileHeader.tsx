@@ -3,10 +3,13 @@
 import { useHaptic } from "@/app/hooks/useHaptic";
 import SessionTimer from "@/domains/auth/components/SessionTimer";
 import type { Role } from "@/domains/member/types/role.types";
-import { getNavigationByRole, navigationMenu } from "@/features/navigation/constants/navigation";
+import {
+  type NavigationItem,
+  getNavigationByRole,
+  navigationMenu,
+} from "@/features/navigation/constants/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Home, Menu, X } from "lucide-react";
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { LanguageSelector } from "../LanguageSelector";
@@ -30,6 +33,15 @@ export default function MobileHeader({ role, orgSlug, sessionExpiresAt }: MenuMo
   const { vibrate } = useHaptic();
 
   const navigation = orgSlug && role ? getNavigationByRole(navigationMenu, role) : [];
+  // Home sempre primeiro e sem duplicar (a lista já contém o item "home").
+  const homeItem: NavigationItem = navigation.find((item) => item.id === "home") ?? {
+    id: "home",
+    name: "home",
+    label: "homeLabel",
+    href: "/",
+    icon: Home,
+  };
+  const restItems = navigation.filter((item) => item.id !== "home");
   const closeMenu = useCallback(() => {
     // Evita "Blocked aria-hidden..." e também evita TypeError do scheduler (startTime)
     // ao não fazer blur/focus síncrono dentro do mesmo tick do setState.
@@ -188,7 +200,7 @@ export default function MobileHeader({ role, orgSlug, sessionExpiresAt }: MenuMo
               }}
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-5 pb-3 pt-4">
+              <div className="flex shrink-0 items-center justify-between px-5 pb-3 pt-4">
                 <div>
                   <p className="text-xs font-light uppercase tracking-widest text-muted-foreground">
                     {t.header.menu}
@@ -208,7 +220,7 @@ export default function MobileHeader({ role, orgSlug, sessionExpiresAt }: MenuMo
               </div>
 
               {/* Atalhos — tema e sessão, logo abaixo do título */}
-              <div className="flex items-center justify-between px-5 pb-3">
+              <div className="flex shrink-0 items-center justify-between px-5 pb-3">
                 <DarkModeButton />
                 {sessionExpiresAt && <SessionTimer expiresAt={sessionExpiresAt} />}
               </div>
@@ -218,57 +230,31 @@ export default function MobileHeader({ role, orgSlug, sessionExpiresAt }: MenuMo
               {/* Nav */}
               <nav
                 aria-label={t.header.mainMenu}
-                className="flex-1 overflow-y-auto overscroll-contain py-2"
+                className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-2"
               >
                 <ul className="flex flex-col gap-1 px-3">
                   <li>
-                    <Link
-                      href="/"
-                      onClick={closeMenu}
-                      className="
-                        flex items-center gap-4
-                        rounded-xl px-4 py-3.5
-                        text-base font-medium
-                        transition-all
-                        hover:bg-accent
-                        active:scale-[0.98] active:bg-accent
-                        focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand
-                      "
-                    >
-                      <Home className="h-5 w-5 shrink-0 text-brand" aria-hidden="true" />
-                      {t.navigation.homeLabel}
-                    </Link>
+                    <MenuItem item={homeItem} orgSlug={orgSlug ?? ""} onSelect={closeMenu} />
                   </li>
 
-                  {navigation.length > 0 && (
+                  {restItems.length > 0 && (
                     <li aria-hidden="true" className="mx-1 my-1 h-px bg-border" />
                   )}
 
-                  {navigation.map((item) => (
+                  {restItems.map((item) => (
                     <li key={item.id}>
-                      <MenuItem
-                        item={item}
-                        orgSlug={orgSlug ?? ""}
-                        onSelect={closeMenu}
-                        className="
-                          flex items-center gap-4
-                          rounded-xl px-4 py-3.5
-                          text-base font-medium
-                          transition-all
-                          hover:bg-accent
-                          active:scale-[0.98] active:bg-accent
-                          focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand
-                        "
-                      />
+                      <MenuItem item={item} orgSlug={orgSlug ?? ""} onSelect={closeMenu} />
                     </li>
                   ))}
                 </ul>
               </nav>
 
-              <div className="mx-5 h-px bg-border" aria-hidden="true" />
-              <div className="flex flex-col gap-4 px-5 py-4">
-                <LanguageSelector />
-                <LogoutButton />
+              {/* Rodapé fixo: idioma + sair sempre visíveis, acima da safe-area */}
+              <div className="shrink-0 border-t border-border bg-background px-5 pt-4">
+                <div className="flex flex-col gap-3">
+                  <LanguageSelector />
+                  <LogoutButton className="min-h-11" />
+                </div>
               </div>
             </dialog>
           </>,
