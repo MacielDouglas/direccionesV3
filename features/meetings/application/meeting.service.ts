@@ -19,6 +19,12 @@ export interface StoredWeekProgram extends MeetingWeekPayload {
   fetchedAt: string;
 }
 
+/** Resumo de uma semana salva (para navegação entre semanas). */
+export interface StoredWeekSummary {
+  weekStart: string;
+  weekEnd: string;
+}
+
 /** Conexão da organização (sem expor o token: só status + URL). */
 export async function getMeetingConnectionStatus(
   organizationId: string,
@@ -55,6 +61,33 @@ function toStoredWeek(row: {
     cleaning: payload.cleaning ?? [],
     fetchedAt: row.fetchedAt.toISOString(),
   };
+}
+
+/**
+ * Semanas com programação salva, da mais antiga à mais recente.
+ * A chave `weekStart` (YYYY-MM-DD) ordena lexicograficamente.
+ */
+export async function listMeetingWeeks(organizationId: string): Promise<StoredWeekSummary[]> {
+  await requireOrgMember(organizationId);
+  const rows = await prisma.meetingWeekProgram.findMany({
+    where: { organizationId },
+    select: { weekStart: true, weekEnd: true },
+    orderBy: { weekStart: "asc" },
+  });
+  return rows;
+}
+
+/** Uma semana salva específica (só do banco: sem busca no Meeting). */
+export async function getStoredMeetingWeek(
+  organizationId: string,
+  weekStart: string,
+): Promise<StoredWeekProgram | null> {
+  await requireOrgMember(organizationId);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(weekStart)) return null;
+  const stored = await prisma.meetingWeekProgram.findUnique({
+    where: { organizationId_weekStart: { organizationId, weekStart } },
+  });
+  return stored ? toStoredWeek(stored) : null;
 }
 
 /**

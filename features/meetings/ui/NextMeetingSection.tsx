@@ -36,7 +36,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { CalendarDays, ChevronRight, Clock, UserRoundGroup, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 type MeetingKind = "midweek" | "weekend";
 
@@ -80,12 +80,22 @@ export function NextMeetingSection({
       ? t.home.nextMeeting.partsCountSingular
       : t.home.nextMeeting.partsCount.replace("{count}", String(countedParts));
 
-  const kindDuties = duties.filter((duty) => duty.meetingKind === kind);
-  const presidentDuties = kindDuties.filter((duty) => /president/i.test(duty.postLabel));
+  const kindDuties = useMemo(
+    () => duties.filter((duty) => duty.meetingKind === kind),
+    [duties, kind],
+  );
+  const presidentDuties = useMemo(
+    () => kindDuties.filter((duty) => /president/i.test(duty.postLabel)),
+    [kindDuties],
+  );
 
-  const timedBlocks = meeting
-    ? timeProgramParts(meeting, numberProgramParts(splitMeetingBlocks(meeting.assignments)))
-    : [];
+  const timedBlocks = useMemo(
+    () =>
+      meeting
+        ? timeProgramParts(meeting, numberProgramParts(splitMeetingBlocks(meeting.assignments)))
+        : [],
+    [meeting],
+  );
 
   return (
     <section aria-labelledby="home-reunioes">
@@ -133,7 +143,7 @@ export function NextMeetingSection({
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={t.common.close}
-                className="absolute top-3 right-3 grid size-9 place-items-center rounded-full text-white/90 transition-colors hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="absolute top-2 right-2 grid size-11 place-items-center rounded-full text-white/90 transition-colors hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
                 <X className="size-5" aria-hidden="true" />
               </button>
@@ -142,7 +152,9 @@ export function NextMeetingSection({
               </p>
               {hasBoth && meeting ? (
                 <fieldset className="mt-3 flex min-w-0 rounded-xl bg-white/15 p-1">
-                  <legend className="sr-only">{t.meetings.title}</legend>
+                  <legend className="sr-only">
+                    {t.meetings.midweekShort} / {t.meetings.weekendShort}
+                  </legend>
                   {(["midweek", "weekend"] as const).map((option) => {
                     const active = kind === option;
                     return (

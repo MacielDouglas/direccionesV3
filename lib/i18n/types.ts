@@ -926,6 +926,8 @@ export type I18nDictionary = {
     noAssignments: string;
     noProgram: string;
     fetchedAt: string;
+    previousWeek: string;
+    nextWeek: string;
     notConnectedTitle: string;
     notConnectedDescription: string;
     loadErrorTitle: string;

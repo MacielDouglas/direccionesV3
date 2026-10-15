@@ -600,6 +600,8 @@ const es: I18nDictionary = {
     noAssignments: "Esta reunión aún no tiene designaciones.",
     noProgram: "Sin programa guardado para esta semana.",
     fetchedAt: "Actualizado el",
+    previousWeek: "Semana anterior",
+    nextWeek: "Semana siguiente",
     notConnectedTitle: "Sin conexión con Meeting",
     notConnectedDescription:
       "El owner aún no conectó el programa semanal. Habla con el administrador de la organización.",

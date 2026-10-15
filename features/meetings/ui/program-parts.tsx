@@ -145,6 +145,8 @@ export function ProgramPartRow({
   const helperName = part.helperPersonName.trim();
   const title = rowTitle(part, number, songLabel);
   const subtitle = rowSubtitle(part);
+  const namesTitle =
+    holderName + (helperName ? ` · ${helperLabel}: ${helperName}` : "") || undefined;
   return (
     <li className="flex items-start gap-3 py-2.5">
       <RowTime value={startTime} />
@@ -168,7 +170,10 @@ export function ProgramPartRow({
           </span>
         ) : null}
         {holderName || helperName ? (
-          <span className="mt-0.5 block truncate text-sm font-medium text-foreground">
+          <span
+            title={namesTitle}
+            className="mt-0.5 block truncate text-sm font-medium text-foreground"
+          >
             {holderName}
             {helperName ? (
               <>
@@ -219,7 +224,9 @@ export function ProgramFramingRow({
           <span className="mt-0.5 block truncate text-xs text-muted-foreground">{subtitle}</span>
         ) : null}
         {names ? (
-          <span className="mt-0.5 block truncate text-sm font-medium text-foreground">{names}</span>
+          <span title={names} className="mt-0.5 block truncate text-sm font-medium text-foreground">
+            {names}
+          </span>
         ) : null}
       </span>
     </li>
@@ -280,10 +287,16 @@ export function ProgramPresidentRow({
           className="flex items-center gap-3 py-2.5"
         >
           <RowTime value={time} />
-          <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
+          <span
+            title={duty.postLabel}
+            className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground"
+          >
             {duty.postLabel}
           </span>
-          <span className="min-w-0 max-w-[45%] flex-none truncate text-right text-sm font-medium text-meeting-text">
+          <span
+            title={duty.personName}
+            className="min-w-0 max-w-[45%] flex-none truncate text-right text-sm font-medium text-meeting-text"
+          >
             {duty.personName}
           </span>
         </li>

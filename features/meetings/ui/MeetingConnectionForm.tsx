@@ -98,7 +98,10 @@ export function MeetingConnectionForm({
       </div>
 
       {notice ? (
-        <output className="block text-sm font-medium text-emerald-600 dark:text-emerald-400">
+        <output
+          aria-live="polite"
+          className="block text-sm font-medium text-emerald-600 dark:text-emerald-400"
+        >
           {notice}
         </output>
       ) : null}
@@ -113,7 +116,13 @@ export function MeetingConnectionForm({
           <p className="truncate font-mono text-xs text-muted-foreground">{savedUrl}</p>
           <p className="text-xs text-muted-foreground">{texts.connectedHint}</p>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" size="sm" onClick={handleRefresh} disabled={busy}>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={busy}
+              className="min-h-11"
+            >
               {busy ? texts.saving : texts.refreshNow}
             </Button>
             <Button
@@ -122,6 +131,7 @@ export function MeetingConnectionForm({
               variant="outline"
               onClick={handleRemove}
               disabled={busy}
+              className="min-h-11"
             >
               {texts.removeConnection}
             </Button>
@@ -162,6 +172,7 @@ export function MeetingConnectionForm({
             type="button"
             onClick={handleSave}
             disabled={busy || !token || (!baseUrl.trim() && !defaultBaseUrl)}
+            className="min-h-11"
           >
             {busy ? texts.saving : connected ? texts.replaceConnection : texts.saveConnection}
           </Button>

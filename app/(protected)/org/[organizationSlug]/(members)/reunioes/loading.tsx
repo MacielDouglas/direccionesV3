@@ -34,7 +34,10 @@ function ProgramSectionSkeleton({ rows }: { rows: number }) {
 
 export default function ReunioesLoading() {
   return (
-    <div className="mx-auto flex w-full max-w-3xl min-w-0 flex-col gap-4 px-4 py-6 md:py-10">
+    <div
+      aria-hidden="true"
+      className="mx-auto flex w-full max-w-3xl min-w-0 flex-col gap-4 px-4 py-6 md:py-10"
+    >
       <header className="mb-2">
         <Skeleton className="h-8 w-36" />
         <Skeleton className="mt-2 h-4 w-64" />

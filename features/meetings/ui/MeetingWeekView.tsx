@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { getMeetingWeekAction } from "@/features/meetings/application/meeting.actions";
 import type { StoredWeekProgram } from "@/features/meetings/application/meeting.service";
 import {
   type MeetingLocale,
@@ -18,7 +19,6 @@ import {
 import type { MeetingDetail, MeetingDuty } from "@/features/meetings/domain/meeting.schema";
 import {
   MEETING_SHEET_DESIGNATIONS_CLASSES,
-  MEETING_SHEET_NARROW_CLASSES,
   ProgramFramingRow,
   type ProgramIcon,
   ProgramPartRow,
@@ -43,8 +43,8 @@ import {
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { I18nDictionary } from "@/lib/i18n/types";
 import { cn } from "@/lib/utils";
-import { BrushCleaning, X } from "lucide-react";
-import { useState } from "react";
+import { BrushCleaning, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useMemo, useState } from "react";
 import { FaHandsHelping } from "react-icons/fa";
 
 type Texts = I18nDictionary["meetings"];
@@ -82,7 +82,9 @@ function DutyRow({
         ) : null}
         {person ? (
           <span className="mt-0.5 block text-right">
-            <span className="block truncate text-sm font-semibold text-foreground">{person}</span>
+            <span className="block break-words text-sm font-semibold text-foreground">
+              {person}
+            </span>
           </span>
         ) : null}
       </span>
@@ -103,9 +105,9 @@ function MeetingPanel({
   texts: Texts;
   locale: MeetingLocale;
 }) {
-  const timedBlocks = timeProgramParts(
-    meeting,
-    numberProgramParts(splitMeetingBlocks(meeting.assignments)),
+  const timedBlocks = useMemo(
+    () => timeProgramParts(meeting, numberProgramParts(splitMeetingBlocks(meeting.assignments))),
+    [meeting],
   );
   return (
     <section
@@ -178,44 +180,126 @@ function MeetingPanel({
 
 export function MeetingWeekView({
   week,
+  weeks,
+  organizationId,
   texts,
   locale,
 }: {
   week: StoredWeekProgram;
+  /** Semanas salvas (mais antiga → mais recente) para as setas < >. */
+  weeks: { weekStart: string; weekEnd: string }[];
+  organizationId: string;
   texts: Texts;
   locale: MeetingLocale;
 }) {
   const { t } = useI18n();
+  const [selectedStart, setSelectedStart] = useState(week.weekStart);
+  const [loadedWeek, setLoadedWeek] = useState<StoredWeekProgram | null>(null);
+  const [navigating, setNavigating] = useState(false);
+  const [navError, setNavError] = useState(false);
+  // A semana exibida é a atual (prop) ou uma salva já buscada; se a busca
+  // falhar, mantém a semana anterior em vez de tela vazia.
+  const displayedWeek =
+    selectedStart === week.weekStart || loadedWeek?.weekStart !== selectedStart ? week : loadedWeek;
+  const currentIndex = weeks.findIndex((item) => item.weekStart === selectedStart);
+  const canPrev = currentIndex > 0;
+  const canNext = currentIndex >= 0 && currentIndex < weeks.length - 1;
+
+  async function goToWeek(index: number) {
+    const target = weeks[index];
+    if (!target || index === currentIndex || navigating) return;
+    setNavError(false);
+    if (target.weekStart === week.weekStart) {
+      setLoadedWeek(null);
+      setSelectedStart(target.weekStart);
+      return;
+    }
+    setNavigating(true);
+    const result = await getMeetingWeekAction({
+      organizationId,
+      weekStart: target.weekStart,
+    });
+    setNavigating(false);
+    if (result.ok) {
+      setLoadedWeek(result.week);
+      setSelectedStart(target.weekStart);
+    } else {
+      setNavError(true);
+    }
+  }
+
   const kinds: MeetingKind[] = [
-    ...(week.midweek ? (["midweek"] as const) : []),
-    ...(week.weekend ? (["weekend"] as const) : []),
+    ...(displayedWeek.midweek ? (["midweek"] as const) : []),
+    ...(displayedWeek.weekend ? (["weekend"] as const) : []),
   ];
   const [kind, setKind] = useState<MeetingKind>(kinds[0] ?? "midweek");
+  // A semana exibida pode não ter a aba ativa (ex.: só fim de semana).
+  const effectiveKind = kinds.includes(kind) ? kind : (kinds[0] ?? "midweek");
   const [designationsOpen, setDesignationsOpen] = useState(false);
   const [cleaningOpen, setCleaningOpen] = useState(false);
-  const meeting = kind === "midweek" ? week.midweek : week.weekend;
-  const hasBoth = week.midweek !== null && week.weekend !== null;
-  const title = kind === "midweek" ? texts.midweekTitle : texts.weekendTitle;
-  const shortLabel = kind === "midweek" ? texts.midweekShort : texts.weekendShort;
-  const kindDuties = week.duties.filter((duty) => duty.meetingKind === kind);
-  const presidentDuties = kindDuties.filter((duty) => /president/i.test(duty.postLabel));
-  const otherDuties = kindDuties.filter((duty) => !/president/i.test(duty.postLabel));
+  const meeting = effectiveKind === "midweek" ? displayedWeek.midweek : displayedWeek.weekend;
+  const hasBoth = displayedWeek.midweek !== null && displayedWeek.weekend !== null;
+  const title = effectiveKind === "midweek" ? texts.midweekTitle : texts.weekendTitle;
+  const shortLabel = effectiveKind === "midweek" ? texts.midweekShort : texts.weekendShort;
+  const kindDuties = useMemo(
+    () => displayedWeek.duties.filter((duty) => duty.meetingKind === effectiveKind),
+    [displayedWeek.duties, effectiveKind],
+  );
+  const presidentDuties = useMemo(
+    () => kindDuties.filter((duty) => /president/i.test(duty.postLabel)),
+    [kindDuties],
+  );
+  const otherDuties = useMemo(
+    () => kindDuties.filter((duty) => !/president/i.test(duty.postLabel)),
+    [kindDuties],
+  );
   // Limpeza só da reunião selecionada (a semana pode ter dias das duas reuniões).
-  const meetingCleaning = meeting ? week.cleaning.filter((item) => item.date === meeting.date) : [];
+  const meetingCleaning = useMemo(
+    () => (meeting ? displayedWeek.cleaning.filter((item) => item.date === meeting.date) : []),
+    [displayedWeek.cleaning, meeting],
+  );
+  const cleaningGroups = useMemo(() => groupCleaningBySector(meetingCleaning), [meetingCleaning]);
   const showActions = meeting !== null && (otherDuties.length > 0 || meetingCleaning.length > 0);
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      {(week.midweek || week.weekend) && (
+      {(displayedWeek.midweek || displayedWeek.weekend) && (
         <div className="flex min-w-0 flex-col rounded-2xl bg-meeting px-4 pb-3 pt-5 text-white shadow-xs">
-          <p className="text-center text-base font-semibold tracking-tight">
-            {formatWeekRange(week.weekStart, week.weekEnd, locale)}
-          </p>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => goToWeek(currentIndex - 1)}
+              disabled={!canPrev || navigating}
+              aria-label={texts.previousWeek}
+              className="grid size-11 shrink-0 place-items-center rounded-full text-white transition-colors hover:bg-white/15 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <ChevronLeft className="size-5" aria-hidden="true" />
+            </button>
+            <p className="min-w-0 flex-1 text-center text-base font-semibold tracking-tight">
+              {formatWeekRange(displayedWeek.weekStart, displayedWeek.weekEnd, locale)}
+            </p>
+            <button
+              type="button"
+              onClick={() => goToWeek(currentIndex + 1)}
+              disabled={!canNext || navigating}
+              aria-label={texts.nextWeek}
+              className="grid size-11 shrink-0 place-items-center rounded-full text-white transition-colors hover:bg-white/15 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <ChevronRight className="size-5" aria-hidden="true" />
+            </button>
+          </div>
+          {navError ? (
+            <p role="alert" className="mt-1 text-center text-xs font-medium text-white">
+              {texts.loadErrorDescription}
+            </p>
+          ) : null}
           {hasBoth ? (
             <fieldset className="mt-3 flex min-w-0 rounded-xl bg-white/15 p-1">
-              <legend className="sr-only">{texts.title}</legend>
+              <legend className="sr-only">
+                {texts.midweekShort} / {texts.weekendShort}
+              </legend>
               {(["midweek", "weekend"] as const).map((option) => {
-                const active = kind === option;
+                const active = effectiveKind === option;
                 return (
                   <button
                     key={option}
@@ -268,7 +352,7 @@ export function MeetingWeekView({
                     type="button"
                     onClick={() => setDesignationsOpen(false)}
                     aria-label={t.common.close}
-                    className="absolute top-1/2 right-3 grid size-9 -translate-y-1/2 place-items-center rounded-full text-white/90 transition-colors hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    className="absolute top-1/2 right-2 grid size-11 -translate-y-1/2 place-items-center rounded-full text-white/90 transition-colors hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   >
                     <X className="size-5" aria-hidden="true" />
                   </button>
@@ -287,10 +371,16 @@ export function MeetingWeekView({
                         >
                           <DutyIcon size={18} />
                         </span>
-                        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
+                        <span
+                          title={duty.postLabel}
+                          className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground"
+                        >
                           {formatAttendantPost(duty.postLabel, texts.attendantLabel)}
                         </span>
-                        <span className="min-w-0 max-w-[45%] flex-none truncate text-right text-sm text-muted-foreground">
+                        <span
+                          title={duty.personName}
+                          className="min-w-0 max-w-[45%] flex-none truncate text-right text-sm text-muted-foreground"
+                        >
                           {duty.personName}
                         </span>
                       </li>
@@ -311,7 +401,7 @@ export function MeetingWeekView({
                   {texts.cleaningTitle}
                 </button>
               </DialogTrigger>
-              <DialogContent showCloseButton={false} className={MEETING_SHEET_NARROW_CLASSES}>
+              <DialogContent showCloseButton={false} className={MEETING_SHEET_DESIGNATIONS_CLASSES}>
                 <DialogHeader className="sr-only">
                   <DialogTitle>
                     {texts.cleaningTitle} - {shortLabel} - {formatFullNumeric(meeting.date)}
@@ -328,13 +418,13 @@ export function MeetingWeekView({
                     type="button"
                     onClick={() => setCleaningOpen(false)}
                     aria-label={t.common.close}
-                    className="absolute top-1/2 right-3 grid size-9 -translate-y-1/2 place-items-center rounded-full text-white/90 transition-colors hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    className="absolute top-1/2 right-2 grid size-11 -translate-y-1/2 place-items-center rounded-full text-white/90 transition-colors hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   >
                     <X className="size-5" aria-hidden="true" />
                   </button>
                 </div>
                 <div className="flex min-w-0 flex-col divide-y divide-border px-4 pb-4">
-                  {groupCleaningBySector(meetingCleaning).map((group) => {
+                  {cleaningGroups.map((group) => {
                     // Espanhol quando cadastrado; senão cai no texto original.
                     const sectorLabel =
                       locale === "es" ? group.sectorNameEs || group.sectorName : group.sectorName;
@@ -356,7 +446,7 @@ export function MeetingWeekView({
         </div>
       ) : null}
 
-      {!week.midweek && !week.weekend ? (
+      {!displayedWeek.midweek && !displayedWeek.weekend ? (
         <p className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground shadow-xs">
           {texts.noProgram}
         </p>
@@ -374,7 +464,7 @@ export function MeetingWeekView({
 
       <p className="text-xs text-muted-foreground">
         {texts.fetchedAt}{" "}
-        {new Date(week.fetchedAt).toLocaleString(locale === "es" ? "es" : "pt-BR")}
+        {new Date(displayedWeek.fetchedAt).toLocaleString(locale === "es" ? "es" : "pt-BR")}
       </p>
     </div>
   );

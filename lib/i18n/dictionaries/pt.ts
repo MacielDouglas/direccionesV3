@@ -598,6 +598,8 @@ const ptBR: I18nDictionary = {
     noAssignments: "Esta reunião ainda não tem designações.",
     noProgram: "Sem programa salvo para esta semana.",
     fetchedAt: "Atualizado em",
+    previousWeek: "Semana anterior",
+    nextWeek: "Próxima semana",
     notConnectedTitle: "Sem conexão com o Meeting",
     notConnectedDescription:
       "O owner ainda não conectou o programa semanal. Fale com o administrador da organização.",

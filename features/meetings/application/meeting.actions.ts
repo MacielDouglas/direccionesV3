@@ -1,6 +1,10 @@
 "use server";
 
 import { toRole } from "@/domains/member/utils/toRole";
+import {
+  type StoredWeekProgram,
+  getStoredMeetingWeek,
+} from "@/features/meetings/application/meeting.service";
 import { meetingConnectionSchema } from "@/features/meetings/domain/meeting.schema";
 import { fetchDecryptedWeek } from "@/features/meetings/infrastructure/meeting-api";
 import { readDefaultBaseUrl } from "@/features/meetings/infrastructure/meeting-config";
@@ -12,6 +16,15 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 const organizationIdSchema = z.string().min(1);
+
+const meetingWeekQuerySchema = z.object({
+  organizationId: organizationIdSchema,
+  weekStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+});
+
+export type MeetingWeekResult =
+  | { ok: true; week: StoredWeekProgram }
+  | { ok: false; error: string };
 
 export interface MeetingActionResult {
   ok: boolean;
@@ -151,6 +164,19 @@ export async function refreshMeetingWeek(
     });
     revalidateMeetings(organizationSlug);
     return { ok: true };
+  } catch (error) {
+    return { ok: false, error: knownDomainError(error) };
+  }
+}
+
+/** Uma semana salva específica (qualquer membro; só lê do banco). */
+export async function getMeetingWeekAction(input: unknown): Promise<MeetingWeekResult> {
+  const parsed = meetingWeekQuerySchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Revisa los datos informados." };
+  try {
+    const week = await getStoredMeetingWeek(parsed.data.organizationId, parsed.data.weekStart);
+    if (!week) return { ok: false, error: "Revisa los datos informados." };
+    return { ok: true, week };
   } catch (error) {
     return { ok: false, error: knownDomainError(error) };
   }
