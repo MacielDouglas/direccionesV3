@@ -1,21 +1,19 @@
 import type { ProgramIcon } from "@/features/meetings/ui/program-parts";
-import { MicVocal } from "lucide-react";
-import type { IconType } from "react-icons";
-import { FaBookOpen } from "react-icons/fa";
+import { BookOpen, MicVocal, Wheat } from "lucide-react";
 import { GiSheep } from "react-icons/gi";
 import { IoDiamond } from "react-icons/io5";
-import { LuWheat } from "react-icons/lu";
 
 /** Ícones das seções do programa (chaves em espanhol do Meeting). */
 export const SECTION_ICONS: Record<string, ProgramIcon> = {
   "TESOROS DE LA BIBLIA": IoDiamond,
-  "SEAMOS MEJORES MAESTROS": LuWheat,
+  "SEAMOS MEJORES MAESTROS": Wheat,
+  // Sem equivalente no lucide: ovelha é o visual da Vida Cristã no impresso.
   "NUESTRA VIDA CRISTIANA": GiSheep,
   "PUBLIC TALK": MicVocal,
-  "ESTUDIO DE LA ATALAYA": FaBookOpen,
+  "ESTUDIO DE LA ATALAYA": BookOpen,
 };
 
-export const DEFAULT_SECTION_ICON: IconType = FaBookOpen;
+export const DEFAULT_SECTION_ICON: ProgramIcon = BookOpen;
 
 /**
  * Ícone da seção para o programa; null quando seria o livro aberto
@@ -24,5 +22,5 @@ export const DEFAULT_SECTION_ICON: IconType = FaBookOpen;
  */
 export function sectionIconOf(section: string): ProgramIcon | null {
   const icon: ProgramIcon = SECTION_ICONS[section] ?? DEFAULT_SECTION_ICON;
-  return icon === FaBookOpen ? null : icon;
+  return icon === BookOpen ? null : icon;
 }

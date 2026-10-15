@@ -1,5 +1,16 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,12 +19,15 @@ import {
   refreshMeetingWeek,
   removeMeetingConnection,
   saveMeetingConnection,
+  testMeetingConnection,
 } from "@/features/meetings/application/meeting.actions";
 import type { MeetingConnectionStatus } from "@/features/meetings/application/meeting.service";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { I18nDictionary } from "@/lib/i18n/types";
 import { useState } from "react";
 
 type Texts = I18nDictionary["meetings"];
+type BusyAction = "save" | "test" | "refresh" | "remove" | null;
 
 export function MeetingConnectionForm({
   organizationId,
@@ -29,13 +43,16 @@ export function MeetingConnectionForm({
   defaultBaseUrl: string;
   texts: Texts;
 }) {
+  const { t } = useI18n();
   const [baseUrl, setBaseUrl] = useState(initial.baseUrl ?? defaultBaseUrl);
   const [token, setToken] = useState("");
   const [connected, setConnected] = useState(initial.connected);
   const [savedUrl, setSavedUrl] = useState<string | null>(initial.baseUrl);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<BusyAction>(null);
+  const canSubmit =
+    busy === null && token.trim() !== "" && (baseUrl.trim() !== "" || defaultBaseUrl !== "");
 
   function done(result: MeetingActionResult, okMessage: string) {
     if (!result.ok) {
@@ -46,15 +63,29 @@ export function MeetingConnectionForm({
     setNotice(okMessage);
   }
 
+  async function handleTest() {
+    setBusy("test");
+    setError(null);
+    setNotice(null);
+    const result = await testMeetingConnection({ organizationId, baseUrl, token });
+    setBusy(null);
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    setError(null);
+    setNotice(texts.weeksFound.replace("{count}", String(result.weeks)));
+  }
+
   async function handleSave() {
-    setBusy(true);
+    setBusy("save");
     setError(null);
     setNotice(null);
     const result = await saveMeetingConnection(
       { organizationId, baseUrl, token },
       organizationSlug,
     );
-    setBusy(false);
+    setBusy(null);
     done(result, texts.connectionSaved);
     if (result.ok) {
       setConnected(true);
@@ -64,21 +95,20 @@ export function MeetingConnectionForm({
   }
 
   async function handleRefresh() {
-    setBusy(true);
+    setBusy("refresh");
     setError(null);
     setNotice(null);
     const result = await refreshMeetingWeek({ organizationId }, organizationSlug);
-    setBusy(false);
+    setBusy(null);
     done(result, texts.weekUpdated);
   }
 
   async function handleRemove() {
-    if (!window.confirm(texts.removeConfirm)) return;
-    setBusy(true);
+    setBusy("remove");
     setError(null);
     setNotice(null);
     const result = await removeMeetingConnection({ organizationId }, organizationSlug);
-    setBusy(false);
+    setBusy(null);
     done(result, texts.connectionRemoved);
     if (result.ok) {
       setConnected(false);
@@ -120,21 +150,43 @@ export function MeetingConnectionForm({
               type="button"
               size="sm"
               onClick={handleRefresh}
-              disabled={busy}
+              disabled={busy !== null}
               className="min-h-11"
             >
-              {busy ? texts.saving : texts.refreshNow}
+              {busy === "refresh" ? texts.saving : texts.refreshNow}
             </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={handleRemove}
-              disabled={busy}
-              className="min-h-11"
-            >
-              {texts.removeConnection}
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={busy !== null}
+                  className="min-h-11"
+                >
+                  {texts.removeConnection}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent size="sm">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{texts.removeConnection}</AlertDialogTitle>
+                  <AlertDialogDescription>{texts.removeConfirm}</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={busy !== null} className="min-h-11">
+                    {t.common.cancel}
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    variant="destructive"
+                    onClick={handleRemove}
+                    disabled={busy !== null}
+                    className="min-h-11"
+                  >
+                    {busy === "remove" ? texts.saving : texts.removeConnection}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       ) : null}
@@ -167,14 +219,22 @@ export function MeetingConnectionForm({
           />
           <p className="text-xs text-muted-foreground">{texts.tokenHint}</p>
         </div>
-        <div>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" onClick={handleSave} disabled={!canSubmit} className="min-h-11">
+            {busy === "save"
+              ? texts.saving
+              : connected
+                ? texts.replaceConnection
+                : texts.saveConnection}
+          </Button>
           <Button
             type="button"
-            onClick={handleSave}
-            disabled={busy || !token || (!baseUrl.trim() && !defaultBaseUrl)}
+            variant="outline"
+            onClick={handleTest}
+            disabled={!canSubmit}
             className="min-h-11"
           >
-            {busy ? texts.saving : connected ? texts.replaceConnection : texts.saveConnection}
+            {busy === "test" ? texts.saving : texts.testConnection}
           </Button>
         </div>
       </div>

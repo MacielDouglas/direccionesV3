@@ -4,7 +4,7 @@ import { eventTime, todayInBrasiliaDateOnly } from "@/features/agenda/utils/agen
 import { countMyCards, countMyTotalAddresses } from "@/features/cards/application/card.service";
 import { NextMeetingCard } from "@/features/meetings/ui/NextMeetingCard";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { CalendarDays, ChevronRight, CreditCard, Plus, Shield } from "lucide-react";
+import { CalendarDays, ChevronRight, CreditCard, MapPinned, Plus, Shield } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -31,6 +31,8 @@ export async function HomeDashboard({
   ]);
 
   const hasEvents = todayEvents.length > 0;
+  const visibleEvents = todayEvents.slice(0, 4);
+  const hiddenEventsCount = todayEvents.length - visibleEvents.length;
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-7 md:py-10">
@@ -39,31 +41,31 @@ export async function HomeDashboard({
       </h1>
 
       <div className="mt-6 space-y-8">
-        {/* 1 — Meus cartões */}
+        {/* 1 — Meus cartões (mesmo tamanho do resumo de Mis Tarjetas) */}
         <Link
           href={`/org/${organizationSlug}/my-cards`}
-          className="group flex items-center justify-between gap-4 rounded-xl bg-black p-6 text-white shadow-md shadow-black/20 transition-transform active:scale-[0.99]"
+          className="group flex items-center justify-between gap-4 rounded-2xl bg-black p-5 text-white shadow-xs shadow-black/20 transition-transform active:scale-[0.99]"
         >
-          <div>
-            <span className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-neutral-400">
-              <CreditCard className="size-4" aria-hidden="true" />
+          <div className="min-w-0">
+            <span className="inline-flex items-center gap-2 text-[0.625rem] font-medium uppercase tracking-widest text-neutral-400">
+              <CreditCard className="size-4 text-brand" aria-hidden="true" />
               {t.home.cardsTitle}
             </span>
-            <div className="mt-3 flex items-baseline gap-2">
+            <div className="mt-2 flex items-baseline gap-2">
               <span className="text-5xl font-bold leading-none tabular-nums">{cardCount}</span>
-              <span className="text-sm font-medium text-neutral-300">
+              <span className="truncate text-sm font-medium text-neutral-300">
                 {cardCount === 1 ? t.home.cardsUnitSingular : t.home.cardsUnit}
               </span>
             </div>
-            <p className="mt-2 text-xs text-neutral-400">
-              {t.home.addressesBadge.replace("{count}", String(totalAddresses))}
-            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-400">
+              <span className="inline-flex items-center gap-1.5">
+                <MapPinned className="size-3.5 text-brand" aria-hidden="true" />
+                {t.home.addressesBadge.replace("{count}", String(totalAddresses))}
+              </span>
+            </div>
           </div>
-          <span className="flex shrink-0 items-center gap-2">
-            <span className="text-sm font-medium text-neutral-300">{t.home.goToCards}</span>
-            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-transform group-hover:translate-x-0.5">
-              <ChevronRight className="size-5" aria-hidden="true" />
-            </span>
+          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-transform group-hover:translate-x-0.5">
+            <ChevronRight className="size-5" aria-hidden="true" />
           </span>
         </Link>
 
@@ -76,7 +78,7 @@ export async function HomeDashboard({
           {t.addresses.sendNew}
         </Link>
 
-        {/* 3 — Programação de hoje */}
+        {/* 3 — Programação de hoje (a pergunta da rua: onde preciso estar) */}
         <section aria-labelledby="today-agenda">
           <div className="flex items-center justify-between">
             <h2
@@ -95,36 +97,50 @@ export async function HomeDashboard({
           </div>
 
           {hasEvents ? (
-            <ul className="mt-3 space-y-2">
-              {todayEvents.map((event) => (
-                <li key={event.id}>
-                  <Link
-                    href={`/org/${organizationSlug}/agenda`}
-                    className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 transition-colors hover:bg-surface-subtle-light dark:hover:bg-surface-subtle-dark"
-                  >
-                    <div className="flex h-9 min-w-9 flex-col items-center justify-center rounded-lg bg-black px-2 text-white">
-                      <span className="text-[0.625rem] font-medium uppercase leading-none tracking-wide text-neutral-300">
-                        {t.agenda.hour}
-                      </span>
-                      <span className="mt-0.5 text-xs font-semibold tabular-nums leading-none">
-                        {eventTime(event)}
-                      </span>
-                    </div>
+            <>
+              <ul className="mt-3 space-y-2">
+                {visibleEvents.map((event) => {
+                  const title = event.saida ?? event.tipo ?? event.territorio ?? t.agenda.title;
+                  const detail = [event.territorio, event.conductor?.name]
+                    .filter((item) => item && item !== title)
+                    .join(" · ");
+                  return (
+                    <li key={event.id}>
+                      <Link
+                        href={`/org/${organizationSlug}/agenda#event-${event.id}`}
+                        className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 transition-colors hover:bg-surface-subtle-light dark:hover:bg-surface-subtle-dark"
+                      >
+                        <div className="flex h-9 min-w-9 flex-col items-center justify-center rounded-lg bg-black px-2 text-white">
+                          <span className="text-[0.625rem] font-medium uppercase leading-none tracking-wide text-neutral-300">
+                            {t.agenda.hour}
+                          </span>
+                          <span className="mt-0.5 text-xs font-semibold tabular-nums leading-none">
+                            {eventTime(event)}
+                          </span>
+                        </div>
 
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-medium text-foreground">
-                        {event.tipo ?? event.territorio ?? event.saida ?? t.agenda.title}
-                      </p>
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                        {[event.territorio, event.saida, event.conductor?.name]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </p>
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-xs font-medium text-foreground">{title}</p>
+                          {detail ? (
+                            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                              {detail}
+                            </p>
+                          ) : null}
+                        </div>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+              {hiddenEventsCount > 0 ? (
+                <Link
+                  href={`/org/${organizationSlug}/agenda`}
+                  className="mt-2 inline-flex min-h-11 w-full items-center justify-center text-sm font-medium text-brand transition-colors hover:text-brand-muted"
+                >
+                  {t.home.viewAgenda}
+                </Link>
+              ) : null}
+            </>
           ) : (
             <div className="mt-3 rounded-xl border border-border bg-card p-4 text-center">
               <p className="text-sm text-muted-foreground">{t.home.noEventsToday}</p>
@@ -138,7 +154,7 @@ export async function HomeDashboard({
           )}
         </section>
 
-        {/* 4 — Administração (só owner/admin): botão admin + aviso de exclusão */}
+        {/* 4 — Administração (só owner/admin): botão + alerta de exclusões */}
         {isAdminOrOwner && (
           <div className="space-y-3">
             <Link
@@ -152,7 +168,7 @@ export async function HomeDashboard({
           </div>
         )}
 
-        {/* 5 — Reuniões: próxima reunião + modal com a programação — streaming isolado: não bloqueia o resto em rede lenta */}
+        {/* 5 — Reuniões (todos): próxima reunião + modal com a programação — streaming isolado: não bloqueia o resto em rede lenta */}
         <Suspense
           fallback={
             <output

@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { getMeetingWeekAction } from "@/features/meetings/application/meeting.actions";
 import type {
   StoredWeekProgram,
@@ -46,9 +47,10 @@ import {
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { I18nDictionary } from "@/lib/i18n/types";
 import { cn } from "@/lib/utils";
-import { BrushCleaning, ChevronLeft, ChevronRight, Undo2, X } from "lucide-react";
+import { BrushCleaning, ChevronsUpDown, HandHelping, RefreshCw, Undo2, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Select as SelectPrimitive } from "radix-ui";
 import { useMemo, useState } from "react";
-import { FaHandsHelping } from "react-icons/fa";
 
 type Texts = I18nDictionary["meetings"];
 type MeetingKind = "midweek" | "weekend";
@@ -184,6 +186,7 @@ function MeetingPanel({
 export function MeetingWeekView({
   week,
   weeks,
+  initialWeek,
   organizationId,
   texts,
   locale,
@@ -191,36 +194,48 @@ export function MeetingWeekView({
   week: StoredWeekProgram;
   /** Semanas salvas (mais antiga → mais recente) para as setas < >. */
   weeks: StoredWeekSummary[];
+  /** Semana do deep-link ?week= (já buscada no servidor; null = atual). */
+  initialWeek: StoredWeekProgram | null;
   organizationId: string;
   texts: Texts;
   locale: MeetingLocale;
 }) {
   const { t } = useI18n();
-  const [selectedStart, setSelectedStart] = useState(week.weekStart);
-  const [loadedWeek, setLoadedWeek] = useState<StoredWeekProgram | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  const [selectedStart, setSelectedStart] = useState(initialWeek?.weekStart ?? week.weekStart);
+  const [loadedWeek, setLoadedWeek] = useState<StoredWeekProgram | null>(initialWeek);
   const [navigating, setNavigating] = useState(false);
   const [navError, setNavError] = useState(false);
+  const [failedIndex, setFailedIndex] = useState<number | null>(null);
   // A semana exibida é a atual (prop) ou uma salva já buscada; se a busca
   // falhar, mantém a semana anterior em vez de tela vazia.
   const displayedWeek =
     selectedStart === week.weekStart || loadedWeek?.weekStart !== selectedStart ? week : loadedWeek;
   const currentIndex = weeks.findIndex((item) => item.weekStart === selectedStart);
-  const canPrev = currentIndex > 0;
-  const canNext = currentIndex >= 0 && currentIndex < weeks.length - 1;
   const isViewingOtherWeek = selectedStart !== week.weekStart;
+
+  /** Espelha a semana na URL (deep-link compartilhável; replace sem poluir histórico). */
+  function syncWeekParam(weekStart: string | null) {
+    router.replace(weekStart ? `${pathname}?week=${weekStart}` : pathname, { scroll: false });
+  }
 
   /** Volta à semana atual (já em mãos: sem busca). */
   function backToCurrentWeek() {
     if (navigating) return;
     setNavError(false);
+    setFailedIndex(null);
     setLoadedWeek(null);
     setSelectedStart(week.weekStart);
+    syncWeekParam(null);
   }
 
   async function goToWeek(index: number) {
     const target = weeks[index];
     if (!target || index === currentIndex || navigating) return;
     setNavError(false);
+    setFailedIndex(null);
+    syncWeekParam(target.weekStart === week.weekStart ? null : target.weekStart);
     if (target.weekStart === week.weekStart) {
       setLoadedWeek(null);
       setSelectedStart(target.weekStart);
@@ -237,6 +252,7 @@ export function MeetingWeekView({
       setSelectedStart(target.weekStart);
     } else {
       setNavError(true);
+      setFailedIndex(index);
     }
   }
 
@@ -280,33 +296,64 @@ export function MeetingWeekView({
     >
       {(displayedWeek.midweek || displayedWeek.weekend) && (
         <div className="flex min-w-0 flex-col rounded-2xl bg-meeting px-4 pb-3 pt-5 text-white shadow-xs">
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => goToWeek(currentIndex - 1)}
-              disabled={!canPrev || navigating}
-              aria-label={texts.previousWeek}
-              className="grid size-11 shrink-0 place-items-center rounded-full text-white transition-colors hover:bg-white/15 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          {weeks.length > 1 ? (
+            <SelectPrimitive.Root
+              value={selectedStart}
+              onValueChange={(value) => {
+                const index = weeks.findIndex((item) => item.weekStart === value);
+                if (index >= 0) goToWeek(index);
+              }}
+              disabled={navigating}
             >
-              <ChevronLeft className="size-5" aria-hidden="true" />
-            </button>
-            <p className="min-w-0 flex-1 text-center text-base font-semibold tracking-tight">
+              <SelectPrimitive.Trigger
+                aria-label={texts.selectWeek}
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-white/15 px-4 text-base font-semibold tracking-tight text-white shadow-xs transition-colors outline-none hover:bg-white/25 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <SelectValue />
+                <ChevronsUpDown className="size-5 shrink-0 text-white" aria-hidden="true" />
+              </SelectPrimitive.Trigger>
+              <SelectPrimitive.Portal>
+                <SelectContent className="rounded-xl" position="popper">
+                  {weeks.map((item) => {
+                    const isCurrentWeek = item.weekStart === week.weekStart;
+                    return (
+                      <SelectItem
+                        key={item.weekStart}
+                        value={item.weekStart}
+                        className={cn(
+                          "min-h-11 rounded-lg",
+                          isCurrentWeek &&
+                            "bg-meeting/10 font-bold text-meeting-text shadow-xs focus:bg-meeting/20 focus:text-meeting-text",
+                        )}
+                      >
+                        {formatWeekRange(item.weekStart, item.weekEnd, locale)}
+                        {isCurrentWeek ? ` • ${texts.currentWeek}` : null}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </SelectPrimitive.Portal>
+            </SelectPrimitive.Root>
+          ) : (
+            <p className="text-center text-base font-semibold tracking-tight">
               {formatWeekRange(displayedWeek.weekStart, displayedWeek.weekEnd, locale)}
             </p>
-            <button
-              type="button"
-              onClick={() => goToWeek(currentIndex + 1)}
-              disabled={!canNext || navigating}
-              aria-label={texts.nextWeek}
-              className="grid size-11 shrink-0 place-items-center rounded-full text-white transition-colors hover:bg-white/15 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              <ChevronRight className="size-5" aria-hidden="true" />
-            </button>
-          </div>
+          )}
           {navError ? (
-            <p role="alert" className="mt-1 text-center text-xs font-medium text-white">
-              {texts.loadErrorDescription}
-            </p>
+            <div role="alert" className="mt-2 flex items-center justify-center gap-2">
+              <p className="min-w-0 flex-1 text-center text-xs font-medium text-white">
+                {texts.loadErrorDescription}
+              </p>
+              <button
+                type="button"
+                onClick={() => goToWeek(failedIndex ?? currentIndex)}
+                disabled={navigating || failedIndex === null}
+                className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-white/15 px-4 text-xs font-semibold text-white transition-colors hover:bg-white/25 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <RefreshCw className="size-3.5" aria-hidden="true" />
+                {t.errors.retry}
+              </button>
+            </div>
           ) : null}
           {isViewingOtherWeek ? (
             <div className="mt-3 flex justify-center">
@@ -359,7 +406,7 @@ export function MeetingWeekView({
                   type="button"
                   className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-full bg-meeting px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-meeting/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-meeting"
                 >
-                  <FaHandsHelping size={16} aria-hidden="true" />
+                  <HandHelping size={16} aria-hidden="true" />
                   {texts.designationsLabel}
                 </button>
               </DialogTrigger>

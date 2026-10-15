@@ -1,5 +1,6 @@
 import {
   getCurrentWeekProgram,
+  getStoredMeetingWeek,
   listMeetingWeeks,
 } from "@/features/meetings/application/meeting.service";
 import { MeetingRetryButton } from "@/features/meetings/ui/MeetingRetryButton";
@@ -18,10 +19,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 interface Props {
   params: Promise<{ organizationSlug: string }>;
+  searchParams: Promise<{ week?: string | string[] }>;
 }
 
-export default async function ReunioesPage({ params }: Props) {
+export default async function ReunioesPage({ params, searchParams }: Props) {
   const { organizationSlug } = await params;
+  const { week: requestedWeek } = await searchParams;
   const [session, t, locale] = await Promise.all([
     getCurrentUser(),
     getServerDictionary(),
@@ -35,6 +38,16 @@ export default async function ReunioesPage({ params }: Props) {
   const state = await getCurrentWeekProgram(organization.id);
   const weeks =
     state.connected && !("error" in state) ? await listMeetingWeeks(organization.id) : [];
+  // Deep-link ?week=AAAA-MM-DD: abre direto a semana salva (ignora inválida).
+  const requestedStart = Array.isArray(requestedWeek) ? requestedWeek[0] : requestedWeek;
+  const initialWeek =
+    state.connected &&
+    !("error" in state) &&
+    typeof requestedStart === "string" &&
+    requestedStart !== state.week.weekStart &&
+    weeks.some((item) => item.weekStart === requestedStart)
+      ? ((await getStoredMeetingWeek(organization.id, requestedStart)) ?? null)
+      : null;
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-6 md:py-10">
@@ -82,6 +95,7 @@ export default async function ReunioesPage({ params }: Props) {
         <MeetingWeekView
           week={state.week}
           weeks={weeks}
+          initialWeek={initialWeek}
           organizationId={organization.id}
           texts={t.meetings}
           locale={locale}

@@ -603,6 +603,8 @@ const es: I18nDictionary = {
     previousWeek: "Semana anterior",
     nextWeek: "Semana siguiente",
     backToCurrentWeek: "Volver a la semana actual",
+    selectWeek: "Elegir semana",
+    currentWeek: "actual",
     notConnectedTitle: "Sin conexión con Meeting",
     notConnectedDescription:
       "El owner aún no conectó el programa semanal. Habla con el administrador de la organización.",
@@ -621,6 +623,8 @@ const es: I18nDictionary = {
     tokenHint: "El token se guarda y solo se usa en el servidor para descifrar la semana.",
     saveConnection: "Guardar conexión",
     replaceConnection: "Reemplazar conexión",
+    testConnection: "Probar conexión",
+    weeksFound: "{count} semanas encontradas.",
     saving: "Guardando…",
     connectionSaved: "Conexión guardada y semana cargada.",
     refreshNow: "Actualizar semana ahora",

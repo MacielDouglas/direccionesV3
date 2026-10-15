@@ -72,7 +72,7 @@ const ptBR: I18nDictionary = {
     surveyLabel: "Censo",
     newAddress: "Novo Endereço",
     allAddresses: "Todos os Endereços",
-    administration: "Admin",
+    administration: "Administração",
   },
   header: {
     menu: "Menu",
@@ -601,6 +601,8 @@ const ptBR: I18nDictionary = {
     previousWeek: "Semana anterior",
     nextWeek: "Próxima semana",
     backToCurrentWeek: "Voltar à semana atual",
+    selectWeek: "Escolher semana",
+    currentWeek: "atual",
     notConnectedTitle: "Sem conexão com o Meeting",
     notConnectedDescription:
       "O owner ainda não conectou o programa semanal. Fale com o administrador da organização.",
@@ -617,6 +619,8 @@ const ptBR: I18nDictionary = {
     tokenHint: "O token fica salvo e é usado só no servidor para decifrar a semana.",
     saveConnection: "Salvar conexão",
     replaceConnection: "Substituir conexão",
+    testConnection: "Testar conexão",
+    weeksFound: "{count} semanas encontradas.",
     saving: "Salvando...",
     connectionSaved: "Conexão salva e semana carregada.",
     refreshNow: "Atualizar semana agora",

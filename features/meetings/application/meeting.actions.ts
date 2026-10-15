@@ -26,6 +26,8 @@ export type MeetingWeekResult =
   | { ok: true; week: StoredWeekProgram }
   | { ok: false; error: string };
 
+export type MeetingTestResult = { ok: true; weeks: number } | { ok: false; error: string };
+
 export interface MeetingActionResult {
   ok: boolean;
   error?: string;
@@ -133,6 +135,21 @@ export async function refreshMeetingWeek(
     await mirrorRangeProgram(organizationId, range);
     revalidateMeetings(organizationSlug);
     return { ok: true };
+  } catch (error) {
+    return { ok: false, error: knownDomainError(error) };
+  }
+}
+
+/** Testa URL + token contra o Meeting sem salvar (owner). */
+export async function testMeetingConnection(input: unknown): Promise<MeetingTestResult> {
+  const parsed = meetingConnectionSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Revisa los datos informados." };
+  try {
+    await requireOrgOwner(parsed.data.organizationId);
+    const baseUrl = parsed.data.baseUrl ?? readDefaultBaseUrl();
+    if (!baseUrl) return { ok: false, error: "Informa la URL de Meeting." };
+    const range = await fetchDecryptedRange(baseUrl, parsed.data.token);
+    return { ok: true, weeks: range.weeks.length };
   } catch (error) {
     return { ok: false, error: knownDomainError(error) };
   }

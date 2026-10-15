@@ -929,6 +929,8 @@ export type I18nDictionary = {
     previousWeek: string;
     nextWeek: string;
     backToCurrentWeek: string;
+    selectWeek: string;
+    currentWeek: string;
     notConnectedTitle: string;
     notConnectedDescription: string;
     loadErrorTitle: string;
@@ -943,6 +945,8 @@ export type I18nDictionary = {
     tokenHint: string;
     saveConnection: string;
     replaceConnection: string;
+    testConnection: string;
+    weeksFound: string;
     saving: string;
     connectionSaved: string;
     refreshNow: string;
