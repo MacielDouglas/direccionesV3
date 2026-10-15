@@ -240,7 +240,7 @@ Um calendário com visão mensal para agendamento de eventos da organização. F
 
 Programa semanal da organização sincronizado a partir do app Meeting via conexão por organização (URL base + token AES, usados só no servidor). Funcionalidades:
 
-- Conexão configurada pelo admin em **Admin → Reuniões** (`MeetingConnection`, uma por organização); programa da semana em cache no banco (`MeetingWeekProgram`, único por organização + semana)
+- Conexão configurada pelo admin em **Admin → Reuniões** (`MeetingConnection`, uma por organização); o Meeting envia a semana anterior + a atual + as futuras cadastradas (teto de 26) e o banco local (`MeetingWeekProgram`, único por organização + semana) espelha exatamente o último envio
 - Página **Reuniões** para todos os membros com meio de semana e fim de semana: partes numeradas no padrão do impresso, relógio do programa (hora de início por parte), designações, leitura da Bíblia, deveres de apoio e limpeza agrupada por setor
 - Cartão **Próxima reunião** na home com minhas designações em `Suspense` isolado e bottom-sheet da programação com identidade azul (`--color-meeting`) + exportação em PDF na agenda
 - Bilíngue pt-BR/es via dicionários `t.meetings`; numeração (`numberProgramParts`) e relógio (`timeProgramParts`) com regras oficiais documentadas em `DESIGN.md`

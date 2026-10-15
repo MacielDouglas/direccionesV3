@@ -602,6 +602,7 @@ const es: I18nDictionary = {
     fetchedAt: "Actualizado el",
     previousWeek: "Semana anterior",
     nextWeek: "Semana siguiente",
+    backToCurrentWeek: "Volver a la semana actual",
     notConnectedTitle: "Sin conexión con Meeting",
     notConnectedDescription:
       "El owner aún no conectó el programa semanal. Habla con el administrador de la organización.",

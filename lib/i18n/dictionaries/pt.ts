@@ -600,6 +600,7 @@ const ptBR: I18nDictionary = {
     fetchedAt: "Atualizado em",
     previousWeek: "Semana anterior",
     nextWeek: "Próxima semana",
+    backToCurrentWeek: "Voltar à semana atual",
     notConnectedTitle: "Sem conexão com o Meeting",
     notConnectedDescription:
       "O owner ainda não conectou o programa semanal. Fale com o administrador da organização.",

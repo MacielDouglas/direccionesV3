@@ -477,8 +477,9 @@ model MeetingConnection {
   @@map("meeting_connection")
 }
 
-// Foto da semana decifrada: busca no Meeting só quando inicia uma semana
-// sem programação salva; depois serve do banco.
+// Foto das semanas decifradas: espelho exato do último envio do Meeting
+// (anterior + atual + futuras); busca só quando a semana atual não tem
+// programação salva, ou por ação explícita do owner.
 model MeetingWeekProgram {
   id               String   @id @default(uuid())
   organizationId   String

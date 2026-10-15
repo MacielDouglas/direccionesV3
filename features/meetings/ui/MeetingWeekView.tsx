@@ -43,7 +43,7 @@ import {
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { I18nDictionary } from "@/lib/i18n/types";
 import { cn } from "@/lib/utils";
-import { BrushCleaning, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { BrushCleaning, ChevronLeft, ChevronRight, Undo2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { FaHandsHelping } from "react-icons/fa";
 
@@ -204,6 +204,15 @@ export function MeetingWeekView({
   const currentIndex = weeks.findIndex((item) => item.weekStart === selectedStart);
   const canPrev = currentIndex > 0;
   const canNext = currentIndex >= 0 && currentIndex < weeks.length - 1;
+  const isViewingOtherWeek = selectedStart !== week.weekStart;
+
+  /** Volta à semana atual (já em mãos: sem busca). */
+  function backToCurrentWeek() {
+    if (navigating) return;
+    setNavError(false);
+    setLoadedWeek(null);
+    setSelectedStart(week.weekStart);
+  }
 
   async function goToWeek(index: number) {
     const target = weeks[index];
@@ -292,6 +301,19 @@ export function MeetingWeekView({
             <p role="alert" className="mt-1 text-center text-xs font-medium text-white">
               {texts.loadErrorDescription}
             </p>
+          ) : null}
+          {isViewingOtherWeek ? (
+            <div className="mt-3 flex justify-center">
+              <button
+                type="button"
+                onClick={backToCurrentWeek}
+                disabled={navigating}
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-white/15 px-5 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-white/25 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <Undo2 className="size-4" aria-hidden="true" />
+                {texts.backToCurrentWeek}
+              </button>
+            </div>
           ) : null}
           {hasBoth ? (
             <fieldset className="mt-3 flex min-w-0 rounded-xl bg-white/15 p-1">

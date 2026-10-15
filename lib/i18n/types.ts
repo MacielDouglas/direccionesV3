@@ -928,6 +928,7 @@ export type I18nDictionary = {
     fetchedAt: string;
     previousWeek: string;
     nextWeek: string;
+    backToCurrentWeek: string;
     notConnectedTitle: string;
     notConnectedDescription: string;
     loadErrorTitle: string;

@@ -4,11 +4,11 @@ import { toRole } from "@/domains/member/utils/toRole";
 import {
   type StoredWeekProgram,
   getStoredMeetingWeek,
+  mirrorRangeProgram,
 } from "@/features/meetings/application/meeting.service";
 import { meetingConnectionSchema } from "@/features/meetings/domain/meeting.schema";
-import { fetchDecryptedWeek } from "@/features/meetings/infrastructure/meeting-api";
+import { fetchDecryptedRange } from "@/features/meetings/infrastructure/meeting-api";
 import { readDefaultBaseUrl } from "@/features/meetings/infrastructure/meeting-config";
-import { getBrasiliaWeekRange } from "@/features/meetings/utils/meeting-week";
 import { canAccess } from "@/lib/autorize";
 import { prisma } from "@/lib/prisma";
 import { requireOrgMember } from "@/server/users";
@@ -73,7 +73,8 @@ function revalidateMeetings(slug: string) {
 
 /**
  * Cria a conexão: valida URL + token, testa contra o Meeting (busca e
- * decifra a semana atual) e só então salva. Uma por organização.
+ * decifra o intervalo) e só então salva. Uma por organização. O banco local
+ * já nasce como espelho exato do envio.
  */
 export async function saveMeetingConnection(
   input: unknown,
@@ -94,31 +95,15 @@ export async function saveMeetingConnection(
     const baseUrl = parsed.data.baseUrl ?? readDefaultBaseUrl();
     if (!baseUrl) return { ok: false, error: "Informa la URL de Meeting." };
     // Testa antes de salvar: garante URL + token válidos na hora.
-    const payload = await fetchDecryptedWeek(baseUrl, token);
-    const { weekStart, weekEnd } = getBrasiliaWeekRange();
+    const range = await fetchDecryptedRange(baseUrl, token);
     await prisma.$transaction([
       prisma.meetingConnection.upsert({
         where: { organizationId },
         create: { organizationId, baseUrl, token },
         update: { baseUrl, token },
       }),
-      prisma.meetingWeekProgram.upsert({
-        where: { organizationId_weekStart: { organizationId, weekStart } },
-        create: {
-          organizationId,
-          weekStart,
-          weekEnd,
-          congregationName: payload.congregationName,
-          payload: payload as unknown as object,
-        },
-        update: {
-          weekEnd,
-          congregationName: payload.congregationName,
-          payload: payload as unknown as object,
-          fetchedAt: new Date(),
-        },
-      }),
     ]);
+    await mirrorRangeProgram(organizationId, range);
     revalidateMeetings(organizationSlug);
     return { ok: true };
   } catch (error) {
@@ -126,7 +111,7 @@ export async function saveMeetingConnection(
   }
 }
 
-/** Força nova busca no Meeting para a semana atual (owner). */
+/** Força nova busca no Meeting e espelha o intervalo inteiro (owner). */
 export async function refreshMeetingWeek(
   input: unknown,
   organizationSlug: string,
@@ -144,24 +129,8 @@ export async function refreshMeetingWeek(
       where: { organizationId },
     });
     if (!connection) return { ok: false, error: "Sin conexión con Meeting." };
-    const payload = await fetchDecryptedWeek(connection.baseUrl, connection.token);
-    const { weekStart, weekEnd } = getBrasiliaWeekRange();
-    await prisma.meetingWeekProgram.upsert({
-      where: { organizationId_weekStart: { organizationId, weekStart } },
-      create: {
-        organizationId,
-        weekStart,
-        weekEnd,
-        congregationName: payload.congregationName,
-        payload: payload as unknown as object,
-      },
-      update: {
-        weekEnd,
-        congregationName: payload.congregationName,
-        payload: payload as unknown as object,
-        fetchedAt: new Date(),
-      },
-    });
+    const range = await fetchDecryptedRange(connection.baseUrl, connection.token);
+    await mirrorRangeProgram(organizationId, range);
     revalidateMeetings(organizationSlug);
     return { ok: true };
   } catch (error) {

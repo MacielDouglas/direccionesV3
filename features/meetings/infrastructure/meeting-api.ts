@@ -1,9 +1,9 @@
 import { createDecipheriv, createHash } from "node:crypto";
 import {
   type MeetingEnvelope,
-  type MeetingWeekPayload,
+  type MeetingRangePayload,
   meetingEnvelopeSchema,
-  meetingWeekPayloadSchema,
+  meetingRangePayloadSchema,
 } from "@/features/meetings/domain/meeting.schema";
 
 const FETCH_TIMEOUT_MS = 15_000;
@@ -13,7 +13,7 @@ function deriveKey(token: string): Buffer {
   return createHash("sha256").update(token, "utf8").digest();
 }
 
-function decryptEnvelope(token: string, envelope: MeetingEnvelope): MeetingWeekPayload {
+function decryptEnvelope(token: string, envelope: MeetingEnvelope): MeetingRangePayload {
   let plaintext: string;
   try {
     const decipher = createDecipheriv(
@@ -29,7 +29,7 @@ function decryptEnvelope(token: string, envelope: MeetingEnvelope): MeetingWeekP
   } catch {
     throw new Error("No se pudo descifrar (token inválido).");
   }
-  const parsed = meetingWeekPayloadSchema.safeParse(JSON.parse(plaintext));
+  const parsed = meetingRangePayloadSchema.safeParse(JSON.parse(plaintext));
   if (!parsed.success) throw new Error("Respuesta no válida.");
   return parsed.data;
 }
@@ -37,11 +37,13 @@ function decryptEnvelope(token: string, envelope: MeetingEnvelope): MeetingWeekP
 /**
  * Busca o envelope no Meeting e decifra (só no servidor: o token nunca
  * chega ao browser). 404 = enlace revogado ou inexistente no Meeting.
+ * Retorna o intervalo enviado (anterior + atual + futuras): quem chama
+ * espelha exatamente este envio no banco local.
  */
-export async function fetchDecryptedWeek(
+export async function fetchDecryptedRange(
   baseUrl: string,
   token: string,
-): Promise<MeetingWeekPayload> {
+): Promise<MeetingRangePayload> {
   let response: Response;
   try {
     response = await fetch(`${baseUrl}/api/public/programa/${token}`, {

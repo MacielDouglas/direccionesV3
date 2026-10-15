@@ -1,5 +1,8 @@
-import type { MeetingWeekPayload } from "@/features/meetings/domain/meeting.schema";
-import { fetchDecryptedWeek } from "@/features/meetings/infrastructure/meeting-api";
+import type {
+  MeetingRangePayload,
+  MeetingWeekPayload,
+} from "@/features/meetings/domain/meeting.schema";
+import { fetchDecryptedRange } from "@/features/meetings/infrastructure/meeting-api";
 import { getBrasiliaWeekRange } from "@/features/meetings/utils/meeting-week";
 import { prisma } from "@/lib/prisma";
 import { requireOrgMember } from "@/server/users";
@@ -91,8 +94,46 @@ export async function getStoredMeetingWeek(
 }
 
 /**
+ * Espelha exatamente o último envio do Meeting: insere/atualiza cada semana
+ * recebida e apaga as semanas locais que não vieram no envio. O banco local
+ * mantém sempre a última programação enviada — nada além dela.
+ */
+export async function mirrorRangeProgram(
+  organizationId: string,
+  range: MeetingRangePayload,
+): Promise<void> {
+  await requireOrgMember(organizationId);
+  if (range.weeks.length === 0) throw new Error("Respuesta no válida.");
+  const received = range.weeks.map((week) => week.weekStart);
+  await prisma.$transaction([
+    ...range.weeks.map((week) =>
+      prisma.meetingWeekProgram.upsert({
+        where: { organizationId_weekStart: { organizationId, weekStart: week.weekStart } },
+        create: {
+          organizationId,
+          weekStart: week.weekStart,
+          weekEnd: week.weekEnd,
+          congregationName: week.congregationName || range.congregationName,
+          payload: week as unknown as object,
+        },
+        update: {
+          weekEnd: week.weekEnd,
+          congregationName: week.congregationName || range.congregationName,
+          payload: week as unknown as object,
+          fetchedAt: new Date(),
+        },
+      }),
+    ),
+    prisma.meetingWeekProgram.deleteMany({
+      where: { organizationId, weekStart: { notIn: received } },
+    }),
+  ]);
+}
+
+/**
  * Semana atual: serve do banco quando já existe snapshot; só busca no
- * Meeting (e salva) quando inicia uma semana sem programação salva.
+ * Meeting (e espelha o intervalo inteiro) quando a semana atual ainda não
+ * tem programação salva.
  */
 export async function getCurrentWeekProgram(organizationId: string): Promise<CurrentWeekState> {
   await requireOrgMember(organizationId);
@@ -101,36 +142,25 @@ export async function getCurrentWeekProgram(organizationId: string): Promise<Cur
   });
   if (!connection) return { connected: false };
 
-  const { weekStart, weekEnd } = getBrasiliaWeekRange();
+  const { weekStart } = getBrasiliaWeekRange();
   const stored = await prisma.meetingWeekProgram.findUnique({
     where: { organizationId_weekStart: { organizationId, weekStart } },
   });
   if (stored) return { connected: true, week: toStoredWeek(stored) };
 
-  let payload: MeetingWeekPayload;
+  let range: MeetingRangePayload;
   try {
-    payload = await fetchDecryptedWeek(connection.baseUrl, connection.token);
+    range = await fetchDecryptedRange(connection.baseUrl, connection.token);
+    await mirrorRangeProgram(organizationId, range);
   } catch (error) {
     return {
       connected: true,
       error: error instanceof Error ? error.message : "No se pudo cargar la semana.",
     };
   }
-  const saved = await prisma.meetingWeekProgram.upsert({
+  const fresh = await prisma.meetingWeekProgram.findUnique({
     where: { organizationId_weekStart: { organizationId, weekStart } },
-    create: {
-      organizationId,
-      weekStart,
-      weekEnd,
-      congregationName: payload.congregationName,
-      payload: payload as unknown as object,
-    },
-    update: {
-      weekEnd,
-      congregationName: payload.congregationName,
-      payload: payload as unknown as object,
-      fetchedAt: new Date(),
-    },
   });
-  return { connected: true, week: toStoredWeek(saved) };
+  if (!fresh) return { connected: true, error: "No se pudo cargar la semana." };
+  return { connected: true, week: toStoredWeek(fresh) };
 }

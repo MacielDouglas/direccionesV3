@@ -125,3 +125,15 @@ export const meetingWeekPayloadSchema = z.object({
 
 export type MeetingWeekPayload = z.infer<typeof meetingWeekPayloadSchema>;
 export type MeetingDetail = z.infer<typeof meetingDetailSchema>;
+
+/**
+ * Enlace público do Meeting: semana anterior + atual (sempre, mesmo vazias)
+ * + futuras cadastradas (teto de 26). Cada semana tem o formato de antes.
+ */
+export const meetingRangePayloadSchema = z.object({
+  generatedAt: z.string(),
+  congregationName: z.string(),
+  weeks: z.array(meetingWeekPayloadSchema),
+});
+
+export type MeetingRangePayload = z.infer<typeof meetingRangePayloadSchema>;
