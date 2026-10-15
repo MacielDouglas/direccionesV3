@@ -1,6 +1,7 @@
 "use server";
 
 import { deleteR2Object } from "@/infrastructure/storage/r2.service";
+import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { resolveServerActionError } from "@/server/action-error";
 import { requireAdminOrOwner, requireAuthContext } from "@/server/users";
@@ -64,11 +65,22 @@ export async function getAddressByIdAction(addressId: string) {
   });
 }
 
-export async function requestAddressDeletionAction(addressId: string): Promise<{ error?: string }> {
+export async function requestAddressDeletionAction(
+  addressId: string,
+  reason: string,
+): Promise<{ error?: string }> {
   try {
     if (!addressIdSchema.safeParse(addressId).success) {
       return { error: "Dirección inválida." };
     }
+    const t = await getServerDictionary();
+    const reasonSchema = z
+      .string()
+      .trim()
+      .min(3, t.addresses.deletionReasonInvalid)
+      .max(500, t.addresses.deletionReasonInvalid);
+    const parsedReason = reasonSchema.safeParse(reason);
+    if (!parsedReason.success) throw parsedReason.error;
     const data = await requireAuthContext();
     const organizationId = getOrganizationId(data);
 
@@ -83,6 +95,7 @@ export async function requestAddressDeletionAction(addressId: string): Promise<{
         pendingDeletion: true,
         pendingDeletionAt: new Date(),
         pendingDeletionByPersonId: data.person.id,
+        pendingDeletionReason: parsedReason.data,
       },
     });
 
@@ -145,6 +158,7 @@ export async function cancelAddressDeletionAction(addressId: string) {
       pendingDeletion: false,
       pendingDeletionAt: null,
       pendingDeletionByPersonId: null,
+      pendingDeletionReason: null,
     },
   });
 

@@ -408,6 +408,9 @@ export type I18nDictionary = {
     deleteAddressDescription: string;
     requestDeletion: string;
     deletionRequested: string;
+    deletionReasonLabel: string;
+    deletionReasonPlaceholder: string;
+    deletionReasonInvalid: string;
     deletionConfirmed: string;
     deletionCancelled: string;
     deleteError: string;

@@ -40,10 +40,11 @@ Cada organização opera em seu próprio contexto isolado. Os membros pertencem 
 ## Funcionalidades
 
 - **Organizações multi-tenant** — dados isolados por organização com roteamento baseado em slug
-- **Cadastro de endereços** — CRUD completo com GPS, fotos, tipo de endereço e fluxo de exclusão pendente
+- **Cadastro de endereços** — CRUD completo com GPS, fotos, tipo de endereço e fluxo de exclusão pendente com motivo obrigatório (3–500 caracteres)
 - **Cards** — listas curadas de endereços criadas por admins e atribuídas a membros
 - **Mapas interativos** — integração com Mapbox GL para visualização de endereços, captura de GPS e camadas de rota
 - **Agenda** — calendário compartilhado para agendamento de eventos dentro da organização
+- **Reuniões** — programa semanal sincronizado do Meeting (meio de semana e fim de semana) com designações, leitura da Bíblia, limpeza por setor, relógio do programa e cartão "Próxima reunião" na home
 - **Levantamento de campo (Survey)** — mapa colaborativo onde membros marcam com pins os locais visitados
 - **Sistema de convites** — links de convite baseados em tokens para admitir novos membros
 - **Controle de acesso por perfil** — níveis owner, admin e member com permissões granulares
@@ -62,7 +63,7 @@ O Direcciones_V3 adota uma arquitetura **feature-sliced** sobre o App Router do 
 
 ```
 app/                  → Segmentos de rota do Next.js (público / protegido)
-features/             → Módulos de domínio (addresses, agenda, cards, map, surveys…)
+features/             → Módulos de domínio (addresses, agenda, cards, map, surveys, meetings, home…)
   └─ <feature>/
        ├─ application/   Server Actions e serviços
        ├─ domain/        Schemas Zod e constantes
@@ -113,11 +114,13 @@ direcciones-v3/
 │   │   │   │   ├── cards/
 │   │   │   │   ├── invitations/
 │   │   │   │   ├── organizations/
+│   │   │   │   ├── reunioes/     # Conexão com o programa semanal do Meeting
 │   │   │   │   └── users/
 │   │   │   └── (members)/        # Páginas para todos os membros
 │   │   │       ├── addresses/
 │   │   │       ├── agenda/
 │   │   │       ├── my-cards/
+│   │   │       ├── reunioes/     # Programa semanal (meio de semana + fim de semana)
 │   │   │       ├── surveys/
 │   │   │       └── user/
 │   │   └── organizations/        # Seletor de organização
@@ -129,7 +132,9 @@ direcciones-v3/
 │   ├── addresses/                # CRUD de endereços, GPS, upload de imagem
 │   ├── agenda/                   # Eventos do calendário
 │   ├── cards/                    # Listas de endereços (cards)
+│   ├── home/                     # Dashboard + cartão da próxima reunião
 │   ├── map/                      # Componentes e provedores Mapbox
+│   ├── meetings/                 # Programa semanal (conexão, semana, designações, limpeza)
 │   ├── surveys/                  # Mapa compartilhado de pins
 │   ├── invitations/              # Sistema de convite por token
 │   └── user/                     # Gerenciamento de perfil
@@ -173,6 +178,8 @@ O Direcciones_V3 utiliza um sistema de três perfis com escopo por organização
 | Atribuir cards a membros               |  ✅   |  ✅   |   ❌   |
 | Criar / editar eventos na agenda       |  ✅   |  ✅   |   ❌   |
 | Excluir eventos da agenda              |  ✅   |  ✅   |   ❌   |
+| Conectar programa semanal (Reuniões)   |  ✅   |  ✅   |   ❌   |
+| Visualizar programa semanal (Reuniões) |  ✅   |  ✅   |   ✅   |
 | Visualizar todos os endereços          |  ✅   |  ✅   |   ✅   |
 | Criar / editar próprios endereços      |  ✅   |  ✅   |   ✅   |
 | Solicitar exclusão de endereço         |  ✅   |  ✅   |   ✅   |
@@ -195,7 +202,7 @@ A entidade central da aplicação. Cada endereço pertence a uma organização e
 - Coordenadas GPS capturadas pelo dispositivo ou selecionadas no mapa Mapbox
 - Uma ou mais fotos armazenadas no R2 com compressão automática e conversão de HEIC para JPEG via `browser-image-compression` e `heic2any`
 - Extração de metadados EXIF (`exifr`) para preencher automaticamente as coordenadas a partir da foto
-- Fluxo de **exclusão pendente** — membros sinalizam endereços para exclusão e admins confirmam
+- Fluxo de **exclusão pendente com motivo** — membros sinalizam endereços para exclusão informando o motivo obrigatório (3–500 caracteres, validado com Zod no servidor) e admins confirmam ou cancelam com o motivo visível na tela de pendentes
 
 As páginas de endereços suportam busca inteligente no cliente (Fuse.js) e paginação no servidor.
 
@@ -228,6 +235,15 @@ Um calendário com visão mensal para agendamento de eventos da organização. F
 - Eventos passados colapsados por padrão com prévia em chips
 - Criação e exclusão de eventos exclusiva para admins
 - Exportação da lista mensal de eventos em PDF via jsPDF
+
+### Reuniões
+
+Programa semanal da organização sincronizado a partir do app Meeting via conexão por organização (URL base + token AES, usados só no servidor). Funcionalidades:
+
+- Conexão configurada pelo admin em **Admin → Reuniões** (`MeetingConnection`, uma por organização); programa da semana em cache no banco (`MeetingWeekProgram`, único por organização + semana)
+- Página **Reuniões** para todos os membros com meio de semana e fim de semana: partes numeradas no padrão do impresso, relógio do programa (hora de início por parte), designações, leitura da Bíblia, deveres de apoio e limpeza agrupada por setor
+- Cartão **Próxima reunião** na home com minhas designações em `Suspense` isolado e bottom-sheet da programação com identidade azul (`--color-meeting`) + exportação em PDF na agenda
+- Bilíngue pt-BR/es via dicionários `t.meetings`; numeração (`numberProgramParts`) e relógio (`timeProgramParts`) com regras oficiais documentadas em `DESIGN.md`
 
 ### Levantamento de Campo (Survey)
 
@@ -271,6 +287,10 @@ As migrações são gerenciadas com `prisma migrate` e versionadas em `prisma/mi
 | `20260312` | Adição de pins de levantamento com status                   |
 | `20260318` | Adição de eventos de agenda e campos estendidos             |
 | `20260319` | Adição de usuários convidados e cascade do token de convite |
+| `20260811–20260815` | Modelo `Person`, idioma do usuário e eventos de card     |
+| `20260930` | Integração inicial do Meeting + backup semanal do banco     |
+| `20261003` | `meeting_connection` + `meeting_week_program` (programa semanal em cache) |
+| `20261014` | `pendingDeletionReason` nos endereços (motivo obrigatório da exclusão) |
 
 Para aplicar as migrações em um ambiente novo:
 

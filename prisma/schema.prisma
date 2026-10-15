@@ -150,6 +150,7 @@ model Address {
   pendingDeletion           Boolean   @default(false)
   pendingDeletionAt         DateTime?
   pendingDeletionByPersonId String?
+  pendingDeletionReason     String?
 
   requestedBy Person? @relation("AddressDeletionRequests", fields: [pendingDeletionByPersonId], references: [id], onDelete: SetNull)
 

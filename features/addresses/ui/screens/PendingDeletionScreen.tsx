@@ -140,6 +140,17 @@ export default async function PendingDeletionScreen({ addresses, organizationSlu
                   </div>
                 )}
 
+                {address.pendingDeletionReason ? (
+                  <figure className="flex min-w-0 flex-col gap-1 rounded-xl border border-border bg-card px-3 py-2">
+                    <figcaption className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                      {t.addresses.deletionReasonLabel}
+                    </figcaption>
+                    <blockquote className="min-w-0 break-words text-sm text-foreground">
+                      {address.pendingDeletionReason}
+                    </blockquote>
+                  </figure>
+                ) : null}
+
                 <footer className="flex flex-col gap-2 sm:flex-row sm:items-stretch pt-2 border-t border-border">
                   <PendingDeletionActions addressId={address.id} />
                 </footer>
