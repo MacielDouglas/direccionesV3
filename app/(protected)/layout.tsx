@@ -31,9 +31,7 @@ export default async function ProtectedLayout({
         aria-hidden="true"
         className="h-[calc(4rem+env(safe-area-inset-bottom,0px))] w-full shrink-0 bg-background md:hidden"
       />
-      {data.activeOrganization?.slug && (
-        <BottomTabBar orgSlug={data.activeOrganization.slug} role={data.memberRole?.role ?? null} />
-      )}
+      {data.activeOrganization?.slug && <BottomTabBar orgSlug={data.activeOrganization.slug} />}
     </div>
   );
 }

@@ -24,6 +24,8 @@ export default function MenuItem({ item, orgSlug, onSelect }: Props) {
     item.href === "/"
       ? cleanPath === "/" || cleanPath === orgBase
       : cleanPath === `${orgBase}${item.href}` || cleanPath.startsWith(`${orgBase}${item.href}/`);
+  // Reuniões acende no azul do módulo (igual à tab bar); o resto no laranja.
+  const meeting = item.accent === "meeting";
 
   return (
     <NavLink
@@ -33,14 +35,22 @@ export default function MenuItem({ item, orgSlug, onSelect }: Props) {
       className={cn(
         "flex min-h-12 items-center gap-3 rounded-2xl px-3 py-2",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
-        active ? "bg-brand/10 font-semibold" : "hover:bg-accent",
+        active
+          ? meeting
+            ? "bg-meeting/10 font-semibold"
+            : "bg-brand/10 font-semibold"
+          : "hover:bg-accent",
       )}
     >
       <span
         aria-hidden
         className={cn(
           "grid size-10 shrink-0 place-items-center rounded-xl transition-colors",
-          active ? "bg-brand text-brand-foreground" : "bg-muted text-muted-foreground",
+          active
+            ? meeting
+              ? "bg-meeting text-white"
+              : "bg-brand text-brand-foreground"
+            : "bg-muted text-muted-foreground",
         )}
       >
         <Icon className="size-5" />

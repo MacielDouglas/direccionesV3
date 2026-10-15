@@ -1,47 +1,59 @@
 "use client";
 
 import { useHaptic } from "@/app/hooks/useHaptic";
-import type { Role } from "@/domains/member/types/role.types";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { CalendarDays, CreditCard, Home, MapPin, ShieldCheck, User } from "lucide-react";
+import { CalendarDays, CreditCard, Home, MapPin, UserRoundGroup } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 interface BottomTabBarProps {
   orgSlug: string;
-  role?: Role | null;
 }
 
-export function BottomTabBar({ orgSlug, role }: BottomTabBarProps) {
+type TabAccent = "brand" | "meeting";
+
+export function BottomTabBar({ orgSlug }: BottomTabBarProps) {
   const pathname = usePathname();
   const { vibrate } = useHaptic();
   const { t } = useI18n();
   const [isHidden, setIsHidden] = useState(false);
   const lastScrollY = useRef(0);
 
-  const isAdminRole = role === "admin" || role === "owner";
-
-  const tabs = [
-    { id: "home", href: "/", label: t.navigation.homeLabel, Icon: Home },
-    {
-      id: "my-cards",
-      href: "/my-cards",
-      label: t.navigation.myCardsLabel,
-      Icon: CreditCard,
-    },
-    {
-      id: "addresses",
-      href: "/addresses",
-      label: t.navigation.addressesLabel,
-      Icon: MapPin,
-    },
-    { id: "agenda", href: "/agenda", label: t.navigation.agendaLabel, Icon: CalendarDays },
-    isAdminRole
-      ? { id: "admin", href: "/admin", label: t.navigation.administration, Icon: ShieldCheck }
-      : { id: "user", href: "/user", label: t.navigation.profileLabel, Icon: User },
-  ];
+  // Perfil e admin saíram da barra (seguem no menu): entra Reuniões.
+  const tabs: { id: string; href: string; label: string; Icon: typeof Home; accent: TabAccent }[] =
+    [
+      { id: "home", href: "/", label: t.navigation.homeLabel, Icon: Home, accent: "brand" },
+      {
+        id: "my-cards",
+        href: "/my-cards",
+        label: t.navigation.myCardsLabel,
+        Icon: CreditCard,
+        accent: "brand",
+      },
+      {
+        id: "addresses",
+        href: "/addresses",
+        label: t.navigation.addressesLabel,
+        Icon: MapPin,
+        accent: "brand",
+      },
+      {
+        id: "agenda",
+        href: "/agenda",
+        label: t.navigation.agendaLabel,
+        Icon: CalendarDays,
+        accent: "brand",
+      },
+      {
+        id: "reunioes",
+        href: "/reunioes",
+        label: t.navigation.meetingsLabel,
+        Icon: UserRoundGroup,
+        accent: "meeting",
+      },
+    ];
 
   useEffect(() => {
     // Nas telas de admin a barra fica sempre visível: listas longas
@@ -83,8 +95,10 @@ export function BottomTabBar({ orgSlug, role }: BottomTabBarProps) {
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <ul className="mx-auto flex h-16 max-w-md items-stretch justify-around px-2">
-        {tabs.map(({ id, href, label, Icon }) => {
+        {tabs.map(({ id, href, label, Icon, accent }) => {
           const active = isActive(href);
+          // Reuniões acende no azul do módulo (igual ao menu mobile).
+          const meeting = accent === "meeting";
           return (
             <li key={id} className="min-w-0 flex-1">
               <Link
@@ -94,14 +108,15 @@ export function BottomTabBar({ orgSlug, role }: BottomTabBarProps) {
                 className={cn(
                   "flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-xl px-1 transition-colors",
                   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
-                  active ? "text-brand" : "text-muted-foreground hover:text-foreground",
+                  active
+                    ? meeting
+                      ? "text-meeting-text"
+                      : "text-brand"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Icon
-                  className={cn(
-                    "size-5 transition-transform",
-                    active && "scale-110 text-brand stroke-[2.5]",
-                  )}
+                  className={cn("size-5 transition-transform", active && "scale-110 stroke-[2.5]")}
                   aria-hidden="true"
                 />
                 <span className="max-w-full truncate px-0.5 text-xs font-medium leading-none">

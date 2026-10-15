@@ -107,7 +107,7 @@ O laranja `#ff6828` é a cor de marca e de **ação primária** (botões princip
 - Neutros quentes (off-white / quase-preto), nunca cinza-azulado frio.
 - Cards `rounded-2xl` com borda quente e `shadow-xs`; radius base `0.875rem`.
 - Header claro com blur (`bg-background/80 backdrop-blur-md`), sem moldura escura fixa.
-- Bottom tab bar fixa no mobile (`md:hidden`) com 5 rotas + i18n.
+- Bottom tab bar fixa no mobile (`md:hidden`) com 5 rotas (home, my-cards, addresses, agenda, reuniões) + i18n. Perfil e admin vivem só no menu.
 - Tipografia Outfit (única família de UI; mono Inconsolata só para dados técnicos).
 - Fonte de inputs ≥ `16px` (anti-zoom iOS).
 - Semântica de mapa preservada: vermelho padrão/pendente, azul seleção, verde confirmado, amarelo sugerido, cinza cancelado.
@@ -120,7 +120,7 @@ Paleta dual-theme com neutros quentes e um acento de marca que também é a aç�
 - **Laranja Direcciones** (`#ff6828`): marca + ação primária. Usado em botões `default`, foco (`--ring`), tab bar ativa, dia "hoje" no calendário, badge de tipo, item admin do menu. **Foreground** em laranja é sempre `#2a1405` (marrom-escuro de alto contraste) — nunca `text-white`.
 
 ### Meeting (Reuniões)
-- **Azul Meeting** (`#1c69d4`, token `--color-meeting`): cor de destaque de tudo que é do módulo Reuniões — cabeçalho da seção na home, botão sólido "Ver programação", header sticky e abas do bottom-sheet, link "Ver programação completa", fundo tint (`bg-meeting/10`–`/20`) do card e do skeleton. **Texto azul** usa `--color-meeting-text` (`text-meeting-text`): `#1c69d4` no claro (≈5.2:1) e `#7ab5f0` no escuro (≈6.9:1) — nunca `text-meeting` cru para texto no dark mode.
+- **Azul Meeting** (`#1c69d4`, token `--color-meeting`): cor de destaque de tudo que é do módulo Reuniões — cabeçalho da seção na home, botão sólido "Ver programação", header sticky e abas do bottom-sheet, link "Ver programação completa", fundo tint (`bg-meeting/10`–`/20`) do card e do skeleton, aba Reuniões da tab bar e item Reuniões do menu quando ativos (caixa sólida `bg-meeting` com ícone branco). **Texto azul** usa `--color-meeting-text` (`text-meeting-text`): `#1c69d4` no claro (≈5.2:1) e `#7ab5f0` no escuro (≈6.9:1) — nunca `text-meeting` cru para texto no dark mode.
 - **Cores de seção do programa** (Tesouros, Seamos, etc.) vêm do domínio (`meetingSectionMetaOf`) e não mudam; em texto pequeno use `text-xl font-bold uppercase` (large text ≥3:1).
 - **Numeração do programa** (`numberProgramParts` em `features/meetings/domain`): só partes de conteúdo ganham número, em sequência contínua (é esse total que o card da home exibe); cânticos e moldura (`president`, `opening-song/comments`, `concluding-comments/song`, `middle/watchtower-song`) ficam sem número; blocos sem parte numerada não mostram cabeçalho e a abertura (`placement: opening`) não tem divisórias — espelha o impresso do Meeting.
 - **Relógio do programa** (`timeProgramParts` em `features/meetings/utils`): cada linha mostra a hora de início (base = início da reunião + durações), com +1 min posterior na leitura da Bíblia e em toda parte de Seamos; número vai inline no título ("4. Empiece"), sem selo separado.
@@ -203,8 +203,8 @@ Cantos generosos: radius base `0.875rem` (`--radius`). Botões e controles `roun
 
 ### Navigation
 - **Desktop header:** `bg-background/80 backdrop-blur-md`, logo "Direcciones" sem moldura, LanguageSelector + toggle de tema + botão de menu.
-- **Mobile:** drawer deslizante com itens `rounded-2xl` (ícone em caixa, rota ativa com `bg-brand/10` + `aria-current`), Home sem duplicar, e rodapé fixo (`shrink-0 border-t`, nav com `min-h-0`) com LanguageSelector e Sair sempre visíveis; haptic + overlay `bg-black/60 backdrop-blur-sm`.
-- **Bottom tab bar (mobile):** fixa na base, `bg-background/95 backdrop-blur-md`, 5 itens (home, my-cards, addresses, agenda, admin/user); ativo `text-brand` com ícone `scale-110`; rótulos com `truncate`.
+- **Mobile:** drawer deslizante com itens `rounded-2xl` (ícone em caixa, rota ativa com `bg-brand/10` + `aria-current` — Reuniões usa `bg-meeting/10` com caixa `bg-meeting`), Home sem duplicar, e rodapé fixo (`shrink-0 border-t`, nav com `min-h-0`) com LanguageSelector e Sair sempre visíveis; haptic + overlay `bg-black/60 backdrop-blur-sm`.
+- **Bottom tab bar (mobile):** fixa na base, `bg-background/95 backdrop-blur-md`, 5 itens (home, my-cards, addresses, agenda, reuniões); ativo `text-brand` com ícone `scale-110` — Reuniões ativa usa `text-meeting-text`; rótulos com `truncate`.
 - **Home menu:** tiles grandes `rounded-2xl p-4 pl-6 shadow-xs`; item admin em `bg-brand text-brand-foreground`, demais em `bg-card`.
 
 ### Signature Component — Card visual de endereço

@@ -9,7 +9,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { getMeetingWeekAction } from "@/features/meetings/application/meeting.actions";
-import type { StoredWeekProgram } from "@/features/meetings/application/meeting.service";
+import type {
+  StoredWeekProgram,
+  StoredWeekSummary,
+} from "@/features/meetings/application/meeting.service";
 import {
   type MeetingLocale,
   meetingSectionMetaOf,
@@ -187,7 +190,7 @@ export function MeetingWeekView({
 }: {
   week: StoredWeekProgram;
   /** Semanas salvas (mais antiga → mais recente) para as setas < >. */
-  weeks: { weekStart: string; weekEnd: string }[];
+  weeks: StoredWeekSummary[];
   organizationId: string;
   texts: Texts;
   locale: MeetingLocale;
@@ -271,7 +274,10 @@ export function MeetingWeekView({
   const showActions = meeting !== null && (otherDuties.length > 0 || meetingCleaning.length > 0);
 
   return (
-    <div className="flex min-w-0 flex-col gap-4">
+    <div
+      aria-busy={navigating}
+      className={cn("flex min-w-0 flex-col gap-4 transition-opacity", navigating && "opacity-60")}
+    >
       {(displayedWeek.midweek || displayedWeek.weekend) && (
         <div className="flex min-w-0 flex-col rounded-2xl bg-meeting px-4 pb-3 pt-5 text-white shadow-xs">
           <div className="flex items-center gap-1">

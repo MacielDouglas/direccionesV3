@@ -21,6 +21,8 @@ export type NavigationItem = {
   href: string;
   icon: ElementType;
   roles?: Role[];
+  /** Cor de destaque quando ativo: reuniões usa o azul do módulo. */
+  accent?: "brand" | "meeting";
   children?: NavigationItem[];
 };
 
@@ -90,6 +92,7 @@ export const navigationMenu: NavigationItem[] = [
     label: "meetingsLabel",
     href: "/reunioes",
     icon: UserRoundGroup,
+    accent: "meeting",
   },
   {
     id: "admin",
