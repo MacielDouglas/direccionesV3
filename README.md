@@ -80,6 +80,24 @@ prisma/               → Schema e migrações
 
 O fluxo de dados é estritamente unidirecional: **UI → Server Action → Service → Prisma → PostgreSQL**. Nenhuma rota de API é usada para mutações internas — tudo passa por Server Actions tipadas do Next.js.
 
+```mermaid
+flowchart LR
+  UI["RSC + ilhas client<br/>Tailwind + Mapbox GL"] --> SA["Server Actions (Zod + autorize.ts)"]
+  SA --> SVC["Services por feature"]
+  SVC --> DB[("PostgreSQL + Prisma")]
+  SVC --> R2["R2 presigned + EXIF"]
+  SVC --> MT["Meeting sync (AES, server-only)"]
+```
+
+### API / Actions (resumo)
+
+| Área | Via | Regras |
+|---|---|---|
+| addresses / cards / agenda / surveys | Server Actions | `autorize.ts` no servidor + `RoleGuard` só visual |
+| upload de fotos | `/api/*` presigned R2 | compressão + HEIC→JPEG + EXIF |
+| reuniões (Meeting) | sync server-only | token AES nunca exposto ao client |
+| convites | `/join/[token]` | token uso único, Google OAuth como member |
+
 ---
 
 ## Stack Tecnológica
