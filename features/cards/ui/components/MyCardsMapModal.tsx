@@ -69,7 +69,7 @@ export function MyCardsMapModal({
           type="button"
           onClick={onClose}
           aria-label={t.common.back}
-          className="absolute top-4 left-4 z-10 flex max-w-[calc(100%-5.5rem)] items-center gap-2.5 rounded-2xl border border-border bg-background/90 py-2 pr-4 pl-3 text-left shadow-lg backdrop-blur transition-colors hover:bg-background active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="absolute top-[calc(1rem+env(safe-area-inset-top,0px))] left-[calc(1rem+env(safe-area-inset-left,0px))] z-10 flex max-w-[calc(100%-5.5rem-env(safe-area-inset-left,0px)-env(safe-area-inset-right,0px))] items-center gap-2.5 rounded-2xl border border-border bg-background/90 py-2 pr-4 pl-3 text-left shadow-lg backdrop-blur transition-colors hover:bg-background active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-brand text-brand-foreground">
             <ArrowLeft className="size-4" aria-hidden />
@@ -84,7 +84,7 @@ export function MyCardsMapModal({
           type="button"
           onClick={onClose}
           aria-label={t.common.close}
-          className="absolute top-4 right-4 z-10 grid size-11 place-items-center rounded-full border border-border bg-card text-foreground shadow-lg transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+          className="absolute top-[calc(1rem+env(safe-area-inset-top,0px))] right-[calc(1rem+env(safe-area-inset-right,0px))] z-10 grid size-11 place-items-center rounded-full border border-border bg-card text-foreground shadow-lg transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
         >
           <X className="size-5" aria-hidden />
         </button>
