@@ -1,3 +1,4 @@
+import { OfflineSyncProvider } from "@/features/pwa/core/offline-sync";
 import { TenantProvider } from "@/providers/TenantProvider";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
@@ -29,7 +30,7 @@ export default async function TenantLayout({ children, params }: Props) {
 
   const role = isSuperUser ? "superuser" : (data.memberRole?.role ?? null);
 
-  return (
+  const content = (
     <TenantProvider
       value={{
         organization: {
@@ -42,5 +43,15 @@ export default async function TenantLayout({ children, params }: Props) {
     >
       {children}
     </TenantProvider>
+  );
+
+  // Super User não tem organização ativa no layout protegido: sincroniza
+  // o contexto offline da organização visitada.
+  if (!isSuperUser || !data.person) return content;
+
+  return (
+    <OfflineSyncProvider organizationId={organization.id} personId={data.person.id}>
+      {content}
+    </OfflineSyncProvider>
   );
 }

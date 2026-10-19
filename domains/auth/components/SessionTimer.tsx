@@ -1,5 +1,6 @@
 "use client";
 
+import { clearOfflineSession } from "@/features/pwa/core/offline-store";
 import { authClient } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
 
@@ -25,9 +26,14 @@ export default function SessionTimer({ expiresAt }: SessionTimerProps) {
       setTimeLeft(remaining);
 
       if (remaining <= 0) {
-        authClient.signOut().then(() => {
-          window.location.href = "/login";
-        });
+        void (async () => {
+          try {
+            await authClient.signOut();
+          } finally {
+            await clearOfflineSession();
+            window.location.href = "/login";
+          }
+        })();
         return;
       }
 

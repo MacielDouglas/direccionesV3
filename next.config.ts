@@ -89,6 +89,26 @@ export default withPWA({
     clientsClaim: true,
     runtimeCaching: [
       {
+        // Health check do modo offline: nunca pode vir do cache, senão
+        // o app acha que está online quando a rede caiu.
+        urlPattern: /\/api\/health(\?.*)?$/i,
+        handler: "NetworkOnly",
+      },
+      {
+        // Páginas visitadas — NetworkFirst para abrir offline a última versão
+        urlPattern: ({ request }) => request.mode === "navigate",
+        handler: "NetworkFirst",
+        options: {
+          cacheName: "pages",
+          networkTimeoutSeconds: 4,
+          expiration: {
+            maxEntries: 60,
+            maxAgeSeconds: 60 * 60 * 24 * 7, // 7 dias
+          },
+          cacheableResponse: { statuses: [0, 200] },
+        },
+      },
+      {
         // _next/static — StaleWhileRevalidate para navegação instantânea
         urlPattern: /\/_next\/static\/.*/i,
         handler: "StaleWhileRevalidate",
@@ -103,19 +123,6 @@ export default withPWA({
           expiration: {
             maxEntries: 200,
             maxAgeSeconds: 60 * 60 * 24 * 30, // 30 dias
-          },
-          cacheableResponse: { statuses: [0, 200] },
-        },
-      },
-      {
-        // ✅ Tiles/styles/fonts/glyphs do Mapbox — crítico para mobile offline
-        urlPattern: /^https:\/\/api\.mapbox\.com\/.*/i,
-        handler: "CacheFirst",
-        options: {
-          cacheName: "mapbox-tiles",
-          expiration: {
-            maxEntries: 500,
-            maxAgeSeconds: 60 * 60 * 24 * 7, // 7 dias
           },
           cacheableResponse: { statuses: [0, 200] },
         },

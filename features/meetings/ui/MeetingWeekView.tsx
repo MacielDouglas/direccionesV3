@@ -23,6 +23,10 @@ import {
 import type { MeetingDetail, MeetingDuty } from "@/features/meetings/domain/meeting.schema";
 import {
   MEETING_SHEET_DESIGNATIONS_CLASSES,
+  MeetingSheetBody,
+  MeetingSheetHeader,
+} from "@/features/meetings/ui/meeting-sheet";
+import {
   ProgramFramingRow,
   type ProgramIcon,
   ProgramPartRow,
@@ -44,13 +48,16 @@ import {
   shortWeekday,
   timeProgramParts,
 } from "@/features/meetings/utils/meeting-format";
+import { useNetworkStatus } from "@/features/pwa/core/network-status";
+import { readMeetingsSnapshot } from "@/features/pwa/core/offline-store";
+import { useOfflineSync } from "@/features/pwa/core/offline-sync";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { I18nDictionary } from "@/lib/i18n/types";
 import { cn } from "@/lib/utils";
-import { BrushCleaning, ChevronsUpDown, HandHelping, RefreshCw, Undo2, X } from "lucide-react";
+import { BrushCleaning, ChevronsUpDown, HandHelping, RefreshCw, Undo2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { Select as SelectPrimitive } from "radix-ui";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Texts = I18nDictionary["meetings"];
 type MeetingKind = "midweek" | "weekend";
@@ -201,19 +208,40 @@ export function MeetingWeekView({
   locale: MeetingLocale;
 }) {
   const { t } = useI18n();
+  const { online } = useNetworkStatus();
+  const { lastSyncedAt } = useOfflineSync();
   const router = useRouter();
   const pathname = usePathname();
   const [selectedStart, setSelectedStart] = useState(initialWeek?.weekStart ?? week.weekStart);
   const [loadedWeek, setLoadedWeek] = useState<StoredWeekProgram | null>(initialWeek);
+  const [cachedWeek, setCachedWeek] = useState<StoredWeekProgram | null>(null);
   const [navigating, setNavigating] = useState(false);
   const [navError, setNavError] = useState(false);
   const [failedIndex, setFailedIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const requestedAt = lastSyncedAt;
+
+    void readMeetingsSnapshot(organizationId).then((snapshot) => {
+      if (cancelled) return;
+      if (requestedAt && snapshot?.updatedAt && snapshot.updatedAt < requestedAt) return;
+      setCachedWeek(snapshot?.week ?? null);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [organizationId, lastSyncedAt]);
+
   // A semana exibida é a atual (prop) ou uma salva já buscada; se a busca
-  // falhar, mantém a semana anterior em vez de tela vazia.
-  const displayedWeek =
+  // falhar, mantém a semana anterior em vez de tela vazia. Offline usa
+  // exclusivamente a última semana sincronizada.
+  const liveWeek =
     selectedStart === week.weekStart || loadedWeek?.weekStart !== selectedStart ? week : loadedWeek;
+  const displayedWeek = (!online ? cachedWeek : null) ?? liveWeek;
   const currentIndex = weeks.findIndex((item) => item.weekStart === selectedStart);
-  const isViewingOtherWeek = selectedStart !== week.weekStart;
+  const isViewingOtherWeek = online && selectedStart !== week.weekStart;
 
   /** Espelha a semana na URL (deep-link compartilhável; replace sem poluir histórico). */
   function syncWeekParam(weekStart: string | null) {
@@ -222,7 +250,7 @@ export function MeetingWeekView({
 
   /** Volta à semana atual (já em mãos: sem busca). */
   function backToCurrentWeek() {
-    if (navigating) return;
+    if (!online || navigating) return;
     setNavError(false);
     setFailedIndex(null);
     setLoadedWeek(null);
@@ -232,7 +260,7 @@ export function MeetingWeekView({
 
   async function goToWeek(index: number) {
     const target = weeks[index];
-    if (!target || index === currentIndex || navigating) return;
+    if (!online || !target || index === currentIndex || navigating) return;
     setNavError(false);
     setFailedIndex(null);
     syncWeekParam(target.weekStart === week.weekStart ? null : target.weekStart);
@@ -296,7 +324,7 @@ export function MeetingWeekView({
     >
       {(displayedWeek.midweek || displayedWeek.weekend) && (
         <div className="flex min-w-0 flex-col rounded-2xl bg-meeting px-4 pb-3 pt-5 text-white shadow-xs">
-          {weeks.length > 1 ? (
+          {weeks.length > 1 && online ? (
             <SelectPrimitive.Root
               value={selectedStart}
               onValueChange={(value) => {
@@ -334,6 +362,21 @@ export function MeetingWeekView({
                 </SelectContent>
               </SelectPrimitive.Portal>
             </SelectPrimitive.Root>
+          ) : weeks.length > 1 ? (
+            <div className="flex flex-col gap-1">
+              <div
+                aria-disabled="true"
+                className="flex h-12 w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-white/10 px-4 text-base font-semibold tracking-tight text-white/70"
+              >
+                {formatWeekRange(displayedWeek.weekStart, displayedWeek.weekEnd, locale)}
+                <ChevronsUpDown className="size-5 shrink-0 text-white/50" aria-hidden="true" />
+              </div>
+              {!online && (
+                <p className="text-center text-xs font-medium text-white/80">
+                  {t.pwa.offlineWeekLocked}
+                </p>
+              )}
+            </div>
           ) : (
             <p className="text-center text-base font-semibold tracking-tight">
               {formatWeekRange(displayedWeek.weekStart, displayedWeek.weekEnd, locale)}
@@ -419,49 +462,44 @@ export function MeetingWeekView({
                     {title} · {formatLongDate(meeting.date, locale)}
                   </DialogDescription>
                 </DialogHeader>
-                <div className="sticky top-0 z-10 flex min-w-0 items-center justify-center bg-meeting px-12 py-4 text-white">
-                  <p className="break-words text-center text-base font-semibold tracking-tight">
-                    {texts.designationsLabel} - {shortLabel} - {formatFullNumeric(meeting.date)}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setDesignationsOpen(false)}
-                    aria-label={t.common.close}
-                    className="absolute top-1/2 right-2 grid size-11 -translate-y-1/2 place-items-center rounded-full text-white/90 transition-colors hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                  >
-                    <X className="size-5" aria-hidden="true" />
-                  </button>
-                </div>
-                <ul className="divide-y divide-border px-4 pb-4">
-                  {otherDuties.map((duty, dutyIndex) => {
-                    const DutyIcon = dutyIconFor(duty.postLabel);
-                    return (
-                      <li
-                        key={`${duty.date}-${duty.dutyKey}-${dutyIndex}`}
-                        className="flex items-center gap-3 py-2.5"
-                      >
-                        <span
-                          aria-hidden
-                          className="grid size-9 shrink-0 place-items-center rounded-xl bg-meeting/10 text-meeting-text"
+                <MeetingSheetHeader
+                  title={texts.designationsLabel}
+                  subtitle={`${shortLabel} · ${formatFullNumeric(meeting.date)}`}
+                  closeLabel={t.common.close}
+                  onClose={() => setDesignationsOpen(false)}
+                />
+                <MeetingSheetBody>
+                  <ul className="divide-y divide-border px-4 pb-4">
+                    {otherDuties.map((duty, dutyIndex) => {
+                      const DutyIcon = dutyIconFor(duty.postLabel);
+                      return (
+                        <li
+                          key={`${duty.date}-${duty.dutyKey}-${dutyIndex}`}
+                          className="flex items-center gap-3 py-2.5"
                         >
-                          <DutyIcon size={18} />
-                        </span>
-                        <span
-                          title={duty.postLabel}
-                          className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground"
-                        >
-                          {formatAttendantPost(duty.postLabel, texts.attendantLabel)}
-                        </span>
-                        <span
-                          title={duty.personName}
-                          className="min-w-0 max-w-[45%] flex-none truncate text-right text-sm text-muted-foreground"
-                        >
-                          {duty.personName}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
+                          <span
+                            aria-hidden
+                            className="grid size-9 shrink-0 place-items-center rounded-xl bg-meeting/10 text-meeting-text"
+                          >
+                            <DutyIcon size={18} />
+                          </span>
+                          <span
+                            title={duty.postLabel}
+                            className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground"
+                          >
+                            {formatAttendantPost(duty.postLabel, texts.attendantLabel)}
+                          </span>
+                          <span
+                            title={duty.personName}
+                            className="min-w-0 max-w-[45%] flex-none truncate text-right text-sm text-muted-foreground"
+                          >
+                            {duty.personName}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </MeetingSheetBody>
               </DialogContent>
             </Dialog>
           ) : null}
@@ -485,36 +523,31 @@ export function MeetingWeekView({
                     {title} · {formatLongDate(meeting.date, locale)}
                   </DialogDescription>
                 </DialogHeader>
-                <div className="sticky top-0 z-10 flex min-w-0 items-center justify-center bg-meeting px-12 py-4 text-white">
-                  <p className="break-words text-center text-base font-semibold tracking-tight">
-                    {texts.cleaningTitle} - {shortLabel} - {formatFullNumeric(meeting.date)}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setCleaningOpen(false)}
-                    aria-label={t.common.close}
-                    className="absolute top-1/2 right-2 grid size-11 -translate-y-1/2 place-items-center rounded-full text-white/90 transition-colors hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                  >
-                    <X className="size-5" aria-hidden="true" />
-                  </button>
-                </div>
-                <div className="flex min-w-0 flex-col divide-y divide-border px-4 pb-4">
-                  {cleaningGroups.map((group) => {
-                    // Espanhol quando cadastrado; senão cai no texto original.
-                    const sectorLabel =
-                      locale === "es" ? group.sectorNameEs || group.sectorName : group.sectorName;
-                    const taskText = locale === "es" ? group.taskEs || group.task : group.task;
-                    return (
-                      <DutyRow
-                        key={group.key}
-                        post={sectorLabel}
-                        detail={taskText}
-                        person={group.people.join(" · ")}
-                        icon={cleaningIconFor(group.sectorName)}
-                      />
-                    );
-                  })}
-                </div>
+                <MeetingSheetHeader
+                  title={texts.cleaningTitle}
+                  subtitle={`${shortLabel} · ${formatFullNumeric(meeting.date)}`}
+                  closeLabel={t.common.close}
+                  onClose={() => setCleaningOpen(false)}
+                />
+                <MeetingSheetBody>
+                  <div className="flex min-w-0 flex-col divide-y divide-border px-4 pb-4">
+                    {cleaningGroups.map((group) => {
+                      // Espanhol quando cadastrado; senão cai no texto original.
+                      const sectorLabel =
+                        locale === "es" ? group.sectorNameEs || group.sectorName : group.sectorName;
+                      const taskText = locale === "es" ? group.taskEs || group.task : group.task;
+                      return (
+                        <DutyRow
+                          key={group.key}
+                          post={sectorLabel}
+                          detail={taskText}
+                          person={group.people.join(" · ")}
+                          icon={cleaningIconFor(group.sectorName)}
+                        />
+                      );
+                    })}
+                  </div>
+                </MeetingSheetBody>
               </DialogContent>
             </Dialog>
           ) : null}

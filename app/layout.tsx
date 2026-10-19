@@ -5,8 +5,8 @@ import { NavigationProvider } from "@/components/NavigationProvider";
 import { SchedulerErrorHandler } from "@/components/SchedulerErrorHandler";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalMapProvider } from "@/features/map/core/GlobalMapProvider";
+import { NetworkStatusProvider } from "@/features/pwa/core/network-status";
 import { InstallPrompt } from "@/features/pwa/ui/InstallPrompt";
-import { OfflineIndicator } from "@/features/pwa/ui/OfflineIndicator";
 import { RegisterSW } from "@/features/pwa/ui/RegisterSW";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
@@ -123,14 +123,15 @@ export default async function RootLayout({
               {t.common.skipLink}
             </a>
 
-            <Toaster position="top-center" richColors closeButton />
-            <SchedulerErrorHandler />
-            <RegisterSW />
-            <OfflineIndicator />
-            <InstallPrompt />
-            <GlobalMapProvider>
-              <NavigationProvider>{children}</NavigationProvider>
-            </GlobalMapProvider>
+            <NetworkStatusProvider>
+              <Toaster position="top-center" richColors closeButton />
+              <SchedulerErrorHandler />
+              <RegisterSW />
+              <InstallPrompt />
+              <GlobalMapProvider>
+                <NavigationProvider>{children}</NavigationProvider>
+              </GlobalMapProvider>
+            </NetworkStatusProvider>
           </I18nProvider>
         </ThemeProvider>
       </body>

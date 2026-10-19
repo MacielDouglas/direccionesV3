@@ -61,6 +61,7 @@ export async function NextMeetingCard({
 
   return (
     <NextMeetingSection
+      organizationId={organizationId}
       weekStart={state.week.weekStart}
       weekEnd={state.week.weekEnd}
       midweek={state.week.midweek}

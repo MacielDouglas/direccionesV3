@@ -5,6 +5,7 @@ import {
 } from "@/features/meetings/application/meeting.service";
 import { MeetingRetryButton } from "@/features/meetings/ui/MeetingRetryButton";
 import { MeetingWeekView } from "@/features/meetings/ui/MeetingWeekView";
+import { OfflineSyncButton } from "@/features/pwa/ui/OfflineSyncButton";
 import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
@@ -51,11 +52,14 @@ export default async function ReunioesPage({ params, searchParams }: Props) {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-6 md:py-10">
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          {t.meetings.title}
-        </h1>
-        <p className="mt-0.5 text-sm text-muted-foreground">{t.meetings.subtitle}</p>
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            {t.meetings.title}
+          </h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">{t.meetings.subtitle}</p>
+        </div>
+        <OfflineSyncButton />
       </header>
 
       {!state.connected ? (

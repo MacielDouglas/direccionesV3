@@ -28,28 +28,6 @@ export type ProgramIcon = ComponentType<{ size?: string | number; className?: st
  * (`NextMeetingSection`) e a página de reuniões (`MeetingWeekView`).
  */
 
-/** Bottom-sheet mobile do programa (mesmo padrão do AddressDetailModal). */
-export const MEETING_SHEET_CLASSES = cn(
-  "fixed z-50 gap-0",
-  "max-h-[92dvh] w-full max-w-full overflow-x-hidden overflow-y-auto p-0",
-  "left-0! right-0! top-auto! rounded-t-3xl! border-0!",
-  "bottom-[calc(4rem+env(safe-area-inset-bottom,0px))]!",
-  "translate-x-0! translate-y-0!",
-  "sm:left-1/2! sm:right-auto! sm:top-1/2! sm:bottom-auto! sm:-translate-x-1/2! sm:-translate-y-1/2!",
-  "sm:max-w-lg! sm:rounded-3xl! sm:border! sm:max-h-[90dvh]",
-);
-
-/** Sheet das designações: flutua acima do nav-bottom (h-16 + safe-area). */
-export const MEETING_SHEET_DESIGNATIONS_CLASSES = cn(
-  "fixed z-50 gap-0",
-  "max-h-[92dvh] w-full max-w-full overflow-x-hidden overflow-y-auto p-0",
-  "left-0! right-0! top-auto! rounded-t-3xl! border-0!",
-  "bottom-[calc(4rem+env(safe-area-inset-bottom,0px))]!",
-  "translate-x-0! translate-y-0!",
-  "sm:left-1/2! sm:right-auto! sm:top-1/2! sm:bottom-auto! sm:-translate-x-1/2! sm:-translate-y-1/2!",
-  "sm:max-w-md! sm:rounded-3xl! sm:border! sm:max-h-[90dvh]",
-);
-
 function normalizeToken(value: string): string {
   return value
     .normalize("NFD")

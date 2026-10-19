@@ -122,6 +122,22 @@ export async function listMyCards(organizationId: string, personId: string) {
   });
 }
 
+export async function listMyCardsOfflineAddresses(organizationId: string, personId: string) {
+  const year = new Date().getFullYear();
+  return prisma.address.findMany({
+    where: { organizationId, card: { assignedPersonId: personId } },
+    include: {
+      createdBy: { select: { name: true } },
+      updatedBy: { select: { name: true } },
+      invites: {
+        where: { year: { gte: year - 2 } },
+        orderBy: { createdAt: "desc" },
+        include: { deliveredBy: { select: { name: true } } },
+      },
+    },
+  });
+}
+
 export async function countMyCards(organizationId: string, personId: string) {
   return prisma.card.count({
     where: { organizationId, assignedPersonId: personId },

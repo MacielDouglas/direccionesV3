@@ -16,6 +16,7 @@ import type { AddressWithUsers } from "@/features/addresses/types/address.types"
 import { AddressHeroImage } from "@/features/addresses/ui/components/AddressHeroImage";
 import DeleteAddressButton from "@/features/addresses/ui/components/DeleteAddressButton";
 import { NavigateAddressButtons } from "@/features/addresses/ui/components/NavigateAddressButtons";
+import { useNetworkStatus } from "@/features/pwa/core/network-status";
 import { resolveActionError } from "@/lib/action-error";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
@@ -71,10 +72,21 @@ interface Props {
   organizationSlug: string;
   onClose: () => void;
   myCards?: boolean;
+  readOnly?: boolean;
+  initialInvites?: AddressInviteDto[];
 }
 
-export function AddressDetailModal({ promise, onClose, organizationSlug, myCards = false }: Props) {
+export function AddressDetailModal({
+  promise,
+  onClose,
+  organizationSlug,
+  myCards = false,
+  readOnly = false,
+  initialInvites,
+}: Props) {
   const { t } = useI18n();
+  const { online } = useNetworkStatus();
+  const effectiveReadOnly = readOnly || !online;
   // Rejeição vira null: o conteúdo mostra "não encontrado" em vez de
   // estourar o Suspense sem boundary
   const safePromise = useMemo(
@@ -102,6 +114,8 @@ export function AddressDetailModal({ promise, onClose, organizationSlug, myCards
               organizationSlug={organizationSlug}
               onClose={onClose}
               myCards={myCards}
+              readOnly={effectiveReadOnly}
+              initialInvites={initialInvites}
             />
           </Suspense>
         )}
@@ -152,11 +166,15 @@ function AddressContent({
   organizationSlug,
   onClose,
   myCards,
+  readOnly,
+  initialInvites,
 }: {
   promise: Promise<AddressWithUsers | null>;
   organizationSlug: string;
   onClose: () => void;
   myCards: boolean;
+  readOnly: boolean;
+  initialInvites?: AddressInviteDto[];
 }) {
   const { t, locale } = useI18n();
   const address = use(promise);
@@ -177,6 +195,12 @@ function AddressContent({
 
   useEffect(() => {
     if (!myCards || !address) return;
+
+    if (readOnly) {
+      if (initialInvites) setInvites(initialInvites);
+      return;
+    }
+
     let cancelled = false;
     getAddressInvitesAction(address.id)
       .then((data) => {
@@ -188,7 +212,13 @@ function AddressContent({
     return () => {
       cancelled = true;
     };
-  }, [myCards, address]);
+  }, [myCards, address, readOnly, initialInvites]);
+
+  useEffect(() => {
+    if (!readOnly) return;
+    setInviteOpen(false);
+    setFlagTarget(null);
+  }, [readOnly]);
 
   if (!address)
     return (
@@ -243,7 +273,7 @@ function AddressContent({
           </div>
         )}
         <div className="flex items-center justify-between gap-3 p-3">
-          {hasCoordinates ? (
+          {hasCoordinates && !readOnly ? (
             <button
               type="button"
               onClick={() => setMapOpen(true)}
@@ -431,73 +461,73 @@ function AddressContent({
         )}
 
         {/* Ações do My Cards: situação + convites */}
-        {myCards && (
-          <>
-            <div className="flex flex-col gap-2">
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setFlagTarget({ flag: "personChanged", revert: personChanged })}
-                  className={cn(
-                    "w-full border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/40",
-                    personChanged &&
-                      "border-rose-300 bg-rose-500 text-white hover:bg-rose-600 dark:border-rose-500 dark:bg-rose-600/80 dark:text-white dark:hover:bg-rose-500",
-                  )}
-                >
-                  <UserRoundX className="size-4 shrink-0" aria-hidden />
-                  {t.addresses.personChangedButton}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setFlagTarget({ flag: "noVisits", revert: noVisits })}
-                  className={cn(
-                    "w-full border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 dark:border-violet-900 dark:bg-violet-950/40 dark:text-violet-300 dark:hover:bg-violet-900/40",
-                    noVisits &&
-                      "border-violet-300 bg-violet-500 text-white hover:bg-violet-600 dark:border-violet-500 dark:bg-violet-600/80 dark:text-white dark:hover:bg-violet-500",
-                  )}
-                >
-                  <DoorClosed className="size-4 shrink-0" aria-hidden />
-                  {t.addresses.noVisitsButton}
-                </Button>
-              </div>
+        {myCards && !readOnly && (
+          <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setInviteOpen(true)}
-                className="w-full border-0 bg-brand text-brand-foreground hover:bg-brand/90 dark:bg-brand/90 dark:hover:bg-brand"
+                onClick={() => setFlagTarget({ flag: "personChanged", revert: personChanged })}
+                className={cn(
+                  "w-full border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/40",
+                  personChanged &&
+                    "border-rose-300 bg-rose-500 text-white hover:bg-rose-600 dark:border-rose-500 dark:bg-rose-600/80 dark:text-white dark:hover:bg-rose-500",
+                )}
               >
-                <MailCheck className="size-4 shrink-0" aria-hidden />
-                {t.addresses.inviteButton}
+                <UserRoundX className="size-4 shrink-0" aria-hidden />
+                {t.addresses.personChangedButton}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setFlagTarget({ flag: "noVisits", revert: noVisits })}
+                className={cn(
+                  "w-full border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 dark:border-violet-900 dark:bg-violet-950/40 dark:text-violet-300 dark:hover:bg-violet-900/40",
+                  noVisits &&
+                    "border-violet-300 bg-violet-500 text-white hover:bg-violet-600 dark:border-violet-500 dark:bg-violet-600/80 dark:text-white dark:hover:bg-violet-500",
+                )}
+              >
+                <DoorClosed className="size-4 shrink-0" aria-hidden />
+                {t.addresses.noVisitsButton}
               </Button>
             </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setInviteOpen(true)}
+              className="w-full border-0 bg-brand text-brand-foreground hover:bg-brand/90 dark:bg-brand/90 dark:hover:bg-brand"
+            >
+              <MailCheck className="size-4 shrink-0" aria-hidden />
+              {t.addresses.inviteButton}
+            </Button>
+          </div>
+        )}
 
-            <section className="rounded-xl bg-muted p-4">
-              <h3 className="mb-2 text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
-                {t.addresses.inviteStatusTitle.replace("{year}", String(currentYear))}
-              </h3>
-              {yearInvites.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t.addresses.inviteNotDelivered}</p>
-              ) : (
-                <ul className="flex flex-col gap-2">
-                  {yearInvites.map((invite) => (
-                    <li key={invite.id} className="flex items-center justify-between gap-2">
-                      <span className="min-w-0 truncate text-sm font-medium text-foreground">
-                        {inviteLabel(invite, t)}
-                      </span>
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {t.addresses.inviteDeliveredOn.replace(
-                          "{date}",
-                          formatDate(invite.createdAt, locale),
-                        )}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          </>
+        {myCards && (
+          <section className="rounded-xl bg-muted p-4">
+            <h3 className="mb-2 text-[0.625rem] font-semibold uppercase tracking-widest text-muted-foreground">
+              {t.addresses.inviteStatusTitle.replace("{year}", String(currentYear))}
+            </h3>
+            {yearInvites.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t.addresses.inviteNotDelivered}</p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {yearInvites.map((invite) => (
+                  <li key={invite.id} className="flex items-center justify-between gap-2">
+                    <span className="min-w-0 truncate text-sm font-medium text-foreground">
+                      {inviteLabel(invite, t)}
+                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {t.addresses.inviteDeliveredOn.replace(
+                        "{date}",
+                        formatDate(invite.createdAt, locale),
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         )}
 
         {/* Auditoria */}
@@ -524,26 +554,32 @@ function AddressContent({
         </footer>
 
         {/* Ações */}
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Link
-            href={`/org/${organizationSlug}/addresses/${address.id}/edit`}
-            className="w-full sm:flex-1"
-          >
-            <Button className="h-11 w-full" variant="outline">
-              <Pencil className="size-4" aria-hidden />
-              {t.addresses.editAddress}
-            </Button>
-          </Link>
-          <div className="w-full sm:flex-1">
-            <DeleteAddressButton
-              addressId={address.id}
-              isPendingDeletion={!!address.pendingDeletionAt}
-            />
+        {readOnly ? (
+          <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm font-medium text-amber-800 dark:text-amber-300">
+            {t.pwa.offlineReadOnly}
+          </p>
+        ) : (
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Link
+              href={`/org/${organizationSlug}/addresses/${address.id}/edit`}
+              className="w-full sm:flex-1"
+            >
+              <Button className="h-11 w-full" variant="outline">
+                <Pencil className="size-4" aria-hidden />
+                {t.addresses.editAddress}
+              </Button>
+            </Link>
+            <div className="w-full sm:flex-1">
+              <DeleteAddressButton
+                addressId={address.id}
+                isPendingDeletion={!!address.pendingDeletionAt}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
-      {hasCoordinates && (
+      {hasCoordinates && !readOnly && (
         <AddressMapModal
           open={mapOpen}
           onClose={() => setMapOpen(false)}

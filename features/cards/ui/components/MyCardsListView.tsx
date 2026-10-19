@@ -41,6 +41,7 @@ interface Props {
   cards: Card[];
   organizationSlug: string;
   totalAddresses: number;
+  online: boolean;
   onOpenAddress: (id: string) => void;
   onOpenCardMap: (cardId: string) => void;
   onOpenAllMap: () => void;
@@ -68,6 +69,7 @@ export function MyCardsListView({
   cards,
   organizationSlug,
   totalAddresses,
+  online,
   onOpenAddress,
   onOpenCardMap,
   onOpenAllMap,
@@ -133,7 +135,7 @@ export function MyCardsListView({
         </div>
       </section>
 
-      {allAddressesCount > 0 && (
+      {allAddressesCount > 0 && online && (
         <button
           type="button"
           onClick={onOpenAllMap}
@@ -304,7 +306,7 @@ export function MyCardsListView({
                   </ul>
 
                   {/* Mapa do cartão */}
-                  {mappableCount > 0 && (
+                  {mappableCount > 0 && online && (
                     <button
                       type="button"
                       onClick={() => onOpenCardMap(card.id)}
@@ -324,11 +326,13 @@ export function MyCardsListView({
                   )}
 
                   {/* Devolução da tarjeta pelo próprio membro */}
-                  <ReturnMyCardButton
-                    cardId={card.id}
-                    cardNumber={card.number}
-                    organizationSlug={organizationSlug}
-                  />
+                  {online && (
+                    <ReturnMyCardButton
+                      cardId={card.id}
+                      cardNumber={card.number}
+                      organizationSlug={organizationSlug}
+                    />
+                  )}
                 </div>
               </article>
             </li>

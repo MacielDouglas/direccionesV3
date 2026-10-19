@@ -100,6 +100,16 @@ export type I18nDictionary = {
     offlineRetry: string;
     offlineHome: string;
     offlineBanner: string;
+    offlinePill: string;
+    offlinePillAria: string;
+    offlineSyncNow: string;
+    offlineSyncing: string;
+    offlineSynced: string;
+    offlineLastSync: string;
+    offlineSyncError: string;
+    offlineReadOnly: string;
+    offlineWeekLocked: string;
+    offlineNoData: string;
   };
   footer: {
     tagline: string;

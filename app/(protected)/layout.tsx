@@ -1,6 +1,7 @@
 import Footer from "@/components/footer/Footer";
 import Header from "@/components/header/Header";
 import { BottomTabBar } from "@/components/navigation/BottomTabBar";
+import { OfflineSyncProvider } from "@/features/pwa/core/offline-sync";
 import { getCurrentUser } from "@/server/users";
 import { redirect } from "next/navigation";
 
@@ -13,7 +14,7 @@ export default async function ProtectedLayout({
 
   if (!data) redirect("/login");
 
-  return (
+  const content = (
     <div className="flex min-h-svh flex-col overflow-hidden bg-background text-foreground">
       <Header
         session={data.session.session}
@@ -33,5 +34,13 @@ export default async function ProtectedLayout({
       />
       {data.activeOrganization?.slug && <BottomTabBar orgSlug={data.activeOrganization.slug} />}
     </div>
+  );
+
+  if (!data.activeOrganization || !data.person) return content;
+
+  return (
+    <OfflineSyncProvider organizationId={data.activeOrganization.id} personId={data.person.id}>
+      {content}
+    </OfflineSyncProvider>
   );
 }

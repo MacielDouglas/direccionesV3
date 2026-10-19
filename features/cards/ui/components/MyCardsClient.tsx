@@ -1,9 +1,16 @@
 "use client";
 
 import type { AddressWithUsers } from "@/features/addresses/types/address.types";
+import { useNetworkStatus } from "@/features/pwa/core/network-status";
+import { readCardsSnapshot } from "@/features/pwa/core/offline-store";
+import { useOfflineSync } from "@/features/pwa/core/offline-sync";
+import type { OfflineCardsSnapshot } from "@/features/pwa/types/offline.types";
+import { OfflineSyncButton } from "@/features/pwa/ui/OfflineSyncButton";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import type { AddressInviteDto } from "@/server/address/address.action";
 import { fetchAddressWithUsers } from "@/server/address/address.action";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { AddressDetailModal } from "./AddressDetailModal";
 import { MyCardsListView } from "./MyCardsListView";
 import { MyCardsMapModal } from "./MyCardsMapModal";
@@ -42,21 +49,54 @@ type MapSelection = {
   addresses: MapAddress[];
 };
 
+type AddressDetailState = {
+  id: string;
+  promise: Promise<AddressWithUsers | null>;
+  readOnly: boolean;
+  invites?: AddressInviteDto[];
+};
+
 interface Props {
   cards: Card[];
+  organizationId: string;
   organizationSlug: string;
+  personId: string;
   totalAddresses: number;
 }
 
-export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props) {
+export function MyCardsClient({
+  cards,
+  organizationId,
+  organizationSlug,
+  personId,
+  totalAddresses,
+}: Props) {
   const { t } = useI18n();
-  const [addressPromise, setAddressPromise] = useState<Promise<AddressWithUsers | null> | null>(
-    null,
-  );
+  const { online } = useNetworkStatus();
+  const { lastSyncedAt } = useOfflineSync();
+  const [cached, setCached] = useState<OfflineCardsSnapshot | null>(null);
+  const [detail, setDetail] = useState<AddressDetailState | null>(null);
   const [mapSelection, setMapSelection] = useState<MapSelection | null>(null);
 
+  useEffect(() => {
+    let cancelled = false;
+    const requestedAt = lastSyncedAt;
+
+    void readCardsSnapshot(organizationId, personId).then((snapshot) => {
+      if (cancelled) return;
+      if (requestedAt && snapshot?.updatedAt && snapshot.updatedAt < requestedAt) return;
+      setCached(snapshot);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [organizationId, personId, lastSyncedAt]);
+
+  const effectiveCards: Card[] = !online && cached ? cached.cards : cards;
+
   const { allAddresses } = useMemo(() => {
-    const addresses = cards
+    const addresses = effectiveCards
       .flatMap((card) => card.addresses)
       .filter(
         (a): a is typeof a & { latitude: number; longitude: number } =>
@@ -72,14 +112,47 @@ export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props
     return {
       allAddresses: addresses,
     };
-  }, [cards]);
+  }, [effectiveCards]);
 
   const openAddress = (id: string) => {
-    setAddressPromise(fetchAddressWithUsers(id));
+    const cachedAddress = cached?.addresses[id];
+
+    if (!online) {
+      if (!cachedAddress) {
+        toast.error(t.pwa.offlineNoData);
+        return;
+      }
+      setDetail({
+        id,
+        promise: Promise.resolve(cachedAddress),
+        readOnly: true,
+        invites: cachedAddress.invites,
+      });
+      return;
+    }
+
+    const promise = (async () => {
+      try {
+        return await fetchAddressWithUsers(id);
+      } catch {
+        setDetail((current) =>
+          current?.id === id
+            ? {
+                ...current,
+                readOnly: true,
+                invites: cachedAddress?.invites ?? [],
+              }
+            : current,
+        );
+        return cachedAddress ?? null;
+      }
+    })();
+
+    setDetail({ id, promise, readOnly: false, invites: undefined });
   };
 
   const openAllAddressesMap = () => {
-    if (allAddresses.length === 0) return;
+    if (!online || allAddresses.length === 0) return;
     setMapSelection({
       title: t.cards.mine,
       subtitle: t.cards.addressesCount.replace("{count}", String(allAddresses.length)),
@@ -88,7 +161,8 @@ export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props
   };
 
   const openCardMap = (cardId: string) => {
-    const card = cards.find((c) => c.id === cardId);
+    if (!online) return;
+    const card = effectiveCards.find((c) => c.id === cardId);
     if (!card) return;
     const addresses = card.addresses
       .filter(
@@ -112,10 +186,20 @@ export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props
 
   return (
     <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        {!online && (
+          <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+            {t.pwa.offlineReadOnly}
+          </span>
+        )}
+        <OfflineSyncButton />
+      </div>
+
       <MyCardsListView
-        cards={cards}
+        cards={effectiveCards}
         organizationSlug={organizationSlug}
         totalAddresses={totalAddresses}
+        online={online}
         onOpenAddress={openAddress}
         onOpenCardMap={openCardMap}
         onOpenAllMap={openAllAddressesMap}
@@ -123,17 +207,19 @@ export function MyCardsClient({ cards, organizationSlug, totalAddresses }: Props
       />
 
       <div className="flex flex-col items-stretch gap-4 sm:items-center">
-        {addressPromise && (
+        {detail && (
           <AddressDetailModal
-            promise={addressPromise}
+            promise={detail.promise}
             organizationSlug={organizationSlug}
-            onClose={() => setAddressPromise(null)}
+            onClose={() => setDetail(null)}
             myCards
+            readOnly={detail.readOnly}
+            initialInvites={detail.invites}
           />
         )}
       </div>
 
-      {mapSelection && (
+      {online && mapSelection && (
         <MyCardsMapModal
           open
           onClose={() => setMapSelection(null)}

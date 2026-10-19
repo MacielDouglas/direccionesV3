@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { clearOfflineSession } from "@/features/pwa/core/offline-store";
 import { resolveActionError } from "@/lib/action-error";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { deleteAccountAction } from "@/server/organization/delete-account.action";
@@ -36,7 +37,10 @@ export function DeleteAccountButton({ userEmail }: { userEmail: string }) {
       setIsLoading(true);
       await deleteAccountAction();
     } catch (error) {
-      if (isRedirectError(error)) throw error;
+      if (isRedirectError(error)) {
+        await clearOfflineSession();
+        throw error;
+      }
       toast.error(resolveActionError(error, t));
       setIsLoading(false);
       setOpen(false);

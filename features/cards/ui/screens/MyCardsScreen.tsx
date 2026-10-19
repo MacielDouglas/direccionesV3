@@ -14,7 +14,9 @@ export async function MyCardsScreen({ organizationId, organizationSlug, personId
   return (
     <MyCardsClient
       cards={cards}
+      organizationId={organizationId}
       organizationSlug={organizationSlug}
+      personId={personId}
       totalAddresses={totalAddresses}
     />
   );

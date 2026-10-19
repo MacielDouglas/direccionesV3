@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import type { Role } from "@/domains/member/types/role.types";
+import { clearOfflineSession } from "@/features/pwa/core/offline-store";
 import { resolveActionError } from "@/lib/action-error";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { leaveOrganizationAction } from "@/server/organization/leave-organization.action";
@@ -40,7 +41,10 @@ export function LeaveOrganizationButton({
       setIsLoading(true);
       await leaveOrganizationAction(organizationId);
     } catch (error) {
-      if (isRedirectError(error)) throw error;
+      if (isRedirectError(error)) {
+        await clearOfflineSession();
+        throw error;
+      }
       toast.error(resolveActionError(error, t));
       setIsLoading(false);
     }

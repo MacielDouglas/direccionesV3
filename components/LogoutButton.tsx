@@ -1,5 +1,6 @@
 "use client";
 
+import { clearOfflineSession } from "@/features/pwa/core/offline-store";
 import { authClient } from "@/lib/auth-client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
@@ -15,17 +16,13 @@ export default function LogoutButton({ className }: { className?: string }) {
   const handleSignOut = async () => {
     try {
       setLoading(true);
-      await authClient.signOut({
-        fetchOptions: {
-          onSuccess: () => {
-            toast.success(t.common.sessionClosed);
-            window.location.href = "/login";
-          },
-          onError: () => {
-            toast.error(t.common.sessionCloseError);
-          },
-        },
-      });
+      const { error } = await authClient.signOut();
+      if (error) throw error;
+      await clearOfflineSession();
+      toast.success(t.common.sessionClosed);
+      window.location.href = "/login";
+    } catch {
+      toast.error(t.common.sessionCloseError);
     } finally {
       setLoading(false);
     }

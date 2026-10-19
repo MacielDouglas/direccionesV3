@@ -102,6 +102,16 @@ const es: I18nDictionary = {
     offlineRetry: "Recargar página",
     offlineHome: "Ir al inicio",
     offlineBanner: "Sin conexión — modo lectura",
+    offlinePill: "Offline",
+    offlinePillAria: "Sin conexión. Toca para intentar reconectar.",
+    offlineSyncNow: "Sincronizar datos",
+    offlineSyncing: "Sincronizando…",
+    offlineSynced: "Datos offline actualizados",
+    offlineLastSync: "Actualizado {time}",
+    offlineSyncError: "No fue posible sincronizar los datos offline.",
+    offlineReadOnly: "Modo lectura offline",
+    offlineWeekLocked: "Sin conexión: mostrando solo la semana guardada.",
+    offlineNoData: "No hay datos guardados para uso offline.",
   },
   footer: {
     tagline:
