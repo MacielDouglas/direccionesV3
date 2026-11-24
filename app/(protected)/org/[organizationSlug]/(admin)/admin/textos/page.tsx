@@ -1,11 +1,11 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/BackLink";
 import { getSavedTexts } from "@/features/saved-texts/application/saved-text.service";
 import SavedTextsManager from "@/features/saved-texts/ui/components/SavedTextsManager";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 interface Props {
   params: Promise<{ organizationSlug: string }>;

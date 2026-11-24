@@ -1,10 +1,10 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/I18nProvider";
-import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useTransition } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { cn } from "@/lib/utils";
 import type { AgendaEventItem } from "../types/agenda.types";
 import { brasiliaNow, eventDateParts } from "../utils/agenda-time";
 import { monthLabel, monthName, weekdayLong, weekdayShort } from "../utils/calendar-locale";

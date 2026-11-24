@@ -1,7 +1,7 @@
+import { notFound, redirect } from "next/navigation";
 import { canAccess } from "@/lib/autorize";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
-import { notFound, redirect } from "next/navigation";
 
 export default async function MemberLayout({
   children,

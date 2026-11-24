@@ -1,9 +1,9 @@
 "use client";
 
+import { Building2, Home, Hotel, Store, Utensils } from "lucide-react";
 import type { AddressType } from "@/features/addresses/types/address.types";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { Building2, Home, Hotel, Store, Utensils } from "lucide-react";
 
 export type AddressFilters = {
   active?: boolean;

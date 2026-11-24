@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Check, Loader2, RefreshCw, WifiOff } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useOfflineSync } from "../core/offline-sync";
 
 interface Props {

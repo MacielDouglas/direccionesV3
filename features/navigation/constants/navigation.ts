@@ -1,5 +1,3 @@
-import type { Role } from "@/domains/member/types/role.types";
-import type { I18nDictionary } from "@/lib/i18n/types";
 import {
   CalendarDays,
   CreditCard,
@@ -13,6 +11,8 @@ import {
   UserRoundGroup,
 } from "lucide-react";
 import type { ElementType } from "react";
+import type { Role } from "@/domains/member/types/role.types";
+import type { I18nDictionary } from "@/lib/i18n/types";
 
 export type NavigationItem = {
   id: string;

@@ -1,9 +1,9 @@
-import type { Role } from "@/domains/member/types/role.types";
-import { OfflinePill } from "@/features/pwa/ui/OfflinePill";
-import { getServerDictionary } from "@/lib/i18n/server";
 import type { Session } from "better-auth";
 import type { Organization } from "better-auth/plugins";
 import { Compass } from "lucide-react";
+import type { Role } from "@/domains/member/types/role.types";
+import { OfflinePill } from "@/features/pwa/ui/OfflinePill";
+import { getServerDictionary } from "@/lib/i18n/server";
 import { NavLink } from "../ui/NavLink";
 import MobileHeader from "./MobileHeader";
 

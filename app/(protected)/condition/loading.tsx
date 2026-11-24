@@ -6,6 +6,7 @@ export default async function ConditionLoading() {
   return (
     <div
       className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 md:py-10"
+      role="status"
       aria-busy="true"
       aria-label={t.common.loadingLabels.conditions}
     >

@@ -1,5 +1,22 @@
 "use client";
 
+import {
+  AlertTriangle,
+  Check,
+  Copy,
+  CreditCard,
+  KeyRound,
+  Loader2,
+  MessageSquareText,
+  Pencil,
+  Plus,
+  Trash2,
+  UserPlus,
+  X,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,23 +48,6 @@ import {
   updatePersonName,
   updatePersonRole,
 } from "@/server/person";
-import {
-  AlertTriangle,
-  Check,
-  Copy,
-  CreditCard,
-  KeyRound,
-  Loader2,
-  MessageSquareText,
-  Pencil,
-  Plus,
-  Trash2,
-  UserPlus,
-  X,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
-import { toast } from "sonner";
 
 export type GestaoToken = {
   id: string;

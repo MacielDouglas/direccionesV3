@@ -2,11 +2,7 @@
 
 import { AppProgressBar } from "next-nprogress-bar";
 
-export function NavigationProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function NavigationProvider({ children }: { children: React.ReactNode }) {
   return (
     <>
       {children}

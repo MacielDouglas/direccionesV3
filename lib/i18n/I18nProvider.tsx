@@ -7,27 +7,6 @@ import type { I18nDictionary, Locale } from "./types";
 export const LOCALE_STORAGE_KEY = "direcciones.locale";
 export const LOCALE_COOKIE_NAME = "direcciones.locale";
 
-export function isLocale(value: string | null): value is Locale {
-  return value === "pt" || value === "es";
-}
-
-export function detectBrowserLocale(): Locale {
-  const raw =
-    typeof navigator !== "undefined" ? navigator.language || navigator.languages?.[0] : "";
-  return isLocale(raw.slice(0, 2).toLowerCase()) ? (raw.slice(0, 2).toLowerCase() as Locale) : "pt";
-}
-
-export function getStoredLocale(): Locale {
-  if (typeof window === "undefined") return "pt";
-  try {
-    const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (isLocale(stored)) return stored;
-  } catch {
-    /* localStorage indisponível — usa fallback */
-  }
-  return detectBrowserLocale();
-}
-
 interface I18nContextValue {
   locale: Locale;
   setLocale: (locale: Locale) => void;
@@ -51,6 +30,7 @@ export function I18nProvider({ children, initialLocale = "pt" }: I18nProviderPro
     } catch {
       /* localStorage indisponível — idioma vale só para a sessão */
     }
+    // biome-ignore lint/suspicious/noDocumentCookie: preferência de idioma lida pelo servidor via cookie
     document.cookie = `${LOCALE_COOKIE_NAME}=${next}; path=/; max-age=31536000; samesite=lax`;
     document.documentElement.lang = next;
   }, []);

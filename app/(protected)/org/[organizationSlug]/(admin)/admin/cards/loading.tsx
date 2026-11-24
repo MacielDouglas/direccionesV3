@@ -5,6 +5,7 @@ export default async function CardsLoading() {
   return (
     <div
       className="mx-auto w-full max-w-3xl px-4 py-6 sm:py-10"
+      role="status"
       aria-busy="true"
       aria-label={t.common.loadingLabels.cards}
     >

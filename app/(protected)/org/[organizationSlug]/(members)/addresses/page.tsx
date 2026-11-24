@@ -1,9 +1,9 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { searchAddressesService } from "@/features/addresses/application/address.service";
 import AddressListScreen from "@/features/addresses/ui/screens/AddressListScreen";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getServerDictionary();

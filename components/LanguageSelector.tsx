@@ -1,13 +1,13 @@
 "use client";
 
+import { Languages } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useHaptic } from "@/app/hooks/useHaptic";
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { localeLabels } from "@/lib/i18n/dictionaries";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Locale } from "@/lib/i18n/types";
 import { cn } from "@/lib/utils";
 import { updateUserLanguageAction } from "@/server/users/user.action";
-import { Languages } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 export function LanguageSelector({
   className,

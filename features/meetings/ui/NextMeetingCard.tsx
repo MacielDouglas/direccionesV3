@@ -1,9 +1,9 @@
+import { CalendarDays } from "lucide-react";
+import Link from "next/link";
 import { getCurrentWeekProgram } from "@/features/meetings/application/meeting.service";
 import { getNextMeeting } from "@/features/meetings/domain/next-meeting";
 import { NextMeetingSection } from "@/features/meetings/ui/NextMeetingSection";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { CalendarDays } from "lucide-react";
-import Link from "next/link";
 
 interface NextMeetingCardProps {
   organizationId: string;

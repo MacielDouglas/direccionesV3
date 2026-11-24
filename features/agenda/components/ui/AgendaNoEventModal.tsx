@@ -1,5 +1,6 @@
 "use client";
 
+import { CalendarX } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +9,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { CalendarX } from "lucide-react";
 
 interface Props {
   open: boolean;

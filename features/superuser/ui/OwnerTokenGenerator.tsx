@@ -1,22 +1,18 @@
 "use client";
 
+import { Check, Copy, Loader2, Ticket } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   createOwnerOnboardingTokenAction,
   getOwnerOnboardingTokensAction,
 } from "@/features/invitations/applications/inviteToken.action";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { Check, Copy, Loader2, Ticket } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
 
 type OnboardingToken = Awaited<ReturnType<typeof getOwnerOnboardingTokensAction>>[number];
 
-export function OwnerTokenGenerator({
-  initialTokens,
-}: {
-  initialTokens: OnboardingToken[];
-}) {
+export function OwnerTokenGenerator({ initialTokens }: { initialTokens: OnboardingToken[] }) {
   const { locale, t } = useI18n();
   const tokensI18n = t.superuser.ownerTokens;
   const [tokens, setTokens] = useState<OnboardingToken[]>(initialTokens);

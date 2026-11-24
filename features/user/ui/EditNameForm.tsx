@@ -1,14 +1,14 @@
 "use client";
 
+import { Check, Loader2, Pencil, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { resolveActionError } from "@/lib/action-error";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { updatePersonName } from "@/server/person";
-import { Check, Loader2, Pencil, X } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 interface Props {
   currentName: string;

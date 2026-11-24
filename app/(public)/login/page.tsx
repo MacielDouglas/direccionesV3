@@ -1,7 +1,7 @@
-import { LoginCard } from "@/components/LoginCard";
-import { getServerDictionary } from "@/lib/i18n/server";
 import type { Metadata, Viewport } from "next";
 import Image from "next/image";
+import { LoginCard } from "@/components/LoginCard";
+import { getServerDictionary } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getServerDictionary();
@@ -24,14 +24,9 @@ export const viewport: Viewport = {
   themeColor: "#0c0a09",
 };
 
-export default async function LoginPage() {
-  const t = await getServerDictionary();
-
+export default function LoginPage() {
   return (
-    <div
-      aria-label={t.login.title}
-      className="relative flex min-h-dvh w-full flex-col items-center justify-center bg-stone-950 px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]"
-    >
+    <div className="relative flex min-h-dvh w-full flex-col items-center justify-center bg-stone-950 px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
       {/* Fundo fixo no viewport: cobre a safe-area (notch/ilha dinâmica)
           sob a status bar translúcida — sem faixa clara no topo */}
       <div aria-hidden="true" className="fixed inset-0">

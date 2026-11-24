@@ -1,8 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { clearOfflineSession } from "@/features/pwa/core/offline-store";
 import { authClient } from "@/lib/auth-client";
-import { useEffect, useState } from "react";
 
 interface SessionTimerProps {
   expiresAt: string | Date;
@@ -57,6 +57,7 @@ export default function SessionTimer({ expiresAt }: SessionTimerProps) {
   return (
     <time
       dateTime={new Date(expiresAt).toISOString()}
+      role="timer"
       aria-live={isCritical ? "polite" : "off"}
       aria-label={
         isCountdown ? `Sesión expira en ${seconds} segundos` : `Sesión expira en ${minutes} minutos`

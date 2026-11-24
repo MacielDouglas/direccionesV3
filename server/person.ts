@@ -1,11 +1,11 @@
 "use server";
 
 import { randomInt } from "node:crypto";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import type { Role } from "@/domains/member/types/role.types";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, requireOrgAdminOrOwner } from "@/server/users";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
 
 const canManageRequester = (role: string | undefined | null) =>
   role === "owner" || role === "admin";
@@ -75,49 +75,6 @@ export const updatePersonRole = async (
   });
 
   if (slug) revalidatePath(`/org/${slug}/admin/gestao`);
-};
-
-// ✅ Transferir a ownership para outra persona (owner → novo owner)
-export const transferOwnership = async (
-  organizationId: string,
-  currentOwnerPersonId: string,
-  newOwnerPersonId: string,
-  slug: string,
-) => {
-  const currentUser = await getCurrentUser();
-  if (!currentUser) throw new Error("No autenticado.");
-
-  const reqPerson = await prisma.person.findFirst({
-    where: { organizationId, userId: currentUser.user.id },
-    select: { role: true },
-  });
-  const isOwner = currentUser.isSuperUser || reqPerson?.role === "owner";
-  if (!isOwner) throw new Error("Solo el owner puede transferir la ownership.");
-
-  const currentOwner = await prisma.person.findFirst({
-    where: { id: currentOwnerPersonId, organizationId },
-    select: { id: true, role: true },
-  });
-  if (!currentOwner) throw new Error("No eres propietario.");
-  const newOwner = await prisma.person.findFirst({
-    where: { id: newOwnerPersonId, organizationId },
-    select: { id: true },
-  });
-  if (!newOwner) throw new Error("La persona destinataria no pertenece a esta organización.");
-  if (currentOwner.role !== "owner") throw new Error("La persona actual no es owner.");
-
-  await prisma.$transaction([
-    prisma.person.update({
-      where: { id: currentOwner.id },
-      data: { role: "admin" },
-    }),
-    prisma.person.update({
-      where: { id: newOwnerPersonId },
-      data: { role: "owner" },
-    }),
-  ]);
-
-  revalidatePath(`/org/${slug}/admin/gestao`);
 };
 
 // ✅ Remover uma persona da organização (preserva a person, apenas desvincula)

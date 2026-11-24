@@ -1,10 +1,10 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/I18nProvider";
-import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import type { IconType } from "react-icons";
 import { SiApple, SiGooglemaps, SiWaze } from "react-icons/si";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { cn } from "@/lib/utils";
 
 interface Props {
   latitude: number;

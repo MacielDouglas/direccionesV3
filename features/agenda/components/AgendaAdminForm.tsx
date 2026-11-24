@@ -1,5 +1,11 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CalendarPlus } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,12 +27,6 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Locale } from "@/lib/i18n/types";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarPlus } from "lucide-react";
-import { useState, useTransition } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
 import { createAgendaEventAction } from "../application/agenda.action";
 import type { AgendaFieldOptions, AgendaMember } from "../types/agenda.types";
 import { monthName, weekdayPlural } from "../utils/calendar-locale";
@@ -169,215 +169,213 @@ export function AgendaAdminForm({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <>
-        <DialogTrigger asChild>
-          <Button className="h-11 w-full gap-2">
-            <CalendarPlus className="size-4" aria-hidden />
-            {t.agenda.createEvent}
-          </Button>
-        </DialogTrigger>
+      <DialogTrigger asChild>
+        <Button className="h-11 w-full gap-2">
+          <CalendarPlus className="size-4" aria-hidden />
+          {t.agenda.createEvent}
+        </Button>
+      </DialogTrigger>
 
-        <DialogContent className="max-h-[85vh] max-w-md gap-4 overflow-y-auto rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="tracking-tight">{t.agenda.createEvent}</DialogTitle>
-          </DialogHeader>
+      <DialogContent className="max-h-[85vh] max-w-md gap-4 overflow-y-auto rounded-2xl">
+        <DialogHeader>
+          <DialogTitle className="tracking-tight">{t.agenda.createEvent}</DialogTitle>
+        </DialogHeader>
 
-          <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-            <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="event-date">{t.agenda.date}</Label>
-                <Input id="event-date" type="date" {...register("date")} />
-                {errors.date && (
-                  <p role="alert" className="text-xs text-destructive">
-                    {errors.date.message}
-                  </p>
-                )}
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="event-time">{t.agenda.time}</Label>
-                <Input id="event-time" type="time" {...register("time")} />
-                {errors.time && (
-                  <p role="alert" className="text-xs text-destructive">
-                    {errors.time.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {selectedDate && (
-              <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
-                <div className="flex flex-col gap-0.5">
-                  <Label htmlFor="event-recurring" className="cursor-pointer">
-                    {t.agenda.repeatAll.replace("{weekday}", weekdayLabel ?? "")}
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    {t.agenda.repeatDescription.replace("{weekday}", weekdayLabel ?? "")}
-                  </p>
-                </div>
-                <Switch
-                  id="event-recurring"
-                  checked={recurring}
-                  onCheckedChange={(val) => {
-                    setValue("recurring", val);
-                    setConductorPerDate({});
-                  }}
-                />
-              </div>
-            )}
-
-            {!recurring ? (
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="event-conductor">
-                  {t.agenda.conductor}{" "}
-                  <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
-                </Label>
-                <Select
-                  onValueChange={(val) => setValue("conductorId", val === "none" ? null : val)}
-                  defaultValue="none"
-                >
-                  <SelectTrigger id="event-conductor">
-                    <SelectValue placeholder={t.agenda.selectConductor} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{t.agenda.none}</SelectItem>
-                    {members.map((m) => (
-                      <SelectItem key={m.id} value={m.id}>
-                        {m.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <Label>
-                  {t.agenda.conductorByDate}{" "}
-                  <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
-                </Label>
-                <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/20 p-3">
-                  {recurringDates.map((dateStr) => (
-                    <div key={dateStr} className="flex items-center gap-3">
-                      <span className="w-24 shrink-0 text-xs tabular-nums text-muted-foreground">
-                        {formatDateLabel(locale, dateStr)}
-                      </span>
-                      <Select
-                        onValueChange={(val) =>
-                          setConductorPerDate((prev) => ({
-                            ...prev,
-                            [dateStr]: val === "none" ? null : val,
-                          }))
-                        }
-                        defaultValue="none"
-                      >
-                        <SelectTrigger className="h-8 flex-1 text-xs">
-                          <SelectValue placeholder={t.agenda.none} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">{t.agenda.none}</SelectItem>
-                          {members.map((m) => (
-                            <SelectItem key={m.id} value={m.id}>
-                              {m.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="event-saida">
-                {t.agenda.exit}{" "}
-                <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
-              </Label>
-              <Controller
-                control={control}
-                name="saida"
-                render={({ field }) => (
-                  <ComboboxField
-                    id="event-saida"
-                    value={field.value ?? ""}
-                    onChange={field.onChange}
-                    options={fieldOptions.saida}
-                    placeholder={t.agenda.saidaPlaceholder}
-                    maxLength={100}
-                  />
-                )}
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="event-tipo">
-                {t.agenda.type}{" "}
-                <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
-              </Label>
-              <Controller
-                control={control}
-                name="tipo"
-                render={({ field }) => (
-                  <ComboboxField
-                    id="event-tipo"
-                    value={field.value ?? ""}
-                    onChange={field.onChange}
-                    options={fieldOptions.tipo}
-                    placeholder={t.agenda.tipoPlaceholder}
-                    maxLength={100}
-                  />
-                )}
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="event-territorio">
-                {t.agenda.territory}{" "}
-                <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
-              </Label>
-              <Controller
-                control={control}
-                name="territorio"
-                render={({ field }) => (
-                  <ComboboxField
-                    id="event-territorio"
-                    value={field.value ?? ""}
-                    onChange={field.onChange}
-                    options={fieldOptions.territorio}
-                    placeholder={t.agenda.territorioPlaceholder}
-                    maxLength={100}
-                  />
-                )}
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="event-info">
-                {t.agenda.infoField}{" "}
-                <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
-              </Label>
-              <Textarea
-                id="event-info"
-                rows={3}
-                placeholder={t.agenda.infoPlaceholder}
-                {...register("info")}
-              />
-              {errors.info && (
+              <Label htmlFor="event-date">{t.agenda.date}</Label>
+              <Input id="event-date" type="date" {...register("date")} />
+              {errors.date && (
                 <p role="alert" className="text-xs text-destructive">
-                  {errors.info.message}
+                  {errors.date.message}
                 </p>
               )}
             </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="event-time">{t.agenda.time}</Label>
+              <Input id="event-time" type="time" {...register("time")} />
+              {errors.time && (
+                <p role="alert" className="text-xs text-destructive">
+                  {errors.time.message}
+                </p>
+              )}
+            </div>
+          </div>
 
-            <Button type="submit" className="h-11" disabled={isPending} aria-busy={isPending}>
-              {isPending
-                ? t.agenda.saving
-                : recurring && weekdayLabel
-                  ? t.agenda.createAllEvents.replace("{weekday}", weekdayLabel)
-                  : t.agenda.saveEvent}
-            </Button>
-          </form>
-        </DialogContent>
-      </>
+          {selectedDate && (
+            <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
+              <div className="flex flex-col gap-0.5">
+                <Label htmlFor="event-recurring" className="cursor-pointer">
+                  {t.agenda.repeatAll.replace("{weekday}", weekdayLabel ?? "")}
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {t.agenda.repeatDescription.replace("{weekday}", weekdayLabel ?? "")}
+                </p>
+              </div>
+              <Switch
+                id="event-recurring"
+                checked={recurring}
+                onCheckedChange={(val) => {
+                  setValue("recurring", val);
+                  setConductorPerDate({});
+                }}
+              />
+            </div>
+          )}
+
+          {!recurring ? (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="event-conductor">
+                {t.agenda.conductor}{" "}
+                <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
+              </Label>
+              <Select
+                onValueChange={(val) => setValue("conductorId", val === "none" ? null : val)}
+                defaultValue="none"
+              >
+                <SelectTrigger id="event-conductor">
+                  <SelectValue placeholder={t.agenda.selectConductor} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t.agenda.none}</SelectItem>
+                  {members.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>
+                      {m.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <Label>
+                {t.agenda.conductorByDate}{" "}
+                <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
+              </Label>
+              <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/20 p-3">
+                {recurringDates.map((dateStr) => (
+                  <div key={dateStr} className="flex items-center gap-3">
+                    <span className="w-24 shrink-0 text-xs tabular-nums text-muted-foreground">
+                      {formatDateLabel(locale, dateStr)}
+                    </span>
+                    <Select
+                      onValueChange={(val) =>
+                        setConductorPerDate((prev) => ({
+                          ...prev,
+                          [dateStr]: val === "none" ? null : val,
+                        }))
+                      }
+                      defaultValue="none"
+                    >
+                      <SelectTrigger className="h-8 flex-1 text-xs">
+                        <SelectValue placeholder={t.agenda.none} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">{t.agenda.none}</SelectItem>
+                        {members.map((m) => (
+                          <SelectItem key={m.id} value={m.id}>
+                            {m.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="event-saida">
+              {t.agenda.exit}{" "}
+              <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
+            </Label>
+            <Controller
+              control={control}
+              name="saida"
+              render={({ field }) => (
+                <ComboboxField
+                  id="event-saida"
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  options={fieldOptions.saida}
+                  placeholder={t.agenda.saidaPlaceholder}
+                  maxLength={100}
+                />
+              )}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="event-tipo">
+              {t.agenda.type}{" "}
+              <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
+            </Label>
+            <Controller
+              control={control}
+              name="tipo"
+              render={({ field }) => (
+                <ComboboxField
+                  id="event-tipo"
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  options={fieldOptions.tipo}
+                  placeholder={t.agenda.tipoPlaceholder}
+                  maxLength={100}
+                />
+              )}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="event-territorio">
+              {t.agenda.territory}{" "}
+              <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
+            </Label>
+            <Controller
+              control={control}
+              name="territorio"
+              render={({ field }) => (
+                <ComboboxField
+                  id="event-territorio"
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  options={fieldOptions.territorio}
+                  placeholder={t.agenda.territorioPlaceholder}
+                  maxLength={100}
+                />
+              )}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="event-info">
+              {t.agenda.infoField}{" "}
+              <span className="font-normal text-muted-foreground">{t.agenda.optional}</span>
+            </Label>
+            <Textarea
+              id="event-info"
+              rows={3}
+              placeholder={t.agenda.infoPlaceholder}
+              {...register("info")}
+            />
+            {errors.info && (
+              <p role="alert" className="text-xs text-destructive">
+                {errors.info.message}
+              </p>
+            )}
+          </div>
+
+          <Button type="submit" className="h-11" disabled={isPending} aria-busy={isPending}>
+            {isPending
+              ? t.agenda.saving
+              : recurring && weekdayLabel
+                ? t.agenda.createAllEvents.replace("{weekday}", weekdayLabel)
+                : t.agenda.saveEvent}
+          </Button>
+        </form>
+      </DialogContent>
     </Dialog>
   );
 }

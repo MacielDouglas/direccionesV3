@@ -1,7 +1,3 @@
-import type { MeetingAssignment } from "@/features/meetings/domain/meeting-section";
-import type { MeetingDuty } from "@/features/meetings/domain/meeting.schema";
-import { dedupePhrases } from "@/features/meetings/utils/meeting-format";
-import { cn } from "@/lib/utils";
 import {
   Armchair,
   BrushCleaning,
@@ -19,6 +15,10 @@ import {
   Volume2,
 } from "lucide-react";
 import type { ComponentType } from "react";
+import type { MeetingDuty } from "@/features/meetings/domain/meeting.schema";
+import type { MeetingAssignment } from "@/features/meetings/domain/meeting-section";
+import { dedupePhrases } from "@/features/meetings/utils/meeting-format";
+import { cn } from "@/lib/utils";
 
 /** Ícone do programa: lucide com prop `size`. */
 export type ProgramIcon = ComponentType<{ size?: string | number; className?: string }>;
@@ -245,11 +245,8 @@ export function ProgramPresidentRow({
   if (duties.length === 0) return null;
   return (
     <ul className="px-4">
-      {duties.map((duty, dutyIndex) => (
-        <li
-          key={`${duty.date}-${duty.dutyKey}-${dutyIndex}`}
-          className="flex items-center gap-3 py-2.5"
-        >
+      {duties.map((duty) => (
+        <li key={`${duty.date}-${duty.dutyKey}`} className="flex items-center gap-3 py-2.5">
           <RowTime value={time} />
           <span
             title={duty.postLabel}

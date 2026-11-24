@@ -1,8 +1,8 @@
+import { AlertTriangle } from "lucide-react";
+import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
-import { AlertTriangle } from "lucide-react";
-import Link from "next/link";
 
 export async function PendingDeletionBadge({
   organizationId,

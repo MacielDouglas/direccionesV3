@@ -1,9 +1,9 @@
 "use server";
 
-import { resolveServerActionError } from "@/server/action-error";
-import { requireOrgAdminOrOwner } from "@/server/users";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { resolveServerActionError } from "@/server/action-error";
+import { requireOrgAdminOrOwner } from "@/server/users";
 import { mergeSavedTextsSchema, renameSavedTextSchema } from "../domain/saved-text.schema";
 import { mergeSavedTexts, renameSavedText } from "./saved-text.service";
 

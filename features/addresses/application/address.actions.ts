@@ -1,18 +1,14 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { deleteR2Object } from "@/infrastructure/storage/r2.service";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { resolveServerActionError } from "@/server/action-error";
 import { requireAdminOrOwner, requireAuthContext } from "@/server/users";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import type { AddressFormData } from "../domain/address.schema";
-import {
-  createAddressService,
-  getAddressByIdService,
-  updateAddressService,
-} from "./address.service";
+import { createAddressService, updateAddressService } from "./address.service";
 
 const addressIdSchema = z.string().uuid();
 
@@ -54,14 +50,6 @@ export async function updateAddressAction(addressId: string, input: AddressFormD
     input,
     organizationId: getOrganizationId(data),
     personId: data.person.id,
-  });
-}
-
-export async function getAddressByIdAction(addressId: string) {
-  const data = await getSessionOrThrow();
-  return getAddressByIdService({
-    addressId,
-    organizationId: getOrganizationId(data),
   });
 }
 

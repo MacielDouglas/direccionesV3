@@ -1,5 +1,9 @@
 "use client";
 
+import { Loader2, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,10 +16,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { Loader2, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { toast } from "sonner";
 import { deleteCardAction } from "../../application/card.actions";
 
 interface Props {

@@ -7,14 +7,6 @@ export async function getOrCreateSurvey(organizationId: string) {
   return prisma.survey.create({ data: { organizationId } });
 }
 
-export async function getSurveyPins(organizationId: string) {
-  return prisma.surveyPin.findMany({
-    where: { survey: { organizationId } },
-    include: { createdBy: { select: { name: true } } },
-    orderBy: { createdAt: "desc" },
-  });
-}
-
 export async function createSurveyPins(input: CreatePinsInput, personId: string) {
   const survey = await getOrCreateSurvey(input.organizationId);
 

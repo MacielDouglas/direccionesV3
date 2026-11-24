@@ -1,8 +1,8 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import type mapboxgl from "mapbox-gl";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { mapPool } from "./mapPool";
 
 type MapContextType = {

@@ -1,19 +1,19 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { createOrganizationService } from "@/domains/organization";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getCurrentUser, requireOrgAdminOrOwner } from "@/server/users";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
 
 const organizationIdSchema = z.string().min(1);
 const tokenSchema = z.string().trim().min(1).max(128);
 
 async function requireSuperUser() {
   const currentUser = await getCurrentUser();
-  if (!currentUser || !currentUser.isSuperUser) {
+  if (!currentUser?.isSuperUser) {
     throw new Error("No autorizado.");
   }
   return currentUser;
@@ -36,7 +36,7 @@ export async function applyInviteTokenAction(token: string, opts?: { skipRateLim
     include: { organization: true, person: true },
   });
 
-  if (!invite || invite.type !== "INVITE") throw new Error(t.invitations.tokenInvalid);
+  if (invite?.type !== "INVITE") throw new Error(t.invitations.tokenInvalid);
   if (invite.usedAt) throw new Error(t.invitations.tokenUsed);
   if (invite.expiresAt < new Date()) throw new Error(t.invitations.tokenExpired);
   if (!invite.organizationId || !invite.organization) throw new Error(t.invitations.tokenInvalid);
@@ -101,24 +101,6 @@ export async function createOwnerOnboardingTokenAction() {
 
   revalidatePath("/");
   return token;
-}
-
-// ── Cria organização usando token de onboarding (owner) ────────
-export async function redeemOwnerOnboardingTokenAction(data: {
-  token: string;
-  name: string;
-}) {
-  const currentUser = await getCurrentUser();
-  if (!currentUser) throw new Error("No autorizado.");
-  if (currentUser.isSuperUser) {
-    throw new Error("El super usuario no crea organizaciones.");
-  }
-
-  const result = await createOrganizationService(data, {
-    userId: currentUser.user.id,
-  });
-
-  return result;
 }
 
 // ── Tela de boas-vindas: aceita token de convite OU de onboarding ─

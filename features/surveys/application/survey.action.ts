@@ -3,12 +3,7 @@ import { getServerDictionary } from "@/lib/i18n/server";
 import { requireOrgMember } from "@/server/users";
 import { cancelPinSchema, confirmPinSchema, createPinsSchema } from "../domain/survey.schema";
 import type { SurveyPin } from "../types/survey.types";
-import {
-  cancelSurveyPin,
-  confirmSurveyPin,
-  createSurveyPins,
-  getSurveyPins,
-} from "./survey.service";
+import { cancelSurveyPin, confirmSurveyPin, createSurveyPins } from "./survey.service";
 
 type ActionResult<T> = { success: true; data: T } | { success: false; error: string };
 
@@ -23,19 +18,6 @@ const DOMAIN_ERRORS = new Set([
 function knownDomainError(err: unknown): string | null {
   if (err instanceof Error && DOMAIN_ERRORS.has(err.message)) return err.message;
   return null;
-}
-
-export async function getSurveyPinsAction(
-  organizationId: string,
-): Promise<ActionResult<SurveyPin[]>> {
-  try {
-    await requireOrgMember(organizationId);
-    const pins = await getSurveyPins(organizationId);
-    return { success: true, data: pins };
-  } catch (err) {
-    const t = await getServerDictionary();
-    return { success: false, error: knownDomainError(err) ?? t.errors.generic };
-  }
 }
 
 export async function createSurveyPinsAction(input: unknown): Promise<ActionResult<SurveyPin[]>> {

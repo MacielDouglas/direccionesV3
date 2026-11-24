@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import {
   getAgendaEventsByMonth,
   getAgendaFieldOptions,
@@ -10,8 +12,6 @@ import { todayInBrasilia } from "@/features/agenda/utils/agenda-time";
 import { monthLabel as monthLabelLocalized } from "@/features/agenda/utils/calendar-locale";
 import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
 import { getCurrentUser } from "@/server/users";
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 export const metadata: Metadata = { title: "Agenda" };
 
@@ -31,8 +31,8 @@ export default async function AgendaPage({ params, searchParams }: Props) {
   if (!session) redirect("/login");
 
   const today = todayInBrasilia();
-  const activeYear = year ? Number.parseInt(year) : today.year;
-  const activeMonth = month ? Number.parseInt(month) : today.month;
+  const activeYear = year ? Number.parseInt(year, 10) : today.year;
+  const activeMonth = month ? Number.parseInt(month, 10) : today.month;
 
   const person = session.person;
   if (!person?.organizationId) redirect("/organizations");

@@ -1,10 +1,10 @@
 "use client";
 
+import { MapPinHouse } from "lucide-react";
+import { useController, useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { MapPinHouse } from "lucide-react";
-import { useController, useFormContext } from "react-hook-form";
 import type { AddressFormData } from "../../domain/address.schema";
 import { ADDRESS_TYPE_OPTIONS } from "../../domain/constants/address.constants";
 

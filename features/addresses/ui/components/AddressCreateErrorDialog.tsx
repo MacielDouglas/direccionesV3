@@ -1,5 +1,6 @@
 "use client";
 
+import { CircleAlert, ImagePlus, ListChecks, MapPinOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,7 +11,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { CircleAlert, ImagePlus, ListChecks, MapPinOff } from "lucide-react";
 
 export type AddressCreateErrorKind = "missing-info" | "gps" | "image" | "save";
 

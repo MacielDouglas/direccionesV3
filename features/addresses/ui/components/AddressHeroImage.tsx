@@ -1,5 +1,9 @@
 "use client";
 
+import { MapPin, X } from "lucide-react";
+import Image from "next/image";
+import type { ReactNode } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,10 +14,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { MapPin, X } from "lucide-react";
-import Image from "next/image";
-import { useState } from "react";
-import type { ReactNode } from "react";
 
 type Props = {
   src: string;

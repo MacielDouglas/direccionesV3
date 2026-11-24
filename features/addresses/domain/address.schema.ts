@@ -88,18 +88,6 @@ export function createAddressCreateSchema(messages: AddressFormMessages = defaul
 export const addressFormSchema = createAddressFormSchema();
 export type AddressFormData = z.infer<typeof addressFormSchema>;
 
-export const addressPersistenceSchema = addressFormSchema.extend({
-  organizationId: z.string().min(1),
-  createdByPersonId: z.string().min(1),
-  updatedByPersonId: z.string().min(1).optional().nullable(),
-});
-
-export type AddressPersistenceInput = z.infer<typeof addressPersistenceSchema>;
-
-// Schema server-side derivado — sem duplicação
-export const createAddressSchema = createAddressCreateSchema();
-export type CreateAddressInput = AddressFormData;
-
 // Schema de atualização — validação estrita server-side (.strict() rejeita campos extras)
 const xssFree = (v: string) =>
   !/<\s*script/i.test(v) && !/javascript\s*:/i.test(v) && !/\son\w+\s*=/i.test(v);

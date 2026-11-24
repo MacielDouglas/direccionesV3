@@ -1,8 +1,7 @@
 import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import type { AddressFormData } from "../domain/address.schema";
-import { createAddressCreateSchema } from "../domain/address.schema";
-import { updateAddressSchema } from "../domain/address.schema";
+import { createAddressCreateSchema, updateAddressSchema } from "../domain/address.schema";
 import { sanitizeInfo } from "../utils/sanitizeInfo";
 
 export async function createAddressService(params: {

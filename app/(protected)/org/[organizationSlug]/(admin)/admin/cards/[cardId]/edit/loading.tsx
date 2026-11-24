@@ -5,6 +5,7 @@ export default async function CardEditLoading() {
   return (
     <div
       className="flex w-full max-w-3xl mx-auto flex-col overflow-hidden"
+      role="status"
       aria-busy="true"
       aria-label={t.common.loadingLabels.cardEdit}
     >

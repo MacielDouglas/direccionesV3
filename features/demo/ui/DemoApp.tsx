@@ -1,9 +1,9 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CheckCircle2, ChevronRight, CreditCard, Handshake, MapPin, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { DEMO_CARD, DEMO_MUSEUMS, type DemoMuseum } from "../domain/demo.data";
 import { AddressDetailOverlay } from "./components/AddressDetailOverlay";
 import { CardAddressModal } from "./components/CardAddressModal";

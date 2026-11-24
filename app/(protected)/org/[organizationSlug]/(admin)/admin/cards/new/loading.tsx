@@ -5,6 +5,7 @@ export default async function CardNewLoading() {
   return (
     <div
       className="flex flex-1 flex-col overflow-hidden"
+      role="status"
       aria-busy="true"
       aria-label={t.common.loadingLabels.cardForm}
     >

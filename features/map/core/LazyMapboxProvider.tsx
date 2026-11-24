@@ -1,9 +1,9 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 const MapboxProviderDynamic = dynamic(
   () => import("./MapboxProvider").then((m) => m.MapboxProvider),

@@ -1,7 +1,7 @@
+import { MapPinPlus } from "lucide-react";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import { getServerLocale } from "@/lib/i18n/server";
 import { getCurrentUser } from "@/server/users";
-import { MapPinPlus } from "lucide-react";
 import { getExistingLocations } from "../../application/address.service";
 import AddressForm from "../components/AddressForm";
 

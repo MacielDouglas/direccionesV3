@@ -6,6 +6,7 @@ export default async function DemoLoading() {
   return (
     <div
       className="mx-auto flex min-h-svh w-full max-w-md flex-col"
+      role="status"
       aria-busy="true"
       aria-label={t.common.loadingLabels.demo}
     >

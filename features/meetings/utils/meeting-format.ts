@@ -1,10 +1,10 @@
+import type { MeetingCleaning, MeetingDetail } from "@/features/meetings/domain/meeting.schema";
 import type {
   BlockPlacement,
   MeetingAssignment,
   MeetingLocale,
   NumberedBlock,
 } from "@/features/meetings/domain/meeting-section";
-import type { MeetingCleaning, MeetingDetail } from "@/features/meetings/domain/meeting.schema";
 
 export function parseDay(iso: string): Date {
   const [year, month, day] = iso.split("-").map(Number);
@@ -44,27 +44,6 @@ export function shortWeekday(iso: string, locale: MeetingLocale): string {
   return new Intl.DateTimeFormat(localeTag(locale), { weekday: "short" })
     .format(parseDay(iso))
     .replace(/\./g, "");
-}
-
-function shortMonth(date: Date, locale: MeetingLocale): string {
-  return new Intl.DateTimeFormat(localeTag(locale), { month: "short" })
-    .format(date)
-    .replace(/\./g, "")
-    .toLowerCase();
-}
-
-/** Dia curto para badges (ex.: "8 out"). */
-export function formatShortDay(iso: string, locale: MeetingLocale): string {
-  const date = parseDay(iso);
-  return `${date.getDate()} ${shortMonth(date, locale)}`;
-}
-
-/** Data curta numérica (ex.: "15/10"). */
-export function formatShortNumeric(iso: string): string {
-  const date = parseDay(iso);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  return `${day}/${month}`;
 }
 
 /** Data completa numérica (ex.: "14/10/2026"). */

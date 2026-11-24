@@ -1,7 +1,7 @@
+import { notFound } from "next/navigation";
 import { getPendingDeletionAddresses } from "@/features/addresses/application/address.service";
 import PendingDeletionScreen from "@/features/addresses/ui/screens/PendingDeletionScreen";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
-import { notFound } from "next/navigation";
 
 type Props = { params: Promise<{ organizationSlug: string }> };
 

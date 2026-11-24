@@ -1,10 +1,10 @@
+import type { Address } from "@prisma/client";
+import { ArrowLeft, Check, CircleAlert, X } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AddressViewMap } from "@/features/map/components/AddressViewMap";
 import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
 import { getUniquePerson } from "@/server/users";
-import type { Address } from "@prisma/client";
-import { ArrowLeft, Check, CircleAlert, X } from "lucide-react";
-import Link from "next/link";
 import { ADDRESS_TYPE_OPTIONS } from "../../domain/constants/address.constants";
 import { AddressHeroImage } from "../components/AddressHeroImage";
 import DeleteAddressButton from "../components/DeleteAddressButton";
@@ -81,6 +81,7 @@ export default async function AddressDetailsScreen({
           <header className="flex flex-wrap items-center gap-3">
             {Icon && (
               <div
+                role="img"
                 className="grid size-11 shrink-0 place-items-center rounded-2xl bg-black/80"
                 aria-label={t.addresses.typeAria.replace(
                   "{label}",

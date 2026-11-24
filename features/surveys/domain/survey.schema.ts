@@ -21,7 +21,3 @@ export const confirmPinSchema = z.object({
 export const cancelPinSchema = z.object({
   pinId: z.string().cuid(),
 });
-
-export type CreatePinsSchema = z.infer<typeof createPinsSchema>;
-export type ConfirmPinSchema = z.infer<typeof confirmPinSchema>;
-export type CancelPinSchema = z.infer<typeof cancelPinSchema>;

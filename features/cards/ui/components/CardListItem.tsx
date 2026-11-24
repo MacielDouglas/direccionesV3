@@ -1,9 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { ADDRESS_TYPE_OPTIONS } from "@/features/addresses/domain/constants/address.constants";
-import { useI18n } from "@/lib/i18n/I18nProvider";
-import { cn } from "@/lib/utils";
 import {
   CheckCircle,
   Circle,
@@ -16,6 +12,10 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ADDRESS_TYPE_OPTIONS } from "@/features/addresses/domain/constants/address.constants";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { cn } from "@/lib/utils";
 import { AssignCardModal } from "./AssignCardModal";
 import { CardRegistryModal } from "./CardRegistryModal";
 import { DeleteCardButton } from "./DeleteCardButton";

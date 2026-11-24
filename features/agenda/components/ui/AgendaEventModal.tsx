@@ -1,5 +1,7 @@
 "use client";
 
+import { Clock, Info, MapPin, Tag, User } from "lucide-react";
+import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -9,8 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { Clock, Info, MapPin, Tag, User } from "lucide-react";
-import Image from "next/image";
 import type { AgendaEventItem } from "../../types/agenda.types";
 import { eventTime, isEventPast } from "../../utils/agenda-time";
 import { dateLabelLong } from "../../utils/calendar-locale";

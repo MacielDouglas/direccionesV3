@@ -80,11 +80,6 @@ export function dateLabelLong(locale: Locale, date: Date): string {
   return `${weekdayLong(locale, date.getUTCDay())}, ${date.getUTCDate()} de ${MONTHS[locale][date.getUTCMonth()]}`;
 }
 
-// Rótulo curto (ex.: "Seg, 5 ago") usado nos chips de eventos passados.
-export function eventDateShort(locale: Locale, date: Date): string {
-  return `${weekdayShort(locale, date.getUTCDay())}, ${date.getUTCDate()} ${MONTHS[locale][date.getUTCMonth()].slice(0, 3)}`;
-}
-
 export function formatDateInput(date: Date): string {
   const y = date.getUTCFullYear();
   const m = String(date.getUTCMonth() + 1).padStart(2, "0");

@@ -1,7 +1,8 @@
 // app/org/[organizationSlug]/admin/invitations/loading.tsx
+
+import { Link2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { Link2 } from "lucide-react";
 
 export default async function InvitationsLoading() {
   const t = await getServerDictionary();

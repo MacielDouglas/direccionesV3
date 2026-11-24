@@ -1,8 +1,7 @@
-import { getServerDictionary } from "@/lib/i18n/server";
 import type { Address } from "@prisma/client";
-import { ArrowLeft } from "lucide-react";
-import { CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
+import { getServerDictionary } from "@/lib/i18n/server";
 import { AddressHeroImage } from "../components/AddressHeroImage";
 import { PendingDeletionActions } from "../components/PendingDeletionActions";
 
@@ -116,10 +115,7 @@ export default async function PendingDeletionScreen({ addresses, organizationSlu
                       </p>
                     </div>
                   </div>
-                  <span
-                    className="shrink-0 inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive"
-                    aria-label={t.addresses.pendingDeletion}
-                  >
+                  <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive">
                     <XCircle className="size-3" aria-hidden="true" />
                     {t.addresses.pendingDeletion}
                   </span>

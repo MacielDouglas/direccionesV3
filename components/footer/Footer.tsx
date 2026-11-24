@@ -1,7 +1,7 @@
-import { getServerDictionary } from "@/lib/i18n/server";
 import type { Organization } from "better-auth/plugins";
 import { Compass } from "lucide-react";
 import Link from "next/link";
+import { getServerDictionary } from "@/lib/i18n/server";
 
 interface FooterProps {
   organization: Organization | null;

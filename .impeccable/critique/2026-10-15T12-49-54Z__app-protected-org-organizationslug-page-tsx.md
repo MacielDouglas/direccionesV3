@@ -1,8 +1,9 @@
 ---
+
 target: página home
 total_score: 20
 max_score: 40
-na_heuristics: 
+na_heuristics:
 p0_count: 0
 p1_count: 3
 target_identity: "file:D:\\Projetos\\direccionesV3_5\\app\\(protected)\\org\\[organizationSlug]\\page.tsx"
@@ -11,25 +12,26 @@ target_path: "D:\\Projetos\\direccionesV3_5\\app\\(protected)\\org\\[organizatio
 timestamp: 2026-10-15T12-49-54Z
 slug: app-protected-org-organizationslug-page-tsx
 ---
+
 # Critique — página Home (app/(protected)/org/[organizationSlug]/page.tsx + HomeDashboard + NextMeetingSection)
 
 Method: dual-agent (A: ses_ec0654426ffeq6Y0FnEpv14utj · B: ses_ec06543f7ffewysOEfVco4UycV)
 
 ## Design Health Score
 
-| # | Heurística | Nota | Achado-chave |
-|---|-----------|------|--------------|
-| 1 | Visibilidade do status | 2 | NextMeetingCard retorna null silencioso se !connected/erro |
-| 2 | Mundo real | 3 | Rótulo de evento truncado e críptico (tipo ?? territorio ?? saida) |
-| 3 | Controle e liberdade | 3 | Modal depende de um único X customizado |
-| 4 | Consistência | 2 | Preto + laranja + azul competem na mesma coluna |
-| 5 | Prevenção de erro | 2 | Falha de reunião some; eventos linkam para /agenda genérico |
-| 6 | Reconhecimento | 2 | cardCount sem explicação; outra reunião escondida no modal |
-| 7 | Flexibilidade | 1 | Sem atalho, busca, recentes ou lote |
-| 8 | Estética minimalista | 2 | Hero text-5xl empurra "hoje" para baixo da dobra (~420dpi) |
-| 9 | Recuperação de erro | 2 | Erro do Meeting vira null, sem mensagem nem ação |
-| 10 | Ajuda | 1 | Zero ajuda contextual sobre card/território/saída |
-| **Total** | | **20/40** | **Acceptable** |
+| #         | Heurística             | Nota      | Achado-chave                                                       |
+| --------- | ---------------------- | --------- | ------------------------------------------------------------------ |
+| 1         | Visibilidade do status | 2         | NextMeetingCard retorna null silencioso se !connected/erro         |
+| 2         | Mundo real             | 3         | Rótulo de evento truncado e críptico (tipo ?? territorio ?? saida) |
+| 3         | Controle e liberdade   | 3         | Modal depende de um único X customizado                            |
+| 4         | Consistência           | 2         | Preto + laranja + azul competem na mesma coluna                    |
+| 5         | Prevenção de erro      | 2         | Falha de reunião some; eventos linkam para /agenda genérico        |
+| 6         | Reconhecimento         | 2         | cardCount sem explicação; outra reunião escondida no modal         |
+| 7         | Flexibilidade          | 1         | Sem atalho, busca, recentes ou lote                                |
+| 8         | Estética minimalista   | 2         | Hero text-5xl empurra "hoje" para baixo da dobra (~420dpi)         |
+| 9         | Recuperação de erro    | 2         | Erro do Meeting vira null, sem mensagem nem ação                   |
+| 10        | Ajuda                  | 1         | Zero ajuda contextual sobre card/território/saída                  |
+| **Total** |                        | **20/40** | **Acceptable**                                                     |
 
 ## Veredito de especificidade
 

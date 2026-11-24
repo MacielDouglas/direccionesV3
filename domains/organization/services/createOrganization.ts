@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { prisma } from "@/lib/prisma";
 import { createOrganizationByNameSchema } from "../schemas/organization.schema";
 import { createSlug } from "../utils/createSlug";
 
@@ -23,7 +23,7 @@ export async function createOrganizationService(
     where: { token: data.token },
   });
 
-  if (!invite || invite.type !== "OWNER_ONBOARDING") {
+  if (invite?.type !== "OWNER_ONBOARDING") {
     throw new Error("Token no válido.");
   }
   if (invite.usedAt) {

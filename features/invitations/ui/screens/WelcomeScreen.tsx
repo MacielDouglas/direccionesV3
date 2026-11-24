@@ -1,5 +1,10 @@
 "use client";
 
+import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { ArrowRight, CheckCircle2, KeyRound, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 import LogoutButton from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,11 +16,6 @@ import {
 } from "@/components/ui/input-otp";
 import { DeleteAccountButton } from "@/features/user/ui/components/DeleteAccountButton";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { ArrowRight, CheckCircle2, KeyRound, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
 import { redeemWelcomeTokenAction } from "../../applications/inviteToken.action";
 
 interface WelcomeScreenProps {

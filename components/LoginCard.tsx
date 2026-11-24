@@ -1,11 +1,11 @@
 "use client";
 
-import { LanguageSelector } from "@/components/LanguageSelector";
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import LoginButton from "./LoginButton";
 
 export function LoginCard() {

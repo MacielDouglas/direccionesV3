@@ -1,5 +1,9 @@
 "use client";
 
+import { BrushCleaning, MapPin, Paperclip, Pin, SatelliteDish, XIcon } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useCallback, useState } from "react";
+import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,10 +15,6 @@ import {
 import type { Coordinates } from "@/features/map/types/map.types";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { I18nDictionary } from "@/lib/i18n/types";
-import { BrushCleaning, MapPin, Paperclip, Pin, SatelliteDish, XIcon } from "lucide-react";
-import dynamic from "next/dynamic";
-import { useCallback, useState } from "react";
-import { useFormContext } from "react-hook-form";
 import type { AddressFormData } from "../../domain/address.schema";
 import { useGeolocation } from "../../hooks/useGeolocation";
 
@@ -37,13 +37,7 @@ const extractCoords = (value: string) => {
 };
 
 // ── Skeleton com blur quando permissão negada ────────────────────────────────
-function GeolocationBlockedOverlay({
-  t,
-  onRequest,
-}: {
-  t: I18nDictionary;
-  onRequest: () => void;
-}) {
+function GeolocationBlockedOverlay({ t, onRequest }: { t: I18nDictionary; onRequest: () => void }) {
   return (
     <output
       aria-label={t.addresses.gpsLocationDisabledAria}

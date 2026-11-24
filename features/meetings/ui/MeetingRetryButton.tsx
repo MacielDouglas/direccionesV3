@@ -1,9 +1,9 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Loader2, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 /** Recarrega a programação (recuperação do erro de carga da semana). */
 export function MeetingRetryButton() {

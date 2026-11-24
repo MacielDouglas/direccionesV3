@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Check, Merge, Pencil, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { mergeSavedTextsAction, renameSavedTextAction } from "../../application/saved-text.actions";
 import type { SavedTextsByField } from "../../application/saved-text.service";
 import type { SavedTextField } from "../../domain/saved-text.schema";

@@ -1,7 +1,7 @@
+import { notFound, redirect } from "next/navigation";
 import RoleGuard from "@/components/RoleGuard";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser, requireOrgAdminOrOwner } from "@/server/users";
-import { notFound, redirect } from "next/navigation";
 
 export default async function AdminLayout({
   children,

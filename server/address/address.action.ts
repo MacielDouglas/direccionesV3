@@ -1,9 +1,9 @@
 "use server";
 
+import { z } from "zod";
 import type { AddressWithUsers } from "@/features/addresses/types/address.types";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, requireAuthContext } from "@/server/users";
-import { z } from "zod";
 
 const personSelect = {
   id: true,

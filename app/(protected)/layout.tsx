@@ -1,15 +1,11 @@
+import { redirect } from "next/navigation";
 import Footer from "@/components/footer/Footer";
 import Header from "@/components/header/Header";
 import { BottomTabBar } from "@/components/navigation/BottomTabBar";
 import { OfflineSyncProvider } from "@/features/pwa/core/offline-sync";
 import { getCurrentUser } from "@/server/users";
-import { redirect } from "next/navigation";
 
-export default async function ProtectedLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const data = await getCurrentUser();
 
   if (!data) redirect("/login");

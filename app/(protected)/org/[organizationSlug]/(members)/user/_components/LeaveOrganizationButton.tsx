@@ -1,5 +1,9 @@
 "use client";
 
+import { Loader2, LogOut } from "lucide-react";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { useState } from "react";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,10 +21,6 @@ import { clearOfflineSession } from "@/features/pwa/core/offline-store";
 import { resolveActionError } from "@/lib/action-error";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { leaveOrganizationAction } from "@/server/organization/leave-organization.action";
-import { Loader2, LogOut } from "lucide-react";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
-import { useState } from "react";
-import { toast } from "sonner";
 
 export function LeaveOrganizationButton({
   organizationId,

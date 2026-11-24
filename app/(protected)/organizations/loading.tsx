@@ -1,5 +1,5 @@
-import { getServerDictionary } from "@/lib/i18n/server";
 import { Building2 } from "lucide-react";
+import { getServerDictionary } from "@/lib/i18n/server";
 
 export default async function OrganizationsLoading() {
   const t = await getServerDictionary();

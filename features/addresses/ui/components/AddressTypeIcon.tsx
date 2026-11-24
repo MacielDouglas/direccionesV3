@@ -5,7 +5,7 @@ export function AddressTypeIcon({ type }: { type: string }) {
   if (!config) return null;
   const Icon = config.icon;
   return (
-    <span aria-label={`Tipo: ${config.label}`}>
+    <span role="img" aria-label={`Tipo: ${config.label}`}>
       <Icon className={config.color} size={28} aria-hidden="true" />
     </span>
   );

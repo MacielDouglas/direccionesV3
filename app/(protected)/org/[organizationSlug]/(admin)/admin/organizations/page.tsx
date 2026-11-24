@@ -1,10 +1,10 @@
+import { Building2, CalendarCheck, CreditCard, UserPlus, Users } from "lucide-react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/BackLink";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/server/users";
-import { Building2, CalendarCheck, CreditCard, UserPlus, Users } from "lucide-react";
-import Link from "next/link";
-import { redirect } from "next/navigation";
 
 interface Props {
   params: Promise<{ organizationSlug: string }>;

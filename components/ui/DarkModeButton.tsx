@@ -1,9 +1,9 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Button } from "../ui/button";
 
 // useSyncExternalStore garante valor correto no server vs client sem useEffect

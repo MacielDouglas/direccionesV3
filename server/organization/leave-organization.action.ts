@@ -1,8 +1,8 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/server/users";
-import { redirect } from "next/navigation";
 
 export async function leaveOrganizationAction(organizationId: string) {
   const data = await getCurrentUser();

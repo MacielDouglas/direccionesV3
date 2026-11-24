@@ -1,5 +1,9 @@
 "use client";
 
+import { Loader2, Send, Trash2, UserRoundX } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,10 +18,6 @@ import {
   superuserSendUserToOrganizationAction,
 } from "@/features/superuser/applications/superuser.action";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { Loader2, Send, Trash2, UserRoundX } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
 import type { SuperOrg } from "./SuperUserOrganizations";
 
 export type SuperUserRow = {

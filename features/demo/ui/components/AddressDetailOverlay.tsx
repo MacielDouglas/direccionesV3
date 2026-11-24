@@ -1,9 +1,9 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { ArrowLeft, CheckCircle2, Landmark, MapPin, UserRound } from "lucide-react";
 import Image from "next/image";
 import { SiGooglemaps, SiWaze } from "react-icons/si";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { DemoMuseum } from "../../domain/demo.data";
 import { DemoBackToLogin } from "./DemoBackToLogin";
 import { InfoNote } from "./InfoNote";

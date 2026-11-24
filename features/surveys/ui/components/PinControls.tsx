@@ -1,7 +1,7 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Check, Eraser, MapPin, Plus, Send, TriangleAlert } from "lucide-react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 interface Props {
   localPinsCount: number;

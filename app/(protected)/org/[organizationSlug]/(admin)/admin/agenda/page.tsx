@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/BackLink";
 import {
   getAgendaEventsByMonth,
@@ -12,8 +14,6 @@ import { monthLabel as monthLabelLocalized } from "@/features/agenda/utils/calen
 import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 interface Props {
   params: Promise<{ organizationSlug: string }>;
@@ -45,8 +45,8 @@ export default async function AdminAgendaPage({ params, searchParams }: Props) {
 
   const organizationId = organization.id;
   const today = todayInBrasilia();
-  const activeYear = year ? Number.parseInt(year) : today.year;
-  const activeMonth = month ? Number.parseInt(month) : today.month;
+  const activeYear = year ? Number.parseInt(year, 10) : today.year;
+  const activeMonth = month ? Number.parseInt(month, 10) : today.month;
 
   const [events, members, fieldOptions] = await Promise.all([
     getAgendaEventsByMonth(organizationId, activeYear, activeMonth),

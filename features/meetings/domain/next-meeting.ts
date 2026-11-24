@@ -1,5 +1,5 @@
-import type { MeetingAssignment } from "@/features/meetings/domain/meeting-section";
 import type { MeetingDetail, MeetingWeekPayload } from "@/features/meetings/domain/meeting.schema";
+import type { MeetingAssignment } from "@/features/meetings/domain/meeting-section";
 
 export type NextMeetingKind = "midweek" | "weekend";
 

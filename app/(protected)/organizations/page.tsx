@@ -1,10 +1,10 @@
-import { getServerDictionary } from "@/lib/i18n/server";
-import { getOrganizations } from "@/server/organization/organization.queries";
-import { getCurrentUser } from "@/server/users";
 import { Building2, ChevronRight, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getServerDictionary } from "@/lib/i18n/server";
+import { getOrganizations } from "@/server/organization/organization.queries";
+import { getCurrentUser } from "@/server/users";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getServerDictionary();

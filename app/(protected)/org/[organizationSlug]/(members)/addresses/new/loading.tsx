@@ -1,12 +1,13 @@
+import { MapPinPlus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { MapPinPlus } from "lucide-react";
 
 export default async function NewAddressLoading() {
   const t = await getServerDictionary();
   return (
     <div
       className="mx-auto h-full w-full max-w-3xl space-y-4"
+      role="status"
       aria-busy="true"
       aria-label={t.common.loadingLabels.addressForm}
     >

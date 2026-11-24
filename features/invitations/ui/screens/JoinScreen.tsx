@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { resolveActionError } from "@/lib/action-error";
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CheckCircle, Loader2, Users, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { resolveActionError } from "@/lib/action-error";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { applyInviteTokenAction } from "../../applications/inviteToken.action";
 
 export function JoinScreen({ token }: { token: string }) {

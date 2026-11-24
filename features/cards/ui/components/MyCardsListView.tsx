@@ -1,8 +1,5 @@
 "use client";
 
-import { ADDRESS_TYPE_OPTIONS } from "@/features/addresses/domain/constants/address.constants";
-import { useI18n } from "@/lib/i18n/I18nProvider";
-import { cn } from "@/lib/utils";
 import {
   ChevronRight,
   CircleAlert,
@@ -13,6 +10,9 @@ import {
   MapPinned,
 } from "lucide-react";
 import Link from "next/link";
+import { ADDRESS_TYPE_OPTIONS } from "@/features/addresses/domain/constants/address.constants";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { cn } from "@/lib/utils";
 import { getCardColor } from "../../utils/cardColors";
 import { ReturnMyCardButton } from "./ReturnMyCardButton";
 

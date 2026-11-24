@@ -1,8 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useHaptic } from "@/app/hooks/useHaptic";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 
 // components/ui/NavLink.tsx
 interface Props {

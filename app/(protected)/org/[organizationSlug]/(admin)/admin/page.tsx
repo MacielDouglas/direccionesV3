@@ -1,6 +1,3 @@
-import { dictionaries } from "@/lib/i18n/dictionaries";
-import { getServerLocale } from "@/lib/i18n/server";
-import { getCurrentUser } from "@/server/users";
 import {
   CalendarCheck,
   ChevronRight,
@@ -14,6 +11,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { dictionaries } from "@/lib/i18n/dictionaries";
+import { getServerLocale } from "@/lib/i18n/server";
+import { getCurrentUser } from "@/server/users";
 
 interface Props {
   params: Promise<{ organizationSlug: string }>;

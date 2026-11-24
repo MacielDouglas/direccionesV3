@@ -1,9 +1,9 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import type { NavigationItem as Item } from "@/features/navigation/constants/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
 import { NavLink } from "../ui/NavLink";
 
 type Props = {

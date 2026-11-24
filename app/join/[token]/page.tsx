@@ -1,8 +1,8 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { JoinScreen } from "@/features/invitations/ui/screens/JoinScreen";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCurrentUser } from "@/server/users";
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 interface Props {
   params: Promise<{ token: string }>;

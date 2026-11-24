@@ -49,6 +49,3 @@ export const mergeSavedTextsSchema = z
     message: "Há textos repetidos na seleção.",
   })
   .superRefine((data, ctx) => checkAgendaMax(data.field, [...data.froms, data.to], ctx));
-
-export type RenameSavedTextInput = z.infer<typeof renameSavedTextSchema>;
-export type MergeSavedTextsInput = z.infer<typeof mergeSavedTextsSchema>;

@@ -1,7 +1,7 @@
-import { getUserLanguage } from "@/server/users";
 import { cookies, headers } from "next/headers";
-import { LOCALE_COOKIE_NAME } from "./I18nProvider";
+import { getUserLanguage } from "@/server/users";
 import { dictionaries } from "./dictionaries";
+import { LOCALE_COOKIE_NAME } from "./I18nProvider";
 import type { I18nDictionary, Locale } from "./types";
 
 const ACCEPT_LANGUAGE_REGEX = /^(pt|es)(?:[-_]|$)/i;

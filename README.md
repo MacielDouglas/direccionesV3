@@ -91,12 +91,12 @@ flowchart LR
 
 ### API / Actions (resumo)
 
-| Área | Via | Regras |
-|---|---|---|
-| addresses / cards / agenda / surveys | Server Actions | `autorize.ts` no servidor + `RoleGuard` só visual |
-| upload de fotos | `/api/*` presigned R2 | compressão + HEIC→JPEG + EXIF |
-| reuniões (Meeting) | sync server-only | token AES nunca exposto ao client |
-| convites | `/join/[token]` | token uso único, Google OAuth como member |
+| Área                                 | Via                   | Regras                                            |
+| ------------------------------------ | --------------------- | ------------------------------------------------- |
+| addresses / cards / agenda / surveys | Server Actions        | `autorize.ts` no servidor + `RoleGuard` só visual |
+| upload de fotos                      | `/api/*` presigned R2 | compressão + HEIC→JPEG + EXIF                     |
+| reuniões (Meeting)                   | sync server-only      | token AES nunca exposto ao client                 |
+| convites                             | `/join/[token]`       | token uso único, Google OAuth como member         |
 
 ---
 
@@ -295,20 +295,20 @@ O Direcciones_V3 usa **PostgreSQL** acessado via Prisma com o adaptador edge-com
 
 As migrações são gerenciadas com `prisma migrate` e versionadas em `prisma/migrations/`. O histórico reflete a evolução do produto:
 
-| Migração   | Alteração                                                   |
-| ---------- | ----------------------------------------------------------- |
-| `20260129` | Schema inicial (usuários, organizações, endereços, membros) |
-| `20260224` | Adição do campo `city` nos endereços                        |
-| `20260304` | Adição de `lastActiveAt` nos membros                        |
-| `20260304` | Adição da flag `pendingDeletion` nos endereços              |
-| `20260305` | Adição de número do card e relacionamento com organização   |
-| `20260312` | Adição de pins de levantamento com status                   |
-| `20260318` | Adição de eventos de agenda e campos estendidos             |
-| `20260319` | Adição de usuários convidados e cascade do token de convite |
-| `20260811–20260815` | Modelo `Person`, idioma do usuário e eventos de card     |
-| `20260930` | Integração inicial do Meeting + backup semanal do banco     |
-| `20261003` | `meeting_connection` + `meeting_week_program` (programa semanal em cache) |
-| `20261014` | `pendingDeletionReason` nos endereços (motivo obrigatório da exclusão) |
+| Migração            | Alteração                                                                 |
+| ------------------- | ------------------------------------------------------------------------- |
+| `20260129`          | Schema inicial (usuários, organizações, endereços, membros)               |
+| `20260224`          | Adição do campo `city` nos endereços                                      |
+| `20260304`          | Adição de `lastActiveAt` nos membros                                      |
+| `20260304`          | Adição da flag `pendingDeletion` nos endereços                            |
+| `20260305`          | Adição de número do card e relacionamento com organização                 |
+| `20260312`          | Adição de pins de levantamento com status                                 |
+| `20260318`          | Adição de eventos de agenda e campos estendidos                           |
+| `20260319`          | Adição de usuários convidados e cascade do token de convite               |
+| `20260811–20260815` | Modelo `Person`, idioma do usuário e eventos de card                      |
+| `20260930`          | Integração inicial do Meeting + backup semanal do banco                   |
+| `20261003`          | `meeting_connection` + `meeting_week_program` (programa semanal em cache) |
+| `20261014`          | `pendingDeletionReason` nos endereços (motivo obrigatório da exclusão)    |
 
 Para aplicar as migrações em um ambiente novo:
 
@@ -392,16 +392,16 @@ A aplicação estará disponível em [http://localhost:3000](http://localhost:30
 
 ### Scripts Disponíveis
 
-| Comando                  | Descrição                                          |
-| ------------------------ | -------------------------------------------------- |
-| `bun run dev`            | Inicia o servidor de desenvolvimento com Turbopack |
-| `bun run build`          | Build de produção                                  |
-| `bun run start`          | Inicia o servidor de produção                      |
-| `bun run lint`           | Executa o Biome (lint + format)                    |
-| `bun run lint:fix`       | Executa o Biome com auto-fix                       |
-| `bun run typecheck`      | Verificação de tipos (`tsc --noEmit`)              |
-| `bunx prisma studio`     | Abre a interface gráfica do banco de dados         |
-| `bunx prisma migrate dev`| Cria e aplica uma nova migração                    |
+| Comando                   | Descrição                                          |
+| ------------------------- | -------------------------------------------------- |
+| `bun run dev`             | Inicia o servidor de desenvolvimento com Turbopack |
+| `bun run build`           | Build de produção                                  |
+| `bun run start`           | Inicia o servidor de produção                      |
+| `bun run lint`            | Executa o Biome (lint + format)                    |
+| `bun run lint:fix`        | Executa o Biome com auto-fix                       |
+| `bun run typecheck`       | Verificação de tipos (`tsc --noEmit`)              |
+| `bunx prisma studio`      | Abre a interface gráfica do banco de dados         |
+| `bunx prisma migrate dev` | Cria e aplica uma nova migração                    |
 
 ---
 

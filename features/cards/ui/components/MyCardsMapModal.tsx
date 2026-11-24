@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeft, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +12,6 @@ import { CardViewMap } from "@/features/map/components/CardViewMap";
 import type { CardAddress } from "@/features/map/layers/CardAddressesLayer";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, X } from "lucide-react";
 
 interface Props {
   open: boolean;

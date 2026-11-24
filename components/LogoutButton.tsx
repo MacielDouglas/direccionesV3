@@ -1,12 +1,12 @@
 "use client";
 
+import { LogOut } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { clearOfflineSession } from "@/features/pwa/core/offline-store";
 import { authClient } from "@/lib/auth-client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { LogOut } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
 import { Button } from "./ui/button";
 
 export default function LogoutButton({ className }: { className?: string }) {

@@ -1,5 +1,9 @@
 "use client";
 
+import { BrushCleaning, ChevronsUpDown, HandHelping, RefreshCw, Undo2 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Select as SelectPrimitive } from "radix-ui";
+import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,26 +18,26 @@ import type {
   StoredWeekProgram,
   StoredWeekSummary,
 } from "@/features/meetings/application/meeting.service";
+import type { MeetingDetail, MeetingDuty } from "@/features/meetings/domain/meeting.schema";
 import {
   type MeetingLocale,
   meetingSectionMetaOf,
   numberProgramParts,
   splitMeetingBlocks,
 } from "@/features/meetings/domain/meeting-section";
-import type { MeetingDetail, MeetingDuty } from "@/features/meetings/domain/meeting.schema";
 import {
   MEETING_SHEET_DESIGNATIONS_CLASSES,
   MeetingSheetBody,
   MeetingSheetHeader,
 } from "@/features/meetings/ui/meeting-sheet";
 import {
+  cleaningIconFor,
+  dutyIconFor,
   ProgramFramingRow,
   type ProgramIcon,
   ProgramPartRow,
   ProgramPresidentRow,
   ProgramSectionHeader,
-  cleaningIconFor,
-  dutyIconFor,
 } from "@/features/meetings/ui/program-parts";
 import { sectionIconOf } from "@/features/meetings/ui/section-icons";
 import {
@@ -54,10 +58,6 @@ import { useOfflineSync } from "@/features/pwa/core/offline-sync";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { I18nDictionary } from "@/lib/i18n/types";
 import { cn } from "@/lib/utils";
-import { BrushCleaning, ChevronsUpDown, HandHelping, RefreshCw, Undo2 } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
-import { Select as SelectPrimitive } from "radix-ui";
-import { useEffect, useMemo, useState } from "react";
 
 type Texts = I18nDictionary["meetings"];
 type MeetingKind = "midweek" | "weekend";
@@ -149,10 +149,13 @@ function MeetingPanel({
         <p className="px-4 py-4 text-sm text-muted-foreground">{texts.noAssignments}</p>
       ) : null}
 
-      {timedBlocks.map((block, blockIndex) => {
+      {timedBlocks.map((block) => {
         const meta = meetingSectionMetaOf(block.section, locale);
         return (
-          <div key={`${block.section}-${blockIndex}`} className="flex min-w-0 flex-col px-4 pt-2">
+          <div
+            key={block.parts[0]?.part.partKey ?? block.section}
+            className="flex min-w-0 flex-col px-4 pt-2"
+          >
             {block.hasCounted ? (
               <ProgramSectionHeader
                 label={meta.label}
@@ -470,11 +473,11 @@ export function MeetingWeekView({
                 />
                 <MeetingSheetBody>
                   <ul className="divide-y divide-border px-4 pb-4">
-                    {otherDuties.map((duty, dutyIndex) => {
+                    {otherDuties.map((duty) => {
                       const DutyIcon = dutyIconFor(duty.postLabel);
                       return (
                         <li
-                          key={`${duty.date}-${duty.dutyKey}-${dutyIndex}`}
+                          key={`${duty.date}-${duty.dutyKey}`}
                           className="flex items-center gap-3 py-2.5"
                         >
                           <span

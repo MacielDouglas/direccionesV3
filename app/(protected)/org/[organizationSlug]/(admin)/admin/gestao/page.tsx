@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/BackLink";
 import { getOrgInviteTokensAction } from "@/features/invitations/applications/inviteToken.action";
 import { AdminGestaoScreen } from "@/features/people/ui/screens/AdminGestaoScreen";
@@ -5,8 +7,6 @@ import { getServerDictionary } from "@/lib/i18n/server";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getOrgPersonsWithInvites } from "@/server/person";
 import { getCurrentUser } from "@/server/users";
-import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getServerDictionary();

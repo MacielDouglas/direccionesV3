@@ -1,11 +1,10 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { XIcon } from "lucide-react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import type * as React from "react";
-
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 
 function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {

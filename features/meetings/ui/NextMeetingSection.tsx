@@ -1,5 +1,8 @@
 "use client";
 
+import { CalendarDays, ChevronRight, Clock, UserRoundGroup } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,13 +12,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import type { StoredWeekProgram } from "@/features/meetings/application/meeting.service";
+import type { MeetingDetail, MeetingDuty } from "@/features/meetings/domain/meeting.schema";
 import {
   isCountedPart,
   meetingSectionMetaOf,
   numberProgramParts,
   splitMeetingBlocks,
 } from "@/features/meetings/domain/meeting-section";
-import type { MeetingDetail, MeetingDuty } from "@/features/meetings/domain/meeting.schema";
 import {
   MEETING_SHEET_CLASSES,
   MeetingSheetBody,
@@ -42,9 +45,6 @@ import { readMeetingsSnapshot } from "@/features/pwa/core/offline-store";
 import { useOfflineSync } from "@/features/pwa/core/offline-sync";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { CalendarDays, ChevronRight, Clock, UserRoundGroup } from "lucide-react";
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
 
 type MeetingKind = "midweek" | "weekend";
 
@@ -107,7 +107,6 @@ export function NextMeetingSection({
     (defaultKind === "midweek" ? effectiveMidweek : effectiveWeekend) ??
     effectiveMidweek ??
     effectiveWeekend;
-  if (!defaultMeeting) return null;
 
   const resolvedDefaultKind: MeetingKind =
     defaultKind === "midweek"
@@ -125,11 +124,6 @@ export function NextMeetingSection({
   const hasBoth = effectiveMidweek !== null && effectiveWeekend !== null;
 
   const kindTitle = effectiveKind === "midweek" ? t.meetings.midweekTitle : t.meetings.weekendTitle;
-  const countedParts = defaultMeeting.assignments.filter(isCountedPart).length;
-  const partsLabel =
-    countedParts === 1
-      ? t.home.nextMeeting.partsCountSingular
-      : t.home.nextMeeting.partsCount.replace("{count}", String(countedParts));
 
   const kindDuties = useMemo(
     () => effectiveDuties.filter((duty) => duty.meetingKind === effectiveKind),
@@ -147,6 +141,14 @@ export function NextMeetingSection({
         : [],
     [meeting],
   );
+
+  if (!defaultMeeting) return null;
+
+  const countedParts = defaultMeeting.assignments.filter(isCountedPart).length;
+  const partsLabel =
+    countedParts === 1
+      ? t.home.nextMeeting.partsCountSingular
+      : t.home.nextMeeting.partsCount.replace("{count}", String(countedParts));
 
   return (
     <section aria-labelledby="home-reunioes">
@@ -252,11 +254,11 @@ export function NextMeetingSection({
                     </p>
                   ) : null}
 
-                  {timedBlocks.map((block, blockIndex) => {
+                  {timedBlocks.map((block) => {
                     const meta = meetingSectionMetaOf(block.section, locale);
                     return (
                       <section
-                        key={`${block.section}-${blockIndex}`}
+                        key={block.parts[0]?.part.partKey ?? block.section}
                         className="flex min-w-0 flex-col px-4 pt-2"
                       >
                         {block.hasCounted ? (

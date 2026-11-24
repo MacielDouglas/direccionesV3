@@ -1,9 +1,9 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/server/users";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/server/users";
 
 const updateLanguageSchema = z.object({
   language: z.enum(["pt", "es"]),

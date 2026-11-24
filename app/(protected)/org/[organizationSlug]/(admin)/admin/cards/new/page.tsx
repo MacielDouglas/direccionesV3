@@ -1,9 +1,9 @@
+import { redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/BackLink";
 import { canManageCards } from "@/features/cards/permissions/canManageCards";
 import { CardCreateScreen } from "@/features/cards/ui/screens/CardCreateScreen";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { requireSession } from "@/server/users";
-import { redirect } from "next/navigation";
 
 interface Props {
   params: Promise<{ organizationSlug: string }>;

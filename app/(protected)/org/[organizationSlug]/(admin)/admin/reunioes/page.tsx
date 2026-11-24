@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { notFound, redirect } from "next/navigation";
 import { BackLink } from "@/components/ui/BackLink";
 import { getMeetingConnectionStatus } from "@/features/meetings/application/meeting.service";
 import { readDefaultBaseUrl } from "@/features/meetings/infrastructure/meeting-config";
@@ -5,8 +7,6 @@ import { MeetingConnectionForm } from "@/features/meetings/ui/MeetingConnectionF
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
-import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getServerDictionary();

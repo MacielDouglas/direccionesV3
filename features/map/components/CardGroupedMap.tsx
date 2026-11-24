@@ -1,9 +1,9 @@
 "use client";
 
-import { getCardColor } from "@/features/cards/utils/cardColors";
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
+import { getCardColor } from "@/features/cards/utils/cardColors";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CardGroupedLayer, type GroupedAddress } from "../layers/CardGroupedLayer";
 
 const MapboxProviderDynamic = dynamic(

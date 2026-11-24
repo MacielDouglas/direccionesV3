@@ -1,11 +1,11 @@
-import { toRole } from "@/domains/member/utils/toRole";
-import { auth } from "@/lib/auth";
-import { type AppRole, canAccess } from "@/lib/autorize";
-import type { Locale } from "@/lib/i18n/types";
-import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
+import { toRole } from "@/domains/member/utils/toRole";
+import { auth } from "@/lib/auth";
+import { canAccess } from "@/lib/autorize";
+import type { Locale } from "@/lib/i18n/types";
+import { prisma } from "@/lib/prisma";
 
 // ✅ Idioma persistido do usuário no banco (fallback quando não há cookie)
 export const getUserLanguage = cache(async (): Promise<Locale | null> => {
@@ -178,14 +178,5 @@ export async function requireOrgAdminOrOwner(organizationId: string): Promise<Au
   const role = toRole(person?.role ?? null);
   if (!role || !canAccess(role, "admin")) throw new Error("Sin permiso.");
 
-  return data;
-}
-
-// ✅ Helper central — exige role mínimo na organização ativa (Super User fica isento)
-export async function requireRole(required: AppRole): Promise<AuthContext> {
-  const data = await requireAuthContext();
-  if (data.isSuperUser) return data;
-  const role = data.memberRole?.role;
-  if (!role || !canAccess(role, required)) throw new Error("Sin permiso.");
   return data;
 }

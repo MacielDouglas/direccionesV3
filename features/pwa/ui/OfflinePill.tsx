@@ -1,7 +1,7 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Loader2, WifiOff } from "lucide-react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useNetworkStatus } from "../core/network-status";
 
 export function OfflinePill() {

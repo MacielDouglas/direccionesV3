@@ -1,3 +1,6 @@
+import { CalendarX, TriangleAlert } from "lucide-react";
+import type { Metadata } from "next";
+import { notFound, redirect } from "next/navigation";
 import {
   getCurrentWeekProgram,
   getStoredMeetingWeek,
@@ -9,9 +12,6 @@ import { OfflineSyncButton } from "@/features/pwa/ui/OfflineSyncButton";
 import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
-import { CalendarX, TriangleAlert } from "lucide-react";
-import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getServerDictionary();

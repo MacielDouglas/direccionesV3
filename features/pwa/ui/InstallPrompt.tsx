@@ -1,8 +1,9 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Download } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -213,7 +214,7 @@ export function InstallPrompt() {
       className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] z-50 rounded-2xl border bg-background p-5 shadow-xl md:left-auto md:right-6 md:w-96"
     >
       <div className="flex items-start gap-3">
-        <img
+        <Image
           src="/icons/icon-192.png"
           alt=""
           width={52}

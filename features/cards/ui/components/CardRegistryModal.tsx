@@ -1,5 +1,8 @@
 "use client";
 
+import { CalendarCheck, CalendarX, History, UserRound, X } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,9 +14,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getCardRegistryAction } from "@/features/cards/application/card.actions";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { CalendarCheck, CalendarX, History, UserRound, X } from "lucide-react";
-import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
 
 type RegistryEvent = {
   id: string;

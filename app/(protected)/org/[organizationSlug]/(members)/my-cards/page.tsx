@@ -1,11 +1,11 @@
-import { MyCardsScreen } from "@/features/cards/ui/screens/MyCardsScreen";
-import { getServerDictionary } from "@/lib/i18n/server";
-import { getOrganizationBySlug } from "@/server/organization/organization.queries";
-import { getCurrentUser } from "@/server/users";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { MyCardsScreen } from "@/features/cards/ui/screens/MyCardsScreen";
+import { getServerDictionary } from "@/lib/i18n/server";
+import { getOrganizationBySlug } from "@/server/organization/organization.queries";
+import { getCurrentUser } from "@/server/users";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getServerDictionary();

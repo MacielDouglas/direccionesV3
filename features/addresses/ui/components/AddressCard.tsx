@@ -1,12 +1,12 @@
 "use client";
 
-import type { AddressWithCard } from "@/features/addresses/application/address.service";
-import { useI18n } from "@/lib/i18n/I18nProvider";
-import { cn } from "@/lib/utils";
 import { Check, ChevronRight, Layers, MapPin, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import type { AddressWithCard } from "@/features/addresses/application/address.service";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { cn } from "@/lib/utils";
 import { AddressTypeIcon } from "./AddressTypeIcon";
 
 const ADDRESS_PLACEHOLDER = "/images/address-placeholder.jpg";

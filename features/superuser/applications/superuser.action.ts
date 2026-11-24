@@ -1,12 +1,12 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/server/users";
-import { revalidatePath } from "next/cache";
 
 async function requireSuperUser() {
   const currentUser = await getCurrentUser();
-  if (!currentUser || !currentUser.isSuperUser) {
+  if (!currentUser?.isSuperUser) {
     throw new Error("No autorizado.");
   }
   return currentUser;

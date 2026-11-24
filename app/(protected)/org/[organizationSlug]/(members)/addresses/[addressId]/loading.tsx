@@ -5,6 +5,7 @@ export default async function AddressDetailLoading() {
   return (
     <div
       className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-7"
+      role="status"
       aria-busy="true"
       aria-label={t.common.loadingLabels.address}
     >

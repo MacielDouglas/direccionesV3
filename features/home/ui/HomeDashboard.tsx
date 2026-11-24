@@ -1,12 +1,12 @@
+import { CalendarDays, ChevronRight, CreditCard, MapPinned, Plus, Shield } from "lucide-react";
+import Link from "next/link";
+import { Suspense } from "react";
 import { PendingDeletionBadge } from "@/features/addresses/ui/components/PendingDeletionBadge";
 import { getAgendaEventsByDay } from "@/features/agenda/application/agenda.service";
 import { eventTime, todayInBrasiliaDateOnly } from "@/features/agenda/utils/agenda-time";
 import { countMyCards, countMyTotalAddresses } from "@/features/cards/application/card.service";
 import { NextMeetingCard } from "@/features/meetings/ui/NextMeetingCard";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { CalendarDays, ChevronRight, CreditCard, MapPinned, Plus, Shield } from "lucide-react";
-import Link from "next/link";
-import { Suspense } from "react";
 
 interface HomeDashboardProps {
   organizationId: string;

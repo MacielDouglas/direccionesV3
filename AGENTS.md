@@ -37,6 +37,7 @@ features/<feature>/
 - `prisma/` → schema e migrações.
 
 Regras:
+
 - Fluxo de dados unidirecional: **UI → Server Action → Application → Domain/Infrastructure → Prisma → PostgreSQL**.
 - Dependências apontam para dentro: `ui` → `application` → `domain`. `domain` não depende de mais nada.
 - Regra de negócio vive em `domain/`, nunca no componente.
@@ -73,19 +74,19 @@ Regras:
 
 ## Comandos Padrão
 
-| Comando                          | Descrição                              |
-| -------------------------------- | -------------------------------------- |
-| `bun install`                    | Instala dependências (gera `bun.lock`) |
-| `bun run dev`                    | Dev server (Turbopack)                 |
-| `bun run build`                  | Build de produção                      |
-| `bun run start`                  | Servidor de produção                   |
-| `bun run lint`                   | Biome check (lint + format)            |
-| `bun run lint:fix`               | Biome check --write (auto-fix)         |
-| `bunx prisma generate`           | Regenera o cliente Prisma              |
-| `bunx prisma migrate dev`        | Cria e aplica migração                 |
-| `bunx prisma migrate deploy`     | Aplica migrações em ambiente novo      |
-| `bunx prisma studio`             | Interface do banco                     |
-| `bun run typecheck`              | `tsc --noEmit`                         |
+| Comando                      | Descrição                              |
+| ---------------------------- | -------------------------------------- |
+| `bun install`                | Instala dependências (gera `bun.lock`) |
+| `bun run dev`                | Dev server (Turbopack)                 |
+| `bun run build`              | Build de produção                      |
+| `bun run start`              | Servidor de produção                   |
+| `bun run lint`               | Biome check (lint + format)            |
+| `bun run lint:fix`           | Biome check --write (auto-fix)         |
+| `bunx prisma generate`       | Regenera o cliente Prisma              |
+| `bunx prisma migrate dev`    | Cria e aplica migração                 |
+| `bunx prisma migrate deploy` | Aplica migrações em ambiente novo      |
+| `bunx prisma studio`         | Interface do banco                     |
+| `bun run typecheck`          | `tsc --noEmit`                         |
 
 ## Restrições de Ambiente
 

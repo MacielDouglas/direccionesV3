@@ -1,10 +1,10 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { ChevronDown } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 
 interface Props {
   id: string;

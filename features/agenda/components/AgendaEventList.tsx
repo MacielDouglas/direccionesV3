@@ -1,8 +1,8 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CalendarX } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import type {
   AgendaFieldOptions,
   AgendaMember,

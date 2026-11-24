@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { signIn } from "@/lib/auth-client";
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { signIn } from "@/lib/auth-client";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (

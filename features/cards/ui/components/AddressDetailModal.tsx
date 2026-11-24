@@ -1,5 +1,21 @@
 "use client";
 
+import {
+  Check,
+  CircleAlert,
+  DoorClosed,
+  Info,
+  Loader2,
+  MailCheck,
+  Map as MapIcon,
+  MapPin,
+  Pencil,
+  UserRoundX,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { Suspense, use, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,22 +42,6 @@ import {
   getAddressInvitesAction,
   setAddressFlagAction,
 } from "@/server/address/address.action";
-import {
-  Check,
-  CircleAlert,
-  DoorClosed,
-  Info,
-  Loader2,
-  MailCheck,
-  Map as MapIcon,
-  MapPin,
-  Pencil,
-  UserRoundX,
-  X,
-} from "lucide-react";
-import Link from "next/link";
-import { Suspense, use, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
 import { AddressMapModal } from "./AddressMapModal";
 
 function formatDate(date: Date | string, locale: string) {
@@ -327,6 +327,7 @@ function AddressContent({
         <header className="flex flex-wrap items-center gap-3">
           {Icon && (
             <div
+              role="img"
               className="grid size-11 shrink-0 place-items-center rounded-2xl bg-black/80"
               aria-label={t.addresses.typeAria.replace(
                 "{label}",

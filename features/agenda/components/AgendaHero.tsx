@@ -1,7 +1,7 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CalendarDays } from "lucide-react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { AgendaEventItem } from "../types/agenda.types";
 import { eventDateParts, eventStartUtcMs, eventTime } from "../utils/agenda-time";
 import { monthName, weekdayLong } from "../utils/calendar-locale";

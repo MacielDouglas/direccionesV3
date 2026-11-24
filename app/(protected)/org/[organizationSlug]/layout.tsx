@@ -1,8 +1,8 @@
+import { notFound, redirect } from "next/navigation";
 import { OfflineSyncProvider } from "@/features/pwa/core/offline-sync";
 import { TenantProvider } from "@/providers/TenantProvider";
 import { getOrganizationBySlug } from "@/server/organization/organization.queries";
 import { getCurrentUser } from "@/server/users";
-import { notFound, redirect } from "next/navigation";
 
 type Props = {
   children: React.ReactNode;

@@ -1,10 +1,10 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminOrOwner, requireOrgAdminOrOwner } from "@/server/users";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { type AgendaEventInput, agendaEventSchema } from "../domain/agenda.schema";
 
 const eventIdSchema = z.string().cuid();

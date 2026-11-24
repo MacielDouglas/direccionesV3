@@ -1,12 +1,13 @@
+import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getServerDictionary } from "@/lib/i18n/server";
-import Image from "next/image";
 
 export default async function LoginLoading() {
   const t = await getServerDictionary();
   return (
     <div
       aria-label={t.common.loadingLabels.login}
+      role="status"
       aria-busy="true"
       className="relative flex min-h-dvh w-full flex-col items-center justify-center bg-stone-950 px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]"
     >

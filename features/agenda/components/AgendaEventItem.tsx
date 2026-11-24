@@ -1,8 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { useI18n } from "@/lib/i18n/I18nProvider";
-import { cn } from "@/lib/utils";
 import {
   Clock,
   Eye,
@@ -17,6 +14,9 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { cn } from "@/lib/utils";
 import type {
   AgendaFieldOptions,
   AgendaMember,

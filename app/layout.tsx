@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inconsolata, Outfit } from "next/font/google";
 import "@/app/globals.css";
+import { ThemeProvider } from "next-themes";
 import { NavigationProvider } from "@/components/NavigationProvider";
 import { SchedulerErrorHandler } from "@/components/SchedulerErrorHandler";
 import { Toaster } from "@/components/ui/sonner";
@@ -10,7 +11,6 @@ import { InstallPrompt } from "@/features/pwa/ui/InstallPrompt";
 import { RegisterSW } from "@/features/pwa/ui/RegisterSW";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary, getServerLocale } from "@/lib/i18n/server";
-import { ThemeProvider } from "next-themes";
 
 const outfit = Outfit({
   subsets: ["latin"],

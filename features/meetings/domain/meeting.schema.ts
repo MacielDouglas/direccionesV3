@@ -56,8 +56,6 @@ export const meetingConnectionSchema = z.object({
   token: meetingTokenSchema,
 });
 
-export type MeetingConnectionInput = z.infer<typeof meetingConnectionSchema>;
-
 /** Envelope cifrado servido por GET /api/public/programa/[token] do Meeting. */
 export const meetingEnvelopeSchema = z.object({
   v: z.literal(1),

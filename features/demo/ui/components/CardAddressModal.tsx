@@ -1,5 +1,8 @@
 "use client";
 
+import { CheckCircle2, MapPin, UserRound, X } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 import { useHaptic } from "@/app/hooks/useHaptic";
 import {
   Dialog,
@@ -11,9 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, MapPin, UserRound, X } from "lucide-react";
-import Image from "next/image";
-import { useState } from "react";
 import { DEMO_CARD, type DemoMuseumFlag, demoMuseumById } from "../../domain/demo.data";
 import { InfoNote } from "./InfoNote";
 

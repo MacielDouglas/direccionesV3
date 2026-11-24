@@ -1,10 +1,10 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { HomeDashboard } from "@/features/home/ui/HomeDashboard";
 import { WelcomeScreen } from "@/features/invitations/ui/screens/WelcomeScreen";
 import SuperUserPanel from "@/features/superuser/ui/SuperUserPanel";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCurrentUser } from "@/server/users";
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getServerDictionary();

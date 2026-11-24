@@ -1,6 +1,6 @@
-import { canAccess } from "@/lib/autorize";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { canAccess } from "@/lib/autorize";
 
 type CanAccessRole = Parameters<typeof canAccess>[0];
 

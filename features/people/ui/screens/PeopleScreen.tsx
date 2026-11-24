@@ -1,31 +1,5 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useI18n } from "@/lib/i18n/I18nProvider";
-import { cn } from "@/lib/utils";
-import {
-  adminDesignateCardsAction,
-  adminReturnCardsAction,
-  adminTransferCardAction,
-  createOrgPersonAction,
-  deletePersonAction,
-  getPersonCardsManageData,
-  linkUserToPersonAction,
-  regeneratePersonInviteAction,
-  searchUsersToLinkAction,
-  updatePersonName,
-  updatePersonRole,
-} from "@/server/person";
 import {
   Check,
   Copy,
@@ -54,6 +28,32 @@ import {
   useTransition,
 } from "react";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { cn } from "@/lib/utils";
+import {
+  adminDesignateCardsAction,
+  adminReturnCardsAction,
+  adminTransferCardAction,
+  createOrgPersonAction,
+  deletePersonAction,
+  getPersonCardsManageData,
+  linkUserToPersonAction,
+  regeneratePersonInviteAction,
+  searchUsersToLinkAction,
+  updatePersonName,
+  updatePersonRole,
+} from "@/server/person";
 
 const PERSON_ROLES = ["member", "admin", "owner"] as const;
 type PersonRole = (typeof PERSON_ROLES)[number];
@@ -1170,26 +1170,24 @@ export function AdminCardsDialog({
               <p>{t.people.noAvailableCards}</p>
             </div>
           ) : (
-            <>
-              <ul className="flex flex-col gap-2">
-                {data.availableCards.map((card) =>
-                  selectableRow(
-                    card,
-                    selectedDesignateIds.includes(card.id),
-                    () => toggleSendCard(card.id),
-                    card.lastReturnDate ? (
-                      <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
-                        {t.people.lastReturnedOn.replace("{date}", formatDate(card.lastReturnDate))}
-                      </span>
-                    ) : (
-                      <span className="shrink-0 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
-                        {t.people.newCard}
-                      </span>
-                    ),
+            <ul className="flex flex-col gap-2">
+              {data.availableCards.map((card) =>
+                selectableRow(
+                  card,
+                  selectedDesignateIds.includes(card.id),
+                  () => toggleSendCard(card.id),
+                  card.lastReturnDate ? (
+                    <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+                      {t.people.lastReturnedOn.replace("{date}", formatDate(card.lastReturnDate))}
+                    </span>
+                  ) : (
+                    <span className="shrink-0 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
+                      {t.people.newCard}
+                    </span>
                   ),
-                )}
-              </ul>
-            </>
+                ),
+              )}
+            </ul>
           )}
         </section>
 

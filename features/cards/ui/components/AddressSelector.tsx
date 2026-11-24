@@ -1,9 +1,9 @@
 "use client";
 
+import { CheckCircle2, MapPin } from "lucide-react";
 import { useMapInstance } from "@/features/map/core/MapboxProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, MapPin } from "lucide-react";
 import type { AvailableAddress } from "../../types/card.types";
 
 interface Props {

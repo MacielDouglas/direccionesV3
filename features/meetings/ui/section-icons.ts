@@ -1,7 +1,7 @@
-import type { ProgramIcon } from "@/features/meetings/ui/program-parts";
 import { BookOpen, MicVocal, Wheat } from "lucide-react";
 import { GiSheep } from "react-icons/gi";
 import { IoDiamond } from "react-icons/io5";
+import type { ProgramIcon } from "@/features/meetings/ui/program-parts";
 
 /** Ícones das seções do programa (chaves em espanhol do Meeting). */
 export const SECTION_ICONS: Record<string, ProgramIcon> = {

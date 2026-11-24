@@ -1,10 +1,13 @@
-import { cn } from "@/lib/utils";
 import { Lightbulb } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function InfoNote({
   children,
   className,
-}: { children: React.ReactNode; className?: string }) {
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <div
       role="note"

@@ -1,8 +1,9 @@
 ---
+
 target: página reuniões
 total_score: 22
 max_score: 40
-na_heuristics: 
+na_heuristics:
 p0_count: 0
 p1_count: 3
 target_identity: "file:D:\\Projetos\\direccionesV3_5\\app\\(protected)\\org\\[organizationSlug]\\(members)\\reunioes\\page.tsx"
@@ -11,25 +12,26 @@ target_path: "D:\\Projetos\\direccionesV3_5\\app\\(protected)\\org\\[organizatio
 timestamp: 2026-10-15T12-50-00Z
 slug: rganizationslug-members-reunioes-page-tsx-3aec2ae6
 ---
+
 # Critique — página Reuniões (reunioes/page.tsx + MeetingWeekView + componentes)
 
 Method: dual-agent (A: ses_ec06543d8ffe95vycD3VZyehIw · B: ses_ec06543b2ffePVyQ0BvpiprQtw)
 
 ## Design Health Score
 
-| # | Heurística | Nota | Achado-chave |
-|---|-----------|------|--------------|
-| 1 | Visibilidade do status | 3 | busy único no form admin mostra "saving" no refresh |
-| 2 | Mundo real | 3 | Termos ok; sem jargão bloqueante |
-| 3 | Controle e liberdade | 2 | window.confirm destrutivo; sem cancelar navegação |
-| 4 | Consistência | 2 | Mix lucide + react-icons com pesos diferentes |
-| 5 | Prevenção de erro | 2 | Sem validação inline/teste de conexão antes de salvar |
-| 6 | Reconhecimento | 2 | truncate + title esconde nomes no touch |
-| 7 | Flexibilidade | 1 | Só setas sequenciais, sem salto nem deep-link; estado morre no refresh |
-| 8 | Estética minimalista | 3 | 3 camadas de controle antes do conteúdo; 3 linhas por parte |
-| 9 | Recuperação de erro | 2 | navError sem retry, texto miúdo sobre azul |
-| 10 | Ajuda | 1 | notConnected sem CTA; token sem "onde obter" |
-| **Total** | | **22/40** | **Acceptable** |
+| #         | Heurística             | Nota      | Achado-chave                                                           |
+| --------- | ---------------------- | --------- | ---------------------------------------------------------------------- |
+| 1         | Visibilidade do status | 3         | busy único no form admin mostra "saving" no refresh                    |
+| 2         | Mundo real             | 3         | Termos ok; sem jargão bloqueante                                       |
+| 3         | Controle e liberdade   | 2         | window.confirm destrutivo; sem cancelar navegação                      |
+| 4         | Consistência           | 2         | Mix lucide + react-icons com pesos diferentes                          |
+| 5         | Prevenção de erro      | 2         | Sem validação inline/teste de conexão antes de salvar                  |
+| 6         | Reconhecimento         | 2         | truncate + title esconde nomes no touch                                |
+| 7         | Flexibilidade          | 1         | Só setas sequenciais, sem salto nem deep-link; estado morre no refresh |
+| 8         | Estética minimalista   | 3         | 3 camadas de controle antes do conteúdo; 3 linhas por parte            |
+| 9         | Recuperação de erro    | 2         | navError sem retry, texto miúdo sobre azul                             |
+| 10        | Ajuda                  | 1         | notConnected sem CTA; token sem "onde obter"                           |
+| **Total** |                        | **22/40** | **Acceptable**                                                         |
 
 ## Veredito de especificidade
 

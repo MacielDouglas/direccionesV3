@@ -195,6 +195,7 @@
 
   /* Toasts no topo respeitam notch/dynamic island/câmera */
   [data-sonner-toaster][data-y-position="top"] {
+    /* biome-ignore lint/complexity/noImportantStyles: posiciona o toaster acima do topo ocupado */
     top: max(0.5rem, env(safe-area-inset-top, 0px)) !important;
   }
 
@@ -206,20 +207,27 @@
     *,
     *::before,
     *::after {
+      /* biome-ignore lint/complexity/noImportantStyles: reduz a duração apenas no reduced-motion */
       animation-duration: 0.01ms !important;
+      /* biome-ignore lint/complexity/noImportantStyles: reduz a duração apenas no reduced-motion */
       transition-duration: 0.01ms !important;
     }
   }
 
   /* Mapbox popup — reset para tema customizado */
   .card-address-popup .mapboxgl-popup-content {
+    /* biome-ignore lint/complexity/noImportantStyles: reset do reset interno do Mapbox */
     background: black !important;
+    /* biome-ignore lint/complexity/noImportantStyles: reset do padding do Mapbox */
     padding: 0 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: reset do shadow do Mapbox */
     box-shadow: none !important;
+    /* biome-ignore lint/complexity/noImportantStyles: reset da radius do Mapbox */
     border-radius: 0 !important;
   }
 
   .card-address-popup .mapboxgl-popup-tip {
+    /* biome-ignore lint/complexity/noImportantStyles: oculta a ponta do popup do Mapbox */
     display: none !important;
   }
 
