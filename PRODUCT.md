@@ -8,68 +8,96 @@ web
 
 ## Users
 
-Membros de uma congregação (organização religiosa) e seus líderes/administradores:
+**Usuário principal:** membro de congregação (organização religiosa) em atividade de campo, quase sempre em pé, no celular, com uma mão e conexão instável. Ele abre o app para ver a designação do dia, localizar os endereços no mapa, registrar o que encontrou e devolver o card ao final.
 
-- **Líderes (owner/admin)** — organizam o trabalho de campo: cadastram endereços, criam cards atribuídos a membros, agendam eventos, gerenciam territórios e convidam novos membros.
-- **Membros** — executam o trabalho de campo: visualizam seus cards, registram endereços visitados, marcam pins no levantamento e acompanham a agenda.
+**Outros públicos confirmados:**
 
-Uso primariamente em campo, fora do escritório, via celular.
+- **Líderes (owner/admin)** — organizam o trabalho de campo: cadastram e corrigem endereços, criam cards, agendam eventos, gerenciam territórios, aprovam exclusões pendentes, convidam membros e configuram o programa semanal.
+- **Superusuário da plataforma** — opera fora da organização: cria organizações, gera tokens de onboarding de owner, administra usuários e bloqueios.
 
 ## Product Purpose
 
-Plataforma multi-tenant para registro, distribuição e acompanhamento de endereços dentro de organizações (congregações). Cada organização opera em contexto isolado: membros cadastram endereços com GPS e fotos, recebem listas curadas (cards) e contribuem em um levantamento de campo compartilhado. Sucesso = o membro em campo encontra o endereço certo, com a rota certa, mesmo com conexão ruim.
+O Direcciones_V3 centraliza o cadastro, a distribuição e o acompanhamento de endereços dentro de uma organização, transformando uma lista de lugares em trabalho de campo executável. Cada organização opera isolada, com seus próprios membros, endereços, cards, mapa, agenda e programa de reuniões.
+
+**Sucesso:** a cobertura de campo designada é concluída — os cards atribuídos são trabalhados, os endereços são atualizados ou corrigidos em campo e o card volta com o registro do que aconteceu.
 
 ## Positioning
 
-Trabalho de campo compartilhado: um só lugar onde a organização registra endereços, distribui o trabalho em cards atribuídos, planeja rotas no mapa e mantém um levantamento colaborativo — em vez de planilhas espalhadas ou mapas pessoais não sincronizados.
+Um CRM de endereços genérico guarda contatos; o Direcciones_V3 fecha o ciclo operacional em volta do endereço: cadastro com GPS e foto → card atribuído a uma pessoa → rota no mapa → registro da visita e dos convites entregues → devolução com histórico de quem trabalhou. O que um concorrente não copia facilmente é essa continuidade entre endereço, designação, mapa e rotina semanal da organização, dentro de um PWA que continua útil sem sinal.
 
 ## Operating Context
 
-- Quase todo o uso acontece em **mobile** (~98%: iPhone, Motorola Moto G, Samsung Galaxy S, densidade média ~420 dpi) com conexões frequentemente lentas.
-- Trabalho em campo: captura de GPS no dispositivo, fotos de endereço, consulta de rota no mapa Mapbox, marcação de pins de visita.
-- O app é PWA instalável e funcional offline, com cache agressivo de imagens R2 e tiles do mapa.
-- Modo escuro segue a preferência do sistema, com alternância manual.
+- Trabalho de campo real: visitas a endereços em ruas e bairros, deslocamento entre pontos, uso do mapa para se orientar e registrar posição, tudo em mobile (~98%: iPhone, Moto G, Galaxy S, ~420 dpi) e conexão frequentemente lenta.
+- **Card** é uma lista ordenada de endereços compilada por um admin e atribuída a um membro: representa o trabalho de campo designado para um período (`startDate`/`endDate`), com número, dono, responsável e histórico de eventos (atribuído, devolvido, transferido).
+- **Convites entregues** por endereço e por ano, com tipos `CELEBRATION`, `CONVENTION` e `OTHER`.
+- **Levantamento (survey):** mapa colaborativo de pins com estados pendente, sugerido, confirmado e cancelado.
+- **Agenda:** eventos com data, hora, condutor, saída, tipo e território, com opções reutilizáveis por organização.
+- **Reuniões:** programa semanal (meio de semana e fim de semana) espelhado do app Meeting via conexão por organização com token AES usado apenas no servidor; partes numeradas no padrão do impresso, relógio do programa, designações, leitura da Bíblia e limpeza por setor.
+- **Gestão de pessoas e textos salvos** completam a rotina administrativa da organização.
+- **Demo público** em `/demo` apresenta o produto com dados sintéticos de museus; não é evidência de uso real.
 
 ## Capabilities and Constraints
 
-- **Idiomas** — aplicação com suporte padrão a **português (Brasil)** e **espanhol**; o usuário escolhe o idioma preferido.
-- **Endereços** — CRUD com rua, número, complemento, bairro, cidade, tipo, GPS, fotos (R2 com compressão/HEIC→JPEG), extração de EXIF e fluxo de exclusão pendente (membro sinaliza, admin confirma).
-- **Cards** — listas ordenadas de endereços criadas por admin e atribuídas a membros, com camada de rota no mapa; reatribuíveis e revogáveis.
-- **Mapa** — Mapbox GL com pin de localização do usuário, seleção de GPS, marcadores de card e rota.
-- **Agenda** — calendário mensal com eventos (data, hora, condutor, saída, tipo, território, info) e exportação PDF; criação/edição/exclusão por admin.
-- **Levantamento (Survey)** — mapa colaborativo de pins com status (pendente, sugerido, confirmado, cancelado).
-- **Convites** — tokens de uso único via link `/join/[token]`; novo usuário entra via Google OAuth como member.
-- **Perfis** — owner, admin e member, com escopo por organização; validação de permissão no servidor em toda Server Action.
-- **Multi-tenant** — isolamento de dados por organização com roteamento por slug.
-- **Stack** — Next.js 16 (App Router, Turbopack), React 19, Tailwind CSS 4, Radix/Shadcn, Better Auth + Google OAuth, Prisma 7 + PostgreSQL, Mapbox GL 3, R2, PWA (Workbox), jsPDF, Fuse.js.
-- Sem rotas de API para mutações internas — tudo via Server Actions tipadas; fluxo unidirecional UI → Action → Service → Prisma.
+**Funcionalidades confirmadas**
+
+- Multi-tenant por slug de organização; todo dado é filtrado por `organizationId`.
+- CRUD de endereços com tipo, rua, número, complemento, bairro, cidade, coordenadas GPS, foto, nome do comércio e observações.
+- Extração de EXIF da foto para preencher coordenadas; compressão no cliente e conversão HEIC→JPEG.
+- Exclusão pendente com motivo obrigatório (3–500 caracteres, validado no servidor) e aprovação por admin.
+- Cards com seletor de endereços ordenado por proximidade, atribuição, reatribuição, devolução e trilha de eventos.
+- **Meus Cards** com mapa Mapbox, marcadores e camada de rota; pool de instâncias de mapa reutilizadas.
+- Agenda mensal com exportação em PDF, eventos passados colapsados e destaque ao clicar no dia.
+- Programa de reuniões com cartão "Próxima reunião" na home e exportação em PDF.
+- Convites por token de uso único (`/join/[token]`) com entrada via Google OAuth como `member`.
+- Painel de superusuário para organizações, usuários, banimentos e tokens de owner.
+- PWA instalável, com service worker desabilitado em desenvolvimento.
+
+**Restrições técnicas**
+
+- Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Radix UI e Shadcn UI.
+- Bun é o único gerenciador/runtime de pacotes; Biome é o único linter/formatter. Sem npm, ESLint ou Prettier.
+- Arquitetura DDD por feature (`domain`, `application`, `infrastructure`, `ui`, `hooks`, `utils`, `types`).
+- Mutações internas só via Server Actions tipadas; nenhuma rota de API para CRUD.
+- Toda Server Action valida sessão e permissão em `lib/autorize.ts`; o `RoleGuard` no cliente é apenas UX.
+- Upload de imagem só por URL pré-assinada no Cloudflare R2.
+- PostgreSQL via Prisma 7; deploy na Vercel com pooler de conexão.
+
+**Fatos explicitamente não decididos**
+
+- Modelo comercial além do multi-tenant (planos, cobrança, limites por organização) não foi estabelecido.
+- Nenhum padrão formal de acessibilidade (WCAG) foi acordado; existem apenas as exigências de uso real descritas abaixo.
 
 ## Brand Commitments
 
-- Nome **Direcciones_V3** e logo existente (`public/Logo.svg`).
-- **Cor de destaque obrigatória `#ff6828`** — todas as outras cores devem combinar e contrastar com ela.
-- **Termos de domínio específicos são obrigatórios** e devem permanecer na UI: `levantamento`, `card`, `saída`, `tipo`, `território`, `condutor`.
-- Idioma da interface: **português (Brasil) e espanhol** — usuário escolhe o preferido.
-- Conforto visual em modo claro e escuro; tema segue o sistema.
+- Nome do produto: **Direcciones_V3** (interface e PWA usam "Direcciones"). Logo em `public/Logo.svg`.
+- **Cor de destaque obrigatória `#ff6828`** — todas as outras cores devem combinar e contrastar com ela. O azul `#1c69d4` é reservado à identidade do módulo Reuniões.
+- **Termos de domínio obrigatórios na UI:** `levantamento`, `card`, `saída`, `tipo`, `território`, `condutor`.
+- Idioma padrão `pt` com interface completa em pt-BR e es, escolhida pelo usuário e persistida no perfil.
+- Conforto visual em modo claro e escuro; o tema segue a preferência do sistema, com alternância manual.
+- A sincronização com o app Meeting é funcionalidade real, mas **não** foi confirmada como compromisso durável de produto — pode ser revista sem violar o posicionamento.
 
 ## Evidence on Hand
 
-- `README.md` — visão geral, stack, arquitetura, módulos, permissões, PWA.
-- `prisma/schema.prisma` — modelo de dados real (user, organization, member, address, card, agenda, survey, invite_token).
-- `app/` e `features/` — implementação existente das rotas e módulos.
-- `AGENTS.md` — diretrizes de stack, arquitetura e segurança do repositório.
-- Não há testemunhos, casos de cliente, press ou benchmarks reais; não fabricar.
+- Código-fonte completo e funcional, com histórico de migrações de janeiro a outubro de 2026.
+- Produto em produção com **poucas organizações reais** usando em campo.
+- `README.md` (visão geral, stack, módulos, permissões), `prisma/schema.prisma` (modelo de dados real) e `AGENTS.md` (stack, arquitetura e segurança).
+- `DESIGN.md` registrado no commit `ce84c35` — atualmente removido da árvore de trabalho — documenta os tokens do sistema visual vigente (acento `#ff6828`, azul de reuniões `#1c69d4`, tipografia Outfit, raios e espaçamento).
+- Demo pública em `/demo` com dados sintéticos (museus brasileiros) — serve para demonstração, nunca como prova social.
+- **Ausências que o trabalho futuro não pode preencher por invenção:** não há depoimentos, logos de clientes, números de uso, benchmarks, estudos de caso, prêmios ou preços documentados no repositório.
 
 ## Product Principles
 
-1. **Campo primeiro**: a experiência é projetada para uso em campo no celular, sob conexão lenta — leveza, cache e offline são prioridade de produto.
-2. **Distribuição clara do trabalho**: cards e atribuição definem quem visita o quê; a UI deve deixar o trabalho do membro óbvio.
-3. **Dados confiáveis e auditáveis**: endereços, pins e eventos têm autor, data e fluxo de confirmação — a confiança no registro é o valor do produto.
-4. **Colaboração por organização**: cada congregação tem contexto isolado; ninguém fora da organização vê os dados.
-5. **Segurança no servidor**: sessão e permissão são sempre revalidadas no servidor; o cliente nunca é fonte de verdade.
+1. **Campo primeiro.** Toda tela é usada em pé, no celular, com uma mão e conexão ruim; leveza, cache e offline são prioridade de produto. Se não funciona assim, não funciona.
+2. **O trabalho é a unidade, não o registro.** O valor está no card trabalhado e devolvido; a interface deve mostrar progresso e pendências, não apenas dados.
+3. **Dados confiáveis e auditáveis.** Endereços, pins e eventos têm autor, data e fluxo de confirmação — a confiança no registro é o valor do produto.
+4. **Cada organização é um mundo fechado.** Isolamento de dados e permissões são produto, não detalhe técnico — e devem ser visíveis e tranquilizadores.
+5. **Segurança no servidor.** Sessão e permissão são sempre revalidadas no servidor; o cliente nunca é fonte de verdade.
 
 ## Accessibility & Inclusion
 
-- Mobile-first: alvos de toque de pelo menos 44px, gestos simples.
-- Responsivo do mobile (~420 dpi) até desktop full-HD (1920px+).
-- Respeita preferência de tema (modo escuro) e safe-area insets.
+- Público de aproximadamente 98% mobile, em aparelhos de densidade média (~420 dpi, iPhone, Moto G, Galaxy S).
+- Alvos de toque de pelo menos 44px; gestos simples; uso com uma mão.
+- Layout responsivo do mobile (~420 dpi) até desktop full-HD (1920px+).
+- Suporte a tema claro/escuro seguindo a preferência do sistema, com alternância manual.
+- Respeito a `safe-area-inset` (notch, ilha dinâmica, barra de gestos).
+- Leitura confortável sob luz do dia e em movimento; contraste e tamanho de texto não podem depender de zoom.
